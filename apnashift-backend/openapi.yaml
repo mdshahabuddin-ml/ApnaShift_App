@@ -1,0 +1,528 @@
+openapi: 3.0.3
+info:
+  title: ApnaShift Backend (MVP)
+  description: On-demand shifting API — pickup, mini truck, mini tractor. Auth via Bearer JWT.
+  version: 0.1.0
+servers:
+  - url: http://localhost:3000
+    description: Local dev
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      required: [ok, error]
+      properties:
+        ok: { type: boolean, example: false }
+        error: { type: string, example: invalid_credentials }
+    VehicleType:
+      type: string
+      enum: [pickup, mini_truck, mini_tractor]
+    Coord:
+      type: object
+      required: [lat, lng]
+      properties:
+        lat: { type: number, minimum: -90, maximum: 90, example: 22.7196 }
+        lng: { type: number, minimum: -180, maximum: 180, example: 75.8577 }
+    AddressPoint:
+      allOf:
+        - $ref: '#/components/schemas/Coord'
+        - type: object
+          required: [address]
+          properties:
+            address: { type: string, example: '12 MG Road, Indore' }
+    PublicUser:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        phone: { type: string }
+        role: { type: string, enum: [user, driver, admin] }
+    Booking:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        user_id: { type: string, format: uuid }
+        driver_id: { type: string, format: uuid, nullable: true }
+        pickup: { $ref: '#/components/schemas/AddressPoint' }
+        drop: { $ref: '#/components/schemas/AddressPoint' }
+        vehicle_type: { $ref: '#/components/schemas/VehicleType' }
+        helper_needed: { type: boolean }
+        item_description: { type: string }
+        scheduled_time: { type: string, format: date-time, nullable: true }
+        delivered_at: { type: string, format: date-time, nullable: true, description: 'Set on delivered, else null' }
+        distance_km: { type: number }
+        price_rs: { type: number }
+        status:
+          type: string
+          enum: [pending, accepted, arrived, in_transit, delivered, cancelled]
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    Paginated:
+      type: object
+      required: [ok, page, limit, total]
+      properties:
+        ok: { type: boolean, example: true }
+        page: { type: integer, example: 1 }
+        limit: { type: integer, example: 20 }
+        total: { type: integer, example: 3 }
+paths:
+  /api/health:
+    get:
+      summary: Health (no DB)
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, example: true }
+                  service: { type: string, example: apnashift-backend }
+                  time: { type: string, format: date-time }
+  /api/ready:
+    get:
+      summary: Readiness (DB check)
+      security: []
+      responses:
+        '200':
+          description: DB up
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, example: true }
+                  db: { type: string, example: up }
+  /api/auth/register:
+    post:
+      summary: Register user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, phone, password]
+              properties:
+                name: { type: string, example: Rahul Sharma }
+                phone: { type: string, example: '98765 43210' }
+                password: { type: string, minLength: 8, example: password123 }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, example: true }
+                  token: { type: string }
+                  user: { $ref: '#/components/schemas/PublicUser' }
+        '409': { description: Phone taken (phone_taken), content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /api/auth/login:
+    post:
+      summary: Login (user/driver/admin by phone)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone, password]
+              properties:
+                phone: { type: string, example: '9876543210' }
+                password: { type: string, example: password123 }
+      responses:
+        '200':
+          description: OK, JWT with {id, role}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, example: true }
+                  token: { type: string }
+                  user: { $ref: '#/components/schemas/PublicUser' }
+        '401': { description: invalid_credentials (wrong phone or password, same), content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /api/auth/me:
+    get:
+      summary: Own profile
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, example: true }
+                  user: { $ref: '#/components/schemas/PublicUser' }
+  /api/drivers/register:
+    post:
+      summary: Register driver (starts unverified)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, phone, password, vehicle_type, vehicle_number]
+              properties:
+                name: { type: string, example: Dev Driver }
+                phone: { type: string, example: '9123456789' }
+                password: { type: string, minLength: 8 }
+                vehicle_type: { $ref: '#/components/schemas/VehicleType' }
+                vehicle_number: { type: string, example: MP09AB1234 }
+      responses:
+        '201': { description: Created (is_verified false) }
+  /api/admin/login:
+    post:
+      summary: Admin login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone, password]
+              properties:
+                phone: { type: string }
+                password: { type: string }
+      responses:
+        '200': { description: OK, role admin }
+  /api/bookings/estimate-price:
+    post:
+      summary: Price estimate (public, rate limited)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [pickup, drop, vehicle_type]
+              properties:
+                pickup: { $ref: '#/components/schemas/Coord' }
+                drop: { $ref: '#/components/schemas/Coord' }
+                vehicle_type: { $ref: '#/components/schemas/VehicleType' }
+                helper_needed: { type: boolean, default: false }
+      responses:
+        '200':
+          description: Estimate (rates from DB, total rounded to Rs 10)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, example: true }
+                  distance_km: { type: number, example: 7.15 }
+                  vehicle_type: { $ref: '#/components/schemas/VehicleType' }
+                  base_fare: { type: number, example: 600 }
+                  distance_fare: { type: number, example: 160.86 }
+                  helper_charge: { type: number, example: 0 }
+                  total: { type: number, example: 760 }
+                  estimate_min: { type: number, example: 680 }
+                  estimate_max: { type: number, example: 840 }
+        '400':
+          description: validation_failed or distance_too_far (>500 km, one-city MVP)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/bookings:
+    post:
+      summary: Create booking (user, price computed server-side)
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: false
+          description: Optional retry key (A-Za-z0-9_-, 1-64). Same key + same payload replays 200 with same booking; same key + different payload is 422.
+          schema: { type: string, example: order-abc-123 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [pickup, drop, vehicle_type]
+              properties:
+                pickup: { $ref: '#/components/schemas/AddressPoint' }
+                drop: { $ref: '#/components/schemas/AddressPoint' }
+                vehicle_type: { $ref: '#/components/schemas/VehicleType' }
+                helper_needed: { type: boolean, default: false }
+                item_description: { type: string }
+                scheduled_time: { type: string, format: date-time, description: 'Optional, must be now/future (past date is 400)' }
+      responses:
+        '201':
+          description: Created (status pending)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, example: true }
+                  booking: { $ref: '#/components/schemas/Booking' }
+        '200':
+          description: Idempotent replay (same key + same payload, same booking)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, example: true }
+                  booking: { $ref: '#/components/schemas/Booking' }
+        '400':
+          description: validation_failed (incl. past scheduled_time) or distance_too_far (>500 km) or invalid_idempotency_key
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '422':
+          description: idempotency_conflict (same key, different payload)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    get:
+      summary: Own bookings, paginated (user)
+      parameters:
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: limit, in: query, schema: { type: integer, default: 20, maximum: 100 } }
+      responses:
+        '200': { description: OK }
+  /api/bookings/{id}:
+    get:
+      summary: Own booking by id (others get 404)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+        '404': { description: not_found }
+  /api/bookings/{id}/cancel:
+    patch:
+      summary: Cancel own booking (pending/accepted only)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Cancelled }
+        '409': { description: invalid_transition }
+  /api/bookings/{id}/rating:
+    post:
+      summary: Rate own delivered booking, once
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [stars]
+              properties:
+                stars: { type: integer, minimum: 1, maximum: 5, example: 5 }
+                comment: { type: string, example: time par aaya }
+      responses:
+        '201': { description: Created }
+        '409': { description: not_delivered or already_rated }
+  /api/drivers/{id}/ratings:
+    get:
+      summary: Driver ratings (public, no phone numbers)
+      security: []
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: average, count, last 10 comments }
+  /api/driver/bookings/available:
+    get:
+      summary: Pending bookings for driver's vehicle (verified driver)
+      parameters:
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: limit, in: query, schema: { type: integer, default: 20, maximum: 100 } }
+      responses:
+        '200': { description: OK }
+        '403': { description: driver_unverified }
+  /api/driver/bookings/{id}/accept:
+    patch:
+      summary: Accept booking (atomic, one winner)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Accepted }
+        '409': { description: already_accepted }
+  /api/driver/bookings/{id}/status:
+    patch:
+      summary: Advance status (accepted→arrived→in_transit→delivered; delivered sets delivered_at)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [arrived, in_transit, delivered] }
+      responses:
+        '200': { description: Updated }
+        '409': { description: invalid_transition }
+  /api/driver/bookings:
+    get:
+      summary: Own history, paginated (driver)
+      responses:
+        '200': { description: OK }
+  /api/driver/earnings/weekly:
+    get:
+      summary: Last 7 days delivered earnings by delivered_at (driver)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, example: true }
+                  period: { type: string, example: 7d }
+                  completed_count: { type: integer, example: 1 }
+                  earnings_rs: { type: number, example: 760 }
+  /api/admin/drivers:
+    get:
+      summary: Drivers by status (admin, paginated)
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [pending, verified, review], default: pending } }
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: limit, in: query, schema: { type: integer, default: 20, maximum: 100 } }
+      responses:
+        '200': { description: OK }
+        '403': { description: forbidden (non-admin) }
+  /api/admin/drivers/{id}/verify:
+    patch:
+      summary: Verify driver (admin)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Verified }
+  /api/admin/drivers/{id}/reject:
+    patch:
+      summary: Reject driver with reason (admin)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string, example: Documents unclear }
+      responses:
+        '200': { description: Rejected }
+  /api/admin/drivers/{id}/deactivate:
+    patch:
+      summary: Deactivate driver (admin, is_active false)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Deactivated }
+        '404': { description: not_found }
+  /api/admin/drivers/{id}/reactivate:
+    patch:
+      summary: Reactivate driver (admin, is_active true)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Reactivated }
+        '404': { description: not_found }
+  /api/admin/drivers/flagged:
+    get:
+      summary: needs_review drivers (admin, no auto-ban)
+      responses:
+        '200': { description: OK }
+  /api/admin/bookings:
+    get:
+      summary: All bookings with filters + totals (admin)
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [pending, accepted, arrived, in_transit, delivered, cancelled] } }
+        - { name: from, in: query, schema: { type: string, format: date-time } }
+        - { name: to, in: query, schema: { type: string, format: date-time } }
+        - { name: city, in: query, schema: { type: string } }
+      responses:
+        '200': { description: total + revenue_rs + rows }
+  /api/admin/bookings/{id}/assign:
+    patch:
+      summary: Manually assign driver (pending only, admin)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [driver_id]
+              properties:
+                driver_id: { type: string, format: uuid }
+      responses:
+        '200': { description: Accepted }
+        '409': { description: invalid_transition or driver_unavailable }
+  /api/admin/pricing-rules:
+    get:
+      summary: Current rates (admin)
+      responses:
+        '200': { description: 3 rules }
+    put:
+      summary: Edit rates + history + audit in one transaction (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [vehicle_type]
+              properties:
+                vehicle_type: { $ref: '#/components/schemas/VehicleType' }
+                base_rs: { type: number, minimum: 0, example: 400 }
+                per_km_rs: { type: number, minimum: 0 }
+                helper_rs: { type: number, minimum: 0 }
+      responses:
+        '200': { description: rule + history_id }
+  /api/admin/pricing-rules/history:
+    get:
+      summary: Rate change history (admin)
+      responses:
+        '200': { description: OK }
+  /api/admin/stats:
+    get:
+      summary: Dashboard stats (admin; completed/revenue bucketed by delivered_at)
+      responses:
+        '200':
+          description: today/week/total + verified drivers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, example: true }
+                  today:
+                    type: object
+                    properties:
+                      bookings: { type: integer }
+                      completed: { type: integer }
+                      cancelled: { type: integer }
+                      revenue_rs: { type: number }
+                  drivers:
+                    type: object
+                    properties:
+                      verified_active: { type: integer }

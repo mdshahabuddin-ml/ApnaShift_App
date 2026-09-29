@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ApnaShift — Ghar badlo, tension nahi | Waitlist</title>
+<meta name="description" content="ApnaShift — on-demand shifting help (pickup, mini truck, mini tractor). Apne sheher mein launch se pehle waitlist join karo.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#14213d;
+    --navy-2:#1f2f52;
+    --yellow:#fcbf49;
+    --yellow-dark:#e8a91f;
+    --paper:#fff9ec;
+    --card:#ffffff;
+    --ink:#20242e;
+    --muted:#5b6070;
+    --line:#e9dcc0;
+    --red:#c0392b;
+    --green:#1a7a3a;
+    --radius:18px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Noto Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    line-height:1.6;
+    /* halki road-grid texture, generic na lage */
+    background-image:
+      radial-gradient(circle at 12px 12px, rgba(20,33,61,.055) 2px, transparent 2.5px);
+    background-size:28px 28px;
+  }
+  /* Visible keyboard focus — sab ke liye */
+  :focus-visible{
+    outline:3px solid var(--navy);
+    outline-offset:2px;
+    box-shadow:0 0 0 6px var(--yellow);
+    border-radius:8px;
+  }
+
+  /* Top signage bar */
+  .topbar{
+    background:var(--navy);
+    color:#fff;
+    padding:14px 16px 0 16px;
+  }
+  .topbar-inner{
+    max-width:560px;
+    margin:0 auto;
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .logo-badge{
+    width:46px;height:46px;flex:0 0 46px;
+    background:var(--yellow);
+    border-radius:12px;
+    display:grid;place-items:center;
+    transform:rotate(-4deg);
+    border:2px solid #00000022;
+  }
+  .brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.45rem;letter-spacing:.2px;line-height:1}
+  .brand small{display:block;font-family:"Noto Sans",system-ui,sans-serif;font-weight:600;font-size:.72rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow)}
+  .testing-pill{
+    margin-left:auto;
+    font-size:.75rem;font-weight:700;
+    background:transparent;color:var(--yellow);
+    border:1.5px dashed var(--yellow);
+    padding:5px 10px;border-radius:999px;white-space:nowrap;
+  }
+  .road{
+    margin-top:12px;
+    border-top:6px solid var(--yellow);
+    position:relative;
+  }
+  .road::after{
+    content:"";
+    position:absolute;top:-4.5px;left:0;right:0;
+    border-top:3px dashed var(--navy);
+    opacity:.9;
+  }
+
+  main{max-width:560px;margin:0 auto;padding:18px 16px 30px 16px}
+
+  .hero{
+    background:var(--card);
+    border:2px solid var(--navy);
+    border-radius:var(--radius);
+    padding:20px 18px 16px 18px;
+    box-shadow:7px 7px 0 var(--navy);
+    position:relative;
+    overflow:hidden;
+  }
+  .hero::before{
+    content:"";
+    position:absolute;top:0;left:0;right:0;height:8px;
+    background:repeating-linear-gradient(-45deg,var(--yellow) 0 16px,var(--navy) 16px 32px);
+  }
+  h1{
+    font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;
+    color:var(--navy);
+    font-size:2.05rem;
+    line-height:1.08;
+    margin:10px 0 8px 0;
+  }
+  h1 .marker{
+    background:linear-gradient(transparent 55%, var(--yellow) 55%, var(--yellow) 96%, transparent 96%);
+    padding:0 4px;
+    white-space:nowrap;
+  }
+  .sub{margin:0 0 12px 0;color:#2e3442;font-size:1rem}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px 0}
+  .chips span{
+    font-size:.82rem;font-weight:700;color:var(--navy);
+    background:#fff3cf;border:1.5px solid var(--navy);border-radius:999px;padding:4px 11px;
+  }
+  .bullets{list-style:none;margin:12px 0 4px 0;padding:0;display:grid;gap:10px}
+  .bullets li{
+    display:flex;gap:10px;align-items:flex-start;
+    background:#f7f3e8;border:1.5px solid var(--line);border-radius:12px;padding:10px 11px;
+    font-size:.94rem;
+  }
+  .tick{
+    flex:0 0 26px;width:26px;height:26px;border-radius:50%;
+    background:var(--navy);color:var(--yellow);
+    display:grid;place-items:center;font-weight:800;
+  }
+
+  .form-card{
+    margin-top:16px;
+    background:var(--card);
+    border:2px solid var(--navy);
+    border-radius:var(--radius);
+    box-shadow:7px 7px 0 var(--yellow);
+    padding:18px 16px;
+  }
+  .form-card h2{
+    font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;
+    color:var(--navy);margin:0;font-size:1.35rem;line-height:1.2;
+  }
+  .form-card .hintline{margin:4px 0 14px 0;color:var(--muted);font-size:.9rem}
+  .field{margin-bottom:14px}
+  label{display:block;font-weight:700;font-size:.92rem;color:var(--navy);margin-bottom:6px}
+  label .req{color:var(--red)}
+  .hint{font-weight:400;color:var(--muted);font-size:.82rem;margin-top:4px}
+  input[type="text"],input[type="tel"],select,textarea{
+    width:100%;
+    font:inherit;
+    color:var(--ink);
+    background:#fffdf4;
+    border:2px solid var(--navy);
+    border-radius:12px;
+    padding:11px 12px;
+  }
+  textarea{min-height:84px;resize:vertical}
+  select{background:#fffdf4}
+  .error-text{display:none;color:var(--red);font-size:.86rem;font-weight:600;margin:6px 0 0 0}
+  .field.invalid input,.field.invalid select,.field.invalid textarea{border-color:var(--red);background:#fff5f3}
+  .field.invalid .error-text{display:block}
+  [aria-invalid="true"]{border-color:var(--red)}
+
+  /* honeypot ko bilkul chhupao, par display:none mat use karo */
+  .hp{
+    position:absolute !important;
+    left:-9999px !important;
+    top:auto !important;
+    width:1px !important;height:1px !important;
+    overflow:hidden !important;
+    opacity:0 !important;
+  }
+
+  #formAlert{
+    display:none;
+    border-radius:12px;
+    padding:11px 12px;
+    font-size:.9rem;font-weight:600;
+    margin:0 0 14px 0;
+  }
+  #formAlert.show{display:block}
+  #formAlert.err{background:#fdecea;color:#7a1f14;border:2px solid var(--red)}
+  #formAlert.info{background:#fff3cf;color:var(--navy);border:2px solid var(--navy)}
+
+  button[type="submit"]{
+    width:100%;
+    font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;
+    font-size:1.12rem;font-weight:800;
+    color:var(--navy);
+    background:var(--yellow);
+    border:2px solid var(--navy);
+    border-radius:14px;
+    padding:13px 14px;
+    cursor:pointer;
+    box-shadow:0 4px 0 var(--navy);
+  }
+  button[type="submit"]:active{transform:translateY(3px);box-shadow:0 1px 0 var(--navy)}
+  button[type="submit"][disabled]{opacity:.65;cursor:wait;transform:none}
+  .micro{font-size:.8rem;color:var(--muted);text-align:center;margin:10px 0 0 0}
+
+  #success{
+    display:none;
+    margin-top:16px;
+    background:var(--navy);
+    color:#fff;
+    border-radius:var(--radius);
+    padding:22px 18px;
+    border:2px solid var(--navy);
+    box-shadow:7px 7px 0 var(--yellow);
+    text-align:center;
+  }
+  #success.show{display:block}
+  #success h2{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;color:var(--yellow);margin:0 0 6px 0;font-size:1.6rem}
+  #success p{margin:6px 0}
+  .wa-btn{
+    display:inline-block;margin-top:12px;
+    background:#25D366;color:#08351a;text-decoration:none;font-weight:800;
+    border-radius:999px;padding:12px 20px;border:2px solid #fff;
+  }
+  .wa-btn:hover{background:#1fb857}
+  .src-note{font-size:.78rem;color:#c9d1e3;margin-top:10px}
+
+  footer{max-width:560px;margin:0 auto;padding:0 16px 34px 16px;color:var(--muted);font-size:.82rem;text-align:center}
+
+  @media (min-width:640px){
+    h1{font-size:2.4rem}
+    main{padding-top:22px}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation:none !important;transition:none !important;scroll-behavior:auto !important}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="logo-badge" aria-hidden="true">
+      <!-- simple truck icon -->
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M1 5h12v10H1z" fill="#14213d"/>
+        <path d="M13 9h4l4 4v2h-8z" fill="#14213d"/>
+        <circle cx="6" cy="17.5" r="2" fill="#14213d" stroke="#fcbf49" stroke-width="1.4"/>
+        <circle cx="17" cy="17.5" r="2" fill="#14213d" stroke="#fcbf49" stroke-width="1.4"/>
+      </svg>
+    </div>
+    <div class="brand">ApnaShift<small>Shifting • Transport</small></div>
+    <div class="testing-pill">Testing mein</div>
+  </div>
+  <div class="road" aria-hidden="true"></div>
+</header>
+
+<main>
+  <section class="hero" aria-labelledby="headline">
+    <h1 id="headline">Ghar badlo, <span class="marker">tension nahi.</span></h1>
+    <p class="sub">Pickup, mini truck ya mini tractor — apne sheher mein sahi gaadi aur sahi daam ka andaza, ek hi jagah. Launch se pehle waitlist join karo, hum WhatsApp par batayenge.</p>
+    <div class="chips" aria-label="Gaadi ke options">
+      <span>Pickup</span><span>Mini Truck</span><span>Mini Tractor</span>
+    </div>
+    <ul class="bullets">
+      <li><span class="tick" aria-hidden="true">✓</span><span><strong>Verified drivers</strong> — bina jhanjhat, bharose wali help.</span></li>
+      <li><span class="tick" aria-hidden="true">✓</span><span><strong>Booking se pehle price ka andaza</strong> — pehle samjho, phir book karo.</span></li>
+      <li><span class="tick" aria-hidden="true">✓</span><span><strong>Loading-unloading help ka option</strong> — samaan uthane-rakhne mein haath chahiye to tick karo.</span></li>
+    </ul>
+  </section>
+
+  <section class="form-card" aria-labelledby="formTitle">
+    <h2 id="formTitle">Waitlist join karo — 1 minute lagega</h2>
+    <p class="hintline">Details bharo, launch offer sabse pehle pao. <strong>*</strong> wale khaane zaroori hain.</p>
+
+    <div id="formAlert" role="alert"></div>
+
+    <form id="waitlistForm" novalidate>
+      <div class="field" id="f-naam">
+        <label for="naam">Naam <span class="req" aria-hidden="true">*</span></label>
+        <input type="text" id="naam" name="naam" autocomplete="name" maxlength="80" placeholder="Example: Rahul Sharma" aria-describedby="naam-hint naam-err" required>
+        <p class="hint" id="naam-hint">Apna poora naam likho.</p>
+        <p class="error-text" id="naam-err"></p>
+      </div>
+
+      <div class="field" id="f-phone">
+        <label for="phone">WhatsApp / phone number <span class="req" aria-hidden="true">*</span></label>
+        <input type="tel" id="phone" name="phone" autocomplete="tel" inputmode="numeric" maxlength="15" placeholder="98765 43210" aria-describedby="phone-hint phone-err" required>
+        <p class="hint" id="phone-hint">10 digit ka Indian mobile. +91 ya space hai to chalega, hum hata denge.</p>
+        <p class="error-text" id="phone-err"></p>
+      </div>
+
+      <div class="field" id="f-city">
+        <label for="city">Sheher aur area <span class="req" aria-hidden="true">*</span></label>
+        <input type="text" id="city" name="city" autocomplete="address-level2" maxlength="120" placeholder="Example: Indore – Vijay Nagar" aria-describedby="city-hint city-err" required>
+        <p class="hint" id="city-hint">Jahan se shifting karni hai, wahi sheher + area likho.</p>
+        <p class="error-text" id="city-err"></p>
+      </div>
+
+      <div class="field" id="f-what">
+        <label for="what">Kya shift karna hai? <span class="req" aria-hidden="true">*</span></label>
+        <select id="what" name="what" aria-describedby="what-err" required>
+          <option value="">— Chuno —</option>
+          <option value="Poora ghar/flat">Poora ghar/flat</option>
+          <option value="Sirf furniture">Sirf furniture</option>
+          <option value="Dukaan/office ka samaan">Dukaan/office ka samaan</option>
+          <option value="Chhota samaan/boxes">Chhota samaan/boxes</option>
+          <option value="Abhi pata nahi">Abhi pata nahi</option>
+        </select>
+        <p class="error-text" id="what-err"></p>
+      </div>
+
+      <div class="field" id="f-when">
+        <label for="when">Kab tak shifting karni hai? <span class="req" aria-hidden="true">*</span></label>
+        <select id="when" name="when" aria-describedby="when-err" required>
+          <option value="">— Chuno —</option>
+          <option value="Is hafte">Is hafte</option>
+          <option value="Is mahine">Is mahine</option>
+          <option value="1-3 mahine mein">1-3 mahine mein</option>
+          <option value="Sirf jaankari chahiye">Sirf jaankari chahiye</option>
+        </select>
+        <p class="error-text" id="when-err"></p>
+      </div>
+
+      <div class="field" id="f-note">
+        <label for="note">Note (optional)</label>
+        <textarea id="note" name="note" maxlength="300" placeholder="Example: 2nd floor se shifting hai, lift nahi hai. Loading help chahiye." aria-describedby="note-hint"></textarea>
+        <p class="hint" id="note-hint">Manzil, lift, ya loading-unloading help — kuch khaas hai to likh do (zyada se zyada 300 akshar).</p>
+      </div>
+
+      <!-- Honeypot: asli user ise bharega nahi, bot bharega -->
+      <div class="hp" aria-hidden="true">
+        <label for="company">Company (mat bharo)</label>
+        <input type="text" id="company" name="company" tabindex="-1" autocomplete="off">
+      </div>
+
+      <div class="field" id="f-consent">
+        <label for="consent" style="display:flex;gap:10px;align-items:flex-start;font-weight:600;">
+          <input type="checkbox" id="consent" name="consent" value="yes" required style="width:20px;height:20px;margin-top:3px;accent-color:var(--navy);">
+          <span>Main apna number ApnaShift ko contact ke liye deta hoon <span class="req" aria-hidden="true">*</span></span>
+        </label>
+        <p class="error-text" id="consent-err"></p>
+      </div>
+
+      <button type="submit" id="submitBtn">Waitlist mein naam jodo</button>
+      <p class="micro">Submit karte hi hum aapko WhatsApp par update denge. No spam, pakka.</p>
+    </form>
+  </section>
+
+  <section id="success" aria-live="polite" aria-labelledby="successTitle">
+    <h2 id="successTitle">Shukriya! Aap list mein hain.</h2>
+    <p>ApnaShift jaldi aapke sheher mein aa raha hai.<br>Doston ko bhi bata do — neeche button dabao:</p>
+    <a class="wa-btn" id="waShare" href="https://wa.me/?text=Hello" target="_blank" rel="noopener">WhatsApp par share karo</a>
+    <p class="src-note" id="srcNote"></p>
+  </section>
+</main>
+
+<footer>
+  ApnaShift abhi testing mein hai. Waitlist join karne ka matlab booking pakki hona nahi hai.
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  // TODO: Apna Google Apps Script / Sheet ka Web App URL yahan paste karo.
+  // Example: "https://script.google.com/macros/s/XXXX/exec"
+  const SCRIPT_URL = "PASTE_URL_HERE";
+
+  var form = document.getElementById("waitlistForm");
+  var alertBox = document.getElementById("formAlert");
+  var successBox = document.getElementById("success");
+  var submitBtn = document.getElementById("submitBtn");
+  var waShare = document.getElementById("waShare");
+  var srcNote = document.getElementById("srcNote");
+
+  // --- 1. URL ka ?src= padho (backend allowlist se match) ---
+  var ALLOWED_SOURCES = ["direct","status","college","society","facebook","friends","instagram","flyer","share","curl","test"];
+  function getSource(){
+    try{
+      var params = new URLSearchParams(window.location.search);
+      var s = params.get("src");
+      if(!s) return "direct";
+      s = s.trim();
+      if(!s) return "direct";
+      // lamba ya ajeeb value aaye to safe rakho
+      s = s.slice(0, 60);
+      // backend ALLOWED_SOURCES se match na ho to direct (invalid_source se bachav)
+      if(ALLOWED_SOURCES.indexOf(s) === -1) return "direct";
+      return s;
+    }catch(e){
+      return "direct";
+    }
+  }
+  var SOURCE = getSource();
+
+  // Backend (Code.gs ALLOWED_TYPES/ALLOWED_WHENS) se match — dropdown ke
+  // bahar se aaya value (curl/devtools) frontend par hi roko.
+  var ALLOWED_WHAT = ["Poora ghar/flat","Sirf furniture","Dukaan/office ka samaan","Chhota samaan/boxes","Abhi pata nahi"];
+  var ALLOWED_WHEN = ["Is hafte","Is mahine","1-3 mahine mein","Sirf jaankari chahiye"];
+
+  // --- 2. Phone cleaning: +91 aur spaces hata do ---
+  function cleanPhone(raw){
+    var p = String(raw || "").trim();
+    // space, dash, bracket, dot hatao
+    p = p.replace(/[\s\-\(\)\.]/g, "");
+    // shuru ka +91 / 91 / 0 hatao
+    if(p.indexOf("+91") === 0){
+      p = p.slice(3);
+    } else if(p.length === 12 && p.indexOf("91") === 0){
+      p = p.slice(2);
+    } else if(p.length === 11 && p.charAt(0) === "0"){
+      p = p.slice(1);
+    }
+    return p;
+  }
+  var PHONE_RE = /^[6-9]\d{9}$/;
+
+  function setErr(fieldId, errId, inputEl, msg){
+    var f = document.getElementById(fieldId);
+    var e = document.getElementById(errId);
+    if(msg){
+      f.classList.add("invalid");
+      e.textContent = msg;
+      inputEl.setAttribute("aria-invalid", "true");
+      return false;
+    } else {
+      f.classList.remove("invalid");
+      e.textContent = "";
+      inputEl.removeAttribute("aria-invalid");
+      return true;
+    }
+  }
+
+  function showAlert(type, msg){
+    alertBox.className = "show " + (type === "err" ? "err" : "info");
+    alertBox.textContent = msg;
+  }
+  function hideAlert(){
+    alertBox.className = "";
+    alertBox.textContent = "";
+  }
+
+  function validate(){
+    var ok = true;
+    var firstBad = null;
+
+    var naam = document.getElementById("naam");
+    var phone = document.getElementById("phone");
+    var city = document.getElementById("city");
+    var what = document.getElementById("what");
+    var when = document.getElementById("when");
+    var consent = document.getElementById("consent");
+
+    var naamVal = naam.value.trim();
+    // Emoji surakshit ginti: Array.from ek emoji ko 1 ginta hai
+    if(Array.from(naamVal).length < 2){
+      setErr("f-naam","naam-err",naam,"Apna naam likho (kam se kam 2 akshar). Example: Rahul Sharma");
+      ok = false; firstBad = firstBad || naam;
+    } else {
+      setErr("f-naam","naam-err",naam,"");
+    }
+
+    var rawPhone = phone.value;
+    var cleaned = cleanPhone(rawPhone);
+    if(!rawPhone.trim()){
+      setErr("f-phone","phone-err",phone,"Apna WhatsApp number likho (10 digit). Example: 98765 43210");
+      ok = false; firstBad = firstBad || phone;
+    } else if(!PHONE_RE.test(cleaned)){
+      setErr("f-phone","phone-err",phone,"Number sahi nahi lag raha. Sirf 10 digit ka Indian mobile likho jo 6-9 se shuru ho. +91 ya space hatakar try karo. Example: 98765 43210");
+      ok = false; firstBad = firstBad || phone;
+    } else {
+      setErr("f-phone","phone-err",phone,"");
+    }
+
+    var cityVal = city.value.trim();
+    if(cityVal.length < 2){
+      setErr("f-city","city-err",city,"Sheher aur area likho. Example: Indore – Vijay Nagar");
+      ok = false; firstBad = firstBad || city;
+    } else {
+      setErr("f-city","city-err",city,"");
+    }
+
+    if(!what.value){
+      setErr("f-what","what-err",what,"List mein se ek option chuno — kya shift karna hai?");
+      ok = false; firstBad = firstBad || what;
+    } else if(ALLOWED_WHAT.indexOf(what.value) === -1){
+      setErr("f-what","what-err",what,"Ye option sahi nahi hai — list mein se dobara chuno.");
+      ok = false; firstBad = firstBad || what;
+    } else {
+      setErr("f-what","what-err",what,"");
+    }
+
+    if(!when.value){
+      setErr("f-when","when-err",when,"Kab tak shifting karni hai? Ek option chuno.");
+      ok = false; firstBad = firstBad || when;
+    } else if(ALLOWED_WHEN.indexOf(when.value) === -1){
+      setErr("f-when","when-err",when,"Ye option sahi nahi hai — list mein se dobara chuno.");
+      ok = false; firstBad = firstBad || when;
+    } else {
+      setErr("f-when","when-err",when,"");
+    }
+
+    if(!consent || !consent.checked){
+      setErr("f-consent","consent-err",consent || when,"Contact ke liye consent zaroori hai — box par tick karo.");
+      ok = false; firstBad = firstBad || consent;
+    } else {
+      setErr("f-consent","consent-err",consent,"");
+    }
+
+    return { ok: ok, firstBad: firstBad, cleanedPhone: cleaned };
+  }
+
+  // type karte hi error hat jaye
+  ["naam","phone","city","what","when","consent"].forEach(function(id){
+    var el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener("input", function(){ hideAlert(); });
+    el.addEventListener("change", function(){ hideAlert(); });
+  });
+
+  form.addEventListener("submit", function(ev){
+    ev.preventDefault();
+    hideAlert();
+
+    // Honeypot: bot ne bhara to chupchaap success dikhao, data mat bhejo
+    var hp = document.getElementById("company");
+    if(hp && hp.value){
+      showSuccess();
+      return;
+    }
+
+    var r = validate();
+    if(!r.ok){
+      showAlert("err", "Kuch khaane sudharne hain — neeche laal wali line padho aur sahi karke dobara Try karo.");
+      if(r.firstBad) r.firstBad.focus();
+      return;
+    }
+
+    // Backend abhi nahi juda — saaf error
+    if(!SCRIPT_URL || SCRIPT_URL === "PASTE_URL_HERE"){
+      showAlert("err", "Form abhi backend se juda nahi hai. SCRIPT_URL mein apna link paste karo, tabhi entry save hogi. Aapki details abhi kahin nahi bheji gayi.");
+      return;
+    }
+
+    // Backend (Code.gs) spec wale naam + purane naam dono bhejo taaki mapping na toote.
+    // Honeypot bhi bhejo taaki seedha curl se aaya spam backend pakad sake.
+    // consent:true bhejna zaroori hai — bina iske backend consent_required dega.
+    var whatVal = document.getElementById("what").value;
+    var naamVal2 = document.getElementById("naam").value.trim();
+    var data = {
+      name: naamVal2,
+      naam: naamVal2,
+      phone: r.cleanedPhone,
+      city: document.getElementById("city").value.trim(),
+      type: whatVal,
+      what: whatVal,
+      when: document.getElementById("when").value,
+      note: document.getElementById("note").value.trim(),
+      source: SOURCE,
+      consent: true,
+      website: hp ? hp.value : "",
+      company: hp ? hp.value : "",
+      pageUrl: window.location.href,
+      createdAt: new Date().toISOString()
+    };
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Bhej rahe hain…";
+
+    // NOTE: Apps Script ContentService CORS headers (Access-Control-Allow-Origin)
+    // nahi bhejta, isliye mode:"cors" me jawab padhna possible nahi hai.
+    // Isliye no-cors + text/plain par rehte hain (preflight nahi hota).
+    // Backend ke specific errors (invalid_type/when/source, consent_required)
+    // curl se dikhenge; form par success Sheet me row ke baad dikhta hai.
+    fetch(SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify(data)
+    }).then(function(){
+      // no-cors mein jawab padh nahi sakte, isliye bheja gaya maan lo
+      showSuccess();
+    }).catch(function(){
+      showAlert("err", "Kuch gadbad ho gayi. Net check karke dobara Try karo.");
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Waitlist mein naam jodo";
+    });
+  });
+
+  function showSuccess(){
+    form.style.display = "none";
+    var formCard = document.querySelector(".form-card");
+    if(formCard) formCard.style.display = "none";
+    successBox.classList.add("show");
+    // Sharer ka apna ?src= leak na ho, isliye canonical link + ?src=share.
+    var shareUrl = window.location.origin + window.location.pathname + "?src=share";
+    var text = "Maine ApnaShift waitlist join ki! Ghar shifting ke liye pickup / mini-truck jaldi aa raha hai. Tum bhi join karo: " + shareUrl;
+    waShare.href = "https://wa.me/?text=" + encodeURIComponent(text);
+    if(SOURCE && SOURCE !== "direct"){
+      srcNote.textContent = "Aap " + SOURCE + " se aaye ho — shukriya!";
+    }
+    successBox.scrollIntoView({ behavior: "smooth", block: "start" });
+    document.getElementById("successTitle").setAttribute("tabindex","-1");
+    document.getElementById("successTitle").focus({ preventScroll: true });
+  }
+})();
+</script>
+</body>
+</html>
