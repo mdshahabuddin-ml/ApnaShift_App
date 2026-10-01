@@ -15,7 +15,8 @@ import { driversPublicRoutes } from './routes/driversPublic.js';
 export function createApp() {
   const app = express();
 
-  // Framework batane wala header band (info leak).
+  // Framework batane wala header band (info leak)
+  # framwork teller is blocked .
   app.disable('x-powered-by');
 
   // Proxy ke peeche ho to TRUST_PROXY=1 (rate limit sahi IP dekhe).
