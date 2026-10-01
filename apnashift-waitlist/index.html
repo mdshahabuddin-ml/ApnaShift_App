@@ -327,7 +327,7 @@
         <p class="hint" id="note-hint">Manzil, lift, ya loading-unloading help — kuch khaas hai to likh do (zyada se zyada 300 akshar).</p>
       </div>
 
-      <!-- Honeypot: asli user ise bharega nahi, bot bharega -->
+      <!-- Honeypot: real users leave this empty, bots fill it -->
       <div class="hp" aria-hidden="true">
         <label for="company">Company (mat bharo)</label>
         <input type="text" id="company" name="company" tabindex="-1" autocomplete="off">
@@ -362,9 +362,41 @@
 (function(){
   "use strict";
 
-  // TODO: Apna Google Apps Script / Sheet ka Web App URL yahan paste karo.
+  // TODO: Paste your Google Apps Script / Sheet Web App URL here.
   // Example: "https://script.google.com/macros/s/XXXX/exec"
+  // NOTE: Works without editing the file — paste on the page (setup box below),
+  // or append ?script_url=... to URL, or keep in localStorage APNASHIFT_SCRIPT_URL.
   const SCRIPT_URL = "PASTE_URL_HERE";
+  const SCRIPT_URL_KEY = "APNASHIFT_SCRIPT_URL";
+
+  function getEffectiveScriptUrl(){
+    try{
+      var params = new URLSearchParams(window.location.search);
+      var q = params.get("script_url") || params.get("api");
+      if(q && q.trim() && q.trim() !== "PASTE_URL_HERE"){
+        return q.trim();
+      }
+    }catch(e){}
+    try{
+      var saved = localStorage.getItem(SCRIPT_URL_KEY);
+      if(saved && saved.trim() && saved.trim() !== "PASTE_URL_HERE"){
+        return saved.trim();
+      }
+    }catch(e){}
+    if(SCRIPT_URL && SCRIPT_URL !== "PASTE_URL_HERE"){
+      return SCRIPT_URL;
+    }
+    return "";
+  }
+
+  function saveScriptUrl(url){
+    try{
+      localStorage.setItem(SCRIPT_URL_KEY, url.trim());
+      return true;
+    }catch(e){
+      return false;
+    }
+  }
 
   var form = document.getElementById("waitlistForm");
   var alertBox = document.getElementById("formAlert");
@@ -373,7 +405,7 @@
   var waShare = document.getElementById("waShare");
   var srcNote = document.getElementById("srcNote");
 
-  // --- 1. URL ka ?src= padho (backend allowlist se match) ---
+  // --- 1. Read ?src= from URL (must match backend allowlist) ---
   var ALLOWED_SOURCES = ["direct","status","college","society","facebook","friends","instagram","flyer","share","curl","test"];
   function getSource(){
     try{
@@ -382,9 +414,9 @@
       if(!s) return "direct";
       s = s.trim();
       if(!s) return "direct";
-      // lamba ya ajeeb value aaye to safe rakho
+      // Keep long or unusual values safe
       s = s.slice(0, 60);
-      // backend ALLOWED_SOURCES se match na ho to direct (invalid_source se bachav)
+      // Fall back to direct if not in backend ALLOWED_SOURCES (avoids invalid_source)
       if(ALLOWED_SOURCES.indexOf(s) === -1) return "direct";
       return s;
     }catch(e){
@@ -393,17 +425,17 @@
   }
   var SOURCE = getSource();
 
-  // Backend (Code.gs ALLOWED_TYPES/ALLOWED_WHENS) se match — dropdown ke
-  // bahar se aaya value (curl/devtools) frontend par hi roko.
+  // Must match backend (Code.gs ALLOWED_TYPES/ALLOWED_WHENS) — block
+  // outside-dropdown values (curl/devtools) on the frontend.
   var ALLOWED_WHAT = ["Poora ghar/flat","Sirf furniture","Dukaan/office ka samaan","Chhota samaan/boxes","Abhi pata nahi"];
   var ALLOWED_WHEN = ["Is hafte","Is mahine","1-3 mahine mein","Sirf jaankari chahiye"];
 
-  // --- 2. Phone cleaning: +91 aur spaces hata do ---
+  // --- 2. Phone cleaning: strip +91 and spaces ---
   function cleanPhone(raw){
     var p = String(raw || "").trim();
-    // space, dash, bracket, dot hatao
+    // Remove spaces, dashes, brackets, dots
     p = p.replace(/[\s\-\(\)\.]/g, "");
-    // shuru ka +91 / 91 / 0 hatao
+    // Strip leading +91 / 91 / 0
     if(p.indexOf("+91") === 0){
       p = p.slice(3);
     } else if(p.length === 12 && p.indexOf("91") === 0){
@@ -452,7 +484,7 @@
     var consent = document.getElementById("consent");
 
     var naamVal = naam.value.trim();
-    // Emoji surakshit ginti: Array.from ek emoji ko 1 ginta hai
+    // Safe emoji count: Array.from counts one emoji as 1
     if(Array.from(naamVal).length < 2){
       setErr("f-naam","naam-err",naam,"Apna naam likho (kam se kam 2 akshar). Example: Rahul Sharma");
       ok = false; firstBad = firstBad || naam;
@@ -510,7 +542,7 @@
     return { ok: ok, firstBad: firstBad, cleanedPhone: cleaned };
   }
 
-  // type karte hi error hat jaye
+  // Clear errors while typing
   ["naam","phone","city","what","when","consent"].forEach(function(id){
     var el = document.getElementById(id);
     if(!el) return;
@@ -522,7 +554,7 @@
     ev.preventDefault();
     hideAlert();
 
-    // Honeypot: bot ne bhara to chupchaap success dikhao, data mat bhejo
+    // Honeypot: if a bot fills it, show success silently, skip send
     var hp = document.getElementById("company");
     if(hp && hp.value){
       showSuccess();
@@ -536,15 +568,119 @@
       return;
     }
 
-    // Backend abhi nahi juda — saaf error
-    if(!SCRIPT_URL || SCRIPT_URL === "PASTE_URL_HERE"){
-      showAlert("err", "Form abhi backend se juda nahi hai. SCRIPT_URL mein apna link paste karo, tabhi entry save hogi. Aapki details abhi kahin nahi bheji gayi.");
+    // Backend not linked yet — allow on-page setup (no file edit needed).
+    // 1) Paste Apps Script URL and Save, 2) or test in demo mode.
+    var effectiveUrl = getEffectiveScriptUrl();
+    if(!effectiveUrl){
+      showSetupBox();
       return;
     }
 
-    // Backend (Code.gs) spec wale naam + purane naam dono bhejo taaki mapping na toote.
-    // Honeypot bhi bhejo taaki seedha curl se aaya spam backend pakad sake.
-    // consent:true bhejna zaroori hai — bina iske backend consent_required dega.
+    function showSetupBox(){
+      alertBox.className = "show info";
+      alertBox.innerHTML = "";
+      var t = document.createElement("div");
+      t.textContent = "Form abhi backend se juda nahi hai. Neeche apna Web App URL paste karke Save dabao — tabhi entry Sheet me save hogi. Aapki details abhi kahin nahi bheji gayi.";
+      t.style.marginBottom = "10px";
+      alertBox.appendChild(t);
+
+      var row = document.createElement("div");
+      row.style.display = "flex";
+      row.style.gap = "8px";
+      row.style.flexWrap = "wrap";
+
+      var input = document.createElement("input");
+      input.type = "text";
+      input.placeholder = "https://script.google.com/macros/s/.../exec";
+      input.setAttribute("aria-label", "Apps Script Web App URL");
+      input.style.flex = "1";
+      input.style.minWidth = "200px";
+      input.style.font = "inherit";
+      input.style.padding = "10px 11px";
+      input.style.border = "2px solid var(--navy)";
+      input.style.borderRadius = "10px";
+      try{
+        var existing = localStorage.getItem(SCRIPT_URL_KEY) || "";
+        if(existing && existing !== "PASTE_URL_HERE") input.value = existing;
+      }catch(e){}
+
+      var saveBtn = document.createElement("button");
+      saveBtn.type = "button";
+      saveBtn.textContent = "URL Save karo";
+      saveBtn.style.font = "inherit";
+      saveBtn.style.fontWeight = "700";
+      saveBtn.style.padding = "10px 14px";
+      saveBtn.style.borderRadius = "10px";
+      saveBtn.style.border = "2px solid var(--navy)";
+      saveBtn.style.background = "var(--yellow)";
+      saveBtn.style.cursor = "pointer";
+      saveBtn.onclick = function(){
+        var v = input.value.trim();
+        if(!v || v === "PASTE_URL_HERE" || v.indexOf("https://") !== 0){
+          showAlert("err", "Sahi Web App URL paste karo — https://script.google.com/macros/s/.../exec jaisa. Deploy me Execute as: Me, Who has access: Anyone rakho.");
+          return;
+        }
+        if(saveScriptUrl(v)){
+          showAlert("info", "URL save ho gaya! Ab dobara Submit dabao — entry Sheet me jayegi.");
+        } else {
+          showAlert("err", "Browser me save nahi hua. index.html me const SCRIPT_URL me ye URL paste karke file save karo, phir reload karke submit karo.");
+        }
+      };
+
+      var demoBtn = document.createElement("button");
+      demoBtn.type = "button";
+      demoBtn.textContent = "Bina backend ke test karo (demo)";
+      demoBtn.style.font = "inherit";
+      demoBtn.style.padding = "10px 14px";
+      demoBtn.style.borderRadius = "10px";
+      demoBtn.style.border = "2px dashed var(--navy)";
+      demoBtn.style.background = "#fff";
+      demoBtn.style.cursor = "pointer";
+      demoBtn.onclick = function(){
+        saveDemoEntry();
+      };
+
+      row.appendChild(input);
+      row.appendChild(saveBtn);
+      row.appendChild(demoBtn);
+      alertBox.appendChild(row);
+
+      var note = document.createElement("div");
+      note.style.marginTop = "8px";
+      note.style.fontWeight = "400";
+      note.style.fontSize = ".82rem";
+      note.textContent = "Demo me data sirf is browser me (localStorage) save hota hai — Sheet me nahi jata. Asli entry ke liye URL Save karna zaroori hai.";
+      alertBox.appendChild(note);
+      input.focus();
+    }
+
+    function saveDemoEntry(){
+      try{
+        var whatVal2 = document.getElementById("what").value;
+        var entry = {
+          name: document.getElementById("naam").value.trim(),
+          phone: r.cleanedPhone,
+          city: document.getElementById("city").value.trim(),
+          type: whatVal2,
+          when: document.getElementById("when").value,
+          note: document.getElementById("note").value.trim(),
+          source: SOURCE,
+          createdAt: new Date().toISOString(),
+          demo: true
+        };
+        var key = "apnashift_waitlist_demo";
+        var arr = [];
+        try{ arr = JSON.parse(localStorage.getItem(key) || "[]"); }catch(e){ arr = []; }
+        if(!Array.isArray(arr)) arr = [];
+        arr.push(entry);
+        localStorage.setItem(key, JSON.stringify(arr));
+      }catch(e){}
+      showSuccess();
+    }
+
+    // Send both backend (Code.gs) spec names + old names to keep mapping intact.
+    // Also send honeypot so backend can catch direct curl spam.
+    // consent:true is required — without it backend returns consent_required.
     var whatVal = document.getElementById("what").value;
     var naamVal2 = document.getElementById("naam").value.trim();
     var data = {
@@ -567,18 +703,18 @@
     submitBtn.disabled = true;
     submitBtn.textContent = "Bhej rahe hain…";
 
-    // NOTE: Apps Script ContentService CORS headers (Access-Control-Allow-Origin)
-    // nahi bhejta, isliye mode:"cors" me jawab padhna possible nahi hai.
-    // Isliye no-cors + text/plain par rehte hain (preflight nahi hota).
-    // Backend ke specific errors (invalid_type/when/source, consent_required)
-    // curl se dikhenge; form par success Sheet me row ke baad dikhta hai.
-    fetch(SCRIPT_URL, {
+    // NOTE: Apps Script ContentService sends no CORS headers (Access-Control-Allow-Origin),
+    // so reading the response in mode:"cors" is not possible.
+    // So use no-cors + text/plain (no preflight).
+    // Backend-specific errors (invalid_type/when/source, consent_required)
+    // show via curl; form success follows Sheet row insert.
+    fetch(effectiveUrl, {
       method: "POST",
       mode: "no-cors",
       headers: { "Content-Type": "text/plain" },
       body: JSON.stringify(data)
     }).then(function(){
-      // no-cors mein jawab padh nahi sakte, isliye bheja gaya maan lo
+      // Cannot read response in no-cors, so assume sent
       showSuccess();
     }).catch(function(){
       showAlert("err", "Kuch gadbad ho gayi. Net check karke dobara Try karo.");
@@ -592,7 +728,7 @@
     var formCard = document.querySelector(".form-card");
     if(formCard) formCard.style.display = "none";
     successBox.classList.add("show");
-    // Sharer ka apna ?src= leak na ho, isliye canonical link + ?src=share.
+    // Avoid leaking sharer's own ?src=, use canonical link + ?src=share.
     var shareUrl = window.location.origin + window.location.pathname + "?src=share";
     var text = "Maine ApnaShift waitlist join ki! Ghar shifting ke liye pickup / mini-truck jaldi aa raha hai. Tum bhi join karo: " + shareUrl;
     waShare.href = "https://wa.me/?text=" + encodeURIComponent(text);

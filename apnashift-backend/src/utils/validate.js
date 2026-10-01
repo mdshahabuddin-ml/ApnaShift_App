@@ -1,5 +1,5 @@
-// Param validation. Galat UUID par 404 (500 nahi — pg error bahar nahi jana chahiye,
-// aur doosre ke data wali convention bhi 404 hai).
+// Param validation. Invalid UUID returns 404 (not 500 — pg errors stay hidden,
+// and other users' data also uses the 404 convention).
 import { z } from 'zod';
 
 const uuidSchema = z.string().uuid();

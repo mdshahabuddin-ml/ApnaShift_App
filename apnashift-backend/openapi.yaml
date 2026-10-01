@@ -526,3 +526,64 @@ paths:
                     type: object
                     properties:
                       verified_active: { type: integer }
+  /api/enterprise/inquiries:
+    post:
+      summary: Submit enterprise inquiry (public, rate limited)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [full_name, email, phone, company_name]
+              properties:
+                full_name: { type: string, example: Priya Sharma }
+                email: { type: string, example: you@company.com }
+                phone: { type: string, example: '9876543210' }
+                company_name: { type: string, example: Sharma Retail Pvt Ltd }
+                website: { type: string }
+                designation: { type: string }
+                business_type: { type: string, enum: [ecommerce, retail, manufacturing, construction, hospitality, healthcare, education, corporate, other] }
+                company_size: { type: string, enum: [1-10, 11-50, 51-200, 201-500, 500+] }
+                cities: { type: string }
+                operating_state: { type: string }
+                locations_count: { type: integer }
+                services_required: { type: array, items: { type: string } }
+                vehicle_types: { type: array, items: { type: string } }
+                fleet_size: { type: string }
+                monthly_trips: { type: string }
+                start_date: { type: string, format: date }
+                service_frequency: { type: string, enum: [daily, weekly, monthly, on_demand] }
+                budget_range: { type: string }
+                requirements: { type: string }
+      responses:
+        '201': { description: Created, status NEW }
+        '409': { description: duplicate_inquiry (same email + company, 30 days) }
+    get:
+      summary: List enterprise inquiries (admin, paginated, status/search filters)
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [NEW, CONTACTED, IN_DISCUSSION, CONVERTED, CLOSED] } }
+        - { name: search, in: query, schema: { type: string } }
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: limit, in: query, schema: { type: integer, default: 20, maximum: 100 } }
+      responses:
+        '200': { description: OK }
+        '403': { description: forbidden (non-admin) }
+  /api/enterprise/inquiries/{id}/status:
+    patch:
+      summary: Update inquiry status (admin)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [NEW, CONTACTED, IN_DISCUSSION, CONVERTED, CLOSED] }
+      responses:
+        '200': { description: Updated }
+        '404': { description: not_found }

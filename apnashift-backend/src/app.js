@@ -1,7 +1,9 @@
-// Express app factory (server.js listen karta hai, tests import karte hain).
+// Express app factory (server.js listens, tests import it).
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { rateLimit } from 'express-rate-limit';
 import { config } from './config.js';
 import { healthRoutes } from './routes/health.js';
@@ -11,15 +13,16 @@ import { adminRoutes } from './routes/admin.js';
 import { bookingsRoutes } from './routes/bookings.js';
 import { driverRoutes as driverBookingRoutes } from './routes/driver.js';
 import { driversPublicRoutes } from './routes/driversPublic.js';
+import { enterpriseRoutes } from './routes/enterprise.js';
 
 export function createApp() {
   const app = express();
 
-  // Framework batane wala header band (info leak).
+  // Disable framework header (info leak).
   app.disable('x-powered-by');
 
-  // Proxy ke peeche ho to TRUST_PROXY=1 (rate limit sahi IP dekhe).
-  // Default off — galat trust se attacker IP spoof karke limit bypass kar sakta hai.
+  // Behind a proxy, set TRUST_PROXY=1 (rate limiter sees correct IP).
+  // Default off — wrong trust lets attackers spoof IP and bypass limits.
   if (config.trustProxy !== '') {
     app.set('trust proxy', Number(config.trustProxy) || config.trustProxy);
   }
@@ -32,7 +35,17 @@ export function createApp() {
   );
   app.use(express.json({ limit: '100kb' }));
 
-  // Basic abuse protection sab /api routes par.
+  // Owner admin page (public/admin.html -> /admin.html). API routes
+  // will not match first since /api prefix differs — static is safe.
+  const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
+  app.use(express.static(publicDir));
+
+  // Clean URL: /enterprise -> public/enterprise.html (static file pattern).
+  app.get('/enterprise', (req, res) => {
+    res.sendFile(path.join(publicDir, 'enterprise.html'));
+  });
+
+  // Basic abuse protection for all /api routes.
   app.use(
     '/api',
     rateLimit({
@@ -50,16 +63,17 @@ export function createApp() {
   app.use('/api/bookings', bookingsRoutes);
   app.use('/api/driver', driverBookingRoutes);
   app.use('/api/drivers', driversPublicRoutes);
+  app.use('/api/enterprise', enterpriseRoutes);
 
   // 404 — unknown routes.
   app.use((req, res) => {
     res.status(404).json({ ok: false, error: 'not_found' });
   });
 
-  // Central error handler. Stack sirf development me; secrets kabhi nahi.
+  // Central error handler. Stack traces in development only; never secrets.
   // eslint-disable-next-line no-unused-vars
   app.use((err, req, res, next) => {
-    // Toota JSON body: parser ka message bahar nahi (generic code).
+    // Malformed JSON body: do not expose parser message (generic code).
     if (err.type === 'entity.parse.failed') {
       return res.status(400).json({ ok: false, error: 'invalid_json' });
     }
@@ -68,7 +82,7 @@ export function createApp() {
     res.status(status).json({
       ok: false,
       error: status === 500 ? 'server_error' : err.message,
-      // Zod details me sirf field+message hote hain (values nahi) — safe hai.
+      // Zod details hold only field+message (no values) — safe.
       ...(err.details ? { details: err.details } : {}),
       ...(config.env === 'development' && status === 500 ? { stack: err.stack } : {}),
     });

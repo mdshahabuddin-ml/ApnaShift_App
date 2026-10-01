@@ -1,6 +1,6 @@
 // User bookings: estimate (public) + create/list/get/cancel (role: user).
-// Price hamesha server ginata hai — body me price bhejo to ignore hoga
-// (create schema me price field hai hi nahi). Doosre user ki booking par 404.
+// Server always computes price — price in body is ignored
+// (create schema has no price field). Other users' bookings return 404.
 // POST / par optional Idempotency-Key (Option A: idempotency_keys table, per-user scope).
 import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
@@ -35,7 +35,7 @@ const BOOKING_COLS = `id, user_id, driver_id, pickup_address, pickup_lat, pickup
   drop_address, drop_lat, drop_lng, vehicle_type, helper, item_description,
   scheduled_at, delivered_at, distance_km, price_rs, status, created_at, updated_at`;
 
-// DB row -> API shape (vehicle snake_case, price number me).
+// DB row -> API shape (vehicle snake_case, price as number).
 export function toPublicBooking(row) {
   return {
     id: row.id,
@@ -94,9 +94,9 @@ bookingsRoutes.post('/estimate-price', estimateLimiter, async (req, res, next) =
   }
 });
 
-// POST /api/bookings (user) — price server ginata hai, client ka nahi.
-// Optional Idempotency-Key: pehli success replay hoti hai (201 -> 200, same booking).
-// Same key + alag payload par 422 idempotency_conflict. Scope per-user hai.
+// POST /api/bookings (user) — server computes price, not the client.
+// Optional Idempotency-Key: first success replays (201 -> 200, same booking).
+// Same key + different payload returns 422 idempotency_conflict. Per-user scope.
 bookingsRoutes.post('/', requireAuth, requireRole('user'), writeLimiter, async (req, res, next) => {
   try {
     const { pickup, drop, vehicle_type, helper_needed, item_description, scheduled_time } =
@@ -133,7 +133,7 @@ bookingsRoutes.post('/', requireAuth, requireRole('user'), writeLimiter, async (
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'pending')
        RETURNING ${BOOKING_COLS}`;
 
-    // Bina key: seedha insert (purana flow).
+    // Without key: direct insert (legacy flow).
     if (!idempotencyKey) {
       const inserted = await query(insertSql, bookingParams);
       return res.status(201).json({ ok: true, booking: toPublicBooking(inserted.rows[0]) });
@@ -148,7 +148,7 @@ bookingsRoutes.post('/', requireAuth, requireRole('user'), writeLimiter, async (
       scheduled_time,
     });
 
-    // Fast path: key pehle dekhi hai to wahi booking wapas (payload same hona chahiye).
+    // Fast path: known key returns the same booking (payload must match).
     const seen = await query(
       'SELECT booking_id, request_hash FROM idempotency_keys WHERE user_id = $1 AND key = $2',
       [req.user.id, idempotencyKey],
@@ -166,7 +166,7 @@ bookingsRoutes.post('/', requireAuth, requireRole('user'), writeLimiter, async (
       return res.status(200).json({ ok: true, booking: toPublicBooking(found.rows[0]) });
     }
 
-    // Nayi key: booking + key ek transaction me (race me ek jeetega).
+    // New key: booking + key in one transaction (one winner on race).
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
@@ -177,7 +177,7 @@ bookingsRoutes.post('/', requireAuth, requireRole('user'), writeLimiter, async (
           [req.user.id, idempotencyKey, inserted.rows[0].id, requestHash],
         );
       } catch (keyErr) {
-        // Race: do request saath aayi, doosri key pehle commit ho gayi.
+        // Race: concurrent requests, second key committed first.
         if (keyErr.code === '23505') {
           await client.query('ROLLBACK');
           const winner = await query(
@@ -201,7 +201,7 @@ bookingsRoutes.post('/', requireAuth, requireRole('user'), writeLimiter, async (
       try {
         await client.query('ROLLBACK');
       } catch {
-        // ignore — original error hi bahar jayegi.
+        // ignore — original error propagates.
       }
       throw err;
     } finally {
@@ -212,7 +212,7 @@ bookingsRoutes.post('/', requireAuth, requireRole('user'), writeLimiter, async (
   }
 });
 
-// GET /api/bookings (user, apni — paginated)
+// GET /api/bookings (user, own — paginated)
 bookingsRoutes.get('/', requireAuth, requireRole('user'), async (req, res, next) => {
   try {
     const { page, limit } = parseQuery(paginationSchema, req.query);
@@ -238,7 +238,7 @@ bookingsRoutes.get('/', requireAuth, requireRole('user'), async (req, res, next)
   }
 });
 
-// GET /api/bookings/:id (user, apni — doosre ki ho to 404, 403 nahi)
+// GET /api/bookings/:id (user, own — others return 404, not 403)
 bookingsRoutes.get('/:id', requireAuth, requireRole('user'), validateIdParam, async (req, res, next) => {
   try {
     const found = await query(`SELECT ${BOOKING_COLS} FROM bookings WHERE id = $1 AND user_id = $2`, [
@@ -254,7 +254,7 @@ bookingsRoutes.get('/:id', requireAuth, requireRole('user'), validateIdParam, as
   }
 });
 
-// PATCH /api/bookings/:id/cancel (sirf pending/accepted me)
+// PATCH /api/bookings/:id/cancel (pending/accepted only)
 bookingsRoutes.patch('/:id/cancel', requireAuth, requireRole('user'), validateIdParam, async (req, res, next) => {
   try {
     const found = await query('SELECT id, status FROM bookings WHERE id = $1 AND user_id = $2', [
@@ -274,7 +274,7 @@ bookingsRoutes.patch('/:id/cancel', requireAuth, requireRole('user'), validateId
       [req.params.id, req.user.id],
     );
     if (updated.rowCount === 0) {
-      // Race: beech me driver ne utha liya.
+      // Race: driver accepted in between.
       return res.status(409).json({ ok: false, error: 'invalid_transition' });
     }
     res.json({ ok: true, booking: toPublicBooking(updated.rows[0]) });
@@ -283,7 +283,7 @@ bookingsRoutes.patch('/:id/cancel', requireAuth, requireRole('user'), validateId
   }
 });
 
-// POST /api/bookings/:id/rating (user, apni delivered booking, sirf ek baar)
+// POST /api/bookings/:id/rating (user, own delivered booking, once only)
 bookingsRoutes.post('/:id/rating', requireAuth, requireRole('user'), validateIdParam, writeLimiter, async (req, res, next) => {
   try {
     const { stars, comment } = parseBody(ratingSchema, req.body);
@@ -317,7 +317,7 @@ bookingsRoutes.post('/:id/rating', requireAuth, requireRole('user'), validateIdP
         [booking.id, req.user.id, booking.driver_id, stars, comment ? comment : null],
       );
     } catch (err) {
-      // Race me do request saath aayein to unique violation -> same 409.
+      // Race on concurrent requests: unique violation -> same 409.
       if (err.code === '23505') {
         return res.status(409).json({ ok: false, error: 'already_rated' });
       }

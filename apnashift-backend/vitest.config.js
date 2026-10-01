@@ -4,10 +4,10 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['tests/**/*.test.js'],
-    // Test env (JWT secret, limiter off, test DB) — test files ke import se pehle.
+    // Test env (JWT secret, limiter off, test DB) — before test file imports.
     setupFiles: ['tests/setup.js'],
-    // DB wale suites ek hi test DB par hain (TRUNCATE karte hain) —
-    // files parallel chali to ek doosre ka data udaa dengi. Sequential chalao.
+    // DB suites share one test DB (they TRUNCATE) —
+    // parallel files would wipe each other's data. Run sequentially.
     pool: 'forks',
     poolOptions: { forks: { singleFork: true } },
   },

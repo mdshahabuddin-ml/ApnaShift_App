@@ -1,9 +1,9 @@
--- Migration 008: driver total_trips bookings delivered par sync.
--- Pehle total_trips sirf ratings-trigger (003) se update hota tha,
--- isliye bina rating ke delivered bookings ka count stale rehta tha.
--- Ye trigger bookings ke driver_id/status change par total_trips recount karta hai.
--- avg_rating/needs_review abhi bhi sirf ratings-trigger ke paas hain.
--- Chalao: npm run db:migrate (migrations folder order me chalta hai).
+-- Migration 008: sync driver total_trips on delivered bookings.
+-- Previously total_trips updated only via ratings trigger (003),
+-- so delivered bookings without ratings left the count stale.
+-- This trigger recounts total_trips on bookings driver_id/status changes.
+-- avg_rating/needs_review remain with the ratings trigger only.
+-- Run: npm run db:migrate (runs migrations folder in order).
 
 CREATE OR REPLACE FUNCTION sync_driver_trips()
 RETURNS TRIGGER AS $$
@@ -29,7 +29,7 @@ BEGIN
     END IF;
     RETURN NEW;
   ELSE
-    -- UPDATE: driver ya status badla tabhi recount (faltu writes nahi).
+    -- UPDATE: recount only when driver or status changes (avoids extra writes).
     IF NEW.driver_id IS DISTINCT FROM OLD.driver_id
       OR NEW.status IS DISTINCT FROM OLD.status THEN
       IF NEW.driver_id IS NOT NULL THEN
@@ -55,6 +55,6 @@ CREATE TRIGGER trg_bookings_trips
   FOR EACH ROW
   EXECUTE FUNCTION sync_driver_trips();
 
--- Backfill: pehle se delivered bookings ka count lagao (bina rating wale samet).
+-- Backfill: apply counts for existing delivered bookings (including unrated).
 UPDATE drivers d
 SET total_trips = (SELECT COUNT(*) FROM bookings WHERE driver_id = d.id AND status = 'delivered');

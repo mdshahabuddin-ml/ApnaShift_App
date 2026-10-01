@@ -1,6 +1,6 @@
-// Ratings tests (real Postgres chahiye).
-// Chalao: TEST_DATABASE_URL=postgres://USER:PASS@localhost:5432/apnashift_test npx vitest run
-// Set nahi hai to skip.
+// Ratings tests (requires real Postgres).
+// Run: TEST_DATABASE_URL=postgres://USER:PASS@localhost:5432/apnashift_test npx vitest run
+// Skips if not set.
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import request from 'supertest';
 import bcrypt from 'bcrypt';
@@ -46,7 +46,8 @@ async function makeDriver(phone) {
     phone,
     password: 'password123',
     vehicle_type: 'mini_truck',
-    vehicle_number: 'MP09AB1234',
+    // Each driver uses a distinct vehicle (register API blocks duplicate vehicles).
+    vehicle_number: `MP${phone.slice(-8)}`,
   });
   expect(res.status).toBe(201);
   await client.query('UPDATE drivers SET is_verified = TRUE WHERE phone = $1', [phone]);
@@ -173,7 +174,7 @@ describeDb('ratings (DB)', () => {
     expect(list.status).toBe(200);
     expect(list.body.drivers.map((x) => x.id)).toContain(d.user.id);
 
-    // Driver abhi bhi login kar sakta hai — ban nahi hua.
+    // Driver can still log in — not banned.
     const login = await request(app)
       .post('/api/auth/login')
       .send({ phone: d.user.phone, password: 'password123' });
@@ -211,15 +212,15 @@ describeDb('ratings (DB)', () => {
     const booking = await makeBooking(a.token);
     await deliverBooking(d.token, booking.id);
 
-    // Doosre user ki booking.
+    // Another user's booking.
     expect((await rate(b.token, booking.id, 5)).status).toBe(404);
 
-    // Bina token.
+    // Without token.
     expect((await request(app).post(`/api/bookings/${booking.id}/rating`).send({ stars: 5 })).status).toBe(
       401,
     );
 
-    // Driver role user route par nahi.
+    // Driver role cannot access user route.
     expect(
       (
         await request(app)
@@ -229,7 +230,7 @@ describeDb('ratings (DB)', () => {
       ).status,
     ).toBe(403);
 
-    // Anjaan driver.
+    // Unknown driver.
     expect((await request(app).get('/api/drivers/00000000-0000-0000-0000-000000000000/ratings')).status).toBe(
       404,
     );

@@ -1,6 +1,6 @@
-// Login/register par sakht rate limit: 10 req / 15 min / IP.
-// (Global /api limiter alag hai — ye brute-force rokne ke liye hai.)
-// Tests me tang na kare, isliye env se badal sakta hai (AUTH_RATE_LIMIT_MAX).
+// Strict rate limit for login/register: 10 req / 15 min / IP.
+// (Separate from global /api limiter — this blocks brute force.)
+// Configurable via env (AUTH_RATE_LIMIT_MAX) to avoid test friction.
 import { rateLimit } from 'express-rate-limit';
 import { config } from '../config.js';
 

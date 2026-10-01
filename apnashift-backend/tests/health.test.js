@@ -1,4 +1,4 @@
-// Health route tests (DB ki zaroorat nahi — /api/health DB ko chhoota nahi).
+// Health route tests (no DB needed — /api/health does not touch DB).
 import { describe, it, expect } from 'vitest';
 import request from 'supertest';
 import { app } from '../src/app.js';

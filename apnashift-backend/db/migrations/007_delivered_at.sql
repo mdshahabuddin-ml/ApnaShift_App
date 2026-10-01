@@ -1,18 +1,18 @@
--- Migration 007: bookings.delivered_at (kab deliver hua).
--- Note: file db/migrations/007_delivered_at.sql hai — 006 idempotency le chuka hai,
--- runner db/migrations/*.sql ko order me chalata hai. Chalao: npm run db:migrate
+-- Migration 007: bookings.delivered_at (delivery timestamp).
+-- Note: file is db/migrations/007_delivered_at.sql — 006 already covers idempotency,
+-- runner executes db/migrations/*.sql in order. Run: npm run db:migrate
 --
--- delivered_at sirf status='delivered' par set hota hai (driver status route dekho):
---   in_transit -> delivered par now(), baaki transitions par untouched (NULL rehta hai).
--- Backfill: purani delivered rows me updated_at (delivery ke waqt ka trigger time)
---   sabse kareebi andaza hai, nahi to created_at.
--- CHECK invariant: delivered <=> delivered_at NOT NULL (app + DB dono par pakka).
--- admin stats aur driver earnings completed/revenue ke liye delivered_at use karte hain
--- (created_at sirf "kitni bookings bani" ginti ke liye).
+-- delivered_at is set only when status='delivered' (see driver status route):
+--   in_transit -> delivered sets now(), other transitions untouched (stays NULL).
+-- Backfill: for old delivered rows, updated_at (trigger time at delivery)
+--   is the closest estimate, else created_at.
+-- CHECK invariant: delivered <=> delivered_at NOT NULL (enforced in app + DB).
+-- admin stats and driver earnings use delivered_at for completed/revenue
+-- (created_at only counts "bookings created").
 
 ALTER TABLE bookings ADD COLUMN IF NOT EXISTS delivered_at TIMESTAMPTZ;
 
--- Purani delivered rows (migrate se pehle ki): timestamp lagao.
+-- Old delivered rows (pre-migration): backfill timestamps.
 UPDATE bookings
 SET delivered_at = COALESCE(updated_at, created_at)
 WHERE status = 'delivered' AND delivered_at IS NULL;
@@ -23,7 +23,7 @@ ALTER TABLE bookings ADD CONSTRAINT bookings_delivered_at_check CHECK (
   OR (status <> 'delivered' AND delivered_at IS NULL)
 );
 
--- earnings (driver_id + delivered_at range) aur stats (delivered_at range) ke liye.
+-- For earnings (driver_id + delivered_at range) and stats (delivered_at range).
 CREATE INDEX IF NOT EXISTS idx_bookings_driver_delivered
   ON bookings (driver_id, delivered_at DESC);
 CREATE INDEX IF NOT EXISTS idx_bookings_delivered_at

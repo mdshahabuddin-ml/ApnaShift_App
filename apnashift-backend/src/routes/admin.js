@@ -1,5 +1,5 @@
-// Admin login (admins table). Register endpoint nahi hai —
-// admin staff manual insert se banta hai (password_hash bcrypt se).
+// Admin login (admins table). No register endpoint —
+// admin staff is created via manual insert (bcrypt password_hash).
 import { Router } from 'express';
 import bcrypt from 'bcrypt';
 import { query } from '../db.js';
@@ -34,7 +34,7 @@ adminRoutes.post('/login', authLimiter, async (req, res, next) => {
       phone,
     ]);
     if (found.rowCount === 0) {
-      // User login jaisa generic jawab (kaunsi table, ye bahar nahi batana).
+      // Generic response like user login (never reveal which table).
       return res.status(401).json({ ok: false, error: GENERIC_LOGIN_ERROR });
     }
     const match = await bcrypt.compare(password, found.rows[0].password_hash);
@@ -51,8 +51,8 @@ adminRoutes.post('/login', authLimiter, async (req, res, next) => {
   }
 });
 
-// GET /api/admin/drivers/flagged (admin) — needs_review wale drivers.
-// Auto-ban kahin nahi hota; admin yahan dekhkar manual action leta hai.
+// GET /api/admin/drivers/flagged (admin) — drivers needing review.
+// No auto-ban anywhere; admin reviews here and acts manually.
 adminRoutes.get('/drivers/flagged', requireAuth, requireRole('admin'), async (req, res, next) => {
   try {
     const rows = await query(
@@ -79,7 +79,7 @@ adminRoutes.get('/drivers/flagged', requireAuth, requireRole('admin'), async (re
   }
 });
 
-// Neeche ke sab routes admin-only (login public rehta hai).
+// All routes below are admin-only (login stays public).
 adminRoutes.use(requireAuth, requireRole('admin'));
 
 function adminDriver(row) {
@@ -95,11 +95,49 @@ function adminDriver(row) {
     avg_rating: row.avg_rating === null ? 0 : Number(row.avg_rating),
     total_trips: Number(row.total_trips),
     needs_review: row.needs_review,
+    // Driver Partner Registration (009) — safe profile fields for review.
+    // Never password_hash; bank details are never collected.
+    email: row.email ?? null,
+    dob: row.dob ?? null,
+    gender: row.gender ?? null,
+    city: row.city ?? null,
+    state: row.state ?? null,
+    address: row.address ?? null,
+    vehicle_make: row.vehicle_make ?? null,
+    vehicle_model: row.vehicle_model ?? null,
+    vehicle_year: row.vehicle_year === null ? null : Number(row.vehicle_year),
+    capacity_kg: row.capacity_kg === null ? null : Number(row.capacity_kg),
+    fuel_type: row.fuel_type ?? null,
+    ownership: row.ownership ?? null,
+    license_number: row.license_number ?? null,
+    license_type: row.license_type ?? null,
+    license_expiry: row.license_expiry ?? null,
+    license_state: row.license_state ?? null,
+    rc_number: row.rc_number ?? null,
+    insurance_expiry: row.insurance_expiry ?? null,
+    pollution_expiry: row.pollution_expiry ?? null,
+    permit_number: row.permit_number ?? null,
+    service_city: row.service_city ?? null,
+    service_state: row.service_state ?? null,
+    service_areas: row.service_areas ?? null,
+    service_radius_km: row.service_radius_km === null ? null : Number(row.service_radius_km),
+    emergency_name: row.emergency_name ?? null,
+    emergency_relation: row.emergency_relation ?? null,
+    emergency_phone: row.emergency_phone ?? null,
+    application_ref: row.application_ref ?? null,
+    consent_at: row.consent_at ?? null,
   };
 }
 
 const ADMIN_DRIVER_COLS = `id, name, phone, vehicle_type, vehicle_number,
-  is_verified, is_active, rejection_reason, avg_rating, total_trips, needs_review`;
+  is_verified, is_active, rejection_reason, avg_rating, total_trips, needs_review,
+  email, dob, gender, city, state, address,
+  vehicle_make, vehicle_model, vehicle_year, capacity_kg, fuel_type, ownership,
+  license_number, license_type, license_expiry, license_state,
+  rc_number, insurance_expiry, pollution_expiry, permit_number,
+  service_city, service_state, service_areas, service_radius_km,
+  emergency_name, emergency_relation, emergency_phone,
+  application_ref, consent_at`;
 
 // GET /api/admin/drivers?status=pending|verified|review (paginated)
 adminRoutes.get('/drivers', async (req, res, next) => {
@@ -142,7 +180,7 @@ adminRoutes.patch('/drivers/:id/verify', validateIdParam, async (req, res, next)
     if (updated.rowCount === 0) {
       return res.status(404).json({ ok: false, error: 'not_found' });
     }
-    // Best-effort: audit fail ho to bhi verify success rahe.
+    // Best-effort: verify succeeds even if audit fails.
     await logAuditSafe(req.user.id, 'driver.verify', 'driver', req.params.id, {});
     res.json({ ok: true, driver: adminDriver(updated.rows[0]) });
   } catch (err) {
@@ -162,7 +200,7 @@ adminRoutes.patch('/drivers/:id/reject', validateIdParam, async (req, res, next)
     if (updated.rowCount === 0) {
       return res.status(404).json({ ok: false, error: 'not_found' });
     }
-    // Best-effort: audit fail ho to bhi reject success rahe.
+    // Best-effort: reject succeeds even if audit fails.
     await logAuditSafe(req.user.id, 'driver.reject', 'driver', req.params.id, { reason });
     res.json({ ok: true, driver: adminDriver(updated.rows[0]) });
   } catch (err) {
@@ -170,7 +208,7 @@ adminRoutes.patch('/drivers/:id/reject', validateIdParam, async (req, res, next)
   }
 });
 
-// PATCH /api/admin/drivers/:id/deactivate (is_active FALSE — login rahega par bookings nahi)
+// PATCH /api/admin/drivers/:id/deactivate (is_active FALSE — login stays, no bookings)
 adminRoutes.patch('/drivers/:id/deactivate', validateIdParam, async (req, res, next) => {
   try {
     const updated = await query(
@@ -188,7 +226,7 @@ adminRoutes.patch('/drivers/:id/deactivate', validateIdParam, async (req, res, n
   }
 });
 
-// PATCH /api/admin/drivers/:id/reactivate (is_active TRUE wapas)
+// PATCH /api/admin/drivers/:id/reactivate (restores is_active TRUE)
 adminRoutes.patch('/drivers/:id/reactivate', validateIdParam, async (req, res, next) => {
   try {
     const updated = await query(
@@ -212,7 +250,7 @@ adminRoutes.get('/bookings', async (req, res, next) => {
     const { status, from, to, city, page, limit } = parseQuery(adminBookingsQuerySchema, req.query);
     const offset = (page - 1) * limit;
 
-    // Values hamesha params me — string jodkar SQL nahi.
+    // Values always via params — never string-concatenated SQL.
     const conds = [];
     const params = [];
     let i = 1;
@@ -229,8 +267,8 @@ adminRoutes.get('/bookings', async (req, res, next) => {
       params.push(to);
     }
     if (city) {
-      // City ke liye column nahi hai — address me ILIKE search.
-      // % _ \ escape taaki user input wildcard na bane.
+      // No city column — ILIKE search on address.
+      // Escape % _ \ so user input cannot act as wildcards.
       const escaped = city.replace(/[%_\\]/g, (c) => `\\${c}`);
       conds.push(`(b.pickup_address ILIKE $${i} ESCAPE '\\' OR b.drop_address ILIKE $${i} ESCAPE '\\')`);
       params.push(`%${escaped}%`);
@@ -307,7 +345,7 @@ adminRoutes.patch('/bookings/:id/assign', validateIdParam, async (req, res, next
     if (updated.rowCount === 0) {
       return res.status(409).json({ ok: false, error: 'invalid_transition' });
     }
-    // Best-effort: audit fail ho to bhi assign success rahe.
+    // Best-effort: assign succeeds even if audit fails.
     await logAuditSafe(req.user.id, 'booking.assign', 'booking', req.params.id, { driver_id });
     res.json({ ok: true, booking: toPublicBooking(updated.rows[0]) });
   } catch (err) {
@@ -380,7 +418,7 @@ adminRoutes.put('/pricing-rules', async (req, res, next) => {
           req.user.id,
         ],
       );
-      // Audit isi transaction me: fail ho to rate+history bhi rollback.
+      // Audit in same transaction: failure rolls back rate+history too.
       const r = updated.rows[0];
       await logAuditTx(client, req.user.id, 'pricing.update', 'pricing_rule', r.vehicle_type, {
         old: { base_rs: Number(old.base_rs), per_km_rs: Number(old.per_km_rs), helper_rs: Number(old.helper_rs) },
@@ -402,7 +440,7 @@ adminRoutes.put('/pricing-rules', async (req, res, next) => {
       try {
         await client.query('ROLLBACK');
       } catch {
-        // ignore — original error hi bahar jayegi.
+        // ignore — original error propagates.
       }
       throw err;
     } finally {
@@ -456,8 +494,8 @@ adminRoutes.get('/pricing-rules/history', async (req, res, next) => {
 });
 
 // GET /api/admin/stats
-// bookings/cancelled ginti created_at se (kab bani), completed/revenue delivered_at
-// se (kab deliver hui) — updated_at har edit par badalta hai, isliye sahi nahi.
+// bookings/cancelled count by created_at (when created), completed/revenue by
+// delivered_at (when delivered) — updated_at changes on every edit, so unreliable.
 adminRoutes.get('/stats', async (req, res, next) => {
   try {
     const result = await query(

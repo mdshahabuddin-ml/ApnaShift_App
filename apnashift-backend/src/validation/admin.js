@@ -1,4 +1,4 @@
-// Admin endpoints ke zod schemas.
+// Zod schemas for admin endpoints.
 import { z } from 'zod';
 import { BOOKING_STATUS } from '../services/bookingStatus.js';
 import { parseQuery } from './booking.js';

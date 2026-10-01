@@ -1,7 +1,7 @@
-// Auth integration tests (real Postgres chahiye).
-// Chalao: TEST_DATABASE_URL=postgres://USER:PASS@localhost:5432/apnashift_test npx vitest run
-// TEST_DATABASE_URL set nahi hai to ye suite skip hogi (health tests phir bhi chalenge).
-// Har test me alag phone + har test ke baad TRUNCATE, taaki tests aapas me na takrayein.
+// Auth integration tests (requires real Postgres).
+// Run: TEST_DATABASE_URL=postgres://USER:PASS@localhost:5432/apnashift_test npx vitest run
+// Skips this suite if TEST_DATABASE_URL is not set (health tests still run).
+// Uses a distinct phone per test + TRUNCATE after each test to avoid interference.
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import request from 'supertest';
 import express from 'express';
@@ -20,11 +20,11 @@ const describeDb = HAS_DB ? describe : describe.skip;
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const client = HAS_DB ? new pg.Client({ connectionString: process.env.TEST_DATABASE_URL }) : null;
 
-// Har test ka phone alag (parallel-safe nahi, par sequence me unique).
+// Each test uses a distinct phone (not parallel-safe, but unique in sequence).
 let phoneCounter = 9876000000;
 function nextPhone() {
   phoneCounter += 1;
-  // 98760xxxxx hamesha 6-9 se shuru, 10 digit.
+  // 98760xxxxx always starts with 6-9, 10 digits.
   return String(phoneCounter).slice(0, 10);
 }
 
@@ -190,8 +190,8 @@ describeDb('auth (DB)', () => {
   });
 
   it('wrong role — user token se driver-only route par 403', async () => {
-    // Driver-only route abhi app me nahi (booking API me aayegi) —
-    // isliye middleware ko alag mini-app par test karte hain.
+    // Driver-only route not in the app yet (will come with booking API) —
+    // so the middleware is tested on a separate mini-app.
     const mini = express();
     mini.use(express.json());
     mini.get('/driver-only', requireAuth, requireRole('driver'), (req, res) => {

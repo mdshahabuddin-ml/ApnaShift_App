@@ -2,45 +2,45 @@
  * ApnaShift Waitlist — Google Apps Script backend
  * File: apnashift-waitlist/Code.gs
  *
- * SETUP STEPS (sirf ek baar karna hai):
+ * SETUP STEPS (one-time only):
  *
- * 1. Sheet banana:
- *    - https://sheets.google.com par naya Google Sheet banao.
- *    - Naam rakho: "ApnaShift Waitlist" (kuch bhi chalega).
+ * 1. Create sheet:
+ *    - Create a new Google Sheet at https://sheets.google.com.
+ *    - Name it: "ApnaShift Waitlist" (any name works).
  *
- * 2. Code paste karna:
- *    - Sheet mein: Extensions > Apps Script par click karo.
- *    - Code.gs naam ki file mein is file ka POORA code paste karo, Save dabao.
+ * 2. Paste code:
+ *    - In the sheet: click Extensions > Apps Script.
+ *    - In the file named Code.gs, paste this file's ENTIRE code, press Save.
  *
- * 3. Summary sheet banana (ek baar chalana hai):
- *    - Apps Script editor mein upar function dropdown se "setupSummary" chuno.
- *    - Run dabao, Google se permission maange to Allow karo.
- *    - Wapas Sheet mein dekho: "Waitlist" + "Summary" dono tabs ban jayenge.
+ * 3. Create summary sheet (run once):
+ *    - In the Apps Script editor, select "setupSummary" from the top function dropdown.
+ *    - Press Run; Allow permission if Google asks.
+ *    - Back in the Sheet: both "Waitlist" + "Summary" tabs will be created.
  *
- * 4. Web app deploy karna:
- *    - Apps Script mein: Deploy > New deployment par click karo.
- *    - Type: "Web app" chuno.
- *    - "Execute as:" Me chuno.
- *    - "Who has access:" Anyone chuno.
- *    - Deploy dabao, jo Web App URL mile use copy karo.
- *    - Ye URL apne index.html mein const SCRIPT_URL = "..." mein paste karo.
+ * 4. Deploy web app:
+ *    - In Apps Script: click Deploy > New deployment.
+ *    - Type: choose "Web app".
+ *    - "Execute as:" choose Me.
+ *    - "Who has access:" choose Anyone.
+ *    - Press Deploy, copy the resulting Web App URL.
+ *    - Paste this URL into const SCRIPT_URL = "..." in your index.html.
  *
- * 5. Code badalne par:
- *    - Code edit + Save ke baad: Deploy > Manage deployments > Edit > New version > Deploy.
- *    - (Naya version deploy kiye bina purana code hi chalega — ye bhoolna mat!)
+ * 5. When code changes:
+ *    - After editing + saving code: Deploy > Manage deployments > Edit > New version > Deploy.
+ *    - (Without deploying a new version, old code keeps running — don't forget!)
  *
- * Test: Deploy ke baad URL ko browser mein kholo (doGet chalega).
- * Form POST: index.html se fetch() POST karta hai, jawab {ok:true} aata hai.
+ * Test: After deploy, open the URL in a browser (runs doGet).
+ * Form POST: index.html sends POST via fetch(), response is {ok:true}.
  */
 
 // Sheet + column setting
 var SHEET_NAME = "Waitlist";
 var SUMMARY_SHEET_NAME = "Summary";
-// Columns: Time, Name, Phone, City/Area, Kya shift karna hai, Kab tak, Note, Source
+// Columns: Time, Name, Phone, City/Area, What to shift, By when, Note, Source
 var HEADERS = ["Time", "Name", "Phone", "City/Area", "Kya shift karna hai", "Kab tak", "Note", "Source"];
 
-// index.html ke dropdown options se match karte hain — curl se aaya galat
-// value yahin rokta hai (jawab ok:false + specific error, Sheet me row nahi).
+// Must match index.html dropdown options — invalid curl values stop here
+// (response ok:false + specific error, no Sheet row).
 var ALLOWED_TYPES = [
   "Poora ghar/flat",
   "Sirf furniture",
@@ -54,8 +54,8 @@ var ALLOWED_WHENS = [
   "1-3 mahine mein",
   "Sirf jaankari chahiye"
 ];
-// ?src= codes (links.md wale 7 + direct/share/curl/test). Naya campaign code
-// jodna ho to yahan + links.md dono me jodo, nahi to invalid_source aayega.
+// ?src= codes (7 from links.md + direct/share/curl/test). To add a new campaign code
+// add it here + in links.md, else invalid_source occurs.
 var ALLOWED_SOURCES = [
   "direct",
   "status",
@@ -71,14 +71,14 @@ var ALLOWED_SOURCES = [
 ];
 
 /**
- * Har text ko safe banao:
+ * Make every text safe:
  * - trim, max 300 chars
- * - agar =, +, -, @ se shuru ho to aage ' laga do (formula injection se bachav)
+ * - if it starts with =, +, -, @, prefix with ' (prevents formula injection)
  */
 function safeText(v) {
   var s = String(v === undefined || v === null ? "" : v).trim();
-  // Emoji surakshit kaato: Array.from ek emoji ko 1 ginta hai,
-  // taaki slice beech mein se surrogate pair na tode.
+  // Trim emoji safely: Array.from counts one emoji as 1,
+  // so slice does not split a surrogate pair.
   var chars = Array.from(s);
   if (chars.length > 300) {
     s = chars.slice(0, 300).join("");
@@ -90,7 +90,7 @@ function safeText(v) {
 }
 
 /**
- * Phone saaf karo: non-digits hatao, last 10 digits rakho.
+ * Clean phone: remove non-digits, keep last 10 digits.
  * Example: "+91 98765 43210" -> "9876543210"
  */
 function cleanPhoneNumber(v) {
@@ -102,7 +102,7 @@ function cleanPhoneNumber(v) {
 }
 
 /**
- * "Waitlist" sheet lao, na ho to headers ke saath bana do.
+ * Get "Waitlist" sheet, or create it with headers if missing.
  */
 function getWaitlistSheet() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -114,12 +114,12 @@ function getWaitlistSheet() {
     sh.getRange(1, 1, 1, HEADERS.length).setFontWeight("bold");
     sh.setColumnWidths(1, HEADERS.length, 160);
     sh.getRange("A:A").setNumberFormat("dd-mmm-yyyy hh:mm:ss");
-    // Phone text ki tarah rakho taaki Sheet number mein na badle
+    // Keep phone as text so Sheet does not convert it to a number
     sh.getRange("C:C").setNumberFormat("@");
     return sh;
   }
-  // Sheet pehle se ho par header bigda ho (haath se edit / galat order)
-  // to pehli row wapas sahi kar do, taaki column mapping na toote.
+  // If sheet exists but header is damaged (manual edit / wrong order)
+  // then restore the first row so column mapping stays intact.
   var head = sh.getRange(1, 1, 1, HEADERS.length).getValues()[0];
   var ok = true;
   for (var i = 0; i < HEADERS.length; i++) {
@@ -143,11 +143,11 @@ function jsonOut(obj) {
 }
 
 /**
- * Main: form se POST aata hai.
- * Frontend (index.html) fetch() se JSON body bhejta hai:
- *   naya naam: {name, phone, city, type, when, note, source, website}
- *   purana naam (pichla index.html): {naam, phone, city, what, when, note, source, company}
- * Dono ko support karte hain taaki purana page na toote.
+ * Main: receives POST from form.
+ * Frontend (index.html) sends JSON body via fetch():
+ *   new names: {name, phone, city, type, when, note, source, website}
+ *   old names (previous index.html): {naam, phone, city, what, when, note, source, company}
+ * Support both so the old page does not break.
  */
 function doPost(e) {
   try {
@@ -155,7 +155,7 @@ function doPost(e) {
       return jsonOut({ ok: false, error: "empty_request" });
     }
 
-    // Bahut bada payload aaye (spam/attack) to parse karne se pehle roko
+    // Block oversized payloads (spam/attack) before parsing
     if (e.postData.contents.length > 25000) {
       return jsonOut({ ok: false, error: "too_large" });
     }
@@ -164,26 +164,26 @@ function doPost(e) {
     try {
       data = JSON.parse(e.postData.contents);
     } catch (err) {
-      // Galat/broken JSON par crash nahi, sirf ok:false
+      // On invalid/broken JSON, do not crash, return ok:false only
       return jsonOut({ ok: false, error: "invalid_json" });
     }
     if (!data || typeof data !== "object") {
       return jsonOut({ ok: false, error: "invalid_json" });
     }
 
-    // --- Honeypot: bot pakadne wala hidden field ---
-    // Naya naam "website", purana naam "company". Bhara ho to chup-chaap ignore.
+    // --- Honeypot: hidden field to catch bots ---
+    // New name "website", old name "company". If filled, ignore silently.
     var honeypot = String(
       data.website !== undefined ? data.website :
       data.company !== undefined ? data.company :
       data.honeypot !== undefined ? data.honeypot : ""
     ).trim();
     if (honeypot !== "") {
-      // Spam ko success jaisa jawab do, par sheet mein kuch mat likho.
+      // Respond to spam as success, but write nothing to the sheet.
       return jsonOut({ ok: true });
     }
 
-    // --- Dono naming schemes support karo ---
+    // --- Support both naming schemes ---
     var rawName = data.name !== undefined ? data.name : data.naam;
     var rawCity = data.city !== undefined ? data.city : data.area;
     var rawType = data.type !== undefined ? data.type : (data.what !== undefined ? data.what : data.kya);
@@ -201,17 +201,17 @@ function doPost(e) {
       source = "direct";
     }
 
-    // Phone zaroori hai: 10 digit Indian mobile
+    // Phone is required: 10-digit Indian mobile
     if (!/^[6-9]\d{9}$/.test(phone)) {
       return jsonOut({ ok: false, error: "invalid_phone" });
     }
-    // Naam/city khaali ho to bhi false (frontend pehle hi rokta hai, ye double safety hai)
+    // False if name/city is empty (frontend blocks this; double safety)
     if (!name || !city) {
       return jsonOut({ ok: false, error: "missing_fields" });
     }
 
-    // Consent zaroori hai: form wala checkbox "contact ke liye number deta hoon".
-    // Na bhejo / false ho to reject (DPDP consent ke liye).
+    // Consent is required: form checkbox for contact consent.
+    // Reject if missing / false (for DPDP consent).
     var consent = data.consent;
     var hasConsent = (consent === true || consent === 1 ||
       consent === "true" || consent === "1" ||
@@ -220,8 +220,8 @@ function doPost(e) {
       return jsonOut({ ok: false, error: "consent_required" });
     }
 
-    // type/when/source allowlist check (dropdown/?src= options se match).
-    // Curl/devtools se aaya galat value yahin rokta hai — Sheet me row nahi.
+    // Allowlist check for type/when/source (must match dropdown/?src= options).
+    // Invalid curl/devtools values stop here — no Sheet row.
     if (ALLOWED_TYPES.indexOf(type) === -1) {
       return jsonOut({ ok: false, error: "invalid_type" });
     }
@@ -232,12 +232,12 @@ function doPost(e) {
       return jsonOut({ ok: false, error: "invalid_source" });
     }
 
-    // Race se bachne ke liye lock lagao
+    // Acquire lock to prevent races
     var lock = LockService.getScriptLock();
     try {
       lock.waitLock(10000);
     } catch (lockErr) {
-      // Lock na mile to bhi aage badho (rare case)
+      // Proceed even if lock is unavailable (rare case)
     }
 
     try {
@@ -250,13 +250,13 @@ function doPost(e) {
         for (var i = 0; i < phones.length; i++) {
           var oldPhone = cleanPhoneNumber(phones[i][0]);
           if (oldPhone === phone) {
-            // Dobara row mat jodo, par success JSON hi return karo
+            // Do not add a duplicate row, but still return success JSON
             return jsonOut({ ok: true, duplicate: true });
           }
         }
       }
 
-      // Nayi row jodo
+      // Append new row
       sh.appendRow([new Date(), name, phone, city, type, when, note, source]);
     } finally {
       try {
@@ -268,32 +268,32 @@ function doPost(e) {
 
     return jsonOut({ ok: true });
   } catch (err2) {
-    // Kisi bhi anjaan error par crash nahi
+    // Do not crash on any unknown error
     return jsonOut({ ok: false, error: "server_error" });
   }
 }
 
 /**
- * Browser mein Web App URL kholne par ye chalta hai (health check).
+ * Runs when Web App URL is opened in a browser (health check).
  */
 function doGet() {
   return jsonOut({ ok: true, message: "ApnaShift waitlist backend chal raha hai. POST se data bhejo." });
 }
 
 /**
- * SETUP FUNCTION: "Summary" sheet banao (formulas ke saath).
- * Apps Script editor mein is function ko ek baar Run karo.
+ * SETUP FUNCTION: create "Summary" sheet (with formulas).
+ * Run this function once in the Apps Script editor.
  *
- * Summary mein dikhega:
+ * Summary shows:
  * - total signups
- * - "Is hafte" wale signups
+ * - signups for "Is hafte"
  * - source-wise count (auto table)
  * - city-wise count (auto table)
  */
 function setupSummary() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
 
-  // Pehle Waitlist sheet pakki karo (headers ke saath)
+  // Ensure Waitlist sheet exists first (with headers)
   getWaitlistSheet();
 
   var sh = ss.getSheetByName(SUMMARY_SHEET_NAME);
@@ -316,24 +316,24 @@ function setupSummary() {
   sh.getRange("A4:B4").setFontWeight("bold");
 
   sh.getRange("A5").setValue("Total signups");
-  // Name column (B) mein ginti — header row ko chhod kar
+  // Count in Name column (B) — excluding header row
   sh.getRange("B5").setFormula('=IFERROR(COUNTA(Waitlist!B2:B),0)');
 
   sh.getRange("A6").setValue("Is hafte wale signups");
-  // "Kab tak" column F hai
+  // "Kab tak" column is F
   sh.getRange("B6").setFormula('=IFERROR(COUNTIF(Waitlist!F2:F,"Is hafte"),0)');
 
   sh.getRange("A7").setValue("Sirf jaankari chahiye");
   sh.getRange("B7").setFormula('=IFERROR(COUNTIF(Waitlist!F2:F,"Sirf jaankari chahiye"),0)');
 
-  // Source-wise table (A9 se neeche auto badhegi)
+  // Source-wise table (auto-expands below A9)
   sh.getRange("A9").setValue("Source-wise count (auto)");
   sh.getRange("A9").setFontWeight("bold");
   sh.getRange("A10").setFormula(
     '=IFERROR(QUERY(Waitlist!H2:H,"select H, count(H) where H is not null group by H label H \'Source\', count(H) \'Count\'",1),"Source nahi mila — pehli entry ka intezaar hai.")'
   );
 
-  // City-wise table (D9 se neeche auto badhegi — side mein taaki Source table se takraye nahi)
+  // City-wise table (auto-expands below D9 — aside to avoid Source table overlap)
   sh.getRange("D9").setValue("City-wise count (auto)");
   sh.getRange("D9").setFontWeight("bold");
   sh.getRange("D10").setFormula(

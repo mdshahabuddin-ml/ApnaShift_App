@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Driver Login | ApnaShift</title>
+<meta name="description" content="ApnaShift driver login — apne phone number aur password se login karo.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#14213d;
+    --yellow:#fcbf49;
+    --bg:#f4f6fa;
+    --border:#c9d0de;
+    --ink:#20242e;
+    --muted:#5b6070;
+    --red:#c0392b;
+    --green:#1a7a3a;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    line-height:1.6;
+  }
+  :focus-visible{
+    outline:3px solid var(--navy);
+    outline-offset:2px;
+    box-shadow:0 0 0 6px var(--yellow);
+    border-radius:8px;
+  }
+  main{
+    max-width:560px;
+    margin:0 auto;
+    padding:20px 16px 40px;
+  }
+  .card{
+    background:#fff;
+    border:2px solid var(--navy);
+    border-radius:var(--radius);
+    padding:22px 18px;
+    box-shadow:6px 6px 0 var(--yellow);
+  }
+  h1{
+    font-family:"Baloo 2", "Comic Sans MS", system-ui, sans-serif;
+    color:var(--navy);
+    font-size:1.6rem;
+    line-height:1.2;
+    margin:0 0 6px;
+  }
+  .sub{
+    margin:0 0 8px;
+    color:var(--muted);
+    font-size:.92rem;
+  }
+  .field{margin-bottom:14px}
+  label{
+    display:block;
+    font-weight:600;
+    font-size:.92rem;
+    color:var(--navy);
+    margin-bottom:6px;
+  }
+  label .req{color:var(--red)}
+  .hint{
+    font-weight:400;
+    color:var(--muted);
+    font-size:.82rem;
+    margin:4px 0 0;
+  }
+  input{
+    width:100%;
+    font:inherit;
+    color:var(--ink);
+    background:#fff;
+    border:2px solid var(--border);
+    border-radius:10px;
+    padding:11px 12px;
+  }
+  input:focus{
+    border-color:var(--navy);
+    outline:none;
+  }
+  .error-text{
+    display:none;
+    color:var(--red);
+    font-size:.86rem;
+    font-weight:600;
+    margin:6px 0 0;
+  }
+  .field.invalid input{border-color:var(--red);background:#fff5f3}
+  .field.invalid .error-text{display:block}
+  #formAlert{
+    display:none;
+    border-radius:10px;
+    padding:11px 12px;
+    font-size:.9rem;
+    font-weight:600;
+    margin:0 0 14px;
+  }
+  #formAlert.show{display:block}
+  #formAlert.err{background:#fdecea;color:#7a1f14;border:2px solid var(--red)}
+  #formAlert.ok{background:#e6f6ea;color:#0d5c26;border:2px solid var(--green)}
+  button[type="submit"]{
+    width:100%;
+    font-family:"Baloo 2", "Comic Sans MS", system-ui, sans-serif;
+    font-size:1.1rem;
+    font-weight:800;
+    color:var(--navy);
+    background:var(--yellow);
+    border:2px solid var(--navy);
+    border-radius:12px;
+    padding:12px 14px;
+    cursor:pointer;
+    box-shadow:0 4px 0 var(--navy);
+  }
+  button[type="submit"]:active{transform:translateY(3px);box-shadow:0 1px 0 var(--navy)}
+  button[type="submit"][disabled]{opacity:.65;cursor:wait;transform:none}
+  .links{
+    margin-top:14px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    text-align:center;
+    font-size:.9rem;
+  }
+  .links a{color:var(--navy);font-weight:600}
+  .links .disabled-link{
+    color:var(--muted);
+    cursor:not-allowed;
+    text-decoration:underline dotted;
+  }
+  #success{
+    display:none;
+    margin-top:16px;
+    background:var(--navy);
+    color:#fff;
+    border-radius:var(--radius);
+    padding:22px 18px;
+    border:2px solid var(--navy);
+    box-shadow:6px 6px 0 var(--yellow);
+    text-align:center;
+  }
+  #success.show{display:block}
+  #success h2{
+    font-family:"Baloo 2", "Comic Sans MS", system-ui, sans-serif;
+    color:var(--yellow);
+    margin:0 0 6px;
+    font-size:1.4rem;
+  }
+  #success p{margin:6px 0;color:#dbe2f0}
+.site-header{background:var(--navy);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:50}
+.site-header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px}
+.site-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.3rem;line-height:1;color:#fff;text-decoration:none}
+.site-brand small{display:block;font-family:"Noto Sans",system-ui,sans-serif;font-weight:600;font-size:.64rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow)}
+.site-nav{display:flex;gap:4px;margin-left:8px;align-items:center}
+.site-nav> a,.nav-drop summary{color:#dbe2f0;text-decoration:none;font-weight:600;font-size:.9rem;padding:8px 10px;border-radius:8px}
+.site-nav> a:hover,.nav-drop summary:hover{background:#1f2f52;color:#fff}
+.nav-drop{position:relative}
+.nav-drop summary{cursor:pointer;list-style:none}
+.nav-drop summary::-webkit-details-marker{display:none}
+.nav-drop[open] summary{background:#1f2f52;color:#fff}
+.drop-menu{display:flex;flex-direction:column;gap:2px}
+@media(min-width:761px){.drop-menu{position:absolute;top:100%;left:0;background:var(--navy);border:1px solid #2a3d66;border-radius:8px;padding:6px;min-width:180px}.drop-menu a{white-space:nowrap}}
+#navMenuBtn{display:none;background:transparent;border:2px solid var(--yellow);border-radius:8px;color:var(--yellow);font:inherit;font-weight:800;padding:6px 12px;cursor:pointer}
+.site-footer{background:var(--navy);color:#dbe2f0;padding:22px 16px 30px}
+.site-foot-inner{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+.site-foot-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;color:#fff;font-size:1.05rem}
+.site-foot-links{display:flex;gap:16px;flex-wrap:wrap}
+.site-foot-links a{color:var(--yellow);font-size:.86rem;font-weight:600;text-decoration:none}
+.site-foot-links a:hover{text-decoration:underline}
+@media (max-width:760px){#navMenuBtn{display:block;margin-left:auto}.site-nav{display:none;position:absolute;top:100%;left:0;right:0;background:var(--navy);flex-direction:column;align-items:stretch;padding:8px 16px 14px;margin:0;border-top:1px solid #2a3d66}.site-nav.open{display:flex}.site-header-inner{flex-wrap:wrap;position:relative}}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="index.html" aria-label="ApnaShift home">ApnaShift<small>Shifting • Transport</small></a>
+    <nav class="site-nav" id="siteNav" aria-label="Main navigation">
+      <a href="index.html">Home</a>
+      <a href="user-auth.html">Login</a>
+      <details class="nav-drop">
+        <summary>Driver</summary>
+        <div class="drop-menu">
+          <a href="driver-register.html">Join as Driver</a>
+          <a href="driver-login.html">Driver Login</a>
+        </div>
+      </details>
+      <a href="help.html">Help</a>
+    </nav>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+  </div>
+</header>
+
+<main>
+  <section class="card" aria-labelledby="pageTitle">
+    <h1 id="pageTitle">Driver Login</h1>
+    <p class="sub">Apne phone number aur password se login karo.</p>
+
+    <div id="formAlert" role="alert" aria-live="assertive"></div>
+
+    <form id="loginForm" novalidate>
+      <div class="field" id="f-phone">
+        <label for="phone">Phone number <span class="req" aria-hidden="true">*</span></label>
+        <input type="tel" id="phone" name="phone" autocomplete="tel" inputmode="numeric"
+               maxlength="15" placeholder="98765 43210"
+               aria-describedby="phone-hint phone-err" required>
+        <p class="hint" id="phone-hint">10 digit ka Indian mobile. +91 ya space chalega.</p>
+        <p class="error-text" id="phone-err"></p>
+      </div>
+
+      <div class="field" id="f-password">
+        <label for="password">Password <span class="req" aria-hidden="true">*</span></label>
+        <input type="password" id="password" name="password" autocomplete="current-password"
+               maxlength="128" placeholder="Apna password likho"
+               aria-describedby="password-err" required>
+        <p class="error-text" id="password-err"></p>
+      </div>
+
+      <button type="submit" id="submitBtn">Login</button>
+    </form>
+
+    <div class="links">
+      <span>Account nahi hai? <a href="driver-register.html">Register karein</a></span>
+      <span><a href="#" class="disabled-link" id="forgotLink"
+               title="Jald aa raha hai"
+               aria-disabled="true">Password bhool gaye?</a></span>
+    </div>
+  </section>
+
+  <section id="success" aria-live="polite" aria-labelledby="successTitle">
+    <h2 id="successTitle">Login ho gaya</h2>
+    <p id="welcomeText">Namaste, driver!</p>
+    <p>Dashboard jald aa raha hai.</p>
+  </section>
+<footer class="site-footer">
+  <div class="site-foot-inner">
+    <div class="site-foot-brand">ApnaShift</div>
+    <div class="site-foot-links">
+      <a href="index.html">Home</a>
+      <a href="help.html">Help</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms &amp; Conditions</a>
+    </div>
+  </div>
+</footer>
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  // Backend base URL — live Railway backend.
+  var API_BASE_URL = "https://apnashiftapp-production.up.railway.app";
+  var TOKEN_KEY = "apnashift_driver_token";
+
+  var form = document.getElementById("loginForm");
+  var phoneInput = document.getElementById("phone");
+  var passwordInput = document.getElementById("password");
+  var submitBtn = document.getElementById("submitBtn");
+  var alertBox = document.getElementById("formAlert");
+  var successBox = document.getElementById("success");
+
+  var PHONE_RE = /^[6-9]\d{9}$/;
+
+  function cleanPhone(raw){
+    var p = String(raw || "").trim().replace(/[\s\-().]/g, "");
+    if(p.indexOf("+91") === 0){
+      p = p.slice(3);
+    } else if(p.length === 12 && p.indexOf("91") === 0){
+      p = p.slice(2);
+    } else if(p.length === 11 && p.charAt(0) === "0"){
+      p = p.slice(1);
+    }
+    return p;
+  }
+
+  function setErr(fieldId, errId, inputEl, msg){
+    var f = document.getElementById(fieldId);
+    var e = document.getElementById(errId);
+    if(msg){
+      f.classList.add("invalid");
+      e.textContent = msg;
+      inputEl.setAttribute("aria-invalid", "true");
+      return false;
+    }
+    f.classList.remove("invalid");
+    e.textContent = "";
+    inputEl.removeAttribute("aria-invalid");
+    return true;
+  }
+
+  function showAlert(type, msg){
+    alertBox.className = "show " + (type === "err" ? "err" : "ok");
+    alertBox.textContent = msg;
+  }
+
+  function hideAlert(){
+    alertBox.className = "";
+    alertBox.textContent = "";
+  }
+
+  [phoneInput, passwordInput].forEach(function(el){
+    el.addEventListener("input", hideAlert);
+  });
+
+  document.getElementById("forgotLink").addEventListener("click", function(ev){
+    ev.preventDefault();
+    showAlert("err", "Password reset jald aa raha hai. Abhi ke liye apna purana password use karo.");
+  });
+
+  form.addEventListener("submit", function(ev){
+    ev.preventDefault();
+    hideAlert();
+
+    var ok = true;
+    var firstBad = null;
+
+    var cleaned = cleanPhone(phoneInput.value);
+    if(!phoneInput.value.trim()){
+      setErr("f-phone", "phone-err", phoneInput, "Apna phone number likho. Example: 98765 43210");
+      ok = false; firstBad = firstBad || phoneInput;
+    } else if(!PHONE_RE.test(cleaned)){
+      setErr("f-phone", "phone-err", phoneInput, "Sahi 10 digit mobile number likho jo 6-9 se shuru ho.");
+      ok = false; firstBad = firstBad || phoneInput;
+    } else {
+      setErr("f-phone", "phone-err", phoneInput, "");
+    }
+
+    if(!passwordInput.value){
+      setErr("f-password", "password-err", passwordInput, "Apna password likho.");
+      ok = false; firstBad = firstBad || passwordInput;
+    } else {
+      setErr("f-password", "password-err", passwordInput, "");
+    }
+
+    if(!ok){
+      if(firstBad) firstBad.focus();
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Login ho raha hai…";
+
+    fetch(API_BASE_URL + "/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone: cleaned, password: passwordInput.value })
+    }).then(function(res){
+      return res.json().then(function(data){
+        return { status: res.status, body: data };
+      }).catch(function(){
+        return { status: res.status, body: null };
+      });
+    }).then(function(result){
+      if(result.status !== 200 || !result.body || result.body.ok !== true){
+        throw new Error("invalid");
+      }
+      var user = result.body.user || {};
+      if(user.role !== "driver"){
+        throw new Error("not_driver");
+      }
+      try{
+        localStorage.setItem(TOKEN_KEY, result.body.token);
+      }catch(e){
+        throw new Error("storage");
+      }
+      form.style.display = "none";
+      document.querySelector(".links").style.display = "none";
+      var name = user.name ? ", " + user.name : "";
+      document.getElementById("welcomeText").textContent = "Namaste" + name + "!";
+      successBox.classList.add("show");
+      showAlert("ok", "Login ho gaya.");
+      successBox.scrollIntoView({ behavior: "smooth", block: "start" });
+    }).catch(function(err){
+      if(err && err.message === "not_driver"){
+        showAlert("err", "Ye login driver ka nahi hai. Driver number se login karo.");
+      } else if(err && err.message === "storage"){
+        showAlert("err", "Browser me login save nahi hua. Private mode band karke try karo.");
+      } else {
+        showAlert("err", "Phone ya password galat hai.");
+      }
+    }).then(function(){
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Login";
+    });
+  });
+var navMenuBtn=document.getElementById("navMenuBtn"),siteNav=document.getElementById("siteNav");
+if(navMenuBtn&&siteNav){navMenuBtn.addEventListener("click",function(){var open=siteNav.classList.toggle("open");navMenuBtn.setAttribute("aria-expanded",open?"true":"false");navMenuBtn.setAttribute("aria-label",open?"Menu band karo":"Menu kholo");});siteNav.addEventListener("click",function(ev){if(ev.target.tagName==="A"&&siteNav.classList.contains("open")){siteNav.classList.remove("open");navMenuBtn.setAttribute("aria-expanded","false");}});}
+})();
+</script>
+</body>
+</html>

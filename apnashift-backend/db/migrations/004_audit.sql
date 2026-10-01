@@ -1,13 +1,13 @@
 -- Migration 004: admin tools (audit log, pricing history, driver rejection).
--- Note: file db/migrations/004_audit.sql hai — 003 ratings le chuka hai aur
--- runner db/migrations/*.sql ko order me chalata hai (db/003_audit.sql nahi).
--- Chalao: npm run db:migrate
+-- Note: file is db/migrations/004_audit.sql — 003 already covers ratings and
+-- runner executes db/migrations/*.sql in order (not db/003_audit.sql).
+-- Run: npm run db:migrate
 --
--- Naya:
---   audit_logs      — kaunse admin ne kya kiya, kab (verify/reject/assign/pricing).
---   pricing_history — rate badalne par purana + naya, kisne badla.
---   drivers.rejection_reason — reject par wajah (verify par NULL).
--- Auto-ban kahin nahi.
+-- New:
+--   audit_logs      — which admin did what, when (verify/reject/assign/pricing).
+--   pricing_history — old + new rates on change, and who changed them.
+--   drivers.rejection_reason — reason on reject (NULL on verify).
+-- No auto-ban.
 
 CREATE TABLE IF NOT EXISTS audit_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

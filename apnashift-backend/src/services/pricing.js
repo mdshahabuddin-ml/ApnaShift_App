@@ -1,9 +1,9 @@
-// Price calculation. Pure functions — DB/provider yahan nahi.
-// Rates hamesha pricing_rules table se aate hain (route dekho), yahan hardcode nahi.
+// Price calculation. Pure functions — no DB/provider here.
+// Rates always come from pricing_rules table (see route), never hardcoded.
 import { getDistanceKm } from './distance.js';
 
-// Ek sheher ka MVP: 500 km se zyada par booking nahi (DB CHECK backup hai,
-// yahan pehle 400 dete hain taaki client ko saaf error mile).
+// Single-city MVP: no bookings over 500 km (DB CHECK is the backup,
+// rejected here with 400 for a clean client error).
 export const MAX_DISTANCE_KM = 500;
 
 export function round2(n) {
@@ -14,7 +14,7 @@ export function round10(n) {
   return Math.round(Number(n) / 10) * 10;
 }
 
-// distanceKm >= 0. total nearest Rs 10, range total ka -10% / +10% (10 par round).
+// distanceKm >= 0. Total to nearest Rs 10, range is -10% / +10% of total.
 export function computeQuote({ distanceKm, baseRs, perKmRs, helperRs, helperNeeded }) {
   const km = Math.max(0, Number(distanceKm) || 0);
   const base_fare = round2(baseRs);
@@ -32,7 +32,7 @@ export function computeQuote({ distanceKm, baseRs, perKmRs, helperRs, helperNeed
   };
 }
 
-// Full estimate: measure me real provider ya test me mock fn de sakte ho.
+// Full estimate: pass a real provider via measure, or a mock fn in tests.
 export async function buildEstimate({
   pickup,
   drop,

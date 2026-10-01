@@ -1,5 +1,5 @@
-// Central env config. Saare secrets process.env (.env file) se aate hain.
-// Naya secret jodo to .env.example me bhi jodo. Secrets kabhi log mat karo.
+// Central env config. All secrets come from process.env (.env file).
+// When adding a secret, also add it to .env.example. Never log secrets.
 import 'dotenv/config';
 
 function num(name, fallback) {

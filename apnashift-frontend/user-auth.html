@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login / Naya Account | ApnaShift</title>
+<meta name="description" content="ApnaShift customer login ya naya account banao — shifting booking ke liye.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#14213d;
+    --yellow:#fcbf49;
+    --bg:#f4f6fa;
+    --border:#c9d0de;
+    --ink:#20242e;
+    --muted:#5b6070;
+    --red:#c0392b;
+    --green:#1a7a3a;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    line-height:1.6;
+  }
+  :focus-visible{
+    outline:3px solid var(--navy);
+    outline-offset:2px;
+    box-shadow:0 0 0 6px var(--yellow);
+    border-radius:8px;
+  }
+  main{
+    max-width:560px;
+    margin:0 auto;
+    padding:20px 16px 40px;
+  }
+  .card{
+    background:#fff;
+    border:2px solid var(--navy);
+    border-radius:var(--radius);
+    padding:22px 18px;
+    box-shadow:6px 6px 0 var(--yellow);
+  }
+  h1{
+    font-family:"Baloo 2", "Comic Sans MS", system-ui, sans-serif;
+    color:var(--navy);
+    font-size:1.6rem;
+    line-height:1.2;
+    margin:0 0 6px;
+  }
+  .sub{
+    margin:0 0 12px;
+    color:var(--muted);
+    font-size:.92rem;
+  }
+  .tabs{
+    display:flex;
+    gap:8px;
+    margin-bottom:16px;
+  }
+  .tabs button{
+    flex:1;
+    font-family:"Baloo 2", "Comic Sans MS", system-ui, sans-serif;
+    font-size:1rem;
+    font-weight:800;
+    padding:10px;
+    border-radius:10px;
+    border:2px solid var(--navy);
+    background:#fff;
+    color:var(--navy);
+    cursor:pointer;
+  }
+  .tabs button.active{
+    background:var(--navy);
+    color:var(--yellow);
+  }
+  .panel{display:none}
+  .panel.active{display:block}
+  .field{margin-bottom:14px}
+  label{
+    display:block;
+    font-weight:600;
+    font-size:.92rem;
+    color:var(--navy);
+    margin-bottom:6px;
+  }
+  label .req{color:var(--red)}
+  .hint{
+    font-weight:400;
+    color:var(--muted);
+    font-size:.82rem;
+    margin:4px 0 0;
+  }
+  input{
+    width:100%;
+    font:inherit;
+    color:var(--ink);
+    background:#fff;
+    border:2px solid var(--border);
+    border-radius:10px;
+    padding:11px 12px;
+  }
+  input:focus{
+    border-color:var(--navy);
+    outline:none;
+  }
+  input[type="checkbox"]{
+    width:20px;
+    height:20px;
+    flex:0 0 20px;
+    margin-top:3px;
+    accent-color:var(--navy);
+  }
+  .error-text{
+    display:none;
+    color:var(--red);
+    font-size:.86rem;
+    font-weight:600;
+    margin:6px 0 0;
+  }
+  .field.invalid input{border-color:var(--red);background:#fff5f3}
+  .field.invalid .error-text{display:block}
+  .consentline{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    font-weight:400;
+    font-size:.88rem;
+    margin:4px 0 14px;
+  }
+  .consentline a{color:var(--navy);font-weight:600}
+  #formAlert{
+    display:none;
+    border-radius:10px;
+    padding:11px 12px;
+    font-size:.9rem;
+    font-weight:600;
+    margin:0 0 14px;
+  }
+  #formAlert.show{display:block}
+  #formAlert.err{background:#fdecea;color:#7a1f14;border:2px solid var(--red)}
+  #formAlert.ok{background:#e6f6ea;color:#0d5c26;border:2px solid var(--green)}
+  button[type="submit"]{
+    width:100%;
+    font-family:"Baloo 2", "Comic Sans MS", system-ui, sans-serif;
+    font-size:1.1rem;
+    font-weight:800;
+    color:var(--navy);
+    background:var(--yellow);
+    border:2px solid var(--navy);
+    border-radius:12px;
+    padding:12px 14px;
+    cursor:pointer;
+    box-shadow:0 4px 0 var(--navy);
+  }
+  button[type="submit"]:active{transform:translateY(3px);box-shadow:0 1px 0 var(--navy)}
+  button[type="submit"][disabled]{opacity:.65;cursor:wait;transform:none}
+  .switchline{
+    margin-top:12px;
+    text-align:center;
+    font-size:.9rem;
+  }
+  .switchline button{
+    background:none;
+    border:none;
+    padding:0;
+    font:inherit;
+    color:var(--navy);
+    font-weight:600;
+    text-decoration:underline;
+    cursor:pointer;
+  }
+  #success{
+    display:none;
+    margin-top:16px;
+    background:var(--navy);
+    color:#fff;
+    border-radius:var(--radius);
+    padding:22px 18px;
+    border:2px solid var(--navy);
+    box-shadow:6px 6px 0 var(--yellow);
+    text-align:center;
+  }
+  #success.show{display:block}
+  #success h2{
+    font-family:"Baloo 2", "Comic Sans MS", system-ui, sans-serif;
+    color:var(--yellow);
+    margin:0 0 6px;
+    font-size:1.4rem;
+  }
+  #success p{margin:6px 0;color:#dbe2f0}
+.site-header{background:var(--navy);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:50}
+.site-header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px}
+.site-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.3rem;line-height:1;color:#fff;text-decoration:none}
+.site-brand small{display:block;font-family:"Noto Sans",system-ui,sans-serif;font-weight:600;font-size:.64rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow)}
+.site-nav{display:flex;gap:4px;margin-left:8px;align-items:center}
+.site-nav> a,.nav-drop summary{color:#dbe2f0;text-decoration:none;font-weight:600;font-size:.9rem;padding:8px 10px;border-radius:8px}
+.site-nav> a:hover,.nav-drop summary:hover{background:#1f2f52;color:#fff}
+.nav-drop{position:relative}
+.nav-drop summary{cursor:pointer;list-style:none}
+.nav-drop summary::-webkit-details-marker{display:none}
+.nav-drop[open] summary{background:#1f2f52;color:#fff}
+.drop-menu{display:flex;flex-direction:column;gap:2px}
+@media(min-width:761px){.drop-menu{position:absolute;top:100%;left:0;background:var(--navy);border:1px solid #2a3d66;border-radius:8px;padding:6px;min-width:180px}.drop-menu a{white-space:nowrap}}
+#navMenuBtn{display:none;background:transparent;border:2px solid var(--yellow);border-radius:8px;color:var(--yellow);font:inherit;font-weight:800;padding:6px 12px;cursor:pointer}
+.site-footer{background:var(--navy);color:#dbe2f0;padding:22px 16px 30px}
+.site-foot-inner{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+.site-foot-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;color:#fff;font-size:1.05rem}
+.site-foot-links{display:flex;gap:16px;flex-wrap:wrap}
+.site-foot-links a{color:var(--yellow);font-size:.86rem;font-weight:600;text-decoration:none}
+.site-foot-links a:hover{text-decoration:underline}
+@media (max-width:760px){#navMenuBtn{display:block;margin-left:auto}.site-nav{display:none;position:absolute;top:100%;left:0;right:0;background:var(--navy);flex-direction:column;align-items:stretch;padding:8px 16px 14px;margin:0;border-top:1px solid #2a3d66}.site-nav.open{display:flex}.site-header-inner{flex-wrap:wrap;position:relative}}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="index.html" aria-label="ApnaShift home">ApnaShift<small>Shifting • Transport</small></a>
+    <nav class="site-nav" id="siteNav" aria-label="Main navigation">
+      <a href="index.html">Home</a>
+      <a href="user-auth.html">Login</a>
+      <details class="nav-drop">
+        <summary>Driver</summary>
+        <div class="drop-menu">
+          <a href="driver-register.html">Join as Driver</a>
+          <a href="driver-login.html">Driver Login</a>
+        </div>
+      </details>
+      <a href="help.html">Help</a>
+    </nav>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+  </div>
+</header>
+
+<main>
+  <section class="card" aria-labelledby="pageTitle">
+    <h1 id="pageTitle">ApnaShift Account</h1>
+    <p class="sub">Shifting booking ke liye login karo ya naya account banao.</p>
+
+    <div class="tabs" role="tablist" aria-label="Login ya Naya Account">
+      <button type="button" id="tabLogin" class="active" role="tab" aria-selected="true" aria-controls="panelLogin">Login</button>
+      <button type="button" id="tabRegister" role="tab" aria-selected="false" aria-controls="panelRegister">Naya Account</button>
+    </div>
+
+    <div id="formAlert" role="alert" aria-live="assertive"></div>
+
+    <!-- LOGIN -->
+    <div class="panel active" id="panelLogin" role="tabpanel" aria-labelledby="tabLogin">
+      <form id="loginForm" novalidate>
+        <div class="field" id="f-lphone">
+          <label for="lphone">Phone number <span class="req" aria-hidden="true">*</span></label>
+          <input type="tel" id="lphone" name="phone" autocomplete="tel" inputmode="numeric"
+                 maxlength="15" placeholder="98765 43210"
+                 aria-describedby="lphone-hint lphone-err" required>
+          <p class="hint" id="lphone-hint">10 digit ka Indian mobile. +91 ya space chalega.</p>
+          <p class="error-text" id="lphone-err"></p>
+        </div>
+        <div class="field" id="f-lpass">
+          <label for="lpass">Password <span class="req" aria-hidden="true">*</span></label>
+          <input type="password" id="lpass" name="password" autocomplete="current-password"
+                 maxlength="128" placeholder="Apna password likho"
+                 aria-describedby="lpass-err" required>
+          <p class="error-text" id="lpass-err"></p>
+        </div>
+        <button type="submit" id="loginBtn">Login</button>
+      </form>
+      <p class="switchline">Naya ho? <button type="button" id="goRegister">Naya account banao</button></p>
+    </div>
+
+    <!-- REGISTER -->
+    <div class="panel" id="panelRegister" role="tabpanel" aria-labelledby="tabRegister">
+      <form id="registerForm" novalidate>
+        <div class="field" id="f-rname">
+          <label for="rname">Naam <span class="req" aria-hidden="true">*</span></label>
+          <input type="text" id="rname" name="name" autocomplete="name"
+                 maxlength="80" placeholder="Example: Rahul Sharma"
+                 aria-describedby="rname-err" required>
+          <p class="error-text" id="rname-err"></p>
+        </div>
+        <div class="field" id="f-rphone">
+          <label for="rphone">Phone number <span class="req" aria-hidden="true">*</span></label>
+          <input type="tel" id="rphone" name="phone" autocomplete="tel" inputmode="numeric"
+                 maxlength="15" placeholder="98765 43210"
+                 aria-describedby="rphone-hint rphone-err" required>
+          <p class="hint" id="rphone-hint">10 digit ka Indian mobile. +91 ya space chalega.</p>
+          <p class="error-text" id="rphone-err"></p>
+        </div>
+        <div class="field" id="f-rpass">
+          <label for="rpass">Password <span class="req" aria-hidden="true">*</span></label>
+          <input type="password" id="rpass" name="password" autocomplete="new-password"
+                 maxlength="128" placeholder="Kam se kam 8 akshar"
+                 aria-describedby="rpass-hint rpass-err" required>
+          <p class="hint" id="rpass-hint">Kam se kam 8 akshar ka mazboot password rakho.</p>
+          <p class="error-text" id="rpass-err"></p>
+        </div>
+        <label class="consentline" for="rconsent">
+          <input type="checkbox" id="rconsent" required>
+          <span>Main ApnaShift ki <a href="terms.html">Terms</a> &amp; <a href="privacy.html">Privacy Policy</a> se sehmat hoon. <span class="req" aria-hidden="true" style="color:var(--red)">*</span></span>
+        </label>
+        <button type="submit" id="registerBtn">Account banao</button>
+      </form>
+      <p class="switchline">Pehle se account hai? <button type="button" id="goLogin">Login karo</button></p>
+    </div>
+  </section>
+
+  <section id="success" aria-live="polite" aria-labelledby="successTitle">
+    <h2 id="successTitle">Swagat hai!</h2>
+    <p id="welcomeText">Login ho gaya.</p>
+    <p>Booking page jald aa raha hai — tab tak aaram karo.</p>
+  </section>
+<footer class="site-footer">
+  <div class="site-foot-inner">
+    <div class="site-foot-brand">ApnaShift</div>
+    <div class="site-foot-links">
+      <a href="index.html">Home</a>
+      <a href="help.html">Help</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms &amp; Conditions</a>
+    </div>
+  </div>
+</footer>
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  // Backend base URL — live Railway backend.
+  var API_BASE_URL = "https://apnashiftapp-production.up.railway.app";
+  var TOKEN_KEY = "apnashift_user_token";
+
+  var alertBox = document.getElementById("formAlert");
+  var successBox = document.getElementById("success");
+
+  var tabLogin = document.getElementById("tabLogin");
+  var tabRegister = document.getElementById("tabRegister");
+  var panelLogin = document.getElementById("panelLogin");
+  var panelRegister = document.getElementById("panelRegister");
+
+  var PHONE_RE = /^[6-9]\d{9}$/;
+
+  function cleanPhone(raw){
+    var p = String(raw || "").trim().replace(/[\s\-().]/g, "");
+    if(p.indexOf("+91") === 0){
+      p = p.slice(3);
+    } else if(p.length === 12 && p.indexOf("91") === 0){
+      p = p.slice(2);
+    } else if(p.length === 11 && p.charAt(0) === "0"){
+      p = p.slice(1);
+    }
+    return p;
+  }
+
+  function setErr(fieldId, errId, inputEl, msg){
+    var f = document.getElementById(fieldId);
+    var e = document.getElementById(errId);
+    if(msg){
+      f.classList.add("invalid");
+      e.textContent = msg;
+      inputEl.setAttribute("aria-invalid", "true");
+      return false;
+    }
+    f.classList.remove("invalid");
+    e.textContent = "";
+    inputEl.removeAttribute("aria-invalid");
+    return true;
+  }
+
+  function showAlert(type, msg){
+    alertBox.className = "show " + (type === "err" ? "err" : "ok");
+    alertBox.textContent = msg;
+  }
+
+  function hideAlert(){
+    alertBox.className = "";
+    alertBox.textContent = "";
+  }
+
+  function switchTab(which){
+    var isLogin = which === "login";
+    tabLogin.classList.toggle("active", isLogin);
+    tabRegister.classList.toggle("active", !isLogin);
+    tabLogin.setAttribute("aria-selected", isLogin ? "true" : "false");
+    tabRegister.setAttribute("aria-selected", !isLogin ? "true" : "false");
+    panelLogin.classList.toggle("active", isLogin);
+    panelRegister.classList.toggle("active", !isLogin);
+    hideAlert();
+  }
+
+  tabLogin.addEventListener("click", function(){ switchTab("login"); });
+  tabRegister.addEventListener("click", function(){ switchTab("register"); });
+  document.getElementById("goRegister").addEventListener("click", function(){ switchTab("register"); });
+  document.getElementById("goLogin").addEventListener("click", function(){ switchTab("login"); });
+
+  // If arriving via user-auth.html#register, open Register tab directly.
+  if(window.location.hash === "#register"){
+    switchTab("register");
+  }
+
+  function postJSON(path, body){
+    return fetch(API_BASE_URL + path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    }).then(function(res){
+      return res.json().then(function(data){
+        return { status: res.status, body: data };
+      }).catch(function(){
+        return { status: res.status, body: null };
+      });
+    });
+  }
+
+  function saveToken(token){
+    try{
+      localStorage.setItem(TOKEN_KEY, token);
+      return true;
+    }catch(e){
+      return false;
+    }
+  }
+
+  function showSuccess(name){
+    document.querySelector(".card").style.display = "none";
+    document.getElementById("welcomeText").textContent =
+      "Namaste" + (name ? ", " + name : "") + "! Account taiyaar hai.";
+    successBox.classList.add("show");
+    showAlert("ok", "Swagat hai!");
+    successBox.scrollIntoView({ behavior: "smooth", block: "start" });
+    // Booking page comes later — redirect will go here.
+  }
+
+  function validPhone(inputEl, fieldId, errId){
+    var cleaned = cleanPhone(inputEl.value);
+    if(!inputEl.value.trim()){
+      setErr(fieldId, errId, inputEl, "Apna phone number likho. Example: 98765 43210");
+      return null;
+    }
+    if(!PHONE_RE.test(cleaned)){
+      setErr(fieldId, errId, inputEl, "Sahi 10 digit mobile number likho jo 6-9 se shuru ho.");
+      return null;
+    }
+    setErr(fieldId, errId, inputEl, "");
+    return cleaned;
+  }
+
+  // ---------- LOGIN ----------
+  var loginForm = document.getElementById("loginForm");
+  var lphone = document.getElementById("lphone");
+  var lpass = document.getElementById("lpass");
+  var loginBtn = document.getElementById("loginBtn");
+
+  loginForm.addEventListener("input", hideAlert);
+  loginForm.addEventListener("submit", function(ev){
+    ev.preventDefault();
+    hideAlert();
+
+    var ok = true, firstBad = null;
+    var phone = validPhone(lphone, "f-lphone", "lphone-err");
+    if(phone === null){ ok = false; firstBad = firstBad || lphone; }
+    if(!lpass.value){
+      setErr("f-lpass", "lpass-err", lpass, "Apna password likho.");
+      ok = false; firstBad = firstBad || lpass;
+    } else {
+      setErr("f-lpass", "lpass-err", lpass, "");
+    }
+    if(!ok){ if(firstBad) firstBad.focus(); return; }
+
+    loginBtn.disabled = true;
+    loginBtn.textContent = "Login ho raha hai…";
+
+    postJSON("/api/auth/login", { phone: phone, password: lpass.value }).then(function(result){
+      if(result.status !== 200 || !result.body || result.body.ok !== true){
+        var fail = new Error("invalid");
+        fail.code = result.body && result.body.error;
+        throw fail;
+      }
+      var user = result.body.user || {};
+      if(user.role && user.role !== "user"){
+        throw new Error("not_user");
+      }
+      if(!saveToken(result.body.token)){
+        throw new Error("storage");
+      }
+      showSuccess(user.name);
+    }).catch(function(err){
+      if(err && err.message === "not_user"){
+        showAlert("err", "Ye number customer account ka nahi hai.");
+      } else if(err && err.message === "storage"){
+        showAlert("err", "Browser me login save nahi hua. Private mode band karke try karo.");
+      } else if(err && err.code === "too_many_attempts"){
+        showAlert("err", "Bahut koshish ho gayi — 15 minute rukkar ek baar try karo.");
+      } else {
+        showAlert("err", "Phone ya password galat hai.");
+      }
+    }).then(function(){
+      loginBtn.disabled = false;
+      loginBtn.textContent = "Login";
+    });
+  });
+
+  // ---------- REGISTER ----------
+  var registerForm = document.getElementById("registerForm");
+  var rname = document.getElementById("rname");
+  var rphone = document.getElementById("rphone");
+  var rpass = document.getElementById("rpass");
+  var rconsent = document.getElementById("rconsent");
+  var registerBtn = document.getElementById("registerBtn");
+
+  registerForm.addEventListener("input", hideAlert);
+  registerForm.addEventListener("submit", function(ev){
+    ev.preventDefault();
+    hideAlert();
+
+    var ok = true, firstBad = null;
+    var name = rname.value.trim();
+    if(name.length < 2){
+      setErr("f-rname", "rname-err", rname, "Apna naam likho (kam se kam 2 akshar).");
+      ok = false; firstBad = firstBad || rname;
+    } else {
+      setErr("f-rname", "rname-err", rname, "");
+    }
+
+    var phone = validPhone(rphone, "f-rphone", "rphone-err");
+    if(phone === null){ ok = false; firstBad = firstBad || rphone; }
+
+    if(!rpass.value){
+      setErr("f-rpass", "rpass-err", rpass, "Password likho (kam se kam 8 akshar).");
+      ok = false; firstBad = firstBad || rpass;
+    } else if(rpass.value.length < 8){
+      setErr("f-rpass", "rpass-err", rpass, "Password kam se kam 8 akshar ka ho.");
+      ok = false; firstBad = firstBad || rpass;
+    } else {
+      setErr("f-rpass", "rpass-err", rpass, "");
+    }
+
+    if(!rconsent.checked){
+      showAlert("err", "Aage badhne ke liye Terms & Privacy Policy par sehmati do.");
+      ok = false;
+    }
+    if(!ok){ if(firstBad) firstBad.focus(); return; }
+
+    registerBtn.disabled = true;
+    registerBtn.textContent = "Account ban raha hai…";
+
+    postJSON("/api/auth/register", { name: name, phone: phone, password: rpass.value }).then(function(result){
+      if(result.status === 409){
+        var err = (result.body && result.body.error) || "phone_taken";
+        if(err === "phone_taken"){
+          setErr("f-rphone", "rphone-err", rphone, "Ye number pehle se registered hai, Login try karein.");
+          lphone.value = rphone.value;
+          showAlert("err", "Ye number pehle se registered hai, Login try karein.");
+          switchTab("login");
+        } else {
+          showAlert("err", "Ye number pehle se registered hai, Login try karein.");
+        }
+        throw new Error("handled");
+      }
+      if(result.status !== 201 || !result.body || result.body.ok !== true){
+        var fail = new Error("invalid");
+        fail.code = result.body && result.body.error;
+        fail.detail = result.body && result.body.details && result.body.details[0];
+        throw fail;
+      }
+      if(!saveToken(result.body.token)){
+        throw new Error("storage");
+      }
+      showSuccess((result.body.user || {}).name || name);
+    }).catch(function(err){
+      if(err && err.message === "handled"){ /* message already shown above */ }
+      else if(err && err.message === "storage"){
+        showAlert("err", "Browser me login save nahi hua. Private mode band karke try karo.");
+      }
+      else if(err && err.code === "too_many_attempts"){
+        showAlert("err", "Bahut koshish ho gayi — 15 minute rukkar ek baar try karo.");
+      }
+      else if(err && err.detail && err.detail.message){
+        showAlert("err", err.detail.message);
+      }
+      else {
+        showAlert("err", "Account nahi ban paya. Details check karke dobara try karo.");
+      }
+    }).then(function(){
+      registerBtn.disabled = false;
+      registerBtn.textContent = "Account banao";
+    });
+  });
+var navMenuBtn=document.getElementById("navMenuBtn"),siteNav=document.getElementById("siteNav");
+if(navMenuBtn&&siteNav){navMenuBtn.addEventListener("click",function(){var open=siteNav.classList.toggle("open");navMenuBtn.setAttribute("aria-expanded",open?"true":"false");navMenuBtn.setAttribute("aria-label",open?"Menu band karo":"Menu kholo");});siteNav.addEventListener("click",function(ev){if(ev.target.tagName==="A"&&siteNav.classList.contains("open")){siteNav.classList.remove("open");navMenuBtn.setAttribute("aria-expanded","false");}});}
+})();
+</script>
+</body>
+</html>

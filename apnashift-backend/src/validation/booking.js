@@ -1,4 +1,4 @@
-// Booking create/list ke zod schemas.
+// Zod schemas for booking create/list.
 import { z } from 'zod';
 import { parseBody as parseAuthBody } from './auth.js';
 
@@ -24,7 +24,7 @@ const addressPointSchema = z.object({
   lng: lngField,
 });
 
-// Public estimate endpoint ke liye (sirf coords, address nahi chahiye).
+// For the public estimate endpoint (coords only, no address needed).
 export const estimateSchema = z.object({
   pickup: z.object({ lat: latField, lng: lngField }),
   drop: z.object({ lat: latField, lng: lngField }),
@@ -47,9 +47,9 @@ export const bookingCreateSchema = z.object({
     .max(500, 'Item detail 500 akshar se zyada nahi.')
     .optional()
     .default(''),
-  // Optional ISO time. Client ka bheja price yahan field hi nahi hai —
-  // price hamesha server ginata hai (route dekho), bheja hua ignore hoga.
-  // Past date nahi: future ya abhi (60s skew chhoot ke saath).
+  // Optional ISO time. Client-sent price has no field here —
+  // the server always computes price (see route); sent values are ignored.
+  // No past dates: future or present (with 60s skew allowance).
   scheduled_time: z
     .string()
     .datetime({ message: 'scheduled_time ISO date-time ho.' })

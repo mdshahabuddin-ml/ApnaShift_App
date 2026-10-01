@@ -1,14 +1,14 @@
 -- Migration 006: idempotency keys for POST /api/bookings (Option A: DB-backed separate table).
--- Chalao: npm run db:migrate
+-- Run: npm run db:migrate
 --
 -- Design (Option A):
---   - Header `Idempotency-Key` optional hai. Bhejo to (user_id, key) unique scope me
---     pehli success response dobara milti hai (replay 200, pehli baar 201).
---   - Same key + alag payload par 422 `idempotency_conflict` (nayi booking nahi).
---   - Alag user same key use kar sakta hai (scope per-user hai).
---   - booking insert + key insert ek transaction me hote hain (route dekho);
---     race me unique violation (23505) par loser existing row wapas karta hai.
---   - Expiry nahi hai (MVP) — keys hamesha rehti hain.
+--   - Header `Idempotency-Key` is optional. When sent, (user_id, key) uniquely scopes
+--     the first success response replay (replay 200, first time 201).
+--   - Same key + different payload returns 422 `idempotency_conflict` (no new booking).
+--   - Different users may reuse the same key (scope is per-user).
+--   - booking + key inserts run in one transaction (see route);
+--     on unique violation (23505) in a race, the loser returns the existing row.
+--   - No expiry (MVP) — keys persist indefinitely.
 
 CREATE TABLE IF NOT EXISTS idempotency_keys (
   user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,

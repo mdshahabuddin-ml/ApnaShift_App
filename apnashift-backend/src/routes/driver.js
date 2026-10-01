@@ -1,5 +1,5 @@
-// Driver endpoints (/api/driver/...). Sab par requireAuth + driver role +
-// verified driver gate. Doosre ki booking par 404 (403 nahi).
+// Driver endpoints (/api/driver/...). All require auth + driver role +
+// verified driver gate. Other bookings return 404 (not 403).
 import { Router } from 'express';
 import { query } from '../db.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
@@ -17,7 +17,7 @@ const BOOKING_COLS = `id, user_id, driver_id, pickup_address, pickup_lat, pickup
   drop_address, drop_lat, drop_lng, vehicle_type, helper, item_description,
   scheduled_at, delivered_at, distance_km, price_rs, status, created_at, updated_at`;
 
-// GET /api/driver/bookings/available (pending + apni gaadi type, purani pehle)
+// GET /api/driver/bookings/available (pending + own vehicle type, oldest first)
 driverRoutes.get('/bookings/available', async (req, res, next) => {
   try {
     const { page, limit } = parseQuery(paginationSchema, req.query);
@@ -49,8 +49,8 @@ driverRoutes.get('/bookings/available', async (req, res, next) => {
 });
 
 // PATCH /api/driver/bookings/:id/accept
-// Do driver saath accept karein to sirf ek jeetega: ek atomic UPDATE ...
-// WHERE status='pending' hi row lock karta hai, transaction ki zaroorat nahi.
+// Concurrent accepts: only one wins via a single atomic UPDATE ...
+// WHERE status='pending' locks the row, no transaction needed.
 driverRoutes.patch('/bookings/:id/accept', validateIdParam, async (req, res, next) => {
   try {
     const accepted = await query(
@@ -69,7 +69,7 @@ driverRoutes.patch('/bookings/:id/accept', validateIdParam, async (req, res, nex
     if (found.rowCount === 0 || found.rows[0].vehicle_type !== req.driver.vehicle_type) {
       return res.status(404).json({ ok: false, error: 'not_found' });
     }
-    // Booking hai par pending nahi — koi aur jeet gaya (ya cancel ho gayi).
+    // Booking exists but is not pending — someone else won (or it was cancelled).
     return res.status(409).json({ ok: false, error: 'already_accepted' });
   } catch (err) {
     next(err);
@@ -90,8 +90,8 @@ driverRoutes.patch('/bookings/:id/status', validateIdParam, async (req, res, nex
     }
     assertTransition(found.rows[0].status, nextStatus, DRIVER_TRANSITIONS);
 
-    // delivered par delivered_at = now(), baaki steps par untouched (NULL rehta hai).
-    // Conditional UPDATE (status check saath) race me double-advance rokta hai.
+    // delivered sets delivered_at = now(), other steps leave it untouched (NULL).
+    // Conditional UPDATE (with status check) prevents double-advance on races.
     const updated = await query(
       `UPDATE bookings
         SET status = $1, updated_at = now(),
@@ -109,7 +109,7 @@ driverRoutes.patch('/bookings/:id/status', validateIdParam, async (req, res, nex
   }
 });
 
-// GET /api/driver/bookings (apni history, nayi pehle)
+// GET /api/driver/bookings (own history, newest first)
 driverRoutes.get('/bookings', async (req, res, next) => {
   try {
     const { page, limit } = parseQuery(paginationSchema, req.query);
@@ -135,7 +135,7 @@ driverRoutes.get('/bookings', async (req, res, next) => {
   }
 });
 
-// GET /api/driver/earnings/weekly (pichle 7 din ki delivered kamai, delivered_at se)
+// GET /api/driver/earnings/weekly (last 7 days delivered earnings, via delivered_at)
 driverRoutes.get('/earnings/weekly', async (req, res, next) => {
   try {
     const result = await query(

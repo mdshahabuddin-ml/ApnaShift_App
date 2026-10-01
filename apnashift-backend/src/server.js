@@ -1,21 +1,21 @@
-// Entry point: sirf listen + graceful shutdown. Business logic yahan nahi.
+// Entry point: listen + graceful shutdown only. No business logic here.
 import { app } from './app.js';
 import { config } from './config.js';
 import { pool } from './db.js';
 
-// JWT ke bina auth ka koi matlab nahi — chupchaap start mat karo.
+// Auth is meaningless without JWT — do not start silently.
 if (!config.jwtSecret) {
   console.error('[server] JWT_SECRET missing hai — .env me set karke dobara start karo.');
   process.exit(1);
 }
-// Chhota secret brute-force ho jata hai — kam se kam 32 chars.
+// Short secrets are brute-forceable — minimum 32 chars.
 if (config.jwtSecret.length < 32) {
   console.error('[server] JWT_SECRET bahut chhota hai (min 32 chars) — lamba random secret rakho.');
   process.exit(1);
 }
 
 const server = app.listen(config.port, () => {
-  // Port + env hi log karo — DATABASE_URL/JWT kabhi nahi.
+  // Log only port + env — never DATABASE_URL/JWT.
   console.log(`[server] ApnaShift API listening on port ${config.port} (${config.env})`);
 });
 

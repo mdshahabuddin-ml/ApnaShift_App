@@ -1,4 +1,4 @@
-// Item 3: scheduled_time validation (DB nahi chahiye — zod schema direct).
+// Item 3: scheduled_time validation (no DB needed — zod schema directly).
 // Past date -> fail, future/missing -> pass.
 import { describe, it, expect } from 'vitest';
 import { bookingCreateSchema } from '../src/validation/booking.js';

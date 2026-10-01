@@ -1,6 +1,6 @@
-// Admin endpoints tests (real Postgres chahiye).
-// Chalao: TEST_DATABASE_URL=postgres://USER:PASS@localhost:5432/apnashift_test npx vitest run
-// Set nahi hai to skip.
+// Admin endpoints tests (requires real Postgres).
+// Run: TEST_DATABASE_URL=postgres://USER:PASS@localhost:5432/apnashift_test npx vitest run
+// Skips if not set.
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import request from 'supertest';
 import bcrypt from 'bcrypt';
@@ -36,7 +36,8 @@ async function makeDriver(phone, vehicle = 'mini_truck') {
     phone,
     password: 'password123',
     vehicle_type: vehicle,
-    vehicle_number: 'MP09AB1234',
+    // Each driver uses a distinct vehicle (register API blocks duplicate vehicles).
+    vehicle_number: `MP${phone.slice(-8)}`,
   });
   expect(res.status).toBe(201);
   return res.body;
@@ -221,7 +222,7 @@ describeDb('admin (DB)', () => {
     );
     expect(put.status).toBe(200);
     expect(put.body.rule.base_rs).toBe(400);
-    expect(put.body.rule.per_km_rs).toBe(17.5); // baaki same
+    expect(put.body.rule.per_km_rs).toBe(17.5); // rest unchanged
     expect(typeof put.body.history_id).toBe('number');
 
     const hist = await admin(request(app).get('/api/admin/pricing-rules/history?vehicle_type=pickup'));

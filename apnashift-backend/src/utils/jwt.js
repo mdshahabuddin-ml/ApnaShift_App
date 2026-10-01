@@ -1,5 +1,5 @@
-// JWT sign/verify. Payload me sirf { id, role } — hash/phone kabhi nahi.
-// Secret missing ho to throw (server.js start par bhi check karta hai).
+// JWT sign/verify. Payload holds only { id, role } — never hash/phone.
+// Throws if secret is missing (server.js also checks at startup).
 import jwt from 'jsonwebtoken';
 import { config } from '../config.js';
 

@@ -1,7 +1,7 @@
 // Postgres pool (pg driver, no ORM).
-// Rule: hamesha parameterized query — query(text, [params]) me $1, $2 use karo.
-// String jodkar SQL kabhi mat banao. Query text/params kabhi log mat karo
-// (isme phone number ya hash ho sakta hai).
+// Rule: always use parameterized queries — $1, $2 in query(text, [params]).
+// Never build SQL via string concatenation. Never log query text/params
+// (they may contain phone numbers or hashes).
 import pg from 'pg';
 import { config } from './config.js';
 
@@ -10,7 +10,7 @@ export const pool = new pg.Pool(
 );
 
 pool.on('error', (err) => {
-  // Sirf message — connection string ya values kabhi nahi.
+  // Log message only — never connection string or values.
   console.error('[db] pool error:', err.message);
 });
 

@@ -1,6 +1,6 @@
-// Audit plan items 1-5 ke DB integration tests (real Postgres chahiye).
-// Chalao: TEST_DATABASE_URL=postgres://apnashift:changeme@localhost:5433/apnashift_test npx vitest run
-// Set nahi hai to skip. Har item ke liye wahi cases jo plan me suggest the.
+// DB integration tests for audit plan items 1-5 (requires real Postgres).
+// Run: TEST_DATABASE_URL=postgres://apnashift:changeme@localhost:5433/apnashift_test npx vitest run
+// Skips if not set. Covers the same cases suggested in the plan for each item.
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import request from 'supertest';
 import bcrypt from 'bcrypt';
@@ -33,7 +33,7 @@ function bookingPayload(over = {}) {
   };
 }
 
-// ~722 km (1 deg ~144.5 km x 5): 500 km limit ke bahar.
+// ~722 km (1 deg ~144.5 km x 5): beyond the 500 km limit.
 function farPayload(over = {}) {
   return bookingPayload({
     drop: { address: 'Door Sheher', lat: 0, lng: 5 },
@@ -214,7 +214,7 @@ describeDb('audit items 1-5 (DB)', () => {
     expect(bad.status).toBe(400);
     expect(bad.body.error).toBe('invalid_idempotency_key');
 
-    // Same key, alag user: dono ko 201 (scope per-user).
+    // Same key, different user: both get 201 (scope is per-user).
     const shared = 'shared-key-1';
     const ua = await request(app).post('/api/bookings').set(authA).set('Idempotency-Key', shared).send(bookingPayload());
     expect(ua.status).toBe(201);

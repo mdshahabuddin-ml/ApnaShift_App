@@ -1,12 +1,12 @@
-// Idempotency-Key support (POST /api/bookings, Option A: DB-backed alag table).
-// Header optional hai. Bhejo to scope (user_id, key) me pehli success replay hoti hai.
-// Same key + alag payload par 422 idempotency_conflict. Format galat par 400.
+// Idempotency-Key support (POST /api/bookings, Option A: separate DB-backed table).
+// Header is optional. When sent, first success replays within (user_id, key) scope.
+// Same key + different payload returns 422 idempotency_conflict. Bad format is 400.
 import crypto from 'node:crypto';
 
 export const IDEMPOTENCY_KEY_RE = /^[A-Za-z0-9_-]{1,64}$/;
 
-// Header se key nikalo: absent/blank -> null (normal flow).
-// Galat format -> 400 invalid_idempotency_key.
+// Extract key from header: absent/blank -> null (normal flow).
+// Invalid format -> 400 invalid_idempotency_key.
 export function parseIdempotencyKey(req) {
   const raw = req.headers['idempotency-key'];
   if (raw === undefined || raw === null) return null;
@@ -20,8 +20,8 @@ export function parseIdempotencyKey(req) {
   return key;
 }
 
-// Replay me payload badla ya nahi, ye pakadne ke liye stable hash.
-// Sirf booking intent wale fields (price/distance nahi — wo server ginata hai).
+// Stable hash to detect payload changes on replay.
+// Only booking-intent fields (not price/distance — server computes those).
 export function hashBookingRequest({
   pickup,
   drop,

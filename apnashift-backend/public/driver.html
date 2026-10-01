@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ApnaShift — Driver App</title>
+<style>
+  :root{
+    --navy:#14213d; --yellow:#fcbf49; --paper:#fff9ec; --card:#fff;
+    --ink:#20242e; --muted:#5b6070; --line:#e9dcc0; --red:#c0392b; --green:#1a7a3a;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.55;
+    background-image:radial-gradient(circle at 12px 12px, rgba(20,33,61,.055) 2px, transparent 2.5px);
+    background-size:28px 28px;}
+  .topbar{background:var(--navy);color:#fff;padding:14px 16px;}
+  .topbar-inner{max-width:720px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .brand{font-weight:800;font-size:1.3rem;}
+  .brand small{display:block;font-weight:600;font-size:.7rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow);}
+  .spacer{flex:1}
+  .btn{font:inherit;font-weight:700;padding:10px 15px;border-radius:10px;border:2px solid var(--navy);
+    background:var(--yellow);color:var(--navy);cursor:pointer;}
+  .btn.ghost{background:#fff;}
+  .btn.small{padding:5px 10px;font-size:.82rem;}
+  .btn:disabled{opacity:.6;cursor:wait;}
+  main{max-width:720px;margin:0 auto;padding:18px 16px 40px;}
+  .card{background:var(--card);border:2px solid var(--navy);border-radius:var(--radius);
+    padding:16px;box-shadow:6px 6px 0 var(--navy);margin-bottom:16px;}
+  h2{color:var(--navy);margin:0 0 8px;font-size:1.2rem;}
+  label{display:block;font-weight:700;font-size:.88rem;color:var(--navy);margin:10px 0 4px;}
+  input,select{font:inherit;width:100%;padding:10px 11px;border:2px solid var(--navy);border-radius:10px;background:#fffdf4;color:var(--ink);}
+  .hint{font-weight:400;color:var(--muted);font-size:.8rem;margin:3px 0 0;}
+  #alert{display:none;border-radius:10px;padding:10px 12px;font-weight:600;font-size:.9rem;margin-bottom:12px;}
+  #alert.show{display:block;}
+  #alert.err{background:#fdecea;color:#7a1f14;border:2px solid var(--red);}
+  #alert.info{background:#fff3cf;color:var(--navy);border:2px solid var(--navy);}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+  .tabs button{font:inherit;font-weight:700;padding:8px 14px;border-radius:999px;border:2px solid var(--navy);background:#fff;cursor:pointer;}
+  .tabs button.active{background:var(--navy);color:var(--yellow);}
+  .panel{display:none;} .panel.active{display:block;}
+  .muted{color:var(--muted);font-size:.84rem;}
+  .pill{display:inline-block;font-size:.75rem;font-weight:700;border:1.5px solid var(--navy);border-radius:999px;padding:2px 9px;background:#fff3cf;}
+  .pill.ok{background:#e6f6ea;border-color:var(--green);color:var(--green);}
+  .pill.bad{background:#fdecea;border-color:var(--red);color:#7a1f14;}
+  .booking{border:1.5px solid var(--line);border-radius:10px;padding:10px;background:#fffdf4;margin-top:10px;}
+  .booking b.route{display:block;color:var(--navy);}
+  .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+  .earn{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;}
+  .earn div{flex:1;min-width:140px;border:1.5px solid var(--line);border-radius:10px;padding:10px;background:#fffdf4;}
+  .earn b{font-size:1.3rem;color:var(--navy);display:block;}
+  code{background:#f1ede0;padding:1px 6px;border-radius:6px;font-size:.8rem;word-break:break-all;}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">ApnaShift<small>Driver • App</small></div>
+    <div class="spacer"></div>
+    <span id="whoBox" class="muted" style="color:var(--yellow)"></span>
+    <button class="btn ghost small" id="logoutBtn" style="display:none">Logout</button>
+  </div>
+</header>
+
+<main>
+  <div id="alert" role="alert"></div>
+
+  <div class="tabs" role="tablist" id="tabs">
+    <button data-tab="register" class="active">Registration</button>
+    <button data-tab="login">Login</button>
+    <button data-tab="kaam">Kaam</button>
+  </div>
+
+  <!-- REGISTER -->
+  <section class="card panel active" id="panel-register">
+    <h2>Driver registration — 1 minute</h2>
+    <p class="muted" style="margin:0">Register karte hi account ban jayega, par booking tabhi milegi jab owner <b>verify</b> karega (admin page se).</p>
+    <label for="r-name">Naam *</label>
+    <input id="r-name" maxlength="80" placeholder="Example: Raju Yadav">
+    <label for="r-phone">Phone (10 digit) *</label>
+    <input id="r-phone" inputmode="numeric" maxlength="15" placeholder="98765 43210">
+    <p class="hint">+91 ya space chalega.</p>
+    <label for="r-pass">Password (min 8) *</label>
+    <input id="r-pass" type="password" placeholder="Mazboot password">
+    <label for="r-vehicle">Gaadi *</label>
+    <select id="r-vehicle">
+      <option value="pickup">Pickup</option>
+      <option value="mini_truck">Mini Truck</option>
+      <option value="mini_tractor">Mini Tractor</option>
+    </select>
+    <label for="r-number">Gaadi number *</label>
+    <input id="r-number" maxlength="20" placeholder="MP09AB1234" style="text-transform:uppercase">
+    <div style="margin-top:12px"><button class="btn" id="regBtn">Register karo</button></div>
+    <p class="muted" style="margin-top:10px">Naya detailed registration (license, documents, service area ke saath)?
+      <a href="/driver-register.html"><b>Driver Partner Registration →</b></a></p>
+  </section>
+
+  <!-- LOGIN -->
+  <section class="card panel" id="panel-login">
+    <h2>Driver login</h2>
+    <label for="apiBase">API base URL</label>
+    <input id="apiBase" value="">
+    <label for="l-phone">Phone *</label>
+    <input id="l-phone" inputmode="numeric" placeholder="98765 43210">
+    <label for="l-pass">Password *</label>
+    <input id="l-pass" type="password" placeholder="Password">
+    <div style="margin-top:12px"><button class="btn" id="loginBtn">Login</button></div>
+  </section>
+
+  <!-- WORK -->
+  <section class="card panel" id="panel-kaam">
+    <h2>Mera profile</h2>
+    <div id="profileBox"><p class="muted">Login karo — profile yahan dikhega.</p></div>
+    <div class="earn" id="earnBox" style="display:none">
+      <div><b id="earnRs">–</b><span class="muted">7 din ki kamai</span></div>
+      <div><b id="earnCount">–</b><span class="muted">7 din me trips</span></div>
+    </div>
+    <div class="actions">
+      <button class="btn small" id="refreshBtn">Refresh</button>
+      <button class="btn small ghost" id="availBtn">Nayi bookings dekho</button>
+      <button class="btn small ghost" id="myBtn">Meri bookings</button>
+    </div>
+    <h2 style="margin-top:16px">Nayi bookings (meri gaadi wali)</h2>
+    <div id="availBox"><p class="muted">Upar button dabao.</p></div>
+    <h2 style="margin-top:16px">Meri bookings</h2>
+    <div id="myBox"><p class="muted">Upar button dabao.</p></div>
+  </section>
+</main>
+
+<script>
+(function(){
+"use strict";
+var TOKEN_KEY = "APNASHIFT_DRIVER_TOKEN";
+var $ = function(id){ return document.getElementById(id); };
+var alertBox = $("alert");
+
+function apiBase(){
+  var v = ($("apiBase").value || "").trim().replace(/\/+$/, "");
+  return v || window.location.origin;
+}
+if(!$("apiBase").value) $("apiBase").value = window.location.origin;
+
+function showAlert(type, msg){ alertBox.className = "show " + (type === "err" ? "err" : "info"); alertBox.textContent = msg; }
+function hideAlert(){ alertBox.className = ""; alertBox.textContent = ""; }
+function esc(s){ return String(s === null || s === undefined ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function token(){ try{ return localStorage.getItem(TOKEN_KEY) || ""; }catch(e){ return ""; } }
+function setToken(t){ try{ if(t) localStorage.setItem(TOKEN_KEY, t); else localStorage.removeItem(TOKEN_KEY); }catch(e){} }
+
+async function api(path, opts){
+  opts = opts || {};
+  var headers = Object.assign({ "Content-Type": "application/json" }, opts.headers || {});
+  var t = token();
+  if(t) headers["Authorization"] = "Bearer " + t;
+  var res = await fetch(apiBase() + path, {
+    method: opts.method || "GET", headers: headers,
+    body: opts.body ? JSON.stringify(opts.body) : undefined
+  });
+  var data = null;
+  try{ data = await res.json(); }catch(e){}
+  if(res.status === 401){ setLoggedOut(); throw new Error("Session khatm — dobara login karo."); }
+  if(!res.ok || (data && data.ok === false)){
+    var msg = (data && (data.error || (data.details && data.details[0] && data.details[0].message))) || ("HTTP " + res.status);
+    var err = new Error(String(msg)); err.status = res.status; err.data = data;
+    throw err;
+  }
+  return data;
+}
+
+// --- tabs ---
+document.querySelectorAll("#tabs button").forEach(function(b){
+  b.onclick = function(){
+    document.querySelectorAll("#tabs button").forEach(function(x){ x.classList.remove("active"); });
+    document.querySelectorAll(".panel").forEach(function(x){ x.classList.remove("active"); });
+    b.classList.add("active");
+    $("panel-" + b.dataset.tab).classList.add("active");
+  };
+});
+function goTab(name){
+  document.querySelectorAll("#tabs button").forEach(function(x){ x.classList.toggle("active", x.dataset.tab === name); });
+  document.querySelectorAll(".panel").forEach(function(x){ x.classList.toggle("active", x.id === "panel-" + name); });
+}
+
+// --- auth state ---
+function setLoggedIn(user){
+  $("logoutBtn").style.display = "";
+  $("whoBox").textContent = user.name + " • " + user.phone;
+  renderProfile(user);
+  goTab("kaam");
+}
+function setLoggedOut(){
+  setToken("");
+  $("logoutBtn").style.display = "none";
+  $("whoBox").textContent = "";
+  $("profileBox").innerHTML = "<p class='muted'>Login karo — profile yahan dikhega.</p>";
+  $("earnBox").style.display = "none";
+}
+$("logoutBtn").onclick = function(){ setLoggedOut(); showAlert("info", "Logout ho gaya."); goTab("login"); };
+
+// --- register ---
+$("regBtn").onclick = async function(){
+  hideAlert();
+  var btn = $("regBtn"); btn.disabled = true; btn.textContent = "Bhej rahe hain…";
+  try{
+    var body = {
+      name: $("r-name").value.trim(),
+      phone: $("r-phone").value.trim(),
+      password: $("r-pass").value,
+      vehicle_type: $("r-vehicle").value,
+      vehicle_number: $("r-number").value.trim().toUpperCase()
+    };
+    var res = await fetch(apiBase() + "/api/drivers/register", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body)
+    });
+    var data = null; try{ data = await res.json(); }catch(e){}
+    if(!res.ok || !data || data.ok !== true){
+      var msg = (data && (data.error || (data.details && data.details[0] && data.details[0].message))) || ("HTTP " + res.status);
+      throw new Error(String(msg));
+    }
+    setToken(data.token);
+    setLoggedIn(data.user);
+    showAlert("info", "Registration OK! Owner ke verify karne ke baad booking milegi. Tab tak wait karo.");
+    refreshAll();
+  }catch(e){ showAlert("err", "Register fail: " + e.message); }
+  finally{ btn.disabled = false; btn.textContent = "Register karo"; }
+};
+
+// --- login ---
+$("loginBtn").onclick = async function(){
+  hideAlert();
+  var btn = $("loginBtn"); btn.disabled = true; btn.textContent = "Login…";
+  try{
+    var res = await fetch(apiBase() + "/api/auth/login", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone: $("l-phone").value.trim(), password: $("l-pass").value })
+    });
+    var data = null; try{ data = await res.json(); }catch(e){}
+    if(!res.ok || !data || data.ok !== true) throw new Error((data && data.error) || ("HTTP " + res.status));
+    if(data.user.role !== "driver"){ throw new Error("Ye number driver ka nahi hai (role: " + data.user.role + "). Driver number se login karo."); }
+    setToken(data.token);
+    setLoggedIn(data.user);
+    showAlert("info", "Login OK — " + data.user.name + ".");
+    refreshAll();
+  }catch(e){ showAlert("err", "Login fail: " + e.message); }
+  finally{ btn.disabled = false; btn.textContent = "Login"; }
+};
+
+// --- profile + earnings ---
+function renderProfile(u){
+  var v = u.is_verified
+    ? '<span class="pill ok">verified — booking milegi</span>'
+    : '<span class="pill bad">unverified — owner verify karega, tab booking milegi</span>';
+  $("profileBox").innerHTML =
+    "<b>" + esc(u.name) + "</b> • " + esc(u.phone) + "<br>" +
+    "<span class='muted'>" + esc(u.vehicle_type || "") + " • " + esc(u.vehicle_number || "") + "</span><br>" + v;
+}
+async function refreshAll(){
+  hideAlert();
+  try{
+    var me = await api("/api/auth/me");
+    if(me.user.role !== "driver") throw new Error("Token driver ka nahi hai.");
+    renderProfile(me.user);
+    $("whoBox").textContent = me.user.name + " • " + me.user.phone;
+    $("logoutBtn").style.display = "";
+  }catch(e){ showAlert("err", "Profile: " + e.message); return; }
+  try{
+    var e2 = await api("/api/driver/earnings/weekly");
+    $("earnBox").style.display = "flex";
+    $("earnRs").textContent = "Rs " + e2.earnings_rs;
+    $("earnCount").textContent = e2.completed_count;
+  }catch(e){
+    if(e.status === 403){ $("earnBox").style.display = "none"; showAlert("info", "Account abhi verify nahi hai — owner verify karega, tab kaam + kamai dikhegi."); }
+    else showAlert("err", "Kamai: " + e.message);
+  }
+}
+$("refreshBtn").onclick = refreshAll;
+
+// --- bookings render ---
+function bookingCard(b, mine){
+  var nextBtn = "";
+  var nextMap = { accepted: "arrived", arrived: "in_transit", in_transit: "delivered" };
+  if(mine && nextMap[b.status]){
+    var label = { arrived: "Pahunch gaya", in_transit: "Trip shuru", delivered: "Delivered" }[nextMap[b.status]];
+    nextBtn = '<button class="btn small" data-status="' + esc(nextMap[b.status]) + '" data-id="' + esc(b.id) + '">' + esc(label) + '</button>';
+  }
+  var acceptBtn = (!mine) ? '<button class="btn small" data-accept="' + esc(b.id) + '">Accept karo</button>' : "";
+  return '<div class="booking"><b class="route">' + esc((b.pickup && b.pickup.address) || "") + " → " + esc((b.drop && b.drop.address) || "") + "</b>" +
+    '<span class="pill">' + esc(b.status) + '</span> <span class="pill">Rs ' + esc(b.price_rs) + '</span> ' +
+    '<span class="pill">' + esc(b.vehicle_type) + '</span>' +
+    '<br><span class="muted">' + esc(b.distance_km) + ' km' + (b.helper_needed ? " • helper" : "") +
+    (b.item_description ? " • " + esc(b.item_description) : "") + "<br>ID <code>" + esc(b.id.slice(0,8)) + "…</code></span>" +
+    '<div class="actions">' + acceptBtn + nextBtn + "</div></div>";
+}
+
+$("availBtn").onclick = async function(){
+  hideAlert();
+  try{
+    var d = await api("/api/driver/bookings/available?limit=20");
+    if(!d.bookings.length){ $("availBox").innerHTML = "<p class='muted'>Abhi koi pending booking nahi (tumhari gaadi type wali).</p>"; return; }
+    $("availBox").innerHTML = d.bookings.map(function(b){ return bookingCard(b, false); }).join("");
+    $("availBox").querySelectorAll("button[data-accept]").forEach(function(btn){
+      btn.onclick = async function(){
+        try{
+          await api("/api/driver/bookings/" + btn.dataset.accept + "/accept", { method: "PATCH", body: {} });
+          showAlert("info", "Booking accept OK! Meri bookings me dekho.");
+          $("availBtn").onclick(); loadMine();
+        }catch(e){ showAlert("err", "Accept: " + e.message); }
+      };
+    });
+  }catch(e){
+    if(e.status === 403) showAlert("info", "Account abhi verify nahi hai — owner verify karega, tab nayi bookings dikhengi.");
+    else showAlert("err", "Bookings: " + e.message);
+  }
+};
+
+async function loadMine(){
+  try{
+    var d = await api("/api/driver/bookings?limit=20");
+    if(!d.bookings.length){ $("myBox").innerHTML = "<p class='muted'>Abhi koi booking accept nahi ki.</p>"; return; }
+    $("myBox").innerHTML = d.bookings.map(function(b){ return bookingCard(b, true); }).join("");
+    $("myBox").querySelectorAll("button[data-status]").forEach(function(btn){
+      btn.onclick = async function(){
+        try{
+          await api("/api/driver/bookings/" + btn.dataset.id + "/status", { method: "PATCH", body: { status: btn.dataset.status } });
+          showAlert("info", "Status update OK: " + btn.dataset.status);
+          loadMine();
+        }catch(e){ showAlert("err", "Status: " + e.message); }
+      };
+    });
+  }catch(e){
+    if(e.status === 403) $("myBox").innerHTML = "<p class='muted'>Verify ke baad yahan bookings dikhengi.</p>";
+    else showAlert("err", "Meri bookings: " + e.message);
+  }
+}
+$("myBtn").onclick = function(){ hideAlert(); loadMine(); };
+
+// auto-login
+if(token()){ refreshAll(); }
+})();
+</script>
+</body>
+</html>

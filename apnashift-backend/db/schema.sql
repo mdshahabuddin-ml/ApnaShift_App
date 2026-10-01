@@ -1,23 +1,23 @@
 -- ApnaShift MVP schema (one city). PostgreSQL.
--- Table names fixed hain, bina pooche mat badalna:
+-- Table names are fixed, do not change without review:
 -- users, drivers, bookings, ratings, pricing_rules, admins,
 -- audit_logs, pricing_history, idempotency_keys.
 --
--- Ye file canonical hai — db/migrations/* ke saath match karti hai.
--- Fresh DB: ye file kaafi hai (saare columns/indexes/triggers included).
--- Existing DB: npm run db:migrate chalao (ye file + migrations order me,
--- sab IF NOT EXISTS / DROP IF EXISTS, isliye dobara chalana safe hai).
+-- This file is canonical — matches db/migrations/*.
+-- Fresh DB: this file is sufficient (all columns/indexes/triggers included).
+-- Existing DB: run npm run db:migrate (this file + migrations in order,
+-- all IF NOT EXISTS / DROP IF EXISTS, so re-running is safe).
 --
--- Run (migrate script se, recommended):
+-- Run (via migrate script, recommended):
 --   npm run db:migrate
--- Ya seedha psql se:
+-- Or directly via psql:
 --   PowerShell: psql $env:DATABASE_URL -f db/schema.sql
 --   Bash:       psql "$DATABASE_URL" -f db/schema.sql
--- Uske baad seed: db/seed.sql (pricing rules).
+-- Then seed: db/seed.sql (pricing rules).
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
--- App users (customers). Driver onboarding manual hai, isliye drivers alag table.
+-- App users (customers). Driver onboarding is manual, so drivers use a separate table.
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL CHECK (char_length(name) >= 2 AND char_length(name) <= 80),
@@ -26,10 +26,12 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- Drivers (manual onboarding; is_verified staff set karta hai).
--- avg_rating/needs_review ratings-trigger se (003), total_trips bookings-trigger
--- se bhi sync hota hai (008) taaki bina rating ke delivered count sahi rahe.
--- rejection_reason reject par wajah, verify par NULL (004 dekho).
+-- Drivers (manual onboarding; staff sets is_verified).
+-- avg_rating/needs_review via ratings trigger (003), total_trips via bookings trigger
+-- also synced (008) so delivered count stays correct without ratings.
+-- rejection_reason holds the reason on reject, NULL on verify (see 004).
+-- Extended profile columns come from Driver Partner Registration (009) —
+-- included here for fresh installs, applied via migration 009 on existing DBs.
 CREATE TABLE IF NOT EXISTS drivers (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL CHECK (char_length(name) >= 2 AND char_length(name) <= 80),
@@ -43,15 +45,44 @@ CREATE TABLE IF NOT EXISTS drivers (
   total_trips INTEGER NOT NULL DEFAULT 0,
   needs_review BOOLEAN NOT NULL DEFAULT FALSE,
   rejection_reason TEXT,
+  email TEXT UNIQUE CHECK (email IS NULL OR (char_length(email) <= 120 AND email ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$')),
+  dob DATE CHECK (dob IS NULL OR (dob <= CURRENT_DATE - INTERVAL '18 years' AND dob >= CURRENT_DATE - INTERVAL '100 years')),
+  gender TEXT CHECK (gender IS NULL OR gender IN ('male', 'female', 'other', 'prefer_not_to_say')),
+  city TEXT CHECK (city IS NULL OR (char_length(city) BETWEEN 2 AND 120)),
+  state TEXT CHECK (state IS NULL OR (char_length(state) BETWEEN 2 AND 80)),
+  address TEXT CHECK (address IS NULL OR (char_length(address) BETWEEN 5 AND 500)),
+  vehicle_make TEXT,
+  vehicle_model TEXT,
+  vehicle_year INTEGER CHECK (vehicle_year IS NULL OR (vehicle_year BETWEEN 1990 AND 2100)),
+  capacity_kg INTEGER CHECK (capacity_kg IS NULL OR (capacity_kg >= 0 AND capacity_kg <= 50000)),
+  fuel_type TEXT CHECK (fuel_type IS NULL OR fuel_type IN ('diesel', 'petrol', 'cng', 'electric', 'other')),
+  ownership TEXT CHECK (ownership IS NULL OR ownership IN ('owned', 'financed', 'rented', 'other')),
+  license_number TEXT UNIQUE,
+  license_type TEXT,
+  license_expiry DATE CHECK (license_expiry IS NULL OR license_expiry > CURRENT_DATE),
+  license_state TEXT,
+  rc_number TEXT,
+  insurance_expiry DATE,
+  pollution_expiry DATE,
+  permit_number TEXT,
+  service_city TEXT,
+  service_state TEXT,
+  service_areas TEXT,
+  service_radius_km INTEGER CHECK (service_radius_km IS NULL OR (service_radius_km BETWEEN 1 AND 200)),
+  emergency_name TEXT,
+  emergency_relation TEXT,
+  emergency_phone TEXT CHECK (emergency_phone IS NULL OR emergency_phone ~ '^[6-9][0-9]{9}$'),
+  application_ref TEXT NOT NULL UNIQUE,
+  consent_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- Bookings (ek user, optional driver, ek gaadi type).
+-- Bookings (one user, optional driver, one vehicle type).
 -- Status machine: pending -> accepted -> arrived -> in_transit -> delivered (+ cancelled).
--- pickup/drop lat-lng + item_description 002 me aaye (purani rows me NULL/'' ho sakta hai).
--- distance_km ek sheher ke liye 0 < d <= 500 (app me 400 distance_too_far, DB CHECK backup).
--- delivered_at 007 me aaya: sirf delivered par set (backfill: updated_at/created_at),
--- invariant delivered <=> delivered_at NOT NULL (CHECK neeche).
+-- pickup/drop lat-lng + item_description added in 002 (older rows may have NULL/'').
+-- distance_km for one city is 0 < d <= 500 (app returns 400 distance_too_far, DB CHECK backup).
+-- delivered_at added in 007: set only on delivered (backfill: updated_at/created_at),
+-- invariant delivered <=> delivered_at NOT NULL (CHECK below).
 CREATE TABLE IF NOT EXISTS bookings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users (id) ON DELETE RESTRICT,
@@ -81,19 +112,19 @@ CREATE TABLE IF NOT EXISTS bookings (
 CREATE INDEX IF NOT EXISTS idx_bookings_user_id ON bookings (user_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_driver_id ON bookings (driver_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings (status);
--- 005: common queries par composite indexes.
+-- 005: composite indexes for common queries.
 CREATE INDEX IF NOT EXISTS idx_bookings_available
   ON bookings (status, vehicle_type, created_at ASC);
 CREATE INDEX IF NOT EXISTS idx_bookings_user_created
   ON bookings (user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_bookings_driver_created
   ON bookings (driver_id, created_at DESC);
--- 007 ke indexes (driver_delivered, delivered_at) yahan nahi — migration me hain.
--- Wajah: schema.sql purani DB par bhi dobara chalta hai (IF NOT EXISTS);
--- delivered_at column wahan tab tak nahi hota jab tak 007 na chale,
--- isliye us column par index sirf 007 banata hai (migrate.js use hamesha chalata hai).
+-- Indexes from 007 (driver_delivered, delivered_at) are not here — they live in the migration.
+-- Reason: schema.sql also re-runs on older DBs (IF NOT EXISTS);
+-- the delivered_at column does not exist there until 007 runs,
+-- so only 007 creates indexes on that column (migrate.js always runs it).
 
--- updated_at auto-refresh trigger (bookings ke liye).
+-- updated_at auto-refresh trigger (for bookings).
 CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -108,7 +139,7 @@ CREATE TRIGGER trg_bookings_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION set_updated_at();
 
--- Ratings (ek booking par ek rating).
+-- Ratings (one rating per booking).
 CREATE TABLE IF NOT EXISTS ratings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   booking_id UUID NOT NULL UNIQUE REFERENCES bookings (id) ON DELETE CASCADE,
@@ -121,7 +152,7 @@ CREATE TABLE IF NOT EXISTS ratings (
 CREATE INDEX IF NOT EXISTS idx_ratings_driver_id ON ratings (driver_id);
 
 -- 003: driver stats trigger (avg_rating/total_trips/needs_review).
--- needs_review TRUE jab ratings >= 5 AUR avg < 3.0. Auto-ban nahi.
+-- needs_review is TRUE when ratings >= 5 AND avg < 3.0. No auto-ban.
 CREATE OR REPLACE FUNCTION refresh_driver_stats()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -170,11 +201,11 @@ CREATE TRIGGER trg_ratings_refresh
   FOR EACH ROW
   EXECUTE FUNCTION refresh_driver_stats();
 
--- 008: driver total_trips trigger (bookings delivered par).
--- refresh_driver_stats sirf ratings par chalta hai, isliye bina rating ke
--- delivered bookings ka total_trips stale rehta tha. Ye trigger bookings ke
--- driver_id/status change par total_trips ko delivered count se sync karta hai.
--- avg_rating/needs_review ratings-trigger ke paas rehte hain (yahan untouched).
+-- 008: driver total_trips trigger (on delivered bookings).
+-- refresh_driver_stats runs only on ratings, so delivered bookings
+-- without ratings left total_trips stale. This trigger recounts
+-- total_trips from the delivered count on driver_id/status changes.
+-- avg_rating/needs_review stay with the ratings trigger (untouched here).
 CREATE OR REPLACE FUNCTION sync_driver_trips()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -199,7 +230,7 @@ BEGIN
     END IF;
     RETURN NEW;
   ELSE
-    -- UPDATE: driver ya status badla tabhi recount (faltu writes nahi).
+    -- UPDATE: recount only when driver or status changes (avoids extra writes).
     IF NEW.driver_id IS DISTINCT FROM OLD.driver_id
       OR NEW.status IS DISTINCT FROM OLD.status THEN
       IF NEW.driver_id IS NOT NULL THEN
@@ -245,7 +276,7 @@ CREATE TABLE IF NOT EXISTS admins (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- 004: audit log (kaunse admin ne kya kiya) + pricing history.
+-- 004: audit log (which admin did what) + pricing history.
 CREATE TABLE IF NOT EXISTS audit_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   admin_id UUID REFERENCES admins (id) ON DELETE SET NULL,
@@ -273,8 +304,8 @@ CREATE TABLE IF NOT EXISTS pricing_history (
 );
 CREATE INDEX IF NOT EXISTS idx_pricing_hist_vehicle ON pricing_history (vehicle_type);
 
--- 006: idempotency keys (POST /api/bookings, Option A: alag table, per-user scope).
--- booking insert + key insert ek transaction me (route dekho). Expiry nahi (MVP).
+-- 006: idempotency keys (POST /api/bookings, Option A: separate table, per-user scope).
+-- booking + key inserts run in one transaction (see route). No expiry (MVP).
 CREATE TABLE IF NOT EXISTS idempotency_keys (
   user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
   key TEXT NOT NULL CHECK (char_length(key) >= 1 AND char_length(key) <= 64),
@@ -284,3 +315,32 @@ CREATE TABLE IF NOT EXISTS idempotency_keys (
   PRIMARY KEY (user_id, key)
 );
 CREATE INDEX IF NOT EXISTS idx_idempotency_booking ON idempotency_keys (booking_id);
+
+-- 010: enterprise_inquiries (B2B lead/inquiry flow; see migration 010 for details).
+CREATE TABLE IF NOT EXISTS enterprise_inquiries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  full_name TEXT NOT NULL CHECK (char_length(full_name) BETWEEN 2 AND 100),
+  email TEXT NOT NULL CHECK (char_length(email) <= 160 AND email ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$'),
+  phone VARCHAR(15) NOT NULL CHECK (phone ~ '^[6-9][0-9]{9}$'),
+  company_name TEXT NOT NULL CHECK (char_length(company_name) BETWEEN 2 AND 160),
+  website TEXT CHECK (website IS NULL OR char_length(website) <= 255),
+  designation TEXT CHECK (designation IS NULL OR char_length(designation) <= 100),
+  business_type TEXT,
+  company_size TEXT,
+  cities TEXT CHECK (cities IS NULL OR char_length(cities) <= 300),
+  operating_state TEXT CHECK (operating_state IS NULL OR char_length(operating_state) <= 80),
+  locations_count INTEGER CHECK (locations_count IS NULL OR (locations_count BETWEEN 1 AND 100000)),
+  services_required TEXT[] NOT NULL DEFAULT '{}',
+  vehicle_types TEXT[] NOT NULL DEFAULT '{}',
+  fleet_size TEXT,
+  monthly_trips TEXT,
+  start_date DATE,
+  service_frequency TEXT,
+  budget_range TEXT,
+  requirements TEXT CHECK (requirements IS NULL OR char_length(requirements) <= 1000),
+  status TEXT NOT NULL DEFAULT 'NEW' CHECK (status IN ('NEW', 'CONTACTED', 'IN_DISCUSSION', 'CONVERTED', 'CLOSED')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS enterprise_inquiries_status_idx ON enterprise_inquiries (status, created_at DESC);
+CREATE INDEX IF NOT EXISTS enterprise_inquiries_email_idx ON enterprise_inquiries (email);

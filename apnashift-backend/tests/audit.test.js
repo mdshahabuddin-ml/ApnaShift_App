@@ -1,5 +1,5 @@
-// Item 5 (unit, DB nahi chahiye): logAuditSafe best-effort hai.
-// DB down ho (DATABASE_URL missing) to bhi reject nahi hona chahiye.
+// Item 5 (unit, no DB needed): logAuditSafe is best-effort.
+// Must not reject even when DB is down (DATABASE_URL missing).
 import { describe, it, expect } from 'vitest';
 import { logAuditSafe } from '../src/services/audit.js';
 

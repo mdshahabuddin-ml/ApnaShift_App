@@ -1,5 +1,5 @@
-// Public driver ratings (login nahi chahiye).
-// User ka phone number kabhi bahar nahi jata — users table ko chhoote hi nahi.
+// Public driver ratings (no login required).
+// User phone numbers never leave — users table is never touched.
 import { Router } from 'express';
 import { query } from '../db.js';
 import { VEHICLE_TO_API } from '../validation/auth.js';

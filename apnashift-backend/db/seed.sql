@@ -1,12 +1,12 @@
--- ApnaShift pricing seed. Schema ke baad chalao:
---   npm run db:migrate   (schema + seed dono chalata hai)
--- Ya seedha: psql $env:DATABASE_URL -f db/seed.sql
+-- ApnaShift pricing seed. Run after schema:
+--   npm run db:migrate   (runs both schema + seed)
+-- Or directly: psql $env:DATABASE_URL -f db/seed.sql
 --
--- Quote formula (quote API isi se ginata hai):
+-- Quote formula (quote API computes from this):
 --   total = base_rs + per_km_rs * distance_km + (helper ? helper_rs : 0)
 --
--- ONLY-IF-NOT-EXISTS: pehli baar defaults dalta hai, dobara migrate par
--- custom rates overwrite nahi karta (DO NOTHING, DO UPDATE nahi).
+-- ONLY-IF-NOT-EXISTS: inserts defaults once, on re-migrate
+-- does not overwrite custom rates (DO NOTHING, no DO UPDATE).
 
 INSERT INTO pricing_rules (vehicle_type, base_rs, per_km_rs, helper_rs) VALUES
   ('Pickup', 350, 17.5, 200),

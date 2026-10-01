@@ -1,5 +1,5 @@
 // Auth middleware: JWT Bearer check + role gate.
-// req.user = { id, role } — isme hash/phone kabhi nahi aata.
+// req.user = { id, role } — never contains hash/phone.
 import { verifyToken } from '../utils/jwt.js';
 
 export function requireAuth(req, res, next) {

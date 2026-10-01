@@ -1,6 +1,6 @@
-// Bookings flow tests (real Postgres chahiye).
-// Chalao: TEST_DATABASE_URL=postgres://USER:PASS@localhost:5432/apnashift_test npx vitest run
-// Set nahi hai to skip. Coords fixed (0,0)-(0,1) taaki distance deterministic ho.
+// Bookings flow tests (requires real Postgres).
+// Run: TEST_DATABASE_URL=postgres://USER:PASS@localhost:5432/apnashift_test npx vitest run
+// Skips if not set. Coords fixed (0,0)-(0,1) for deterministic distance.
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import request from 'supertest';
 import pg from 'pg';
@@ -46,7 +46,8 @@ async function makeDriver(phone, vehicle = 'mini_truck', verified = true) {
     phone,
     password: 'password123',
     vehicle_type: vehicle,
-    vehicle_number: 'MP09AB1234',
+    // Each driver uses a distinct vehicle (register API blocks duplicate vehicles).
+    vehicle_number: `MP${phone.slice(-8)}`,
   });
   expect(res.status).toBe(201);
   if (verified) {
@@ -270,10 +271,10 @@ describeDb('bookings flow (DB)', () => {
     const d2 = await makeDriver(nextPhone());
     const unverified = await makeDriver(nextPhone(), 'mini_truck', false);
 
-    // Bina token.
+    // Without token.
     expect((await request(app).post('/api/bookings').send(bookingPayload())).status).toBe(401);
 
-    // User token driver route par.
+    // User token on driver route.
     expect(
       (await request(app).get('/api/driver/bookings/available').set('Authorization', `Bearer ${token}`))
         .status,
@@ -286,7 +287,7 @@ describeDb('bookings flow (DB)', () => {
     expect(unv.status).toBe(403);
     expect(unv.body.error).toBe('driver_unverified');
 
-    // Driver 1 ne uthayi, driver 2 uska status nahi badal sakta (404).
+    // Driver 1 accepted it, driver 2 cannot change its status (404).
     await request(app)
       .patch(`/api/driver/bookings/${booking.id}/accept`)
       .set('Authorization', `Bearer ${d1.token}`);
@@ -296,7 +297,7 @@ describeDb('bookings flow (DB)', () => {
       .send({ status: 'arrived' });
     expect(other.status).toBe(404);
 
-    // Driver 2 ki history me wo booking nahi.
+    // That booking is absent from driver 2 history.
     const h2 = await request(app)
       .get('/api/driver/bookings')
       .set('Authorization', `Bearer ${d2.token}`);

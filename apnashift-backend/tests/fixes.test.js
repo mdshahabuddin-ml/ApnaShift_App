@@ -1,6 +1,6 @@
-// Fixes 1-4 regression tests (real Postgres chahiye).
-// Chalao: TEST_DATABASE_URL=postgres://USER:PASS@localhost:5432/apnashift_test npx vitest run
-// Set nahi hai to skip.
+// Fixes 1-4 regression tests (requires real Postgres).
+// Run: TEST_DATABASE_URL=postgres://USER:PASS@localhost:5432/apnashift_test npx vitest run
+// Skips if not set.
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import request from 'supertest';
 import bcrypt from 'bcrypt';
@@ -47,7 +47,8 @@ async function makeDriver(phone) {
     phone,
     password: 'password123',
     vehicle_type: 'mini_truck',
-    vehicle_number: 'MP09AB1234',
+    // Each driver uses a distinct vehicle (register API blocks duplicate vehicles).
+    vehicle_number: `MP${phone.slice(-8)}`,
   });
   expect(res.status).toBe(201);
   await client.query('UPDATE drivers SET is_verified = TRUE WHERE phone = $1', [phone]);
@@ -107,7 +108,7 @@ describeDb('fixes 1-4 (DB)', () => {
 
     await deliverBooking(d.token, booking.id);
 
-    // Bina rating ke count 1 hona chahiye (008 trigger).
+    // Count should be 1 without ratings (008 trigger).
     stored = await client.query('SELECT total_trips, avg_rating FROM drivers WHERE id = $1', [
       d.user.id,
     ]);
@@ -117,7 +118,7 @@ describeDb('fixes 1-4 (DB)', () => {
     expect(pub.status).toBe(200);
     expect(pub.body.driver.total_trips).toBe(1);
 
-    // Doosri delivered bina rating -> 2.
+    // Second delivered without rating -> 2.
     const booking2 = await makeBooking(token);
     await deliverBooking(d.token, booking2.id);
     stored = await client.query('SELECT total_trips FROM drivers WHERE id = $1', [d.user.id]);
@@ -128,7 +129,7 @@ describeDb('fixes 1-4 (DB)', () => {
     const userPhone = nextPhone();
     await makeUser(userPhone);
 
-    // User wala number driver banne me 409.
+    // User number registering as driver gets 409.
     const asDriver = await request(app).post('/api/drivers/register').send({
       name: 'Copy Driver',
       phone: userPhone,
@@ -139,7 +140,7 @@ describeDb('fixes 1-4 (DB)', () => {
     expect(asDriver.status).toBe(409);
     expect(asDriver.body).toEqual({ ok: false, error: 'phone_taken' });
 
-    // Driver wala number user banne me 409.
+    // Driver number registering as user gets 409.
     const driverPhone = nextPhone();
     await makeDriver(driverPhone);
     const asUser = await request(app)
@@ -148,7 +149,7 @@ describeDb('fixes 1-4 (DB)', () => {
     expect(asUser.status).toBe(409);
     expect(asUser.body).toEqual({ ok: false, error: 'phone_taken' });
 
-    // Admin wala number user + driver dono me 409.
+    // Admin number gets 409 in both user + driver.
     const adminPhone = nextPhone();
     const hash = await bcrypt.hash('admin-pass-123', 4);
     await client.query('INSERT INTO admins (name, phone, password_hash) VALUES ($1, $2, $3)', [
@@ -180,7 +181,7 @@ describeDb('fixes 1-4 (DB)', () => {
     expect(put.status).toBe(200);
     expect(put.body.rule.base_rs).toBe(999);
 
-    // Seed dobara chalao (migrate jaisa).
+    // Re-run seed (as migrate does).
     const seed = await readFile(path.join(root, 'db', 'seed.sql'), 'utf8');
     await client.query(seed);
 
@@ -199,14 +200,14 @@ describeDb('fixes 1-4 (DB)', () => {
     expect(off.status).toBe(200);
     expect(off.body.driver.is_active).toBe(false);
 
-    // Deactivated driver ko driver API par 403 driver_inactive.
+    // Deactivated driver gets 403 driver_inactive on driver API.
     const blocked = await request(app)
       .get('/api/driver/bookings/available')
       .set('Authorization', `Bearer ${d.token}`);
     expect(blocked.status).toBe(403);
     expect(blocked.body.error).toBe('driver_inactive');
 
-    // Assign bhi 409 driver_unavailable.
+    // Assign also returns 409 driver_unavailable.
     const { token } = await makeUser(nextPhone());
     const booking = await makeBooking(token);
     const assignBlocked = await admin(
@@ -225,7 +226,7 @@ describeDb('fixes 1-4 (DB)', () => {
       .set('Authorization', `Bearer ${d.token}`);
     expect(allowed.status).toBe(200);
 
-    // Unknown id 404, user role 403, bina token 401.
+    // Unknown id 404, user role 403, no token 401.
     expect(
       (await admin(request(app).patch('/api/admin/drivers/00000000-0000-0000-0000-000000000000/deactivate')))
         .status,
@@ -240,7 +241,7 @@ describeDb('fixes 1-4 (DB)', () => {
     ).toBe(403);
     expect((await request(app).patch(`/api/admin/drivers/${d.user.id}/deactivate`)).status).toBe(401);
 
-    // Audit rows bani.
+    // Audit rows created.
     const audit = await client.query(
       "SELECT action FROM audit_logs WHERE entity = 'driver' AND entity_id = $1 ORDER BY action",
       [d.user.id],

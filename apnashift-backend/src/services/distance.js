@@ -1,5 +1,5 @@
 // Distance providers. Interface: async (a, b) => km (number).
-// a/b = { lat, lng }. Key kabhi log mat karo (URL me hoti hai).
+// a/b = { lat, lng }. Never log the key (it is part of the URL).
 import { config } from '../config.js';
 
 export const ROAD_FACTOR = 1.3;
@@ -8,7 +8,7 @@ function toRad(deg) {
   return (deg * Math.PI) / 180;
 }
 
-// (a) haversine: seedhi line x 1.3 road factor. Default, free, key nahi chahiye.
+// (a) haversine: straight line x 1.3 road factor. Default, free, no key needed.
 export function haversineKm(a, b) {
   const R = 6371; // earth radius km
   const dLat = toRad(b.lat - a.lat);
@@ -20,7 +20,7 @@ export function haversineKm(a, b) {
   return straight * ROAD_FACTOR;
 }
 
-// (b) google: Google Distance Matrix (driving). Sirf tab jab GOOGLE_MAPS_KEY set ho.
+// (b) google: Google Distance Matrix (driving). Only when GOOGLE_MAPS_KEY is set.
 export async function googleDistanceKm(a, b) {
   if (!config.googleMapsKey) {
     throw new Error('GOOGLE_MAPS_KEY missing — DISTANCE_PROVIDER=google kaam nahi karega.');
@@ -46,8 +46,8 @@ export const distanceProviders = {
   google: googleDistanceKm,
 };
 
-// Provider DISTANCE_PROVIDER se chunta hai. 'google' bina key ke error dega —
-// isliye key lagaye bina env mat badlo (README me switch guide hai).
+// Provider is selected via DISTANCE_PROVIDER. 'google' errors without a key —
+// so do not change env without setting a key (see README switch guide).
 export async function getDistanceKm(a, b) {
   if (config.distanceProvider === 'google') {
     return distanceProviders.google(a, b);

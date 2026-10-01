@@ -1,6 +1,6 @@
 // Indian mobile normalization.
 // "+91 98765 43210" / "09876543210" / "98-765 43210" -> "9876543210".
-// Wapas hamesha 10-digit string; valid hai ya nahi, PHONE_RE se check karo.
+// Always returns a 10-digit string; validate with PHONE_RE.
 export const PHONE_RE = /^[6-9]\d{9}$/;
 
 export function normalizePhone(raw) {

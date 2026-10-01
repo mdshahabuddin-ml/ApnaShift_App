@@ -1,13 +1,13 @@
 -- Migration 003: driver ratings stats (trigger-maintained).
--- Note: file db/migrations/003_ratings.sql hai (002 bookings flow le chuka hai).
--- migrate.js db/migrations/*.sql ko order me chalata hai — runner me change nahi chahiye.
--- Chalao: npm run db:migrate
+-- Note: file is db/migrations/003_ratings.sql (002 already covers bookings flow).
+-- migrate.js runs db/migrations/*.sql in order — no runner change needed.
+-- Run: npm run db:migrate
 --
 -- Columns (drivers):
---   avg_rating   — ratings ka AVG (koi rating nahi to NULL)
---   total_trips  — delivered bookings ki ginti (ratings ki nahi)
---   needs_review — TRUE jab ratings >= 5 AUR avg < 3.0 (recover ho to FALSE).
--- Auto-ban kahin nahi — flag sirf admins dekhte hain.
+--   avg_rating   — AVG of ratings (NULL when no ratings)
+--   total_trips  — count of delivered bookings (not ratings)
+--   needs_review — TRUE when ratings >= 5 AND avg < 3.0 (FALSE on recovery).
+-- No auto-ban — flag is for admin review only.
 
 ALTER TABLE drivers ADD COLUMN IF NOT EXISTS avg_rating NUMERIC(3, 2);
 ALTER TABLE drivers ADD COLUMN IF NOT EXISTS total_trips INTEGER NOT NULL DEFAULT 0;
@@ -39,7 +39,7 @@ BEGIN
       needs_review = (r_count >= 5 AND COALESCE(r_avg, 5) < 3.0)
   WHERE id = did;
 
-  -- driver_id practically kabhi nahi badalta (booking fixed), par safe raho:
+  -- driver_id rarely changes (booking is fixed), but stay safe:
   IF TG_OP = 'UPDATE' AND OLD.driver_id IS DISTINCT FROM NEW.driver_id THEN
     SELECT COUNT(*), ROUND(AVG(stars), 2) INTO r_count, r_avg
     FROM ratings WHERE driver_id = OLD.driver_id;
@@ -62,9 +62,9 @@ CREATE TRIGGER trg_ratings_refresh
   FOR EACH ROW
   EXECUTE FUNCTION refresh_driver_stats();
 
--- Backfill: pehle se maujood drivers/ratings par stats lagao.
--- (Correlated subqueries taaki har Postgres version par chale —
--- target table ko FROM/JOIN me dobara likhne par "invalid reference" aata hai.)
+-- Backfill: apply stats to existing drivers/ratings.
+-- (Correlated subqueries for compatibility across Postgres versions —
+-- rewriting the target table in FROM/JOIN raises "invalid reference".)
 UPDATE drivers d
 SET avg_rating = (SELECT ROUND(AVG(stars), 2) FROM ratings WHERE driver_id = d.id),
     total_trips = (SELECT COUNT(*) FROM bookings WHERE driver_id = d.id AND status = 'delivered'),

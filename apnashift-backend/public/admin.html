@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ApnaShift — Owner Admin</title>
+<style>
+  :root{
+    --navy:#14213d; --yellow:#fcbf49; --paper:#fff9ec; --card:#fff;
+    --ink:#20242e; --muted:#5b6070; --line:#e9dcc0; --red:#c0392b; --green:#1a7a3a;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.55;
+    background-image:radial-gradient(circle at 12px 12px, rgba(20,33,61,.055) 2px, transparent 2.5px);
+    background-size:28px 28px;}
+  .topbar{background:var(--navy);color:#fff;padding:14px 16px;}
+  .topbar-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .brand{font-weight:800;font-size:1.3rem;}
+  .brand small{display:block;font-weight:600;font-size:.7rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow);}
+  .spacer{flex:1}
+  .btn{font:inherit;font-weight:700;padding:9px 14px;border-radius:10px;border:2px solid var(--navy);
+    background:var(--yellow);color:var(--navy);cursor:pointer;}
+  .btn.ghost{background:#fff;}
+  .btn.danger{background:#fdecea;border-color:var(--red);color:#7a1f14;}
+  .btn.small{padding:5px 10px;font-size:.82rem;}
+  .btn:disabled{opacity:.6;cursor:wait;}
+  main{max-width:960px;margin:0 auto;padding:18px 16px 40px;}
+  .card{background:var(--card);border:2px solid var(--navy);border-radius:var(--radius);
+    padding:16px;box-shadow:6px 6px 0 var(--navy);margin-bottom:16px;}
+  h2{color:var(--navy);margin:0 0 8px;}
+  label{display:block;font-weight:700;font-size:.88rem;color:var(--navy);margin:10px 0 4px;}
+  input,select{font:inherit;width:100%;padding:10px 11px;border:2px solid var(--navy);border-radius:10px;background:#fffdf4;color:var(--ink);}
+  .row{display:grid;gap:10px;}
+  @media(min-width:640px){.row.c2{grid-template-columns:1fr 1fr;}.row.c3{grid-template-columns:1fr 1fr 1fr;}.row.c4{grid-template-columns:1fr 1fr 1fr 1fr;}}
+  #alert{display:none;border-radius:10px;padding:10px 12px;font-weight:600;font-size:.9rem;margin-bottom:12px;}
+  #alert.show{display:block;}
+  #alert.err{background:#fdecea;color:#7a1f14;border:2px solid var(--red);}
+  #alert.info{background:#fff3cf;color:var(--navy);border:2px solid var(--navy);}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+  .tabs button{font:inherit;font-weight:700;padding:8px 14px;border-radius:999px;border:2px solid var(--navy);background:#fff;cursor:pointer;}
+  .tabs button.active{background:var(--navy);color:var(--yellow);}
+  .panel{display:none;} .panel.active{display:block;}
+  table{width:100%;border-collapse:collapse;font-size:.86rem;margin-top:10px;}
+  th,td{border:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top;}
+  th{background:#f7f3e8;color:var(--navy);}
+  .muted{color:var(--muted);font-size:.84rem;}
+  .pill{display:inline-block;font-size:.75rem;font-weight:700;border:1.5px solid var(--navy);border-radius:999px;padding:2px 9px;background:#fff3cf;}
+  .pill.ok{background:#e6f6ea;border-color:var(--green);color:var(--green);}
+  .pill.bad{background:#fdecea;border-color:var(--red);color:#7a1f14;}
+  .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+  .stat-grid{display:grid;gap:10px;margin-top:10px;}
+  @media(min-width:640px){.stat-grid{grid-template-columns:repeat(3,1fr);}}
+  .stat{border:1.5px solid var(--line);border-radius:10px;padding:10px;background:#fffdf4;}
+  .stat b{font-size:1.3rem;color:var(--navy);display:block;}
+  code{background:#f1ede0;padding:1px 6px;border-radius:6px;font-size:.8rem;word-break:break-all;}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">ApnaShift<small>Owner • Admin</small></div>
+    <div class="spacer"></div>
+    <span id="whoBox" class="muted" style="color:var(--yellow)"></span>
+    <button class="btn ghost small" id="logoutBtn" style="display:none">Logout</button>
+  </div>
+</header>
+
+<main>
+  <div id="alert" role="alert"></div>
+
+  <!-- LOGIN -->
+  <section class="card" id="loginCard">
+    <h2>Owner login</h2>
+    <p class="muted" style="margin:0">Admin phone + password se login karo. Pehli baar admin server par banana padega — neeche command dekho.</p>
+    <div class="row c2">
+      <div><label for="apiBase">API base URL</label><input id="apiBase" value=""></div>
+      <div><label for="phone">Admin phone</label><input id="phone" inputmode="numeric" placeholder="98765 43210"></div>
+    </div>
+    <label for="password">Password</label>
+    <input id="password" type="password" placeholder="Kam se kam 8 akshar">
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" id="loginBtn">Login</button>
+    </div>
+    <p class="muted">Pehla admin (server/terminal me, ek baar):<br>
+      <code>npm run admin:create -- "Owner" 9876543210 "StrongPass123"</code>
+    </p>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section id="dash" style="display:none">
+    <div class="tabs" role="tablist">
+      <button data-tab="stats" class="active">Stats</button>
+      <button data-tab="drivers">Drivers</button>
+      <button data-tab="flagged">Flagged</button>
+      <button data-tab="bookings">Bookings</button>
+      <button data-tab="pricing">Pricing</button>
+      <button data-tab="enterprise">Enterprise</button>
+    </div>
+
+    <section class="card panel active" id="panel-stats">
+      <h2>Aaj / hafta / total</h2>
+      <button class="btn small" id="statsBtn">Refresh stats</button>
+      <div class="stat-grid" id="statsGrid"><p class="muted">Load karo…</p></div>
+    </section>
+
+    <section class="card panel" id="panel-drivers">
+      <h2>Drivers</h2>
+      <div class="row c3">
+        <div><label for="drvStatus">Status</label>
+          <select id="drvStatus"><option value="pending">pending</option><option value="verified">verified</option><option value="review">review</option></select></div>
+        <div><label for="drvPage">Page</label><input id="drvPage" type="number" value="1" min="1"></div>
+        <div><label>&nbsp;</label><button class="btn small" id="drvBtn" style="width:100%">Load</button></div>
+      </div>
+      <p class="muted" id="drvTotal"></p>
+      <div style="overflow-x:auto"><table id="drvTable"></table></div>
+    </section>
+
+    <section class="card panel" id="panel-flagged">
+      <h2>Flagged drivers <span class="muted">(avg &lt; 3, auto-ban nahi — manual dekho)</span></h2>
+      <button class="btn small" id="flagBtn">Load flagged</button>
+      <div style="overflow-x:auto"><table id="flagTable"></table></div>
+    </section>
+
+    <section class="card panel" id="panel-bookings">
+      <h2>Bookings</h2>
+      <div class="row c4">
+        <div><label for="bkStatus">Status</label>
+          <select id="bkStatus"><option value="">sab</option><option>pending</option><option>accepted</option><option>arrived</option><option>in_transit</option><option>delivered</option><option>cancelled</option></select></div>
+        <div><label for="bkCity">City (address me)</label><input id="bkCity" placeholder="Indore"></div>
+        <div><label for="bkPage">Page</label><input id="bkPage" type="number" value="1" min="1"></div>
+        <div><label>&nbsp;</label><button class="btn small" id="bkBtn" style="width:100%">Load</button></div>
+      </div>
+      <p class="muted" id="bkTotal"></p>
+      <div style="overflow-x:auto"><table id="bkTable"></table></div>
+      <p class="muted">Assign: sirf <b>pending</b> booking par, sahi gaadi wala verified + active driver. Driver ID usi table se copy karo.</p>
+    </section>
+
+    <section class="card panel" id="panel-pricing">
+      <h2>Pricing rules</h2>
+      <button class="btn small" id="priceBtn">Load rates</button>
+      <div style="overflow-x:auto"><table id="priceTable"></table></div>
+      <h2 style="margin-top:16px">Rate badlo</h2>
+      <div class="row c4">
+        <div><label for="prVehicle">Gaadi</label>
+          <select id="prVehicle"><option value="pickup">pickup</option><option value="mini_truck">mini_truck</option><option value="mini_tractor">mini_tractor</option></select></div>
+        <div><label for="prBase">Base Rs</label><input id="prBase" type="number" min="0" placeholder="350"></div>
+        <div><label for="prKm">Per km Rs</label><input id="prKm" type="number" min="0" step="0.5" placeholder="17.5"></div>
+        <div><label for="prHelper">Helper Rs</label><input id="prHelper" type="number" min="0" placeholder="200"></div>
+      </div>
+      <div style="margin-top:10px"><button class="btn small" id="priceSaveBtn">Save rate</button></div>
+      <h2 style="margin-top:16px">History</h2>
+      <button class="btn small ghost" id="priceHistBtn">Load history</button>
+      <div style="overflow-x:auto"><table id="priceHistTable"></table></div>
+    </section>
+
+    <section class="card panel" id="panel-enterprise">
+      <h2>Enterprise inquiries (B2B leads)</h2>
+      <div class="row c4">
+        <div><label for="entStatus">Status</label>
+          <select id="entStatus"><option value="">sab</option><option>NEW</option><option>CONTACTED</option><option>IN_DISCUSSION</option><option>CONVERTED</option><option>CLOSED</option></select></div>
+        <div><label for="entSearch">Search (company/email/name)</label><input id="entSearch" placeholder="Sharma Retail"></div>
+        <div><label for="entPage">Page</label><input id="entPage" type="number" value="1" min="1"></div>
+        <div><label>&nbsp;</label><button class="btn small" id="entBtn" style="width:100%">Load</button></div>
+      </div>
+      <p class="muted" id="entTotal"></p>
+      <div style="overflow-x:auto"><table id="entTable"></table></div>
+    </section>
+  </section>
+</main>
+
+<script>
+(function(){
+"use strict";
+var TOKEN_KEY = "APNASHIFT_ADMIN_TOKEN";
+var $ = function(id){ return document.getElementById(id); };
+var alertBox = $("alert");
+
+function apiBase(){
+  var v = ($("apiBase").value || "").trim().replace(/\/+$/, "");
+  return v || window.location.origin;
+}
+if(!$("apiBase").value) $("apiBase").value = window.location.origin;
+
+function showAlert(type, msg){
+  alertBox.className = "show " + (type === "err" ? "err" : "info");
+  alertBox.textContent = msg;
+}
+function hideAlert(){ alertBox.className = ""; alertBox.textContent = ""; }
+function esc(s){
+  return String(s === null || s === undefined ? "" : s)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function token(){ try{ return localStorage.getItem(TOKEN_KEY) || ""; }catch(e){ return ""; } }
+
+async function api(path, opts){
+  opts = opts || {};
+  var headers = Object.assign({ "Content-Type": "application/json" }, opts.headers || {});
+  var t = token();
+  if(t) headers["Authorization"] = "Bearer " + t;
+  var res = await fetch(apiBase() + path, {
+    method: opts.method || "GET",
+    headers: headers,
+    body: opts.body ? JSON.stringify(opts.body) : undefined
+  });
+  var data = null;
+  try{ data = await res.json(); }catch(e){}
+  if(res.status === 401){
+    logout(true);
+    throw new Error("Session khatm — dobara login karo.");
+  }
+  if(!res.ok || (data && data.ok === false)){
+    var msg = (data && (data.error || (data.details && data.details[0] && data.details[0].message))) || ("HTTP " + res.status);
+    throw new Error(String(msg));
+  }
+  return data;
+}
+
+// --- login / logout ---
+function setLoggedIn(user){
+  $("loginCard").style.display = "none";
+  $("dash").style.display = "block";
+  $("logoutBtn").style.display = "";
+  $("whoBox").textContent = user ? (user.name + " • " + user.phone) : "";
+}
+function logout(silent){
+  try{ localStorage.removeItem(TOKEN_KEY); }catch(e){}
+  $("loginCard").style.display = "block";
+  $("dash").style.display = "none";
+  $("logoutBtn").style.display = "none";
+  $("whoBox").textContent = "";
+  if(!silent) showAlert("info", "Logout ho gaya.");
+}
+$("logoutBtn").onclick = function(){ logout(); };
+
+async function doLogin(){
+  hideAlert();
+  var phone = $("phone").value.trim(), password = $("password").value;
+  if(!phone || !password){ showAlert("err", "Phone + password dono likho."); return; }
+  var btn = $("loginBtn"); btn.disabled = true; btn.textContent = "Login…";
+  try{
+    var res = await fetch(apiBase() + "/api/admin/login", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone: phone, password: password })
+    });
+    var data = null; try{ data = await res.json(); }catch(e){}
+    if(!res.ok || !data || data.ok !== true) throw new Error((data && data.error) || ("HTTP " + res.status));
+    try{ localStorage.setItem(TOKEN_KEY, data.token); }catch(e){}
+    setLoggedIn(data.user);
+    showAlert("info", "Login OK — " + (data.user.name || "owner") + ".");
+    loadStats();
+  }catch(e){ showAlert("err", "Login fail: " + e.message); }
+  finally{ btn.disabled = false; btn.textContent = "Login"; }
+}
+$("loginBtn").onclick = doLogin;
+
+// --- tabs ---
+document.querySelectorAll(".tabs button").forEach(function(b){
+  b.onclick = function(){
+    document.querySelectorAll(".tabs button").forEach(function(x){ x.classList.remove("active"); });
+    document.querySelectorAll(".panel").forEach(function(x){ x.classList.remove("active"); });
+    b.classList.add("active");
+    $("panel-" + b.dataset.tab).classList.add("active");
+  };
+});
+
+// --- stats ---
+function statCard(label, s){
+  return '<div class="stat"><b>' + esc(s.bookings) + '</b>' + esc(label) +
+    '<br><span class="muted">Completed: ' + esc(s.completed) + ' • Cancelled: ' + esc(s.cancelled) +
+    '<br>Revenue: Rs ' + esc(s.revenue_rs) + '</span></div>';
+}
+async function loadStats(){
+  hideAlert();
+  try{
+    var d = await api("/api/admin/stats");
+    $("statsGrid").innerHTML = statCard("Aaj", d.today) + statCard("7 din", d.week) + statCard("Total", d.total) +
+      '<div class="stat"><b>' + esc(d.drivers.verified_active) + '</b>Verified + active drivers</div>';
+  }catch(e){ showAlert("err", "Stats: " + e.message); }
+}
+$("statsBtn").onclick = loadStats;
+
+// --- drivers ---
+function drvActions(d){
+  var id = esc(d.id);
+  var btns = '<div class="actions">';
+  btns += '<button class="btn small" data-act="verify" data-id="' + id + '">Verify</button>';
+  btns += '<button class="btn small ghost" data-act="reject" data-id="' + id + '">Reject</button>';
+  if(d.is_active) btns += '<button class="btn small danger" data-act="deactivate" data-id="' + id + '">Deactivate</button>';
+  else btns += '<button class="btn small" data-act="reactivate" data-id="' + id + '">Reactivate</button>';
+  return btns + '</div>';
+}
+function drvRow(d){
+  var extra = [];
+  if(d.application_ref) extra.push("App " + d.application_ref);
+  if(d.city) extra.push(d.city + (d.state ? ", " + d.state : ""));
+  if(d.license_number) extra.push("DL " + d.license_number + (d.license_expiry ? " (exp " + d.license_expiry.slice(0,10) + ")" : ""));
+  if(d.service_city) extra.push("Service: " + d.service_city);
+  return '<tr><td><code>' + esc(d.id.slice(0,8)) + '…</code><br>' + esc(d.name) + '<br>' + esc(d.phone) +
+    (d.email ? '<br><span class="muted">' + esc(d.email) + '</span>' : '') +
+    (extra.length ? '<br><span class="muted">' + extra.map(esc).join(" • ") + '</span>' : '') + '</td>' +
+    '<td>' + esc(d.vehicle_type) + '<br><span class="muted">' + esc(d.vehicle_number || "") +
+    ((d.vehicle_make || d.vehicle_model) ? "<br>" + esc([d.vehicle_make, d.vehicle_model, d.vehicle_year].filter(Boolean).join(" ")) : "") + '</span></td>' +
+    '<td>' + (d.is_verified ? '<span class="pill ok">verified</span>' : '<span class="pill">pending</span>') +
+    ' ' + (d.is_active ? '<span class="pill ok">active</span>' : '<span class="pill bad">inactive</span>') +
+    (d.needs_review ? ' <span class="pill bad">review</span>' : '') +
+    '<br><span class="muted">Rating ' + esc(d.avg_rating) + ' • Trips ' + esc(d.total_trips) +
+    (d.rejection_reason ? '<br>Wajah: ' + esc(d.rejection_reason) : '') + '</span>' + drvActions(d) + '</td></tr>';
+}
+async function loadDrivers(){
+  hideAlert();
+  try{
+    var st = $("drvStatus").value, pg = $("drvPage").value || 1;
+    var d = await api("/api/admin/drivers?status=" + encodeURIComponent(st) + "&page=" + encodeURIComponent(pg) + "&limit=20");
+    $("drvTotal").textContent = "Total: " + d.total + " (page " + d.page + ")";
+    $("drvTable").innerHTML = "<tr><th>Driver</th><th>Gaadi</th><th>Status + action</th></tr>" + d.drivers.map(drvRow).join("");
+    bindDriverButtons($("drvTable"));
+  }catch(e){ showAlert("err", "Drivers: " + e.message); }
+}
+function bindDriverButtons(root){
+  root.querySelectorAll("button[data-act]").forEach(function(b){
+    b.onclick = function(){ driverAction(b.dataset.act, b.dataset.id); };
+  });
+}
+async function driverAction(act, id){
+  hideAlert();
+  try{
+    if(act === "reject"){
+      var reason = prompt("Reject ki wajah likho (kam se kam 3 akshar):");
+      if(!reason) return;
+      await api("/api/admin/drivers/" + id + "/reject", { method: "PATCH", body: { reason: reason } });
+    } else {
+      await api("/api/admin/drivers/" + id + "/" + act, { method: "PATCH", body: {} });
+    }
+    showAlert("info", "Driver " + act + " OK.");
+    loadDrivers();
+  }catch(e){ showAlert("err", "Driver action: " + e.message); }
+}
+$("drvBtn").onclick = loadDrivers;
+
+// --- flagged ---
+async function loadFlagged(){
+  hideAlert();
+  try{
+    var d = await api("/api/admin/drivers/flagged");
+    if(!d.drivers.length){ $("flagTable").innerHTML = "<tr><td>koi flagged driver nahi — sab badhiya.</td></tr>"; return; }
+    $("flagTable").innerHTML = "<tr><th>Driver</th><th>Rating</th></tr>" + d.drivers.map(function(x){
+      return "<tr><td>" + esc(x.name) + "<br>" + esc(x.phone) + "<br><span class='muted'>" + esc(x.vehicle_type) + "</span></td>" +
+        "<td>Avg " + esc(x.avg_rating) + " • Trips " + esc(x.total_trips) + " • Ratings " + esc(x.ratings_count) + "</td></tr>";
+    }).join("");
+  }catch(e){ showAlert("err", "Flagged: " + e.message); }
+}
+$("flagBtn").onclick = loadFlagged;
+
+// --- bookings ---
+function bkRow(b){
+  var addr = esc((b.pickup && b.pickup.address) || "") + " → " + esc((b.drop && b.drop.address) || "");
+  var assign = b.status === "pending"
+    ? '<div class="actions"><input style="max-width:220px" placeholder="driver UUID" data-assign-for="' + esc(b.id) + '">' +
+      '<button class="btn small" data-assign="' + esc(b.id) + '">Assign</button></div>' : '';
+  return "<tr><td><code>" + esc(b.id.slice(0,8)) + "…</code><br>" + esc(b.status) +
+    "<br><span class='muted'>Rs " + esc(b.price_rs) + " • " + esc(b.vehicle_type) + "</span></td>" +
+    "<td>" + addr + "<br><span class='muted'>" + esc(b.user_name || "") + " • Driver: " + esc(b.driver_name || "-") + "</span>" + assign + "</td></tr>";
+}
+async function loadBookings(){
+  hideAlert();
+  try{
+    var q = "?page=" + encodeURIComponent($("bkPage").value || 1) + "&limit=20";
+    if($("bkStatus").value) q += "&status=" + encodeURIComponent($("bkStatus").value);
+    if($("bkCity").value.trim()) q += "&city=" + encodeURIComponent($("bkCity").value.trim());
+    var d = await api("/api/admin/bookings" + q);
+    $("bkTotal").textContent = "Total: " + d.total + " • Revenue (cancelled chhod): Rs " + d.revenue_rs;
+    $("bkTable").innerHTML = "<tr><th>Booking</th><th>Route</th></tr>" + d.bookings.map(bkRow).join("");
+    $("bkTable").querySelectorAll("button[data-assign]").forEach(function(btn){
+      btn.onclick = async function(){
+        var id = btn.dataset.assign;
+        var inp = $("bkTable").querySelector('input[data-assign-for="' + id + '"]');
+        var driverId = (inp && inp.value.trim()) || "";
+        if(!driverId){ showAlert("err", "Driver UUID likho (drivers table se copy karo)."); return; }
+        try{
+          await api("/api/admin/bookings/" + id + "/assign", { method: "PATCH", body: { driver_id: driverId } });
+          showAlert("info", "Booking assign OK.");
+          loadBookings();
+        }catch(e){ showAlert("err", "Assign: " + e.message); }
+      };
+    });
+  }catch(e){ showAlert("err", "Bookings: " + e.message); }
+}
+$("bkBtn").onclick = loadBookings;
+
+// --- pricing ---
+async function loadPricing(){
+  hideAlert();
+  try{
+    var d = await api("/api/admin/pricing-rules");
+    $("priceTable").innerHTML = "<tr><th>Gaadi</th><th>Base</th><th>Per km</th><th>Helper</th></tr>" +
+      d.rules.map(function(r){
+        return "<tr><td>" + esc(r.vehicle_type) + "</td><td>" + esc(r.base_rs) + "</td><td>" + esc(r.per_km_rs) + "</td><td>" + esc(r.helper_rs) + "</td></tr>";
+      }).join("");
+  }catch(e){ showAlert("err", "Pricing: " + e.message); }
+}
+$("priceBtn").onclick = loadPricing;
+$("priceSaveBtn").onclick = async function(){
+  hideAlert();
+  try{
+    var body = { vehicle_type: $("prVehicle").value };
+    if($("prBase").value !== "") body.base_rs = Number($("prBase").value);
+    if($("prKm").value !== "") body.per_km_rs = Number($("prKm").value);
+    if($("prHelper").value !== "") body.helper_rs = Number($("prHelper").value);
+    var d = await api("/api/admin/pricing-rules", { method: "PUT", body: body });
+    showAlert("info", "Rate save OK (history #" + d.history_id + ").");
+    loadPricing();
+  }catch(e){ showAlert("err", "Rate save: " + e.message); }
+};
+$("priceHistBtn").onclick = async function(){
+  hideAlert();
+  try{
+    var d = await api("/api/admin/pricing-rules/history?limit=20");
+    if(!d.history.length){ $("priceHistTable").innerHTML = "<tr><td>history khaali.</td></tr>"; return; }
+    $("priceHistTable").innerHTML = "<tr><th>ID</th><th>Gaadi</th><th>Badlav</th></tr>" + d.history.map(function(h){
+      return "<tr><td>" + esc(h.id) + "</td><td>" + esc(h.vehicle_type) + "</td><td><span class='muted'>" +
+        esc(JSON.stringify(h.old)) + " → " + esc(JSON.stringify(h.new)) + "</span></td></tr>";
+    }).join("");
+  }catch(e){ showAlert("err", "History: " + e.message); }
+};
+
+// --- enterprise inquiries (B2B leads) ---
+function entRow(x){
+  var contact = esc(x.full_name) + "<br>" + esc(x.email) + "<br>" + esc(x.phone) +
+    (x.designation ? "<br><span class='muted'>" + esc(x.designation) + "</span>" : "");
+  var biz = "<b>" + esc(x.company_name) + "</b>" +
+    (x.business_type ? "<br><span class='muted'>" + esc(x.business_type) + (x.company_size ? " • " + esc(x.company_size) : "") + "</span>" : "") +
+    ((x.services_required && x.services_required.length) ? "<br><span class='muted'>Services: " + esc(x.services_required.join(", ")) + "</span>" : "") +
+    ((x.vehicle_types && x.vehicle_types.length) ? "<br><span class='muted'>Vehicles: " + esc(x.vehicle_types.join(", ")) + "</span>" : "") +
+    ((x.fleet_size || x.monthly_trips) ? "<br><span class='muted'>Fleet " + esc(x.fleet_size || "-") + " • Trips " + esc(x.monthly_trips || "-") + "</span>" : "") +
+    (x.cities ? "<br><span class='muted'>" + esc(x.cities) + "</span>" : "") +
+    (x.requirements ? "<br><span class='muted'>“" + esc(x.requirements.slice(0, 120)) + (x.requirements.length > 120 ? "…" : "") + "”</span>" : "");
+  var pill = x.status === "NEW" ? "pill" : (x.status === "CONVERTED" ? "pill ok" : (x.status === "CLOSED" ? "pill bad" : "pill ok"));
+  var acts = '<div class="actions">' +
+    ["CONTACTED", "IN_DISCUSSION", "CONVERTED", "CLOSED"].map(function(s){
+      return '<button class="btn small ghost" data-ent-status="' + s + '" data-id="' + esc(x.id) + '">' + s.toLowerCase().replace("_", " ") + '</button>';
+    }).join("") + "</div>";
+  return "<tr><td><code>" + esc(String(x.id).slice(0, 8)) + "…</code><br><span class='muted'>" +
+    esc(String(x.created_at).slice(0, 10)) + "</span></td><td>" + contact + "</td><td>" + biz +
+    "</td><td><span class='" + pill + "'>" + esc(x.status) + "</span>" + acts + "</td></tr>";
+}
+async function loadEnterprise(){
+  hideAlert();
+  try{
+    var q = "?page=" + encodeURIComponent($("entPage").value || 1) + "&limit=20";
+    if($("entStatus").value) q += "&status=" + encodeURIComponent($("entStatus").value);
+    if($("entSearch").value.trim()) q += "&search=" + encodeURIComponent($("entSearch").value.trim());
+    var d = await api("/api/enterprise/inquiries" + q);
+    $("entTotal").textContent = "Total: " + d.total;
+    if(!d.inquiries.length){ $("entTable").innerHTML = "<tr><td>koi inquiry nahi.</td></tr>"; return; }
+    $("entTable").innerHTML = "<tr><th>ID</th><th>Contact</th><th>Business</th><th>Status</th></tr>" + d.inquiries.map(entRow).join("");
+    $("entTable").querySelectorAll("button[data-ent-status]").forEach(function(btn){
+      btn.onclick = async function(){
+        try{
+          await api("/api/enterprise/inquiries/" + btn.dataset.id + "/status", { method: "PATCH", body: { status: btn.dataset.entStatus } });
+          showAlert("info", "Status update OK: " + btn.dataset.entStatus);
+          loadEnterprise();
+        }catch(e){ showAlert("err", "Status: " + e.message); }
+      };
+    });
+  }catch(e){ showAlert("err", "Enterprise: " + e.message); }
+}
+$("entBtn").onclick = loadEnterprise;
+
+// Auto-login if token exists
+if(token()){
+  $("loginCard").style.display = "none";
+  $("dash").style.display = "block";
+  $("logoutBtn").style.display = "";
+  loadStats();
+}
+})();
+</script>
+</body>
+</html>

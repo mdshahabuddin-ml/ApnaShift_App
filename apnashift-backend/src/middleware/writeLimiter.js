@@ -1,6 +1,6 @@
-// Write endpoints (booking create, rating) par alag limiter.
-// Global /api limiter ke upar extra layer — spam bookings se DB bharne se rokta hai.
-// Tests me tang na kare, isliye env se badal sakta hai (WRITE_RATE_LIMIT_MAX).
+// Separate limiter for write endpoints (booking create, rating).
+// Extra layer above global /api limiter — prevents DB spam via bookings.
+// Configurable via env (WRITE_RATE_LIMIT_MAX) to avoid test friction.
 import { rateLimit } from 'express-rate-limit';
 import { config } from '../config.js';
 

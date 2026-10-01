@@ -1,4 +1,4 @@
-// Price calculation ke unit tests (DB nahi chahiye).
+// Unit tests for price calculation (no DB needed).
 // Seed rates: Pickup 350+17.5/km, Mini Truck 600+22.5/km,
 // Mini Tractor 1000+30/km, helper 200.
 import { describe, it, expect } from 'vitest';
@@ -96,7 +96,7 @@ describe('haversine provider', () => {
 
 describe('buildEstimate — mock distance provider', () => {
   it('provider mock (10 km) se poora response banta hai', async () => {
-    const measure = async () => 10; // asli provider ki jagah mock
+    const measure = async () => 10; // mock in place of the real provider
     const out = await buildEstimate({
       pickup: { lat: 22.72, lng: 75.86 },
       drop: { lat: 22.75, lng: 75.9 },

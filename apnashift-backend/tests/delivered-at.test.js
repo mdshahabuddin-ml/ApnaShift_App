@@ -1,7 +1,7 @@
-// Point 7 (delivered_at) ke DB integration tests (real Postgres chahiye).
-// Chalao: TEST_DATABASE_URL=postgres://apnashift:changeme@localhost:5433/apnashift_test npx vitest run
-// Set nahi hai to skip. Cases: lifecycle me timestamp kab set hota hai,
-// baaki transitions par NULL, earnings/stats delivered_at se bucketing.
+// DB integration tests for point 7 (delivered_at) (requires real Postgres).
+// Run: TEST_DATABASE_URL=postgres://apnashift:changeme@localhost:5433/apnashift_test npx vitest run
+// Skips if not set. Cases: when the timestamp is set in the lifecycle,
+// NULL on other transitions, earnings/stats bucketed by delivered_at.
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import request from 'supertest';
 import bcrypt from 'bcrypt';
@@ -48,7 +48,8 @@ async function makeDriver(phone) {
     phone,
     password: 'password123',
     vehicle_type: 'mini_truck',
-    vehicle_number: 'MP09AB1234',
+    // Each driver uses a distinct vehicle (register API blocks duplicate vehicles).
+    vehicle_number: `MP${phone.slice(-8)}`,
   });
   expect(res.status).toBe(201);
   await client.query('UPDATE drivers SET is_verified = TRUE WHERE phone = $1', [phone]);
@@ -67,7 +68,7 @@ async function makeAdmin(phone) {
   return res.body.token;
 }
 
-// Poora lifecycle chalakar delivered tak pahunchata hai, har step ka booking deta hai.
+// Runs the full lifecycle to delivered, returning the booking at each step.
 async function deliverBooking(userToken, driverToken) {
   const steps = {};
   const created = await request(app)
@@ -150,7 +151,7 @@ describeDb('delivered_at (DB)', () => {
       new Date(steps.in_transit.updated_at).getTime() - 60 * 1000,
     );
 
-    // GET par bhi dikhta hai.
+    // Also visible on GET.
     const got = await request(app)
       .get(`/api/bookings/${steps.pending.id}`)
       .set('Authorization', `Bearer ${token}`);
@@ -178,7 +179,7 @@ describeDb('delivered_at (DB)', () => {
     const { token } = await makeUser(nextPhone());
     const d = await makeDriver(nextPhone());
     await deliverBooking(token, d.token);
-    // Ek pending bhi banao taaki dono sides cover hon.
+    // Also create one pending to cover both sides.
     await request(app)
       .post('/api/bookings')
       .set('Authorization', `Bearer ${token}`)
@@ -204,8 +205,8 @@ describeDb('delivered_at (DB)', () => {
     expect(now.body.completed_count).toBe(1);
     expect(now.body.earnings_rs).toBe(steps.delivered.price_rs);
 
-    // Delivery ko 8 din peeche karo. (Ye UPDATE updated_at ko now() par bump
-    // karta hai — purani updated_at wali query ise abhi bhi ginti, nayi nahi.)
+    // Move delivery 8 days back. (This UPDATE bumps updated_at to now()
+    // — the old updated_at query would still count it, the new one does not.)
     await client.query(`UPDATE bookings SET delivered_at = now() - INTERVAL '8 days' WHERE id = $1`, [
       steps.pending.id,
     ]);
@@ -231,17 +232,17 @@ describeDb('delivered_at (DB)', () => {
     expect(fresh.body.total.completed).toBe(1);
     expect(fresh.body.total.revenue_rs).toBe(price);
 
-    // Delivery 10 din purani: aaj/week se bahar, total me rahe.
+    // Delivery 10 days old: outside today/week, still in total.
     await client.query(
       `UPDATE bookings SET delivered_at = now() - INTERVAL '10 days' WHERE id = $1`,
       [steps.pending.id],
     );
     const aged = await admin(request(app).get('/api/admin/stats'));
     expect(aged.status).toBe(200);
-    // Booking aaj bani thi — ye ginti nahi badalti.
+    // Booking was created today — this count does not change.
     expect(aged.body.today.bookings).toBe(1);
     expect(aged.body.week.bookings).toBe(1);
-    // Completed/revenue aaj/week se bahar, total me andar.
+    // Completed/revenue outside today/week, inside total.
     expect(aged.body.today.completed).toBe(0);
     expect(aged.body.today.revenue_rs).toBe(0);
     expect(aged.body.week.completed).toBe(0);

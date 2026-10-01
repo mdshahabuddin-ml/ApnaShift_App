@@ -1,6 +1,6 @@
-// Booking status machine — EK jagah. Transition rules sirf yahan badlo.
+// Booking status machine — single place. Change transition rules only here.
 // pending -> accepted -> arrived -> in_transit -> delivered, + cancelled.
-// Galat transition par 409 invalid_transition (route me assertTransition use karo).
+// Invalid transitions throw 409 invalid_transition (use assertTransition in routes).
 export const BOOKING_STATUS = [
   'pending',
   'accepted',
@@ -19,7 +19,7 @@ export const TRANSITIONS = {
   cancelled: [],
 };
 
-// Driver app se sirf aage badh sakta hai (cancel user ka kaam hai).
+// Driver app can only move forward (cancellation is a user action).
 export const DRIVER_TRANSITIONS = {
   accepted: ['arrived'],
   arrived: ['in_transit'],

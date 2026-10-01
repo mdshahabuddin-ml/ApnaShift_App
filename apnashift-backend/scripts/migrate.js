@@ -1,6 +1,6 @@
-// DB migrate + seed (cross-platform, psql install ki zaroorat nahi).
-// Usage: npm run db:migrate   (.env me DATABASE_URL hona chahiye)
-// Ye db/schema.sql phir db/seed.sql chalata hai — dono me sirf static SQL hai.
+// DB migrate + seed (cross-platform, no psql install needed).
+// Usage: npm run db:migrate   (requires DATABASE_URL in .env)
+// Runs db/schema.sql then db/seed.sql — both contain only static SQL.
 import { readFile, readdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
@@ -17,7 +17,7 @@ if (!dbUrl) {
 const client = new pg.Client({ connectionString: dbUrl });
 try {
   await client.connect();
-  // Order: base schema -> migrations (002, 003...) -> seed. Sab static SQL.
+  // Order: base schema -> migrations (002, 003...) -> seed. All static SQL.
   const files = ['db/schema.sql'];
   try {
     const migs = (await readdir(path.join(root, 'db', 'migrations')))
@@ -26,7 +26,7 @@ try {
       .map((f) => path.join('db', 'migrations', f));
     files.push(...migs);
   } catch {
-    // migrations folder na ho to skip (purana setup).
+    // Skip if migrations folder is absent (legacy setup).
   }
   files.push('db/seed.sql');
   for (const file of files) {

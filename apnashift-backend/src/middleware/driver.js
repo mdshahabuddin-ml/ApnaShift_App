@@ -1,5 +1,5 @@
-// Driver gate: login ke baad verified + active check.
-// Unverified driver ko bookings nahi dikhengi (403, 404 nahi — wajah batani hai).
+// Driver gate: verified + active check after login.
+// Unverified drivers get no bookings (403, not 404 — explain why).
 import { query } from '../db.js';
 
 export async function requireVerifiedDriver(req, res, next) {

@@ -1,5 +1,5 @@
-// Item 4 (unit, DB nahi chahiye): Idempotency-Key parse + request hash.
-// HTTP replay/422 ke tests DB wale audit-items.test.js me hain.
+// Item 4 (unit, no DB needed): Idempotency-Key parsing + request hash.
+// HTTP replay/422 tests live in DB-based audit-items.test.js.
 import { describe, it, expect } from 'vitest';
 import { parseIdempotencyKey, hashBookingRequest } from '../src/services/idempotency.js';
 
