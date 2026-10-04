@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Home | ApnaShift</title>
+<meta name="description" content="ApnaShift admin overview — stats aur tools.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#14213d;
+    --yellow:#fcbf49;
+    --bg:#f4f6fa;
+    --border:#c9d0de;
+    --ink:#20242e;
+    --muted:#5b6070;
+    --red:#c0392b;
+    --green:#1a7a3a;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    line-height:1.6;
+  }
+  :focus-visible{
+    outline:3px solid var(--navy);
+    outline-offset:2px;
+    box-shadow:0 0 0 4px var(--yellow);
+    border-radius:6px;
+  }
+  .site-header{background:var(--navy);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:50}
+  .site-header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px}
+  .site-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.3rem;line-height:1;color:#fff;text-decoration:none}
+  .site-brand small{display:block;font-family:"Noto Sans",system-ui,sans-serif;font-weight:600;font-size:.64rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow)}
+  .site-header .spacer{flex:1}
+  .logout-btn{background:transparent;border:2px solid var(--yellow);border-radius:8px;color:var(--yellow);font:inherit;font-weight:800;padding:6px 12px;cursor:pointer}
+  main{max-width:960px;margin:0 auto;padding:20px 16px 40px}
+  .card{background:#fff;border:2px solid var(--navy);border-radius:var(--radius);padding:18px;box-shadow:6px 6px 0 var(--yellow);margin-bottom:16px}
+  .card h1,.card h2{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;color:var(--navy);margin:0 0 8px}
+  .card h1{font-size:1.5rem}
+  .card h2{font-size:1.2rem}
+  .sub{margin:0 0 10px;color:var(--muted);font-size:.9rem}
+  .alert{display:none;border-radius:10px;padding:11px 12px;font-size:.9rem;font-weight:600;margin:0 0 14px}
+  .alert.show{display:block}
+  .alert.err{background:#fdecea;color:#7a1f14;border:2px solid var(--red)}
+  .stat-grid{display:grid;gap:12px;margin-top:12px}
+  @media(min-width:640px){.stat-grid{grid-template-columns:repeat(2,1fr)}}
+  @media(min-width:960px){.stat-grid{grid-template-columns:repeat(4,1fr)}}
+  .stat{background:#fffdf4;border:2px solid var(--navy);border-radius:12px;padding:14px}
+  .stat .num{font-family:"Baloo 2",system-ui,sans-serif;font-weight:800;font-size:1.7rem;color:var(--navy);line-height:1.1}
+  .stat .lbl{font-size:.84rem;color:var(--muted);font-weight:600;margin-top:2px}
+  .nav-grid{display:grid;gap:12px;margin-top:12px}
+  @media(min-width:640px){.nav-grid{grid-template-columns:repeat(2,1fr)}}
+  .nav-card{display:block;background:var(--navy);color:#fff;border:2px solid var(--navy);border-radius:12px;padding:16px;text-decoration:none;box-shadow:4px 4px 0 var(--yellow)}
+  .nav-card:active{transform:translateY(2px);box-shadow:1px 1px 0 var(--yellow)}
+  .nav-card b{font-family:"Baloo 2",system-ui,sans-serif;font-size:1.15rem;color:var(--yellow);display:block}
+  .nav-card span{font-size:.86rem;color:#dbe2f0}
+  .tools-link{margin-top:12px;font-size:.9rem}
+  .tools-link a{color:var(--navy);font-weight:700}
+  .site-footer{background:var(--navy);color:#dbe2f0;padding:22px 16px 30px}
+  .site-foot-inner{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+  .site-foot-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;color:#fff;font-size:1.05rem}
+  .site-foot-links{display:flex;gap:16px;flex-wrap:wrap}
+  .site-foot-links a{color:var(--yellow);font-size:.86rem;font-weight:600;text-decoration:none}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="admin-home.html" aria-label="ApnaShift admin home">ApnaShift<small>Admin Panel</small></a>
+    <div class="spacer"></div>
+    <button class="logout-btn" id="logoutBtn" type="button">Logout</button>
+  </div>
+</header>
+
+<main>
+  <div class="alert" id="pageAlert" role="alert" aria-live="assertive"></div>
+
+  <section class="card" aria-labelledby="statsTitle">
+    <h1 id="statsTitle">Admin Overview</h1>
+    <p class="sub" id="welcomeLine">Load ho raha hai…</p>
+    <div class="stat-grid">
+      <div class="stat" aria-live="polite">
+        <div class="num" id="statPending">—</div>
+        <div class="lbl">Pending driver verifications</div>
+      </div>
+      <div class="stat" aria-live="polite">
+        <div class="num" id="statToday">—</div>
+        <div class="lbl">Aaj ki bookings</div>
+      </div>
+      <div class="stat" aria-live="polite">
+        <div class="num" id="statDue">—</div>
+        <div class="lbl">Total commission due (Rs)</div>
+      </div>
+      <div class="stat" aria-live="polite">
+        <div class="num" id="statDisputed">—</div>
+        <div class="lbl">Disputed bookings</div>
+      </div>
+    </div>
+    <p style="margin:10px 0 0"><button class="logout-btn" id="refreshBtn" type="button" style="border-color:var(--navy);color:var(--navy)">Refresh</button></p>
+  </section>
+
+  <section class="card" aria-labelledby="navTitle">
+    <h2 id="navTitle">Tools</h2>
+    <p class="sub">Kaam chuno — har card apne page par le jayega.</p>
+    <div class="nav-grid">
+      <a class="nav-card" href="admin-drivers.html"><b>Drivers</b><span>Verification, list aur driver actions</span></a>
+      <a class="nav-card" href="admin-bookings.html"><b>Bookings</b><span>Bookings dekho, assign aur manage karo</span></a>
+      <a class="nav-card" href="admin-pricing.html"><b>Pricing</b><span>Rates dekho aur badlo</span></a>
+      <a class="nav-card" href="payment-status.html"><b>Payments</b><span>Payment status aur settlements</span></a>
+    </div>
+    <p class="tools-link">Advanced tools (password reset, enterprise) → <a href="admin-dashboard.html">full dashboard kholo</a></p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="site-foot-inner">
+    <div class="site-foot-brand">ApnaShift</div>
+    <div class="site-foot-links">
+      <a href="admin-home.html">Admin Home</a>
+      <a href="admin-dashboard.html">Full Dashboard</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  var API_BASE_URL = "https://apnashiftapp-production.up.railway.app";
+  var TOKEN_KEY = "apnashift_admin_token";
+
+  function getToken(){ try { return localStorage.getItem(TOKEN_KEY); } catch(e){ return null; } }
+  if(!getToken()){ window.location.href = "admin-login.html"; return; }
+
+  var alertBox = document.getElementById("pageAlert");
+  var welcomeLine = document.getElementById("welcomeLine");
+  var statPending = document.getElementById("statPending");
+  var statToday = document.getElementById("statToday");
+  var statDue = document.getElementById("statDue");
+  var statDisputed = document.getElementById("statDisputed");
+  var refreshBtn = document.getElementById("refreshBtn");
+
+  function showAlert(type, msg){
+    if(!msg){ alertBox.className = "alert"; alertBox.textContent = ""; return; }
+    alertBox.className = "alert show " + (type === "err" ? "err" : "");
+    alertBox.textContent = msg;
+  }
+  function authHeaders(){
+    return { "Authorization": "Bearer " + getToken() };
+  }
+  function readBody(res){
+    return res.json().then(function(data){
+      return { status: res.status, body: data };
+    }).catch(function(){
+      return { status: res.status, body: null };
+    });
+  }
+  function apiGet(path){
+    return fetch(API_BASE_URL + path, { headers: authHeaders() }).then(readBody);
+  }
+  function checkAuth(result){
+    if(result.status === 401){
+      try { localStorage.removeItem(TOKEN_KEY); } catch(e){}
+      window.location.href = "admin-login.html";
+      return true;
+    }
+    return false;
+  }
+  function fmtRs(n){
+    if(n === null || n === undefined || !isFinite(Number(n))) return "–";
+    return "Rs " + Number(n).toLocaleString("en-IN");
+  }
+
+  // 1. Pending driver verifications — sirf count chahiye (limit=1, total padho).
+  function loadPending(){
+    return apiGet("/api/admin/drivers?status=pending&limit=1").then(function(result){
+      if(checkAuth(result)) throw new Error("unauth");
+      if(result.status !== 200 || !result.body || result.body.ok !== true) throw new Error("pending");
+      statPending.textContent = String(result.body.total || 0);
+    });
+  }
+
+  // 2. Aaj ki bookings — aaj 00:00 se abhi tak (local day, ISO range).
+  function loadToday(){
+    var start = new Date();
+    start.setHours(0, 0, 0, 0);
+    var url = "/api/admin/bookings?from=" + encodeURIComponent(start.toISOString()) +
+      "&to=" + encodeURIComponent(new Date().toISOString()) + "&limit=1";
+    return apiGet(url).then(function(result){
+      if(checkAuth(result)) throw new Error("unauth");
+      if(result.status !== 200 || !result.body || result.body.ok !== true) throw new Error("today");
+      statToday.textContent = String(result.body.total || 0);
+    });
+  }
+
+  // 3. Total commission due — /api/admin/driver-balances se har page ka
+  // outstanding_rs jodkar (backend me commission-summary endpoint nahi hai).
+  function loadDue(){
+    var page = 1, perPage = 100, sum = 0;
+    function onePage(){
+      return apiGet("/api/admin/driver-balances?limit=" + perPage + "&page=" + page).then(function(result){
+        if(checkAuth(result)) throw new Error("unauth");
+        if(result.status !== 200 || !result.body || result.body.ok !== true) throw new Error("due");
+        var arr = Array.isArray(result.body.balances) ? result.body.balances : [];
+        for(var i = 0; i < arr.length; i++){
+          var v = Number(arr[i].outstanding_rs);
+          if(isFinite(v)) sum += v;
+        }
+        var total = Number(result.body.total || 0);
+        if(page * perPage < total && arr.length > 0){ page += 1; return onePage(); }
+        statDue.textContent = fmtRs(Math.round(sum));
+      });
+    }
+    return onePage();
+  }
+
+  // 4. Disputed bookings — sirf count (limit=1, total padho).
+  function loadDisputed(){
+    return apiGet("/api/admin/bookings?disputed=true&limit=1").then(function(result){
+      if(checkAuth(result)) throw new Error("unauth");
+      if(result.status !== 200 || !result.body || result.body.ok !== true) throw new Error("disputed");
+      statDisputed.textContent = String(result.body.total || 0);
+    });
+  }
+
+  function loadAll(){
+    showAlert(null, "");
+    refreshBtn.disabled = true;
+    refreshBtn.textContent = "Load ho raha hai…";
+    welcomeLine.textContent = "Stats load ho rahe hain…";
+    return Promise.allSettled([loadPending(), loadToday(), loadDue(), loadDisputed()]).then(function(outcomes){
+      var failed = outcomes.filter(function(o){ return o.status === "rejected"; });
+      var unauth = failed.some(function(o){ return o.reason && o.reason.message === "unauth"; });
+      if(unauth) return; // redirect ho gaya
+      if(failed.length){
+        showAlert("err", "Kuch stats load nahi hue — Refresh dabao ya internet check karo.");
+      }
+      var d = new Date();
+      welcomeLine.textContent = "Namaste, admin! Update: " +
+        d.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+    }).then(function(){
+      refreshBtn.disabled = false;
+      refreshBtn.textContent = "Refresh";
+    });
+  }
+
+  refreshBtn.addEventListener("click", loadAll);
+
+  document.getElementById("logoutBtn").addEventListener("click", function(){
+    try { localStorage.removeItem(TOKEN_KEY); } catch(e){}
+    window.location.href = "admin-login.html";
+  });
+
+  loadAll();
+})();
+</script>
+</body>
+</html>

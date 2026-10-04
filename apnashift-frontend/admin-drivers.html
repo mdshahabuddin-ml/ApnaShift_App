@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drivers (coming soon) | ApnaShift Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{--navy:#14213d;--yellow:#fcbf49;--bg:#f4f6fa;--ink:#20242e;--muted:#5b6070}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans",system-ui,sans-serif;line-height:1.6}
+  .site-header{background:var(--navy);color:#fff;padding:12px 16px}
+  .site-header-inner{max-width:960px;margin:0 auto}
+  .site-brand{font-family:"Baloo 2",system-ui,sans-serif;font-weight:800;font-size:1.3rem;color:#fff;text-decoration:none}
+  .site-brand small{display:block;font-size:.64rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow)}
+  main{max-width:960px;margin:0 auto;padding:20px 16px 40px}
+  .card{background:#fff;border:2px solid var(--navy);border-radius:14px;padding:18px;box-shadow:6px 6px 0 var(--yellow)}
+  .card h1{font-family:"Baloo 2",system-ui,sans-serif;color:var(--navy);margin:0 0 8px;font-size:1.5rem}
+  .sub{color:var(--muted);font-size:.9rem}
+  a{color:var(--navy);font-weight:700}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="admin-home.html">ApnaShift<small>Admin Panel</small></a>
+  </div>
+</header>
+<main>
+  <section class="card">
+    <h1>Drivers</h1>
+    <p class="sub">Ye page abhi ban raha hai (verification + driver list yahan ayegi).</p>
+    <p class="sub">Tab tak: <a href="admin-dashboard.html">full dashboard</a> me Drivers section use karo, ya <a href="admin-home.html">← Admin Home</a> wapas jao.</p>
+  </section>
+</main>
+<script>
+(function(){
+  "use strict";
+  var TOKEN_KEY = "apnashift_admin_token";
+  function getToken(){ try { return localStorage.getItem(TOKEN_KEY); } catch(e){ return null; } }
+  if(!getToken()){ window.location.href = "admin-login.html"; }
+})();
+</script>
+</body>
+</html>
