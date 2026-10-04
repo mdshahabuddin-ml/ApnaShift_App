@@ -169,7 +169,8 @@ describeDb('delivered_at (DB)', () => {
 
     const cancelled = await request(app)
       .patch(`/api/bookings/${created.body.booking.id}/cancel`)
-      .set('Authorization', `Bearer ${token}`);
+      .set('Authorization', `Bearer ${token}`)
+      .send({ reason: 'duplicate' });
     expect(cancelled.status).toBe(200);
     expect(cancelled.body.booking.status).toBe('cancelled');
     expect(cancelled.body.booking.delivered_at).toBeNull();

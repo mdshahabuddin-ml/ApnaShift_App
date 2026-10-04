@@ -88,7 +88,7 @@ driverRoutes.post('/register', authLimiter, async (req, res, next) => {
            rc_number, insurance_expiry, pollution_expiry, permit_number,
            service_city, service_state, service_areas, service_radius_km,
            emergency_name, emergency_relation, emergency_phone,
-           application_ref, consent_at)
+           application_ref, consent_at, upi_id)
          VALUES ($1, $2, $3, $4, $5, FALSE,
            $6, $7, $8, $9, $10, $11,
            $12, $13, $14, $15, $16, $17,
@@ -96,9 +96,9 @@ driverRoutes.post('/register', authLimiter, async (req, res, next) => {
            $22, $23, $24, $25,
            $26, $27, $28, $29,
            $30, $31, $32,
-           $33, CASE WHEN $34 THEN now() ELSE NULL END)
+           $33, CASE WHEN $34 THEN now() ELSE NULL END, $35)
          RETURNING id, name, phone, vehicle_type, vehicle_number, is_verified,
-           email, city, state, application_ref, rejection_reason, created_at`,
+           email, city, state, application_ref, rejection_reason, upi_id, created_at`,
         [
           name, phone, passwordHash, VEHICLE_TO_DB[vehicle_type], vehicle_number,
           data.email ?? null, data.dob ?? null, data.gender ?? null,
@@ -112,7 +112,7 @@ driverRoutes.post('/register', authLimiter, async (req, res, next) => {
           data.service_city ?? null, data.service_state ?? null, data.service_areas ?? null,
           data.service_radius_km ?? null,
           data.emergency_name ?? null, data.emergency_relation ?? null, data.emergency_phone ?? null,
-          applicationRef, data.consent === true,
+          applicationRef, data.consent === true, data.upi_id ?? null,
         ],
       );
     } catch (err) {
@@ -147,6 +147,7 @@ driverRoutes.post('/register', authLimiter, async (req, res, next) => {
       city: row.city,
       state: row.state,
       application_ref: row.application_ref,
+      upi_id: row.upi_id ?? null,
     };
     const token = signToken({ id: user.id, role: 'driver' });
     res.status(201).json({

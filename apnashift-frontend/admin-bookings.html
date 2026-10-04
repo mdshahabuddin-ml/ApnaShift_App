@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bookings | ApnaShift Admin</title>
+<meta name="description" content="ApnaShift admin — bookings dekho, filter karo aur driver assign karo.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#14213d;
+    --yellow:#fcbf49;
+    --bg:#f4f6fa;
+    --border:#c9d0de;
+    --ink:#20242e;
+    --muted:#5b6070;
+    --red:#c0392b;
+    --green:#1a7a3a;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    line-height:1.6;
+  }
+  :focus-visible{
+    outline:3px solid var(--navy);
+    outline-offset:2px;
+    box-shadow:0 0 0 6px var(--yellow);
+    border-radius:8px;
+  }
+  .site-header{background:var(--navy);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:50}
+  .site-header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px}
+  .site-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.3rem;line-height:1;color:#fff;text-decoration:none}
+  .site-brand small{display:block;font-family:"Noto Sans",system-ui,sans-serif;font-weight:600;font-size:.64rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow)}
+  .site-nav{display:flex;gap:4px;margin-left:8px;align-items:center}
+  .site-nav> a{color:#dbe2f0;text-decoration:none;font-weight:600;font-size:.9rem;padding:8px 10px;border-radius:8px}
+  .site-nav> a:hover{background:#1f2f52;color:#fff}
+  #navMenuBtn{display:none;background:transparent;border:2px solid var(--yellow);border-radius:8px;color:var(--yellow);font:inherit;font-weight:800;padding:6px 12px;cursor:pointer}
+  @media (max-width:760px){#navMenuBtn{display:block;margin-left:auto}.site-nav{display:none;position:absolute;top:100%;left:0;right:0;background:var(--navy);flex-direction:column;align-items:stretch;padding:8px 16px 14px;margin:0}.site-nav.open{display:flex}.site-header-inner{flex-wrap:wrap;position:relative}}
+  main{max-width:960px;margin:0 auto;padding:20px 16px 40px}
+  .top-row{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px}
+  h1{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;color:var(--navy);font-size:1.6rem;margin:0}
+  .sub{margin:0;color:var(--muted);font-size:.9rem}
+  .logout-btn{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:.95rem;padding:10px 16px;border-radius:10px;border:2px solid var(--navy);background:#fff;color:var(--navy);cursor:pointer}
+  .logout-btn:hover{background:#fff8e2}
+  .card{background:#fff;border:2px solid var(--navy);border-radius:var(--radius);padding:18px;box-shadow:6px 6px 0 var(--yellow);margin-bottom:16px}
+  .card h2{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;color:var(--navy);font-size:1.2rem;margin:0 0 6px}
+  #pageAlert{display:none;border-radius:10px;padding:11px 12px;font-size:.9rem;font-weight:600;margin:0 0 14px}
+  #pageAlert.show{display:block}
+  #pageAlert.err{background:#fdecea;color:#7a1f14;border:2px solid var(--red)}
+  #pageAlert.ok{background:#e6f6ea;color:#0d5c26;border:2px solid var(--green)}
+  #pageAlert.info{background:#fff3cf;color:var(--navy);border:2px solid var(--navy)}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px}
+  .controls .field{margin:0;flex:1;min-width:140px}
+  label{display:block;font-weight:600;font-size:.82rem;color:var(--navy);margin-bottom:4px}
+  select,input[type="date"],input[type="text"]{width:100%;font:inherit;color:var(--ink);background:#fff;border:2px solid var(--border);border-radius:10px;padding:9px 10px}
+  select:focus,input:focus{border-color:var(--navy);outline:none}
+  .btn{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:.92rem;padding:10px 16px;border-radius:10px;border:2px solid var(--navy);cursor:pointer;background:var(--yellow);color:var(--navy);box-shadow:0 3px 0 var(--navy)}
+  .btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--navy)}
+  .btn[disabled]{opacity:.6;cursor:wait;transform:none}
+  .btn.ghost{background:#fff}
+  .btn.small{font-size:.82rem;padding:7px 12px;box-shadow:none}
+  .list{display:grid;gap:10px;margin-top:10px}
+  .row-card{background:#fff;border:2px solid var(--border);border-radius:10px;padding:12px}
+  .row-card.disputed{border-color:var(--red);background:#fff7f6}
+  .row-card h3{margin:0 0 4px;color:var(--navy);font-size:.95rem;word-break:break-all}
+  .row-card p{margin:4px 0;font-size:.86rem;color:var(--ink)}
+  .row-card .meta{font-size:.82rem;color:var(--muted)}
+  .badge{display:inline-block;font-size:.76rem;font-weight:700;padding:2px 8px;border-radius:99px;border:1px solid var(--border);background:#eef1f7;color:var(--navy);margin-right:6px}
+  .badge.ok{background:#e6f6ea;border-color:var(--green);color:#0d5c26}
+  .badge.bad{background:#fdecea;border-color:var(--red);color:#7a1f14}
+  .badge.warn{background:#fff3cf;border-color:var(--navy)}
+  .assign-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:flex-end}
+  .assign-row .field{flex:1;min-width:160px;margin:0}
+  .loading,.empty{padding:14px;text-align:center;color:var(--muted);font-size:.9rem;background:#fff;border:2px dashed var(--border);border-radius:10px}
+  .pager{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:12px;flex-wrap:wrap}
+  .pager span{font-size:.86rem;color:var(--muted);font-weight:600}
+  .site-footer{background:var(--navy);color:#dbe2f0;padding:22px 16px 30px}
+  .site-foot-inner{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+  .site-foot-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;color:#fff;font-size:1.05rem}
+  .site-foot-links{display:flex;gap:16px;flex-wrap:wrap}
+  .site-foot-links a{color:var(--yellow);font-size:.86rem;font-weight:600;text-decoration:none}
+  .site-foot-links a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="index.html" aria-label="ApnaShift home">ApnaShift<small>Shifting • Transport</small></a>
+    <nav class="site-nav" id="siteNav" aria-label="Main navigation">
+      <a href="index.html">Home</a>
+      <a href="admin-dashboard.html">Dashboard</a>
+      <a href="help.html">Help</a>
+    </nav>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+  </div>
+</header>
+
+<main>
+  <div class="top-row">
+    <div>
+      <h1>Bookings</h1>
+      <p class="sub">Filter karo, driver assign karo. Disputed wali laal me dikhegi.</p>
+    </div>
+    <button class="logout-btn" id="logoutBtn" type="button">Logout</button>
+  </div>
+
+  <div id="pageAlert" role="alert" aria-live="assertive"></div>
+
+  <section class="card" aria-labelledby="filterTitle">
+    <h2 id="filterTitle">Filter</h2>
+    <div class="controls">
+      <div class="field">
+        <label for="statusFilter">Status</label>
+        <select id="statusFilter">
+          <option value="">All</option>
+          <option value="pending">pending</option>
+          <option value="accepted">accepted</option>
+          <option value="arrived">arrived</option>
+          <option value="in_transit">in_transit</option>
+          <option value="delivered">delivered</option>
+          <option value="cancelled">cancelled</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="fromDate">From date</label>
+        <input type="date" id="fromDate">
+      </div>
+      <div class="field">
+        <label for="toDate">To date</label>
+        <input type="date" id="toDate">
+      </div>
+      <button class="btn ghost" id="filterBtn" type="button">Load</button>
+    </div>
+    <div id="summaryBox" aria-live="polite"></div>
+    <div class="list" id="bookingsList" aria-live="polite"><p class="loading">Load dabao.</p></div>
+    <div class="pager">
+      <button class="btn ghost small" id="prevBtn" type="button">← Pehle</button>
+      <span id="pageInfo">Page 1</span>
+      <button class="btn ghost small" id="nextBtn" type="button">Agla →</button>
+    </div>
+  </section>
+
+<footer class="site-footer">
+  <div class="site-foot-inner">
+    <div class="site-foot-brand">ApnaShift</div>
+    <div class="site-foot-links">
+      <a href="index.html">Home</a>
+      <a href="help.html">Help</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms &amp; Conditions</a>
+    </div>
+  </div>
+</footer>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var API_BASE_URL = "https://apnashiftapp-production.up.railway.app";
+  var TOKEN_KEY = "apnashift_admin_token";
+  var LOGIN_PAGE = "admin-login.html";
+  var PAGE_LIMIT = 20;
+
+  function getToken(){
+    try{ return localStorage.getItem(TOKEN_KEY); }catch(e){ return null; }
+  }
+  function clearAndGoLogin(){
+    try{ localStorage.removeItem(TOKEN_KEY); }catch(e){}
+    window.location.href = LOGIN_PAGE;
+  }
+  if(!getToken()){
+    window.location.href = LOGIN_PAGE;
+    return;
+  }
+
+  var pageAlert = document.getElementById("pageAlert");
+  var summaryBox = document.getElementById("summaryBox");
+  var bookingsList = document.getElementById("bookingsList");
+  var statusFilter = document.getElementById("statusFilter");
+  var fromDate = document.getElementById("fromDate");
+  var toDate = document.getElementById("toDate");
+  var filterBtn = document.getElementById("filterBtn");
+  var prevBtn = document.getElementById("prevBtn");
+  var nextBtn = document.getElementById("nextBtn");
+  var pageInfo = document.getElementById("pageInfo");
+
+  var page = 1, total = 0;
+  var verifiedDrivers = null;
+
+  function showAlert(type, msg){
+    pageAlert.className = "show " + type;
+    pageAlert.textContent = msg;
+  }
+  function hideAlert(){
+    pageAlert.className = "";
+    pageAlert.textContent = "";
+  }
+  function esc(s){
+    return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function authHeaders(extra){
+    var h = { "Authorization": "Bearer " + getToken() };
+    if(extra){ for(var k in extra){ if(extra.hasOwnProperty(k)) h[k] = extra[k]; } }
+    return h;
+  }
+  function parseRes(res){
+    return res.json().then(function(data){
+      return { status: res.status, body: data };
+    }).catch(function(){
+      return { status: res.status, body: null };
+    });
+  }
+  function checkAuth(result){
+    if(result.status === 401){
+      clearAndGoLogin();
+      return true;
+    }
+    return false;
+  }
+  function networkMsg(){ return "Network error — net check karke dobara try karo."; }
+  function fmtDate(v){
+    if(!v) return "—";
+    var d = new Date(v);
+    if(isNaN(d.getTime())) return String(v);
+    return d.toLocaleString("en-IN");
+  }
+  function addrText(p){
+    if(!p) return "—";
+    if(typeof p === "string") return p;
+    return p.address || "–";
+  }
+  function toISO(dateStr, endOfDay){
+    if(!dateStr) return "";
+    var d = new Date(dateStr + (endOfDay ? "T23:59:59" : "T00:00:00"));
+    if(isNaN(d.getTime())) return "";
+    return d.toISOString();
+  }
+
+  function bookingCard(b){
+    var disp = !!b.disputed;
+    var html = '<div class="row-card' + (disp ? " disputed" : "") + '">';
+    html += '<h3>#' + esc(b.id || "—") + ' <span class="badge">' + esc(b.status || "—") + '</span>' +
+      (disp ? ' <span class="badge bad">Disputed</span>' : '') + '</h3>';
+    html += '<p>' + esc(addrText(b.pickup)) + ' → ' + esc(addrText(b.drop)) + '</p>';
+    html += '<p class="meta">Customer: ' + esc(b.user_name || "—") + ' • Driver: ' + esc(b.driver_name || (b.driver_id ? "assign hai" : "nahi")) + '</p>';
+    html += '<p class="meta">Kiraya: Rs ' + esc(b.price_rs) + ' • Payment: ' + esc(b.payment_method || "—") + ' • ' + esc(fmtDate(b.created_at)) + '</p>';
+    if(disp && b.dispute_reason) html += '<p class="meta">Vivad: ' + esc(b.dispute_reason) + '</p>';
+    if(b.status === "pending"){
+      html += '<div class="assign-row"><div class="field">' +
+        '<label for="drv-' + esc(b.id) + '">Driver chuno</label>' +
+        '<select id="drv-' + esc(b.id) + '" data-drivers-for="' + esc(b.id) + '">' +
+        '<option value="">— Load ho raha hai… —</option></select></div>' +
+        '<button class="btn small" type="button" data-assign="' + esc(b.id) + '">Assign Driver</button></div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function fillDriverDropdowns(){
+    var sels = bookingsList.querySelectorAll("select[data-drivers-for]");
+    if(!sels.length) return;
+    function fill(list){
+      for(var i = 0; i < sels.length; i++){
+        var opts = '<option value="">— Driver chuno —</option>';
+        for(var j = 0; j < list.length; j++){
+          opts += '<option value="' + esc(list[j].id) + '">' + esc(list[j].name || "Naam nahi") +
+            ' (' + esc(list[j].vehicle_type || "") + ')</option>';
+        }
+        sels[i].innerHTML = opts;
+      }
+    }
+    if(verifiedDrivers){
+      fill(verifiedDrivers);
+      return;
+    }
+    fetch(API_BASE_URL + "/api/admin/drivers?status=verified&limit=100", { method: "GET", headers: authHeaders() })
+      .then(parseRes)
+      .then(function(result){
+        if(checkAuth(result)) return;
+        verifiedDrivers = (result.body && result.body.drivers) || [];
+        fill(verifiedDrivers);
+      })
+      .catch(function(){
+        for(var i = 0; i < sels.length; i++){
+          sels[i].innerHTML = '<option value="">Driver list nahi mili</option>';
+        }
+      });
+  }
+
+  function loadBookings(){
+    filterBtn.disabled = true;
+    bookingsList.innerHTML = '<p class="loading">Bookings load ho rahi hain…</p>';
+    summaryBox.innerHTML = "";
+    var qs = ["page=" + page, "limit=" + PAGE_LIMIT];
+    if(statusFilter.value) qs.push("status=" + encodeURIComponent(statusFilter.value));
+    var from = toISO(fromDate.value, false), to = toISO(toDate.value, true);
+    if(fromDate.value && !from){ showAlert("err", "From date sahi likho."); filterBtn.disabled = false; return; }
+    if(toDate.value && !to){ showAlert("err", "To date sahi likho."); filterBtn.disabled = false; return; }
+    if(from) qs.push("from=" + encodeURIComponent(from));
+    if(to) qs.push("to=" + encodeURIComponent(to));
+    fetch(API_BASE_URL + "/api/admin/bookings?" + qs.join("&"), { method: "GET", headers: authHeaders() })
+      .then(parseRes)
+      .then(function(result){
+        if(checkAuth(result)) return;
+        if(result.status !== 200 || !result.body || result.body.ok !== true){
+          throw new Error((result.body && result.body.error) || "load_failed");
+        }
+        var arr = result.body.bookings || [];
+        total = Number(result.body.total) || 0;
+        summaryBox.innerHTML = '<p class="meta" style="font-size:.9rem;color:var(--navy);font-weight:700">Total: ' + esc(total) +
+          ' • Revenue: Rs ' + esc(result.body.revenue_rs != null ? result.body.revenue_rs : "—") + '</p>';
+        pageInfo.textContent = "Page " + page + " / " + Math.max(1, Math.ceil(total / PAGE_LIMIT));
+        prevBtn.disabled = page <= 1;
+        nextBtn.disabled = (page * PAGE_LIMIT) >= total;
+        if(!arr.length){
+          bookingsList.innerHTML = '<p class="empty">Koi booking nahi mili.</p>';
+          return;
+        }
+        bookingsList.innerHTML = arr.map(bookingCard).join("");
+        fillDriverDropdowns();
+        hideAlert();
+      })
+      .catch(function(err){
+        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : "Bookings load nahi huin. Dobara try karo.";
+        bookingsList.innerHTML = '<p class="empty">Bookings load nahi huin.</p>';
+        showAlert("err", msg);
+      })
+      .then(function(){
+        filterBtn.disabled = false;
+      });
+  }
+  filterBtn.addEventListener("click", function(){ page = 1; loadBookings(); });
+  statusFilter.addEventListener("change", function(){ page = 1; loadBookings(); });
+  prevBtn.addEventListener("click", function(){ if(page > 1){ page -= 1; loadBookings(); } });
+  nextBtn.addEventListener("click", function(){ page += 1; loadBookings(); });
+
+  bookingsList.addEventListener("click", function(ev){
+    var btn = ev.target.closest ? ev.target.closest("button[data-assign]") : null;
+    if(!btn) return;
+    var id = btn.getAttribute("data-assign");
+    var sel = document.getElementById("drv-" + id);
+    var driverId = sel ? sel.value : "";
+    if(!id || !driverId){
+      showAlert("err", "Pehle driver chuno.");
+      return;
+    }
+    btn.disabled = true;
+    showAlert("info", "Driver assign ho raha hai…");
+    fetch(API_BASE_URL + "/api/admin/bookings/" + encodeURIComponent(id) + "/assign", {
+      method: "PATCH", headers: authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ driver_id: driverId })
+    })
+      .then(parseRes)
+      .then(function(result){
+        if(checkAuth(result)) return;
+        if(result.status === 200){
+          showAlert("ok", "Driver assign ho gaya.");
+          loadBookings();
+          return;
+        }
+        var code = result.body && result.body.error;
+        if(code === "invalid_transition") showAlert("err", "Ye booking ab pending nahi hai — list refresh ho rahi hai.");
+        else if(code === "driver_unavailable") showAlert("err", "Driver verified/active nahi hai.");
+        else if(code === "vehicle_mismatch") showAlert("err", "Driver ki gaadi match nahi karti.");
+        else if(result.status === 404) showAlert("err", "Booking ya driver nahi mila.");
+        else showAlert("err", "Assign nahi hua. Dobara try karo.");
+        btn.disabled = false;
+        if(result.status === 409 || result.status === 404) loadBookings();
+      })
+      .catch(function(err){
+        showAlert("err", (err && err.message === "Failed to fetch") ? networkMsg() : "Assign nahi hua. Dobara try karo.");
+        btn.disabled = false;
+      });
+  });
+
+  document.getElementById("logoutBtn").addEventListener("click", clearAndGoLogin);
+
+  var navMenuBtn = document.getElementById("navMenuBtn"), siteNav = document.getElementById("siteNav");
+  if(navMenuBtn && siteNav){
+    navMenuBtn.addEventListener("click", function(){
+      var open = siteNav.classList.toggle("open");
+      navMenuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+  }
+
+  loadBookings();
+})();
+</script>
+</body>
+</html>

@@ -121,6 +121,14 @@ export const driverRegisterSchema = z.object({
   emergency_name: optText(2, 80, 'Emergency naam 2-80 akshar.'),
   emergency_relation: optText(2, 40, 'Rishta 2-40 akshar.'),
   emergency_phone: z.preprocess(emptyToUndef, phoneField.optional()),
+  // UPI handle (optional at register; driver/profile se baad me bhi jud sakta hai).
+  // Spec regex ^[\w.\-]{2,256}@... — trailing \- lint-safe form me (same language).
+  upi_id: z.preprocess(
+    emptyToUndef,
+    z.string().trim().max(321, 'UPI ID bahut lambi hai.')
+      .regex(/^[\w.-]{2,256}@[a-zA-Z]{2,64}$/, { message: 'UPI ID format naam@bank jaisa ho.' })
+      .optional(),
+  ),
   // If consent is sent it must be true (false = 400). If omitted,
   // legacy clients keep working — hence not required (backward compat).
   consent: z.preprocess(
@@ -177,6 +185,34 @@ function checkDateKind(kind, s) {
 }
 
 export const adminLoginSchema = loginSchema;
+
+// Self-service password reset (zero-cost OTP).
+// forgot: sirf phone — hamesha ok:true (enumeration rokne ke liye).
+export const forgotPasswordSchema = z.object({
+  phone: phoneField,
+});
+
+// reset: phone + 6-digit OTP + naya password (min 8, admin-reset jaisa).
+export const resetPasswordSchema = z.object({
+  phone: phoneField,
+  otp: z
+    .string({ required_error: 'OTP likho.' })
+    .trim()
+    .regex(/^\d{6}$/, { message: 'OTP 6 digit ka number ho.' }),
+  new_password: passwordField,
+});
+
+// PATCH /api/driver/profile — driver khud apna UPI ID jod/badalkar sakta hai
+// (null bhejne par clear ho jata hai). Sirf upi_id editable hai.
+export const driverProfileSchema = z.object({
+  upi_id: z
+    .string()
+    .trim()
+    .max(321, 'UPI ID bahut lambi hai.')
+    .regex(/^[\w.-]{2,256}@[a-zA-Z]{2,64}$/, { message: 'UPI ID format naam@bank jaisa ho.' })
+    .nullable()
+    .optional(),
+});
 
 // safeParse wrapper: 400 on failure (details hold only field+message, no values).
 export function parseBody(schema, body) {

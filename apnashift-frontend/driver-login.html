@@ -136,6 +136,14 @@
     cursor:not-allowed;
     text-decoration:underline dotted;
   }
+  .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(20,33,61,.55);z-index:1000;padding:16px}
+  .modal-backdrop.show{display:flex;align-items:center;justify-content:center}
+  .modal{background:#fff;border:2px solid var(--navy);border-radius:var(--radius);box-shadow:6px 6px 0 var(--yellow);max-width:440px;width:100%;padding:20px 18px}
+  .modal h2{font-family:"Baloo 2", "Comic Sans MS", system-ui, sans-serif;color:var(--navy);font-size:1.25rem;margin:0 0 8px}
+  .modal p{font-size:.92rem;margin:0 0 10px}
+  .wa-btn{display:inline-block;font-family:"Baloo 2", "Comic Sans MS", system-ui, sans-serif;font-weight:800;font-size:1rem;padding:11px 18px;border-radius:12px;border:2px solid var(--navy);background:#25d366;color:#fff;text-decoration:none;box-shadow:0 4px 0 var(--navy)}
+  .wa-btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--navy)}
+  .modal .ghost-btn{display:inline-block;margin-top:10px;font:inherit;font-weight:700;padding:9px 14px;border-radius:10px;border:2px solid var(--navy);background:#fff;color:var(--navy);cursor:pointer}
   #success{
     display:none;
     margin-top:16px;
@@ -185,6 +193,7 @@
     <a class="site-brand" href="index.html" aria-label="ApnaShift home">ApnaShift<small>Shifting • Transport</small></a>
     <nav class="site-nav" id="siteNav" aria-label="Main navigation">
       <a href="index.html">Home</a>
+      <a href="booking.html">Book</a>
       <a href="user-auth.html">Login</a>
       <details class="nav-drop">
         <summary>Driver</summary>
@@ -193,6 +202,7 @@
           <a href="driver-login.html">Driver Login</a>
         </div>
       </details>
+      <a href="enterprise.html">Enterprise</a>
       <a href="help.html">Help</a>
     </nav>
     <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
@@ -229,17 +239,37 @@
 
     <div class="links">
       <span>Account nahi hai? <a href="driver-register.html">Register karein</a></span>
-      <span><a href="#" class="disabled-link" id="forgotLink"
-               title="Jald aa raha hai"
-               aria-disabled="true">Password bhool gaye?</a></span>
+      <span><a href="#" id="forgotLink">Password bhool gaye?</a></span>
     </div>
   </section>
 
-  <section id="success" aria-live="polite" aria-labelledby="successTitle">
+    <section id="success" aria-live="polite" aria-labelledby="successTitle">
     <h2 id="successTitle">Login ho gaya</h2>
     <p id="welcomeText">Namaste, driver!</p>
-    <p>Dashboard jald aa raha hai.</p>
+    <p>Driver dashboard khul raha hai…</p>
   </section>
+
+  <div class="modal-backdrop" id="forgotModal" role="dialog" aria-modal="true" aria-labelledby="forgotTitle">
+    <div class="modal">
+      <h2 id="forgotTitle">Password reset (OTP — FREE)</h2>
+      <p>Registered mobile par 6-digit OTP ayega (10 min valid). OTP banana FREE hai.</p>
+      <div id="otpStep1">
+        <label for="otpPhone">Registered mobile number</label>
+        <input type="tel" id="otpPhone" inputmode="numeric" maxlength="15" placeholder="98765 43210">
+        <div style="margin-top:8px"><button type="button" class="ghost-btn" id="otpSendBtn">OTP bhejo</button></div>
+      </div>
+      <div id="otpStep2" style="display:none;margin-top:10px">
+        <label for="otpCode">6-digit OTP</label>
+        <input type="text" id="otpCode" inputmode="numeric" maxlength="6" placeholder="123456">
+        <label for="otpNewPass" style="margin-top:8px">Naya password (min 8)</label>
+        <input type="password" id="otpNewPass" maxlength="128" placeholder="Naya password">
+        <div style="margin-top:8px"><button type="button" class="ghost-btn" id="otpResetBtn">Password badlo</button></div>
+      </div>
+      <p class="error-text" id="otpMsg" aria-live="polite" style="display:none"></p>
+      <p>OTP na aaye? WhatsApp par bhejein <strong id="supportNumberText">918757160137</strong> — <a id="forgotWaLink" href="#" target="_blank" rel="noopener">WhatsApp par bhejo</a></p>
+      <br><button type="button" class="ghost-btn" id="forgotClose">Band karo</button>
+    </div>
+  </div>
 <footer class="site-footer">
   <div class="site-foot-inner">
     <div class="site-foot-brand">ApnaShift</div>
@@ -257,9 +287,31 @@
 (function(){
   "use strict";
 
-  // Backend base URL — live Railway backend.
+  // Backend base URL — Railway production backend.
   var API_BASE_URL = "https://apnashiftapp-production.up.railway.app";
   var TOKEN_KEY = "apnashift_driver_token";
+
+  // Auto redirect when a valid driver session already exists.
+  try{
+    var existingToken = localStorage.getItem(TOKEN_KEY);
+    if(existingToken){
+      fetch(API_BASE_URL + "/api/auth/me", {
+        method: "GET",
+        headers: { "Authorization": "Bearer " + existingToken }
+      }).then(function(res){
+        return res.json().then(function(data){
+          return { status: res.status, body: data };
+        }).catch(function(){
+          return { status: res.status, body: null };
+        });
+      }).then(function(result){
+        var meUser = result.body && (result.body.user || result.body.data);
+        if(result.body && result.body.ok === true && meUser && meUser.role === "driver"){
+          window.location.href = "driver-dashboard.html";
+        }
+      }).catch(function(){});
+    }
+  }catch(e){}
 
   var form = document.getElementById("loginForm");
   var phoneInput = document.getElementById("phone");
@@ -311,9 +363,82 @@
     el.addEventListener("input", hideAlert);
   });
 
+  // Self-service OTP reset (zero-cost: generate FREE, dev me console/debug_otp).
+  var SUPPORT_WHATSAPP = "918757160137";
+  document.getElementById("supportNumberText").textContent = SUPPORT_WHATSAPP;
+  var forgotModal = document.getElementById("forgotModal");
+  var otpPhone = document.getElementById("otpPhone");
+  var otpCode = document.getElementById("otpCode");
+  var otpNewPass = document.getElementById("otpNewPass");
+  var otpStep2 = document.getElementById("otpStep2");
+  var otpMsg = document.getElementById("otpMsg");
+  var otpSendBtn = document.getElementById("otpSendBtn");
+  var otpResetBtn = document.getElementById("otpResetBtn");
+  function otpSay(msg, isErr){
+    otpMsg.style.display = msg ? "block" : "none";
+    otpMsg.style.color = isErr ? "var(--red)" : "var(--green)";
+    otpMsg.textContent = msg || "";
+  }
+  function openForgotModal(phone){
+    var msg = "Namaste! Mera ApnaShift driver password reset kar dijiye." +
+      (phone ? " Mera registered mobile number: " + phone : " Mera registered mobile number: ");
+    document.getElementById("forgotWaLink").href =
+      "https://wa.me/" + SUPPORT_WHATSAPP + "?text=" + encodeURIComponent(msg);
+    try { if(phone && otpPhone && !otpPhone.value) otpPhone.value = phone; } catch(e){}
+    otpSay("");
+    forgotModal.classList.add("show");
+  }
+  function postOTP(path, body){
+    return fetch(API_BASE_URL + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+      .then(function(r){ return r.json().catch(function(){ return null; }).then(function(b){ return { status: r.status, body: b }; }); });
+  }
+  otpSendBtn.addEventListener("click", function(){
+    var p = cleanPhone(otpPhone.value);
+    if(!PHONE_RE.test(p)){ otpSay("Sahi 10-digit mobile likho.", true); return; }
+    otpSay("OTP bheja ja raha hai…", false);
+    otpSendBtn.disabled = true;
+    postOTP("/api/auth/forgot-password", { phone: p }).then(function(r){
+      if(r.status === 429){ otpSay("Bahut koshish — 15 min baad try karo.", true); return; }
+      if(!r.body || r.body.ok !== true){ otpSay("OTP nahi bheja — dobara try karo.", true); return; }
+      otpStep2.style.display = "block";
+      otpSay(r.body.debug_otp ? ("Dev OTP (FREE): " + r.body.debug_otp) : "OTP bhej diya — 10 min me use karo.", false);
+    }).catch(function(){ otpSay("Internet dikkat — dobara try karo.", true); })
+    .then(function(){ otpSendBtn.disabled = false; });
+  });
+  otpResetBtn.addEventListener("click", function(){
+    var p = cleanPhone(otpPhone.value);
+    var code = String((otpCode.value || "").trim());
+    var np = String(otpNewPass.value || "");
+    if(!PHONE_RE.test(p)){ otpSay("Sahi mobile likho.", true); return; }
+    if(!/^\d{6}$/.test(code)){ otpSay("6-digit OTP likho.", true); return; }
+    if(np.length < 8){ otpSay("Naya password min 8 akshar.", true); return; }
+    otpSay("Password badla ja raha hai…", false);
+    otpResetBtn.disabled = true;
+    postOTP("/api/auth/reset-password", { phone: p, otp: code, new_password: np }).then(function(r){
+      if(r.status === 200 && r.body && r.body.ok === true){
+        otpSay("Password badal gaya — ab login karo.", false);
+        try { phoneInput.value = otpPhone.value; } catch(e){}
+        setTimeout(closeForgotModal, 1500);
+        return;
+      }
+      if(r.status === 429){ otpSay("Bahut koshish — 15 min baad try karo.", true); return; }
+      otpSay("OTP galat ya expire — naya OTP mangao.", true);
+    }).catch(function(){ otpSay("Internet dikkat — dobara try karo.", true); })
+    .then(function(){ otpResetBtn.disabled = false; });
+  });
+  function closeForgotModal(){ forgotModal.classList.remove("show"); }
   document.getElementById("forgotLink").addEventListener("click", function(ev){
     ev.preventDefault();
-    showAlert("err", "Password reset jald aa raha hai. Abhi ke liye apna purana password use karo.");
+    var phoneVal = "";
+    try { phoneVal = phoneInput.value.trim(); } catch(e){}
+    openForgotModal(phoneVal);
+  });
+  document.getElementById("forgotClose").addEventListener("click", closeForgotModal);
+  forgotModal.addEventListener("click", function(ev){
+    if(ev.target === forgotModal) closeForgotModal();
+  });
+  document.addEventListener("keydown", function(ev){
+    if(ev.key === "Escape" && forgotModal.classList.contains("show")) closeForgotModal();
   });
 
   form.addEventListener("submit", function(ev){
@@ -372,13 +497,8 @@
       }catch(e){
         throw new Error("storage");
       }
-      form.style.display = "none";
-      document.querySelector(".links").style.display = "none";
-      var name = user.name ? ", " + user.name : "";
-      document.getElementById("welcomeText").textContent = "Namaste" + name + "!";
-      successBox.classList.add("show");
-      showAlert("ok", "Login ho gaya.");
-      successBox.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.location.href = "driver-dashboard.html";
+      window.setTimeout(function(){ window.location.href = "driver-dashboard.html"; }, 1000);
     }).catch(function(err){
       if(err && err.message === "not_driver"){
         showAlert("err", "Ye login driver ka nahi hai. Driver number se login karo.");

@@ -1,16 +1,28 @@
-// User auth: register, login (user/driver/admin), me.
-// TODO(otp): No OTP yet — password-only login. When adding OTP:
-//   1. Add phone_verified BOOLEAN column to users/drivers (default FALSE).
-//   2. Send OTP on register + verify via POST /api/auth/verify-otp.
-//   3. Deny tokens to unverified phones on login:
-//      return 403 { ok:false, error:'phone_unverified' }.
-//   4. Hook this TODO where passwords are checked (login below).
+// User auth: register, login (user/driver/admin), me + self-service
+// password reset via zero-cost OTP (generate FREE, SMS paid — dev me console).
 import { Router } from 'express';
 import bcrypt from 'bcrypt';
 import { query } from '../db.js';
 import { config } from '../config.js';
 import { signToken } from '../utils/jwt.js';
-import { VEHICLE_TO_API, registerSchema, loginSchema, parseBody } from '../validation/auth.js';
+import {
+  VEHICLE_TO_API,
+  registerSchema,
+  loginSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  parseBody,
+} from '../validation/auth.js';
+import {
+  generateOtp,
+  hashOtp,
+  timingSafeEqualHex,
+  sendOtp,
+  shouldReturnDebugOtp,
+  OTP_TTL_MS,
+  OTP_MAX_ATTEMPTS,
+  OTP_MAX_PER_WINDOW,
+} from '../services/otp.js';
 import { requireAuth } from '../middleware/auth.js';
 import { authLimiter } from '../middleware/authLimiter.js';
 
@@ -39,6 +51,7 @@ function publicUser(row, role) {
     user.city = row.city ?? null;
     user.state = row.state ?? null;
     user.application_ref = row.application_ref ?? null;
+    user.upi_id = row.upi_id ?? null;
   }
   return user;
 }
@@ -114,7 +127,7 @@ async function findByPhone(phone) {
   if (inUsers.rowCount > 0) return { role: 'user', row: inUsers.rows[0] };
 
   const inDrivers = await query(
-    'SELECT id, name, phone, password_hash, vehicle_type, vehicle_number, is_verified, email, city, state, application_ref FROM drivers WHERE phone = $1',
+    'SELECT id, name, phone, password_hash, vehicle_type, vehicle_number, is_verified, email, city, state, application_ref, upi_id FROM drivers WHERE phone = $1',
     [phone],
   );
   if (inDrivers.rowCount > 0) return { role: 'driver', row: inDrivers.rows[0] };
@@ -136,7 +149,7 @@ authRoutes.get('/me', requireAuth, async (req, res, next) => {
       result = await query('SELECT id, name, phone FROM users WHERE id = $1', [id]);
     } else if (role === 'driver') {
       result = await query(
-        'SELECT id, name, phone, vehicle_type, vehicle_number, is_verified, email, city, state, application_ref FROM drivers WHERE id = $1',
+        'SELECT id, name, phone, vehicle_type, vehicle_number, is_verified, email, city, state, application_ref, upi_id FROM drivers WHERE id = $1',
         [id],
       );
     } else if (role === 'admin') {
@@ -148,6 +161,127 @@ authRoutes.get('/me', requireAuth, async (req, res, next) => {
       return res.status(401).json({ ok: false, error: 'invalid_token' });
     }
     res.json({ ok: true, user: publicUser(result.rows[0], role) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/auth/forgot-password { phone } — zero-cost OTP.
+// Hamesha ok:true (phone hai ya nahi — enumeration nahi). OTP generate FREE,
+// bhejna dev me console (Rs 0), SMS provider lagne par SMS.
+// Per-phone throttle 3/15min (future SMS kharch bachane ke liye) + IP throttle authLimiter.
+authRoutes.post('/forgot-password', authLimiter, async (req, res, next) => {
+  try {
+    const { phone } = parseBody(forgotPasswordSchema, req.body);
+
+    // Per-phone throttle — table na ho (purana DB, migrate baaki) to skip karke aage badho.
+    try {
+      const recent = await query(
+        `SELECT COUNT(*)::int AS c FROM password_reset_otps
+         WHERE phone = $1 AND created_at > now() - make_interval(secs => $2)`,
+        [phone, OTP_MAX_PER_WINDOW === 0 ? 0 : 900],
+      );
+      if ((recent.rows[0]?.c ?? 0) >= OTP_MAX_PER_WINDOW) {
+        return res.status(429).json({ ok: false, error: 'too_many_attempts' });
+      }
+    } catch {
+      // password_reset_otps table missing (migrate pending) — throttle skip.
+    }
+
+    // Sirf users/drivers self-reset (admins owner-flow se — par response same ok:true).
+    const inUsers = await query('SELECT id FROM users WHERE phone = $1', [phone]);
+    let accountTable = inUsers.rowCount > 0 ? 'users' : null;
+    if (!accountTable) {
+      const inDrivers = await query('SELECT id FROM drivers WHERE phone = $1', [phone]);
+      if (inDrivers.rowCount > 0) accountTable = 'drivers';
+    }
+    if (!accountTable) {
+      // Phone nahi mila — phir bhi ok:true (enumeration rokna). Thoda delay taaki timing se pata na chale.
+      await new Promise((r) => setTimeout(r, 150));
+      return res.json({ ok: true });
+    }
+
+    const otp = generateOtp();
+    const expiresAt = new Date(Date.now() + OTP_TTL_MS);
+    try {
+      await query(
+        'INSERT INTO password_reset_otps (phone, otp_hash, expires_at) VALUES ($1, $2, $3)',
+        [phone, hashOtp(otp), expiresAt.toISOString()],
+      );
+    } catch (err) {
+      // Table missing (migrate pending) — seedha error mat do, ok:true taaki purana flow na toote.
+      if (err?.code === '42P01') return res.json({ ok: true });
+      throw err;
+    }
+    // Best-effort send — fail ho to bhi OTP DB me hai, user retry kar sakta hai.
+    try {
+      await sendOtp(phone, otp);
+    } catch {
+      // ignore — console fallback already logged inside sendOtp
+    }
+    // Dev/test me frontend bina SMS ke test kar sake. Production me kabhi OTP wapas nahi.
+    if (shouldReturnDebugOtp()) {
+      return res.json({ ok: true, debug_otp: otp });
+    }
+    return res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/auth/reset-password { phone, otp, new_password } — OTP verify + password badlo.
+// Galat/expire/missing sab par 400 invalid_otp (enumeration nahi). 5 galat try -> code dead.
+authRoutes.post('/reset-password', authLimiter, async (req, res, next) => {
+  try {
+    const { phone, otp, new_password } = parseBody(resetPasswordSchema, req.body);
+
+    let row = null;
+    try {
+      const found = await query(
+        `SELECT id, otp_hash, expires_at, attempts FROM password_reset_otps
+         WHERE phone = $1 AND expires_at > now()
+         ORDER BY created_at DESC LIMIT 1`,
+        [phone],
+      );
+      row = found.rows[0] ?? null;
+    } catch (err) {
+      if (err?.code === '42P01') {
+        return res.status(503).json({ ok: false, error: 'otp_unavailable' });
+      }
+      throw err;
+    }
+    if (!row) {
+      return res.status(400).json({ ok: false, error: 'invalid_otp' });
+    }
+    if (row.attempts >= OTP_MAX_ATTEMPTS) {
+      await query('DELETE FROM password_reset_otps WHERE phone = $1', [phone]);
+      return res.status(400).json({ ok: false, error: 'invalid_otp' });
+    }
+    if (!timingSafeEqualHex(hashOtp(otp), row.otp_hash)) {
+      await query('UPDATE password_reset_otps SET attempts = attempts + 1 WHERE id = $1', [row.id]);
+      return res.status(400).json({ ok: false, error: 'invalid_otp' });
+    }
+
+    // OTP sahi — kaunsi table me hai?
+    const inUsers = await query('SELECT id FROM users WHERE phone = $1', [phone]);
+    let accountTable = inUsers.rowCount > 0 ? 'users' : null;
+    if (!accountTable) {
+      const inDrivers = await query('SELECT id FROM drivers WHERE phone = $1', [phone]);
+      if (inDrivers.rowCount > 0) accountTable = 'drivers';
+    }
+    if (!accountTable) {
+      await query('DELETE FROM password_reset_otps WHERE phone = $1', [phone]);
+      return res.status(400).json({ ok: false, error: 'invalid_otp' });
+    }
+    const passwordHash = await bcrypt.hash(new_password, config.bcryptRounds);
+    // Table name allowlist se aata hai (users/drivers) — SQL injection nahi.
+    await query(`UPDATE ${accountTable} SET password_hash = $1 WHERE phone = $2`, [
+      passwordHash,
+      phone,
+    ]);
+    // Single-use: saare OTP khatm.
+    await query('DELETE FROM password_reset_otps WHERE phone = $1', [phone]);
+    return res.json({ ok: true });
   } catch (err) {
     next(err);
   }

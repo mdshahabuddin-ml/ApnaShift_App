@@ -15,6 +15,11 @@ process.env.WRITE_RATE_LIMIT_MAX ??= '1000';
 // counts accumulate — 100/60 defaults would return 429).
 process.env.RATE_LIMIT_MAX ??= '10000';
 process.env.ESTIMATE_RATE_LIMIT_MAX ??= '10000';
+// Tracking limiter likewise (many GPS posts per test file).
+process.env.TRACK_RATE_LIMIT_MAX ??= '10000';
+process.env.TRACK_RATE_LIMIT_WINDOW_MS ??= '60000';
+// Throttle tuned per-test via TRACK_MIN_INTERVAL_MS (read per-request).
+process.env.TRACK_MIN_INTERVAL_MS ??= '0';
 // Fast bcrypt (12 rounds take 30s+ for the suite, 4 is faster with same logic).
 process.env.BCRYPT_ROUNDS ??= '4';
 

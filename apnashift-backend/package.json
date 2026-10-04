@@ -12,6 +12,8 @@
     "test": "vitest run",
     "lint": "eslint .",
     "db:migrate": "node scripts/migrate.js",
+    "db:migrate:mssql": "node scripts/migrate-mssql.js",
+    "tracking:prune": "node scripts/prune-locations.js",
     "admin:create": "node scripts/create-admin.js"
   },
   "dependencies": {
@@ -22,6 +24,8 @@
     "express-rate-limit": "^7.4.1",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
+    "msnodesqlv8": "^5.5.0",
+    "mssql": "^12.7.2",
     "pg": "^8.12.0",
     "zod": "^3.23.8"
   },

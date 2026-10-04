@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Booking Karo | ApnaShift</title>
+<meta name="description" content="ApnaShift par gaadi book karo — live kiraya dekho, booking pakki karo.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#14213d;
+    --yellow:#fcbf49;
+    --bg:#f4f6fa;
+    --border:#c9d0de;
+    --ink:#20242e;
+    --muted:#5b6070;
+    --red:#c0392b;
+    --green:#1a7a3a;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    line-height:1.6;
+  }
+  :focus-visible{
+    outline:3px solid var(--navy);
+    outline-offset:2px;
+    box-shadow:0 0 0 6px var(--yellow);
+    border-radius:8px;
+  }
+  .site-header{background:var(--navy);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:50}
+  .site-header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px}
+  .site-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.3rem;line-height:1;color:#fff;text-decoration:none}
+  .site-brand small{display:block;font-family:"Noto Sans",system-ui,sans-serif;font-weight:600;font-size:.64rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow)}
+  .site-nav{display:flex;gap:4px;margin-left:8px;align-items:center}
+  .site-nav> a{color:#dbe2f0;text-decoration:none;font-weight:600;font-size:.9rem;padding:8px 10px;border-radius:8px}
+  .site-nav> a:hover{background:#1f2f52;color:#fff}
+  #navMenuBtn{display:none;background:transparent;border:2px solid var(--yellow);border-radius:8px;color:var(--yellow);font:inherit;font-weight:800;padding:6px 12px;cursor:pointer}
+  @media (max-width:760px){#navMenuBtn{display:block;margin-left:auto}.site-nav{display:none;position:absolute;top:100%;left:0;right:0;background:var(--navy);flex-direction:column;align-items:stretch;padding:8px 16px 14px;margin:0}.site-nav.open{display:flex}.site-header-inner{flex-wrap:wrap;position:relative}}
+  main{max-width:960px;margin:0 auto;padding:20px 16px 40px}
+  h1{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;color:var(--navy);font-size:1.6rem;margin:0 0 6px}
+  .sub{margin:0 0 12px;color:var(--muted);font-size:.9rem}
+  .card{background:#fff;border:2px solid var(--navy);border-radius:var(--radius);padding:18px;box-shadow:6px 6px 0 var(--yellow);margin-bottom:16px}
+  .card h2{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;color:var(--navy);font-size:1.2rem;margin:0 0 8px}
+  #pageAlert{display:none;border-radius:10px;padding:11px 12px;font-size:.9rem;font-weight:600;margin:0 0 14px}
+  #pageAlert.show{display:block}
+  #pageAlert.err{background:#fdecea;color:#7a1f14;border:2px solid var(--red)}
+  #pageAlert.ok{background:#e6f6ea;color:#0d5c26;border:2px solid var(--green)}
+  #pageAlert.info{background:#fff3cf;color:var(--navy);border:2px solid var(--navy)}
+  .field{margin:0 0 12px}
+  label{display:block;font-weight:600;font-size:.88rem;color:var(--navy);margin-bottom:6px}
+  input[type="text"],input[type="number"],select,textarea{width:100%;font:inherit;color:var(--ink);background:#fff;border:2px solid var(--border);border-radius:10px;padding:10px 12px}
+  input:focus,select:focus,textarea:focus{border-color:var(--navy);outline:none}
+  .row2{display:grid;gap:10px}
+  @media(min-width:640px){.row2{grid-template-columns:1fr 1fr}}
+  .hint{font-size:.82rem;color:var(--muted);margin:4px 0 0}
+  .error-text{color:var(--red);font-size:.82rem;font-weight:600;min-height:1.1em;margin:4px 0 0}
+  .field.invalid input,.field.invalid select{border-color:var(--red)}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  .btn{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:.95rem;padding:11px 18px;border-radius:12px;border:2px solid var(--navy);cursor:pointer;background:var(--yellow);color:var(--navy);box-shadow:0 4px 0 var(--navy);text-decoration:none;display:inline-block}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--navy)}
+  .btn[disabled]{opacity:.65;cursor:wait}
+  .btn.ghost{background:#fff}
+  .fare{background:#fff8e2;border:2px dashed var(--navy);border-radius:10px;padding:12px;margin-top:12px;display:none}
+  .fare.show{display:block}
+  .fare table{width:100%;border-collapse:collapse;font-size:.92rem}
+  .fare td{padding:4px 0}
+  .fare td:last-child{text-align:right;font-weight:700;color:var(--navy)}
+  .site-footer{background:var(--navy);color:#dbe2f0;padding:22px 16px 30px}
+  .site-foot-inner{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+  .site-foot-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;color:#fff;font-size:1.05rem}
+  .site-foot-links{display:flex;gap:16px;flex-wrap:wrap}
+  .site-foot-links a{color:var(--yellow);font-size:.86rem;font-weight:600;text-decoration:none}
+  .site-foot-links a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="index.html" aria-label="ApnaShift home">ApnaShift<small>Shifting • Transport</small></a>
+    <nav class="site-nav" id="siteNav" aria-label="Main navigation">
+      <a href="index.html">Home</a>
+      <a href="create-booking.html">Book</a>
+      <a href="customer-dashboard.html">My Bookings</a>
+      <a href="help.html">Help</a>
+    </nav>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+  </div>
+</header>
+
+<main>
+  <h1>Gaadi Book Karo</h1>
+  <p class="sub">Address likho, live kiraya dekho, phir booking pakki karo.</p>
+
+  <div id="pageAlert" role="alert" aria-live="assertive"></div>
+
+  <section class="card" aria-labelledby="formTitle">
+    <h2 id="formTitle">Trip details</h2>
+    <div class="field" id="f-pickup">
+      <label for="pickupAddr">Pickup address</label>
+      <input type="text" id="pickupAddr" maxlength="300" placeholder="Example: 12 MG Road, Indore">
+      <p class="error-text" id="pickupAddr-err"></p>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label for="pickupLat">Pickup lat</label>
+        <input type="number" id="pickupLat" step="any" min="-90" max="90" value="22.7196">
+      </div>
+      <div class="field">
+        <label for="pickupLng">Pickup lng</label>
+        <input type="number" id="pickupLng" step="any" min="-180" max="180" value="75.8577">
+      </div>
+    </div>
+    <div class="field" id="f-drop">
+      <label for="dropAddr">Drop address</label>
+      <input type="text" id="dropAddr" maxlength="300" placeholder="Example: 45 AB Road, Indore">
+      <p class="error-text" id="dropAddr-err"></p>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label for="dropLat">Drop lat</label>
+        <input type="number" id="dropLat" step="any" min="-90" max="90" value="22.7296">
+      </div>
+      <div class="field">
+        <label for="dropLng">Drop lng</label>
+        <input type="number" id="dropLng" step="any" min="-180" max="180" value="75.8677">
+      </div>
+    </div>
+    <div class="field" id="f-vehicle">
+      <label for="vehicle">Gaadi chuno</label>
+      <select id="vehicle">
+        <option value="pickup">Pickup — chhota samaan</option>
+        <option value="mini_truck">Mini Truck — ghar ka samaan</option>
+        <option value="mini_tractor">Mini Tractor — bhari samaan</option>
+      </select>
+      <p class="error-text" id="vehicle-err"></p>
+    </div>
+    <div class="controls">
+      <button type="button" class="btn ghost" id="estimateBtn">Live Price Dekho</button>
+    </div>
+    <div class="fare" id="fareCard" aria-live="polite">
+      <table>
+        <tbody>
+          <tr><td>Doori</td><td id="fareDist">–</td></tr>
+          <tr><td>Kul kiraya</td><td id="fareTotal">–</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="controls">
+      <button type="button" class="btn" id="bookBtn">Book Karein</button>
+    </div>
+    <p class="hint">Payment method default UPI hai (booking ke baad badal nahi sakte).</p>
+  </section>
+
+<footer class="site-footer">
+  <div class="site-foot-inner">
+    <div class="site-foot-brand">ApnaShift</div>
+    <div class="site-foot-links">
+      <a href="index.html">Home</a>
+      <a href="help.html">Help</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms &amp; Conditions</a>
+    </div>
+  </div>
+</footer>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var API_BASE_URL = "https://apnashiftapp-production.up.railway.app";
+  var TOKEN_KEY = "apnashift_user_token";
+
+  function getToken(){
+    try{ return localStorage.getItem(TOKEN_KEY); }catch(e){ return null; }
+  }
+  if(!getToken()){
+    window.location.href = "user-auth.html";
+    return;
+  }
+
+  var alertBox = document.getElementById("pageAlert");
+  var pickupAddr = document.getElementById("pickupAddr");
+  var pickupLat = document.getElementById("pickupLat");
+  var pickupLng = document.getElementById("pickupLng");
+  var dropAddr = document.getElementById("dropAddr");
+  var dropLat = document.getElementById("dropLat");
+  var dropLng = document.getElementById("dropLng");
+  var vehicle = document.getElementById("vehicle");
+  var estimateBtn = document.getElementById("estimateBtn");
+  var bookBtn = document.getElementById("bookBtn");
+  var fareCard = document.getElementById("fareCard");
+
+  function showAlert(type, msg){
+    alertBox.className = "show " + type;
+    alertBox.textContent = msg;
+  }
+  function hideAlert(){
+    alertBox.className = "";
+    alertBox.textContent = "";
+  }
+  function authHeaders(){
+    return { "Content-Type": "application/json", "Authorization": "Bearer " + getToken() };
+  }
+  function readBody(res){
+    return res.json().then(function(data){
+      return { status: res.status, body: data };
+    }).catch(function(){
+      return { status: res.status, body: null };
+    });
+  }
+  function num(el, min, max){
+    var v = Number(String(el.value).trim());
+    return (isFinite(v) && v >= min && v <= max) ? v : null;
+  }
+  function setErr(inputId, errId, bad, msg){
+    var wrap = document.getElementById(inputId);
+    var e = document.getElementById(errId);
+    if(bad){ if(wrap) wrap.classList.add("invalid"); if(e) e.textContent = msg; }
+    else { if(wrap) wrap.classList.remove("invalid"); if(e) e.textContent = ""; }
+    return !bad;
+  }
+
+  // Form validate karke saaf payload do (estimate + booking dono use karte hain).
+  function cleanForm(){
+    hideAlert();
+    var ok = true;
+    var pa = pickupAddr.value.trim(), da = dropAddr.value.trim();
+    if(pa.length < 3){ setErr("f-pickup", "pickupAddr-err", true, "Pickup address kam se kam 3 akshar."); ok = false; }
+    else setErr("f-pickup", "pickupAddr-err", false);
+    if(da.length < 3){ setErr("f-drop", "dropAddr-err", true, "Drop address kam se kam 3 akshar."); ok = false; }
+    else setErr("f-drop", "dropAddr-err", false);
+    var pLat = num(pickupLat, -90, 90), pLng = num(pickupLng, -180, 180);
+    var dLat = num(dropLat, -90, 90), dLng = num(dropLng, -180, 180);
+    if(pLat === null || pLng === null || dLat === null || dLng === null){
+      showAlert("err", "Lat/lng sahi likho (map se copy karke).");
+      ok = false;
+    }
+    if(!vehicle.value){
+      setErr("f-vehicle", "vehicle-err", true, "Gaadi chuno.");
+      ok = false;
+    } else setErr("f-vehicle", "vehicle-err", false);
+    if(!ok) return null;
+    return {
+      pickup: { address: pa, lat: pLat, lng: pLng },
+      drop: { address: da, lat: dLat, lng: dLng },
+      vehicle_type: vehicle.value
+    };
+  }
+
+  // Live price seedha backend estimate API se (koi andaza nahi).
+  estimateBtn.addEventListener("click", function(){
+    var clean = cleanForm();
+    if(!clean) return;
+    estimateBtn.disabled = true;
+    estimateBtn.textContent = "Kiraya nikal raha hai…";
+    fareCard.classList.remove("show");
+    fetch(API_BASE_URL + "/api/bookings/estimate-price", {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({
+        pickup: { lat: clean.pickup.lat, lng: clean.pickup.lng },
+        drop: { lat: clean.drop.lat, lng: clean.drop.lng },
+        vehicle_type: clean.vehicle_type,
+        helper_needed: false
+      })
+    }).then(readBody).then(function(result){
+      if(result.status === 401){ window.location.href = "user-auth.html"; return; }
+      if(result.status !== 200 || !result.body || result.body.ok !== true){
+        var detail = result.body && result.body.details && result.body.details[0] && result.body.details[0].message;
+        showAlert("err", detail || "Kiraya nahi nikal paya — dobara try karo.");
+        return;
+      }
+      document.getElementById("fareDist").textContent =
+        (result.body.distance_km !== undefined ? result.body.distance_km + " km" : "–");
+      document.getElementById("fareTotal").textContent =
+        (result.body.total !== undefined ? "Rs " + result.body.total : "–");
+      fareCard.classList.add("show");
+      showAlert("ok", "Live kiraya aa gaya — pasand aaye to Book Karein dabao.");
+    }).catch(function(){
+      showAlert("err", "Internet me dikkat hai — connection check karke try karo.");
+    }).then(function(){
+      estimateBtn.disabled = false;
+      estimateBtn.textContent = "Live Price Dekho";
+    });
+  });
+
+  // Booking pakki karo — success sirf backend 201 par, phir detail page.
+  bookBtn.addEventListener("click", function(){
+    var clean = cleanForm();
+    if(!clean) return;
+    bookBtn.disabled = true;
+    bookBtn.textContent = "Booking ho rahi hai…";
+    fetch(API_BASE_URL + "/api/bookings", {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify(clean)
+    }).then(readBody).then(function(result){
+      if(result.status === 401){ window.location.href = "user-auth.html"; return; }
+      if(result.status !== 201 || !result.body || result.body.ok !== true || !result.body.booking || !result.body.booking.id){
+        var detail = result.body && result.body.details && result.body.details[0] && result.body.details[0].message;
+        var code = result.body && result.body.error;
+        if(code === "distance_too_far") showAlert("err", "Ye doori service se bahar hai.");
+        else if(code === "unsupported_payment_method") showAlert("err", "Ye payment method abhi nahi chalti.");
+        else showAlert("err", detail || "Booking nahi hui — dobara try karo.");
+        bookBtn.disabled = false;
+        bookBtn.textContent = "Book Karein";
+        return;
+      }
+      window.location.href = "booking-detail.html?id=" + encodeURIComponent(result.body.booking.id);
+    }).catch(function(){
+      showAlert("err", "Internet me dikkat hai — connection check karke try karo.");
+      bookBtn.disabled = false;
+      bookBtn.textContent = "Book Karein";
+    });
+  });
+
+  var navMenuBtn = document.getElementById("navMenuBtn"), siteNav = document.getElementById("siteNav");
+  if(navMenuBtn && siteNav){
+    navMenuBtn.addEventListener("click", function(){
+      var open = siteNav.classList.toggle("open");
+      navMenuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+  }
+})();
+</script>
+</body>
+</html>

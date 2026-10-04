@@ -23,9 +23,11 @@ function nextPhone() {
 }
 
 function bookingPayload() {
+  // Chhota sheher-trip (~640 fare): ratings par focus hai, aur commission
+  // due-cap (default Rs 1500) ke andar kai deliveries ho jati hain.
   return {
-    pickup: { address: '12 MG Road, Indore', lat: 0, lng: 0 },
-    drop: { address: '45 AB Road, Indore', lat: 0, lng: 1 },
+    pickup: { address: '12 MG Road, Indore', lat: 22.7196, lng: 75.8577 },
+    drop: { address: '45 AB Road, Indore', lat: 22.7296, lng: 75.8677 },
     vehicle_type: 'mini_truck',
     helper_needed: false,
     item_description: 'ghar ka samaan',
@@ -234,5 +236,29 @@ describeDb('ratings (DB)', () => {
     expect((await request(app).get('/api/drivers/00000000-0000-0000-0000-000000000000/ratings')).status).toBe(
       404,
     );
+  });
+
+  it('GET own rating — not_rated, then rated, stranger 404', async () => {
+    const u = await makeUser(nextPhone());
+    const stranger = await makeUser(nextPhone());
+    const d = await makeDriver(nextPhone());
+    const b = await makeBooking(u.token);
+    await deliverBooking(d.token, b.id);
+
+    const auth = (t) => ({ Authorization: `Bearer ${t}` });
+    const empty = await request(app).get(`/api/bookings/${b.id}/rating`).set(auth(u.token));
+    expect(empty.status).toBe(404);
+    expect(empty.body.error).toBe('not_rated');
+
+    expect((await rate(u.token, b.id, 4, 'sahi trip')).status).toBe(201);
+    const got = await request(app).get(`/api/bookings/${b.id}/rating`).set(auth(u.token));
+    expect(got.status).toBe(200);
+    expect(got.body.rating).toMatchObject({ booking_id: b.id, stars: 4, comment: 'sahi trip' });
+
+    const snoop = await request(app).get(`/api/bookings/${b.id}/rating`).set(auth(stranger.token));
+    expect(snoop.status).toBe(404);
+
+    const anon = await request(app).get(`/api/bookings/${b.id}/rating`);
+    expect(anon.status).toBe(401);
   });
 });

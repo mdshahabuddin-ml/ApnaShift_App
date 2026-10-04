@@ -62,6 +62,23 @@ components:
         status:
           type: string
           enum: [pending, accepted, arrived, in_transit, delivered, cancelled]
+        payment_method:
+          type: string
+          enum: [cash, online, upi]
+        commission_percent:
+          type: number
+          nullable: true
+          description: Creation-time snapshot from pricing_rules (rate lock)
+        disputed: { type: boolean }
+        dispute_reason: { type: string, nullable: true }
+        cancellation:
+          type: object
+          nullable: true
+          description: Set only when cancelled, else null
+          properties:
+            reason: { type: string, enum: [wrong_pickup, wrong_drop, wrong_vehicle, changed_plan, duplicate, driver_issue, other] }
+            cancelled_by: { type: string, enum: [user, driver, admin, system] }
+            cancelled_at: { type: string, format: date-time }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
     Paginated:
@@ -168,6 +185,48 @@ paths:
                 properties:
                   ok: { type: boolean, example: true }
                   user: { $ref: '#/components/schemas/PublicUser' }
+  /api/auth/forgot-password:
+    post:
+      summary: Request password-reset OTP (zero-cost dev mode, always ok:true)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone]
+              properties:
+                phone: { type: string, example: '9876543210' }
+      responses:
+        '200':
+          description: OK always (enumeration-safe). Dev/test returns debug_otp when OTP_DEV_RETURN=1 or non-production.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, example: true }
+                  debug_otp: { type: string, example: '123456' }
+        '429': { description: too_many_attempts (3 OTPs/15min per phone or IP limit) }
+  /api/auth/reset-password:
+    post:
+      summary: Verify OTP + set new password (users/drivers)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone, otp, new_password]
+              properties:
+                phone: { type: string, example: '9876543210' }
+                otp: { type: string, example: '123456' }
+                new_password: { type: string, minLength: 8, example: newpass123 }
+      responses:
+        '200': { description: Password changed }
+        '400': { description: invalid_otp (wrong/expired/used) or validation_failed }
   /api/drivers/register:
     post:
       summary: Register driver (starts unverified)
@@ -310,13 +369,31 @@ paths:
         '404': { description: not_found }
   /api/bookings/{id}/cancel:
     patch:
-      summary: Cancel own booking (pending/accepted only)
+      summary: Cancel own booking with reason (pending/accepted only, atomic)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string, enum: [wrong_pickup, wrong_drop, wrong_vehicle, changed_plan, duplicate, driver_issue, other] }
+      responses:
+        '200': { description: Cancelled (booking.cancellation has reason/by/at) }
+        '400': { description: validation_failed (reason missing/invalid) }
+        '404': { description: not_found }
+        '409': { description: invalid_transition (non-cancellable stage) }
+  /api/bookings/{id}/rating:
+    get:
+      summary: Read own rating for a booking (404 not_rated if none)
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
       responses:
-        '200': { description: Cancelled }
-        '409': { description: invalid_transition }
-  /api/bookings/{id}/rating:
+        '200': { description: OK (rating) }
+        '404': { description: not_found / not_rated }
     post:
       summary: Rate own delivered booking, once
       parameters:
@@ -437,6 +514,50 @@ paths:
       responses:
         '200': { description: Deactivated }
         '404': { description: not_found }
+  /api/admin/users/{id}/reset-password:
+    patch:
+      summary: Reset a user's password (admin, audited)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [new_password]
+              properties:
+                new_password: { type: string, minLength: 8, maxLength: 128 }
+      responses:
+        '200': { description: Updated (no hash in response) }
+        '400': { description: validation_failed }
+        '404': { description: not_found }
+  /api/admin/drivers/{id}/reset-password:
+    patch:
+      summary: Reset a driver's password (admin, audited)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [new_password]
+              properties:
+                new_password: { type: string, minLength: 8, maxLength: 128 }
+      responses:
+        '200': { description: Updated (no hash in response) }
+        '400': { description: validation_failed }
+        '404': { description: not_found }
+  /api/admin/accounts/lookup:
+    get:
+      summary: Find user/driver accounts by phone (admin, safe fields only)
+      parameters:
+        - { name: phone, in: query, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK (accounts array, never hashes) }
+        '400': { description: validation_failed }
   /api/admin/drivers/{id}/reactivate:
     patch:
       summary: Reactivate driver (admin, is_active true)
@@ -586,4 +707,239 @@ paths:
                 status: { type: string, enum: [NEW, CONTACTED, IN_DISCUSSION, CONVERTED, CLOSED] }
       responses:
         '200': { description: Updated }
+        '404': { description: not_found }
+  /api/driver/bookings/{id}/accept:
+    patch:
+      summary: Accept a pending booking (driver, verified)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Accepted }
+        '403': { description: commission_limit_exceeded (outstanding over COMMISSION_DUE_LIMIT) }
+        '404': { description: not_found }
+        '409': { description: already_accepted }
+  /api/driver/bookings/{id}/location:
+    post:
+      summary: Report live GPS (driver, assigned + active booking only)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [lat, lng]
+              properties:
+                lat: { type: number, minimum: -90, maximum: 90 }
+                lng: { type: number, minimum: -180, maximum: 180 }
+                accuracy_m: { type: number, minimum: 0, maximum: 10000 }
+                speed_mps: { type: number, minimum: 0, maximum: 100 }
+                heading_deg: { type: number, minimum: 0, maximum: 360, description: 'Compass degrees clockwise from true north (Geolocation heading). Null when device has no compass.' }
+      responses:
+        '201': { description: Stored + fanned out to SSE subscribers }
+        '400': { description: validation_failed }
+        '403': { description: driver_unverified / driver_inactive }
+        '404': { description: not_found (unassigned or other driver booking) }
+        '409': { description: tracking_not_active (pending/delivered/cancelled) }
+        '429': { description: too_many_attempts }
+  /api/bookings/{id}/location:
+    get:
+      summary: Latest GPS + tracking state (user, own booking)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: history, in: query, schema: { type: integer, default: 1, maximum: 50 } }
+      responses:
+        '200': { description: OK (state live/stale/offline/ended, driver w/o phone) }
+        '404': { description: not_found }
+  /api/bookings/{id}/location/stream:
+    get:
+      summary: Live GPS stream SSE (user, own booking)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: text/event-stream (snapshot + location events) }
+        '404': { description: not_found }
+  /api/admin/tracking/active:
+    get:
+      summary: Active trips with last GPS + state (admin)
+      parameters:
+        - { name: limit, in: query, schema: { type: integer, default: 50, maximum: 100 } }
+      responses:
+        '200': { description: OK (counts + actives) }
+        '403': { description: forbidden (non-admin) }
+  /api/geo/config:
+    get:
+      summary: Map tile template (Geoapify, key from env) + server tracking thresholds
+      responses:
+        '200': { description: OK (tiles.template, thresholds.stale_after_ms/offline_after_ms; OSM fallback when key missing) }
+        '401': { description: unauthorized }
+  /api/geo/autocomplete:
+    get:
+      summary: Address suggestions via Geoapify (server-side proxy, auth-gated)
+      parameters:
+        - { name: text, in: query, required: true, schema: { type: string, minLength: 3, maxLength: 200 } }
+        - { name: limit, in: query, schema: { type: integer, default: 5, maximum: 10 } }
+        - { name: lat, in: query, schema: { type: number, minimum: -90, maximum: 90 } }
+        - { name: lng, in: query, schema: { type: number, minimum: -180, maximum: 180 } }
+      responses:
+        '200': { description: OK (results[].formatted/lat/lng) }
+        '503': { description: geoapify_unavailable (key missing) }
+  /api/geo/route:
+    get:
+      summary: Driving route pickup->drop via Geoapify (for tracking map polyline)
+      parameters:
+        - { name: pickup_lat, in: query, required: true, schema: { type: number } }
+        - { name: pickup_lng, in: query, required: true, schema: { type: number } }
+        - { name: drop_lat, in: query, required: true, schema: { type: number } }
+        - { name: drop_lng, in: query, required: true, schema: { type: number } }
+      responses:
+        '200': { description: OK (distance_m, duration_s, geometry[].lat/lng) }
+        '503': { description: geoapify_unavailable (key missing) }
+  /api/driver/ledger:
+    get:
+      summary: Own money summary + payments + settlements (driver)
+      responses:
+        '200': { description: OK (derived summary, no stored balance) }
+        '403': { description: driver_unverified / forbidden }
+  /api/driver/profile:
+    patch:
+      summary: Update own UPI ID (driver, verified not required)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                upi_id: { type: string, nullable: true, example: naam@okhdfc }
+      responses:
+        '200': { description: Updated }
+        '400': { description: validation_failed }
+  /api/driver/commission-due:
+    get:
+      summary: Own outstanding commission + due limit (driver)
+      responses:
+        '200': { description: OK (outstanding_rs, limit_rs) }
+  /api/driver/bookings/{id}/flag-dispute:
+    post:
+      summary: Flag own assigned booking as disputed (driver)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string }
+      responses:
+        '200': { description: Flagged (money untouched) }
+        '404': { description: not_found }
+  /api/bookings/{id}/flag-dispute:
+    post:
+      summary: Flag own booking as disputed (user)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string }
+      responses:
+        '200': { description: Flagged (money untouched) }
+        '404': { description: not_found }
+  /api/admin/commission:
+    get:
+      summary: Current commission pct + history (admin)
+      responses:
+        '200': { description: OK }
+    put:
+      summary: Change commission pct for future deliveries (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [pct]
+              properties:
+                pct: { type: number, minimum: 0, maximum: 100, example: 15 }
+      responses:
+        '200': { description: Updated (history + audit in tx) }
+        '400': { description: validation_failed }
+  /api/admin/ledger:
+    get:
+      summary: All payments with adjustment deltas (admin, paginated)
+      parameters:
+        - { name: driver_id, in: query, schema: { type: string, format: uuid } }
+        - { name: status, in: query, schema: { type: string, enum: [owed, partial, settled] } }
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: limit, in: query, schema: { type: integer, default: 20, maximum: 100 } }
+      responses:
+        '200': { description: OK }
+  /api/admin/payments/{id}:
+    get:
+      summary: One payment + adjustment trail (admin)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+        '404': { description: not_found }
+  /api/admin/driver-balances:
+    get:
+      summary: Per-driver settlement dashboard (admin)
+      responses:
+        '200': { description: OK (trips, cash, earning, commission, settled, outstanding) }
+  /api/admin/settlements:
+    get:
+      summary: Settlement history (admin, optional driver filter)
+      parameters:
+        - { name: driver_id, in: query, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+    post:
+      summary: Record a settlement with FIFO allocation (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [driver_id, amount_rs, method]
+              properties:
+                driver_id: { type: string, format: uuid }
+                amount_rs: { type: number, exclusiveMinimum: 0, example: 150 }
+                method: { type: string, enum: [cash, bank_transfer, upi] }
+                reference_no: { type: string }
+                notes: { type: string }
+                settled_at: { type: string, format: date-time }
+      responses:
+        '201': { description: Created (+ outstanding_rs) }
+        '400': { description: validation_failed }
+        '404': { description: not_found (driver) }
+        '409': { description: settlement_exceeds_outstanding / duplicate_settlement }
+  /api/admin/adjustments:
+    post:
+      summary: Append-only payment correction (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [payment_id, reason]
+              properties:
+                payment_id: { type: string, format: uuid }
+                commission_delta_paise: { type: integer, example: 500 }
+                earning_delta_paise: { type: integer }
+                reason: { type: string }
+      responses:
+        '201': { description: Created }
         '404': { description: not_found }

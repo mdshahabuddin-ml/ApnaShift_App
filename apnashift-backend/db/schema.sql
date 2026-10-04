@@ -74,6 +74,7 @@ CREATE TABLE IF NOT EXISTS drivers (
   emergency_phone TEXT CHECK (emergency_phone IS NULL OR emergency_phone ~ '^[6-9][0-9]{9}$'),
   application_ref TEXT NOT NULL UNIQUE,
   consent_at TIMESTAMPTZ,
+  upi_id TEXT CHECK (upi_id IS NULL OR upi_id ~ '^[\w.\-]{2,255}@[a-zA-Z]{2,64}$'),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -98,16 +99,145 @@ CREATE TABLE IF NOT EXISTS bookings (
   distance_km NUMERIC(8, 2) NOT NULL CHECK (distance_km > 0 AND distance_km <= 500),
   helper BOOLEAN NOT NULL DEFAULT FALSE,
   price_rs NUMERIC(10, 2) NOT NULL CHECK (price_rs >= 0),
+  -- 014: creation-time commission snapshot (rate lock) + dispute flag.
+  commission_percent NUMERIC(5, 2) CHECK (
+    commission_percent IS NULL OR (commission_percent >= 0 AND commission_percent <= 100)
+  ),
+  disputed BOOLEAN NOT NULL DEFAULT FALSE,
+  dispute_reason TEXT CHECK (dispute_reason IS NULL OR char_length(dispute_reason) BETWEEN 3 AND 500),
   status TEXT NOT NULL DEFAULT 'pending'
     CHECK (status IN ('pending', 'accepted', 'arrived', 'in_transit', 'delivered', 'cancelled')),
   scheduled_at TIMESTAMPTZ,
   delivered_at TIMESTAMPTZ,
+  -- 012: cancellation metadata (atomic flip pending/accepted -> cancelled;
+  -- rows never deleted). cancelled_by is a role string for future reuse.
+  cancel_reason TEXT CHECK (
+    cancel_reason IS NULL OR cancel_reason IN (
+      'wrong_pickup', 'wrong_drop', 'wrong_vehicle',
+      'changed_plan', 'duplicate', 'driver_issue', 'other'
+    )
+  ),
+  cancelled_by TEXT CHECK (
+    cancelled_by IS NULL OR cancelled_by IN ('user', 'driver', 'admin', 'system')
+  ),
+  cancelled_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT bookings_delivered_at_check CHECK (
     (status = 'delivered' AND delivered_at IS NOT NULL)
     OR (status <> 'delivered' AND delivered_at IS NULL)
+  ),
+  CONSTRAINT bookings_cancel_meta_ck CHECK (
+    (status <> 'cancelled' AND cancel_reason IS NULL AND cancelled_by IS NULL AND cancelled_at IS NULL)
+    OR (status = 'cancelled')
   )
+);
+-- NOTE (007 pattern): idx_bookings_cancelled_at lives ONLY in migration 012.
+-- schema.sql re-runs on older DBs where the 012 columns do not exist yet —
+-- an index here would fail the whole migrate (IF NOT EXISTS tables skip,
+-- but a bare CREATE INDEX does not). migrate.js always runs 012 afterwards.
+
+-- 013/014: payment method on bookings (creation-time, immutable).
+-- Creatable today: 'cash' + 'upi' (default 'upi'); 'online' reserved for a
+-- future gateway. Old 'cash' rows stay valid.
+-- NOTE: ALTER TABLE on an existing table always runs here — safe because the
+-- migrations use ADD COLUMN IF NOT EXISTS and 014 swaps the CHECK by content.
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS payment_method TEXT NOT NULL DEFAULT 'upi';
+ALTER TABLE bookings ALTER COLUMN payment_method SET DEFAULT 'upi';
+DO $$
+DECLARE
+  old_ck TEXT;
+  old_def TEXT;
+BEGIN
+  SELECT conname, pg_get_constraintdef(oid) INTO old_ck, old_def FROM pg_constraint
+   WHERE conrelid = 'bookings'::regclass
+     AND contype = 'c'
+     AND pg_get_constraintdef(oid) LIKE '%payment_method%'
+   LIMIT 1;
+  IF old_ck IS NOT NULL AND old_def NOT LIKE '%upi%' THEN
+    EXECUTE format('ALTER TABLE bookings DROP CONSTRAINT %I', old_ck);
+    old_ck := NULL;
+  END IF;
+  IF old_ck IS NULL THEN
+    ALTER TABLE bookings ADD CONSTRAINT bookings_payment_method_ck CHECK (
+      payment_method IN ('cash', 'online', 'upi')
+    );
+  END IF;
+END
+$$;
+-- NOTE (007 pattern): idx_bookings_disputed lives ONLY in migration 014
+-- (disputed column does not exist on older DBs until 014 runs).
+
+-- 013: one immutable financial transaction per delivered booking.
+-- Money exact: NUMERIC holds whole-paise values only (integer-paise math
+-- in src/services/money.js). Corrections via payment_adjustments.
+CREATE TABLE IF NOT EXISTS payments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  booking_id UUID NOT NULL UNIQUE REFERENCES bookings (id) ON DELETE RESTRICT,
+  user_id UUID NOT NULL REFERENCES users (id) ON DELETE RESTRICT,
+  driver_id UUID NOT NULL REFERENCES drivers (id) ON DELETE RESTRICT,
+  gross_amount NUMERIC(10, 2) NOT NULL CHECK (gross_amount >= 0),
+  payment_method TEXT NOT NULL CHECK (payment_method IN ('cash', 'online', 'upi')),
+  payment_status TEXT NOT NULL CHECK (payment_status IN ('collected', 'pending', 'failed', 'refunded')),
+  driver_earning NUMERIC(10, 2) NOT NULL CHECK (driver_earning >= 0),
+  platform_commission NUMERIC(10, 2) NOT NULL CHECK (platform_commission >= 0),
+  commission_pct NUMERIC(5, 2) NOT NULL CHECK (commission_pct >= 0 AND commission_pct <= 100),
+  settlement_status TEXT NOT NULL DEFAULT 'owed' CHECK (settlement_status IN ('owed', 'partial', 'settled')),
+  settled_amount NUMERIC(10, 2) NOT NULL DEFAULT 0 CHECK (settled_amount >= 0),
+  collected_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT payments_split_ck CHECK (driver_earning + platform_commission = gross_amount)
+  -- NOTE: no settled_amount<=commission CHECK — positive adjustments can
+  -- raise owed above the snapshot; over-settlement is blocked in code.
+);
+CREATE INDEX IF NOT EXISTS idx_payments_driver ON payments (driver_id, collected_at DESC);
+CREATE INDEX IF NOT EXISTS idx_payments_user ON payments (user_id, collected_at DESC);
+CREATE INDEX IF NOT EXISTS idx_payments_settlement ON payments (settlement_status, collected_at DESC);
+
+CREATE TABLE IF NOT EXISTS payment_adjustments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  payment_id UUID NOT NULL REFERENCES payments (id) ON DELETE RESTRICT,
+  commission_delta_paise INTEGER NOT NULL,
+  earning_delta_paise INTEGER NOT NULL,
+  reason TEXT NOT NULL CHECK (char_length(reason) BETWEEN 3 AND 500),
+  admin_id UUID REFERENCES admins (id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT payment_adjustments_nonzero_ck CHECK (
+    commission_delta_paise <> 0 OR earning_delta_paise <> 0
+  )
+);
+CREATE INDEX IF NOT EXISTS idx_payment_adjustments_payment
+  ON payment_adjustments (payment_id, created_at ASC);
+
+CREATE TABLE IF NOT EXISTS settlements (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  driver_id UUID NOT NULL REFERENCES drivers (id) ON DELETE RESTRICT,
+  amount NUMERIC(10, 2) NOT NULL CHECK (amount > 0),
+  method TEXT NOT NULL CHECK (method IN ('cash', 'bank_transfer', 'upi')),
+  reference_no TEXT UNIQUE CHECK (reference_no IS NULL OR char_length(reference_no) BETWEEN 2 AND 100),
+  admin_id UUID REFERENCES admins (id) ON DELETE SET NULL,
+  notes TEXT CHECK (notes IS NULL OR char_length(notes) <= 500),
+  settled_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_settlements_driver ON settlements (driver_id, settled_at DESC);
+
+CREATE TABLE IF NOT EXISTS platform_settings (
+  key TEXT PRIMARY KEY,
+  value JSONB NOT NULL,
+  updated_by UUID REFERENCES admins (id) ON DELETE SET NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+INSERT INTO platform_settings (key, value)
+VALUES ('commission', '{"pct": 15.00}')
+ON CONFLICT (key) DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS commission_history (
+  id SERIAL PRIMARY KEY,
+  old_pct NUMERIC(5, 2),
+  new_pct NUMERIC(5, 2) NOT NULL,
+  changed_by UUID REFERENCES admins (id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_bookings_user_id ON bookings (user_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_driver_id ON bookings (driver_id);
@@ -123,6 +253,27 @@ CREATE INDEX IF NOT EXISTS idx_bookings_driver_created
 -- Reason: schema.sql also re-runs on older DBs (IF NOT EXISTS);
 -- the delivered_at column does not exist there until 007 runs,
 -- so only 007 creates indexes on that column (migrate.js always runs it).
+
+-- 011: live driver tracking — one row per GPS report during an ACTIVE
+-- booking (accepted/arrived/in_transit). Gating enforced in API layer.
+-- Retention: prune rows older than 30 days (npm run tracking:prune).
+CREATE TABLE IF NOT EXISTS driver_locations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  booking_id UUID NOT NULL REFERENCES bookings (id) ON DELETE CASCADE,
+  driver_id UUID NOT NULL REFERENCES drivers (id) ON DELETE CASCADE,
+  lat DOUBLE PRECISION NOT NULL CHECK (lat BETWEEN -90 AND 90),
+  lng DOUBLE PRECISION NOT NULL CHECK (lng BETWEEN -180 AND 180),
+  accuracy_m NUMERIC(8, 2) CHECK (accuracy_m IS NULL OR (accuracy_m >= 0 AND accuracy_m <= 10000)),
+  speed_mps NUMERIC(6, 2) CHECK (speed_mps IS NULL OR (speed_mps >= 0 AND speed_mps <= 100)),
+  heading_deg NUMERIC(5, 1) CHECK (heading_deg IS NULL OR (heading_deg >= 0 AND heading_deg <= 360)),
+  recorded_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_driver_locations_booking_time
+  ON driver_locations (booking_id, recorded_at DESC);
+CREATE INDEX IF NOT EXISTS idx_driver_locations_driver_time
+  ON driver_locations (driver_id, recorded_at DESC);
+CREATE INDEX IF NOT EXISTS idx_driver_locations_recorded
+  ON driver_locations (recorded_at DESC);
 
 -- updated_at auto-refresh trigger (for bookings).
 CREATE OR REPLACE FUNCTION set_updated_at()
@@ -264,6 +415,10 @@ CREATE TABLE IF NOT EXISTS pricing_rules (
   base_rs NUMERIC(10, 2) NOT NULL CHECK (base_rs >= 0),
   per_km_rs NUMERIC(10, 2) NOT NULL CHECK (per_km_rs >= 0),
   helper_rs NUMERIC(10, 2) NOT NULL DEFAULT 200 CHECK (helper_rs >= 0),
+  -- 014: per-vehicle commission % (snapshot into bookings at creation).
+  commission_percent NUMERIC(5, 2) NOT NULL DEFAULT 15 CHECK (
+    commission_percent >= 0 AND commission_percent <= 100
+  ),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -344,3 +499,19 @@ CREATE TABLE IF NOT EXISTS enterprise_inquiries (
 );
 CREATE INDEX IF NOT EXISTS enterprise_inquiries_status_idx ON enterprise_inquiries (status, created_at DESC);
 CREATE INDEX IF NOT EXISTS enterprise_inquiries_email_idx ON enterprise_inquiries (email);
+
+-- 016: self-service password-reset OTPs (zero-cost dev mode).
+-- Fresh DB ke liye yahin, existing DB ke liye db/migrations/016_* chalta hai.
+-- otp_hash = HMAC-SHA256(otp, pepper), plain OTP kabhi store nahi hota.
+CREATE TABLE IF NOT EXISTS password_reset_otps (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  phone VARCHAR(15) NOT NULL CHECK (phone ~ '^[6-9][0-9]{9}$'),
+  otp_hash TEXT NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL,
+  attempts INTEGER NOT NULL DEFAULT 0 CHECK (attempts >= 0),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_password_reset_otps_phone_created
+  ON password_reset_otps (phone, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_password_reset_otps_expires
+  ON password_reset_otps (expires_at);

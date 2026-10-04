@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login / Naya Account | ApnaShift</title>
-<meta name="description" content="ApnaShift customer login ya naya account banao — shifting booking ke liye.">
+<title>Login / Create Account | ApnaShift</title>
+<meta name="description" content="ApnaShift customer login or create a new account — for shifting bookings.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
@@ -216,6 +216,16 @@
 .site-foot-links a{color:var(--yellow);font-size:.86rem;font-weight:600;text-decoration:none}
 .site-foot-links a:hover{text-decoration:underline}
 @media (max-width:760px){#navMenuBtn{display:block;margin-left:auto}.site-nav{display:none;position:absolute;top:100%;left:0;right:0;background:var(--navy);flex-direction:column;align-items:stretch;padding:8px 16px 14px;margin:0;border-top:1px solid #2a3d66}.site-nav.open{display:flex}.site-header-inner{flex-wrap:wrap;position:relative}}
+  .forgotline{margin-top:10px;text-align:center;font-size:.9rem}
+  .forgotline a{color:var(--navy);font-weight:600}
+  .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(20,33,61,.55);z-index:1000;padding:16px}
+  .modal-backdrop.show{display:flex;align-items:center;justify-content:center}
+  .modal{background:#fff;border:2px solid var(--navy);border-radius:var(--radius);box-shadow:6px 6px 0 var(--yellow);max-width:440px;width:100%;padding:20px 18px}
+  .modal h2{font-family:"Baloo 2", "Comic Sans MS", system-ui, sans-serif;color:var(--navy);font-size:1.25rem;margin:0 0 8px}
+  .modal p{font-size:.92rem;margin:0 0 10px}
+  .wa-btn{display:inline-block;font-family:"Baloo 2", "Comic Sans MS", system-ui, sans-serif;font-weight:800;font-size:1rem;padding:11px 18px;border-radius:12px;border:2px solid var(--navy);background:#25d366;color:#fff;text-decoration:none;box-shadow:0 4px 0 var(--navy)}
+  .wa-btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--navy)}
+  .modal .ghost-btn{display:inline-block;margin-top:10px;font:inherit;font-weight:700;padding:9px 14px;border-radius:10px;border:2px solid var(--navy);background:#fff;color:var(--navy);cursor:pointer}
 </style>
 </head>
 <body>
@@ -225,6 +235,7 @@
     <a class="site-brand" href="index.html" aria-label="ApnaShift home">ApnaShift<small>Shifting • Transport</small></a>
     <nav class="site-nav" id="siteNav" aria-label="Main navigation">
       <a href="index.html">Home</a>
+      <a href="booking.html">Book</a>
       <a href="user-auth.html">Login</a>
       <details class="nav-drop">
         <summary>Driver</summary>
@@ -233,20 +244,21 @@
           <a href="driver-login.html">Driver Login</a>
         </div>
       </details>
+      <a href="enterprise.html">Enterprise</a>
       <a href="help.html">Help</a>
     </nav>
-    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">☰</button>
   </div>
 </header>
 
 <main>
   <section class="card" aria-labelledby="pageTitle">
     <h1 id="pageTitle">ApnaShift Account</h1>
-    <p class="sub">Shifting booking ke liye login karo ya naya account banao.</p>
+    <p class="sub">Log in to book a shifting service or create a new account.</p>
 
-    <div class="tabs" role="tablist" aria-label="Login ya Naya Account">
+    <div class="tabs" role="tablist" aria-label="Login or Create Account">
       <button type="button" id="tabLogin" class="active" role="tab" aria-selected="true" aria-controls="panelLogin">Login</button>
-      <button type="button" id="tabRegister" role="tab" aria-selected="false" aria-controls="panelRegister">Naya Account</button>
+      <button type="button" id="tabRegister" role="tab" aria-selected="false" aria-controls="panelRegister">Create Account</button>
     </div>
 
     <div id="formAlert" role="alert" aria-live="assertive"></div>
@@ -259,26 +271,27 @@
           <input type="tel" id="lphone" name="phone" autocomplete="tel" inputmode="numeric"
                  maxlength="15" placeholder="98765 43210"
                  aria-describedby="lphone-hint lphone-err" required>
-          <p class="hint" id="lphone-hint">10 digit ka Indian mobile. +91 ya space chalega.</p>
+          <p class="hint" id="lphone-hint">Enter a 10-digit Indian mobile number. +91 or spaces are allowed.</p>
           <p class="error-text" id="lphone-err"></p>
         </div>
         <div class="field" id="f-lpass">
           <label for="lpass">Password <span class="req" aria-hidden="true">*</span></label>
           <input type="password" id="lpass" name="password" autocomplete="current-password"
-                 maxlength="128" placeholder="Apna password likho"
+                 maxlength="128" placeholder="Enter your password"
                  aria-describedby="lpass-err" required>
           <p class="error-text" id="lpass-err"></p>
         </div>
         <button type="submit" id="loginBtn">Login</button>
       </form>
-      <p class="switchline">Naya ho? <button type="button" id="goRegister">Naya account banao</button></p>
+      <p class="forgotline"><a href="#" id="forgotLink">Password bhool gaye?</a></p>
+      <p class="switchline">New here? <button type="button" id="goRegister">Create an account</button></p>
     </div>
 
     <!-- REGISTER -->
     <div class="panel" id="panelRegister" role="tabpanel" aria-labelledby="tabRegister">
       <form id="registerForm" novalidate>
         <div class="field" id="f-rname">
-          <label for="rname">Naam <span class="req" aria-hidden="true">*</span></label>
+          <label for="rname">Full Name <span class="req" aria-hidden="true">*</span></label>
           <input type="text" id="rname" name="name" autocomplete="name"
                  maxlength="80" placeholder="Example: Rahul Sharma"
                  aria-describedby="rname-err" required>
@@ -289,32 +302,54 @@
           <input type="tel" id="rphone" name="phone" autocomplete="tel" inputmode="numeric"
                  maxlength="15" placeholder="98765 43210"
                  aria-describedby="rphone-hint rphone-err" required>
-          <p class="hint" id="rphone-hint">10 digit ka Indian mobile. +91 ya space chalega.</p>
+          <p class="hint" id="rphone-hint">Enter a 10-digit Indian mobile number. +91 or spaces are allowed.</p>
           <p class="error-text" id="rphone-err"></p>
         </div>
         <div class="field" id="f-rpass">
           <label for="rpass">Password <span class="req" aria-hidden="true">*</span></label>
           <input type="password" id="rpass" name="password" autocomplete="new-password"
-                 maxlength="128" placeholder="Kam se kam 8 akshar"
+                 maxlength="128" placeholder="Minimum 8 characters"
                  aria-describedby="rpass-hint rpass-err" required>
-          <p class="hint" id="rpass-hint">Kam se kam 8 akshar ka mazboot password rakho.</p>
+          <p class="hint" id="rpass-hint">Use a strong password with at least 8 characters.</p>
           <p class="error-text" id="rpass-err"></p>
         </div>
         <label class="consentline" for="rconsent">
           <input type="checkbox" id="rconsent" required>
-          <span>Main ApnaShift ki <a href="terms.html">Terms</a> &amp; <a href="privacy.html">Privacy Policy</a> se sehmat hoon. <span class="req" aria-hidden="true" style="color:var(--red)">*</span></span>
+          <span>I agree to ApnaShift's <a href="terms.html">Terms</a> &amp; <a href="privacy.html">Privacy Policy</a>. <span class="req" aria-hidden="true" style="color:var(--red)">*</span></span>
         </label>
-        <button type="submit" id="registerBtn">Account banao</button>
+        <button type="submit" id="registerBtn">Create Account</button>
       </form>
-      <p class="switchline">Pehle se account hai? <button type="button" id="goLogin">Login karo</button></p>
+      <p class="switchline">Already have an account? <button type="button" id="goLogin">Log in</button></p>
     </div>
   </section>
 
   <section id="success" aria-live="polite" aria-labelledby="successTitle">
-    <h2 id="successTitle">Swagat hai!</h2>
-    <p id="welcomeText">Login ho gaya.</p>
-    <p>Booking page jald aa raha hai — tab tak aaram karo.</p>
+    <h2 id="successTitle">Welcome!</h2>
+    <p id="welcomeText">You are logged in.</p>
+    <p>Opening your customer dashboard…</p>
   </section>
+
+  <div class="modal-backdrop" id="forgotModal" role="dialog" aria-modal="true" aria-labelledby="forgotTitle">
+    <div class="modal">
+      <h2 id="forgotTitle">Password reset (OTP — FREE)</h2>
+      <p class="hint">Registered mobile par 6-digit OTP ayega (10 min valid). OTP banana FREE hai — SMS provider lagne tak dev me OTP console/test me milta hai.</p>
+      <div id="otpStep1">
+        <label for="otpPhone">Registered mobile number</label>
+        <input type="tel" id="otpPhone" inputmode="numeric" maxlength="15" placeholder="98765 43210">
+        <div style="margin-top:8px"><button type="button" class="ghost-btn" id="otpSendBtn">OTP bhejo</button></div>
+      </div>
+      <div id="otpStep2" style="display:none;margin-top:10px">
+        <label for="otpCode">6-digit OTP</label>
+        <input type="text" id="otpCode" inputmode="numeric" maxlength="6" placeholder="123456">
+        <label for="otpNewPass" style="margin-top:8px">Naya password (min 8)</label>
+        <input type="password" id="otpNewPass" maxlength="128" placeholder="Naya password">
+        <div style="margin-top:8px"><button type="button" class="ghost-btn" id="otpResetBtn">Password badlo</button></div>
+      </div>
+      <p class="error-text" id="otpMsg" aria-live="polite"></p>
+      <p class="hint">OTP na aaye? WhatsApp par bhejein <strong id="supportNumberText">918757160137</strong> — <a id="forgotWaLink" href="#" target="_blank" rel="noopener">WhatsApp par bhejo</a></p>
+      <br><button type="button" class="ghost-btn" id="forgotClose">Band karo</button>
+    </div>
+  </div>
 <footer class="site-footer">
   <div class="site-foot-inner">
     <div class="site-foot-brand">ApnaShift</div>
@@ -332,9 +367,31 @@
 (function(){
   "use strict";
 
-  // Backend base URL — live Railway backend.
+  // Backend base URL — Railway production backend.
   var API_BASE_URL = "https://apnashiftapp-production.up.railway.app";
   var TOKEN_KEY = "apnashift_user_token";
+
+  // Auto redirect when a valid customer session already exists.
+  try{
+    var existingToken = localStorage.getItem(TOKEN_KEY);
+    if(existingToken){
+      fetch(API_BASE_URL + "/api/auth/me", {
+        method: "GET",
+        headers: { "Authorization": "Bearer " + existingToken }
+      }).then(function(res){
+        return res.json().then(function(data){
+          return { status: res.status, body: data };
+        }).catch(function(){
+          return { status: res.status, body: null };
+        });
+      }).then(function(result){
+        var meUser = result.body && (result.body.user || result.body.data);
+        if(result.body && result.body.ok === true && meUser && meUser.role === "user"){
+          window.location.href = "customer-dashboard.html";
+        }
+      }).catch(function(){});
+    }
+  }catch(e){}
 
   var alertBox = document.getElementById("formAlert");
   var successBox = document.getElementById("success");
@@ -428,28 +485,103 @@
   }
 
   function showSuccess(name){
-    document.querySelector(".card").style.display = "none";
     document.getElementById("welcomeText").textContent =
-      "Namaste" + (name ? ", " + name : "") + "! Account taiyaar hai.";
+      "Hello" + (name ? ", " + name : "") + "! Your account is ready.";
     successBox.classList.add("show");
-    showAlert("ok", "Swagat hai!");
+    showAlert("ok", "Welcome!");
     successBox.scrollIntoView({ behavior: "smooth", block: "start" });
-    // Booking page comes later — redirect will go here.
+    window.setTimeout(function(){ window.location.href = "customer-dashboard.html"; }, 1000);
   }
 
   function validPhone(inputEl, fieldId, errId){
     var cleaned = cleanPhone(inputEl.value);
     if(!inputEl.value.trim()){
-      setErr(fieldId, errId, inputEl, "Apna phone number likho. Example: 98765 43210");
+      setErr(fieldId, errId, inputEl, "Enter your phone number. Example: 98765 43210");
       return null;
     }
     if(!PHONE_RE.test(cleaned)){
-      setErr(fieldId, errId, inputEl, "Sahi 10 digit mobile number likho jo 6-9 se shuru ho.");
+      setErr(fieldId, errId, inputEl, "Enter a valid 10-digit mobile number starting with 6-9.");
       return null;
     }
     setErr(fieldId, errId, inputEl, "");
     return cleaned;
   }
+
+  // Self-service OTP reset (zero-cost: generate FREE, dev me console/debug_otp).
+  // Support number help.html ke OWNER_WHATSAPP jaisa (country code samet, bina +).
+  var SUPPORT_WHATSAPP = "918757160137";
+  document.getElementById("supportNumberText").textContent = SUPPORT_WHATSAPP;
+  var forgotModal = document.getElementById("forgotModal");
+  var otpPhone = document.getElementById("otpPhone");
+  var otpCode = document.getElementById("otpCode");
+  var otpNewPass = document.getElementById("otpNewPass");
+  var otpStep2 = document.getElementById("otpStep2");
+  var otpMsg = document.getElementById("otpMsg");
+  var otpSendBtn = document.getElementById("otpSendBtn");
+  var otpResetBtn = document.getElementById("otpResetBtn");
+  function otpSay(msg, isErr){
+    otpMsg.style.display = msg ? "block" : "none";
+    otpMsg.style.color = isErr ? "var(--red)" : "var(--green)";
+    otpMsg.textContent = msg || "";
+  }
+  function openForgotModal(phone){
+    var msg = "Namaste! Mera ApnaShift password reset kar dijiye." +
+      (phone ? " Mera registered mobile number: " + phone : " Mera registered mobile number: ");
+    document.getElementById("forgotWaLink").href =
+      "https://wa.me/" + SUPPORT_WHATSAPP + "?text=" + encodeURIComponent(msg);
+    try { if(phone && otpPhone && !otpPhone.value) otpPhone.value = phone; } catch(e){}
+    otpSay("");
+    forgotModal.classList.add("show");
+  }
+  function closeForgotModal(){ forgotModal.classList.remove("show"); }
+  document.getElementById("forgotLink").addEventListener("click", function(ev){
+    ev.preventDefault();
+    var phoneVal = "";
+    try { phoneVal = lphone.value.trim(); } catch(e){}
+    openForgotModal(phoneVal);
+  });
+  document.getElementById("forgotClose").addEventListener("click", closeForgotModal);
+  forgotModal.addEventListener("click", function(ev){
+    if(ev.target === forgotModal) closeForgotModal();
+  });
+  document.addEventListener("keydown", function(ev){
+    if(ev.key === "Escape" && forgotModal.classList.contains("show")) closeForgotModal();
+  });
+  function cleanOtpPhone(v){ return cleanPhone(v); }
+  otpSendBtn.addEventListener("click", function(){
+    var p = cleanOtpPhone(otpPhone.value);
+    if(!PHONE_RE.test(p)){ otpSay("Sahi 10-digit mobile likho.", true); return; }
+    otpSay("OTP bheja ja raha hai…", false);
+    otpSendBtn.disabled = true;
+    postJSON("/api/auth/forgot-password", { phone: p }).then(function(r){
+      if(r.status === 429){ otpSay("Bahut koshish — 15 min baad try karo.", true); return; }
+      if(!r.body || r.body.ok !== true){ otpSay("OTP nahi bheja — dobara try karo.", true); return; }
+      otpStep2.style.display = "block";
+      otpSay(r.body.debug_otp ? ("Dev OTP (FREE, SMS nahi laga): " + r.body.debug_otp) : "OTP bhej diya — 10 min me use karo. Na aaye to WhatsApp karo.", false);
+    }).catch(function(){ otpSay("Internet dikkat — dobara try karo.", true); })
+    .then(function(){ otpSendBtn.disabled = false; });
+  });
+  otpResetBtn.addEventListener("click", function(){
+    var p = cleanOtpPhone(otpPhone.value);
+    var code = String((otpCode.value || "").trim());
+    var np = String(otpNewPass.value || "");
+    if(!PHONE_RE.test(p)){ otpSay("Sahi mobile likho.", true); return; }
+    if(!/^\d{6}$/.test(code)){ otpSay("6-digit OTP likho.", true); return; }
+    if(np.length < 8){ otpSay("Naya password min 8 akshar.", true); return; }
+    otpSay("Password badla ja raha hai…", false);
+    otpResetBtn.disabled = true;
+    postJSON("/api/auth/reset-password", { phone: p, otp: code, new_password: np }).then(function(r){
+      if(r.status === 200 && r.body && r.body.ok === true){
+        otpSay("Password badal gaya — ab login karo.", false);
+        try { lphone.value = otpPhone.value; } catch(e){}
+        setTimeout(closeForgotModal, 1500);
+        return;
+      }
+      if(r.status === 429){ otpSay("Bahut koshish — 15 min baad try karo.", true); return; }
+      otpSay("OTP galat ya expire — naya OTP mangao.", true);
+    }).catch(function(){ otpSay("Internet dikkat — dobara try karo.", true); })
+    .then(function(){ otpResetBtn.disabled = false; });
+  });
 
   // ---------- LOGIN ----------
   var loginForm = document.getElementById("loginForm");
@@ -466,7 +598,7 @@
     var phone = validPhone(lphone, "f-lphone", "lphone-err");
     if(phone === null){ ok = false; firstBad = firstBad || lphone; }
     if(!lpass.value){
-      setErr("f-lpass", "lpass-err", lpass, "Apna password likho.");
+      setErr("f-lpass", "lpass-err", lpass, "Enter your password.");
       ok = false; firstBad = firstBad || lpass;
     } else {
       setErr("f-lpass", "lpass-err", lpass, "");
@@ -474,7 +606,7 @@
     if(!ok){ if(firstBad) firstBad.focus(); return; }
 
     loginBtn.disabled = true;
-    loginBtn.textContent = "Login ho raha hai…";
+    loginBtn.textContent = "Logging in…";
 
     postJSON("/api/auth/login", { phone: phone, password: lpass.value }).then(function(result){
       if(result.status !== 200 || !result.body || result.body.ok !== true){
@@ -492,13 +624,13 @@
       showSuccess(user.name);
     }).catch(function(err){
       if(err && err.message === "not_user"){
-        showAlert("err", "Ye number customer account ka nahi hai.");
+        showAlert("err", "This number is not a customer account.");
       } else if(err && err.message === "storage"){
-        showAlert("err", "Browser me login save nahi hua. Private mode band karke try karo.");
+        showAlert("err", "Could not save your login in the browser. Turn off private mode and try again.");
       } else if(err && err.code === "too_many_attempts"){
-        showAlert("err", "Bahut koshish ho gayi — 15 minute rukkar ek baar try karo.");
+        showAlert("err", "Too many attempts — please try once after 15 minutes.");
       } else {
-        showAlert("err", "Phone ya password galat hai.");
+        showAlert("err", "Incorrect phone number or password.");
       }
     }).then(function(){
       loginBtn.disabled = false;
@@ -522,7 +654,7 @@
     var ok = true, firstBad = null;
     var name = rname.value.trim();
     if(name.length < 2){
-      setErr("f-rname", "rname-err", rname, "Apna naam likho (kam se kam 2 akshar).");
+      setErr("f-rname", "rname-err", rname, "Enter your name (at least 2 characters).");
       ok = false; firstBad = firstBad || rname;
     } else {
       setErr("f-rname", "rname-err", rname, "");
@@ -532,34 +664,34 @@
     if(phone === null){ ok = false; firstBad = firstBad || rphone; }
 
     if(!rpass.value){
-      setErr("f-rpass", "rpass-err", rpass, "Password likho (kam se kam 8 akshar).");
+      setErr("f-rpass", "rpass-err", rpass, "Enter a password (at least 8 characters).");
       ok = false; firstBad = firstBad || rpass;
     } else if(rpass.value.length < 8){
-      setErr("f-rpass", "rpass-err", rpass, "Password kam se kam 8 akshar ka ho.");
+      setErr("f-rpass", "rpass-err", rpass, "Password must be at least 8 characters.");
       ok = false; firstBad = firstBad || rpass;
     } else {
       setErr("f-rpass", "rpass-err", rpass, "");
     }
 
     if(!rconsent.checked){
-      showAlert("err", "Aage badhne ke liye Terms & Privacy Policy par sehmati do.");
+      showAlert("err", "Please accept the Terms & Privacy Policy to continue.");
       ok = false;
     }
     if(!ok){ if(firstBad) firstBad.focus(); return; }
 
     registerBtn.disabled = true;
-    registerBtn.textContent = "Account ban raha hai…";
+    registerBtn.textContent = "Creating account…";
 
     postJSON("/api/auth/register", { name: name, phone: phone, password: rpass.value }).then(function(result){
       if(result.status === 409){
         var err = (result.body && result.body.error) || "phone_taken";
         if(err === "phone_taken"){
-          setErr("f-rphone", "rphone-err", rphone, "Ye number pehle se registered hai, Login try karein.");
+          setErr("f-rphone", "rphone-err", rphone, "This number is already registered. Please try logging in.");
           lphone.value = rphone.value;
-          showAlert("err", "Ye number pehle se registered hai, Login try karein.");
+          showAlert("err", "This number is already registered. Please try logging in.");
           switchTab("login");
         } else {
-          showAlert("err", "Ye number pehle se registered hai, Login try karein.");
+          showAlert("err", "This number is already registered. Please try logging in.");
         }
         throw new Error("handled");
       }
@@ -576,24 +708,24 @@
     }).catch(function(err){
       if(err && err.message === "handled"){ /* message already shown above */ }
       else if(err && err.message === "storage"){
-        showAlert("err", "Browser me login save nahi hua. Private mode band karke try karo.");
+        showAlert("err", "Could not save your login in the browser. Turn off private mode and try again.");
       }
       else if(err && err.code === "too_many_attempts"){
-        showAlert("err", "Bahut koshish ho gayi — 15 minute rukkar ek baar try karo.");
+        showAlert("err", "Too many attempts — please try once after 15 minutes.");
       }
       else if(err && err.detail && err.detail.message){
         showAlert("err", err.detail.message);
       }
       else {
-        showAlert("err", "Account nahi ban paya. Details check karke dobara try karo.");
+        showAlert("err", "Could not create your account. Check the details and try again.");
       }
     }).then(function(){
       registerBtn.disabled = false;
-      registerBtn.textContent = "Account banao";
+      registerBtn.textContent = "Create Account";
     });
   });
 var navMenuBtn=document.getElementById("navMenuBtn"),siteNav=document.getElementById("siteNav");
-if(navMenuBtn&&siteNav){navMenuBtn.addEventListener("click",function(){var open=siteNav.classList.toggle("open");navMenuBtn.setAttribute("aria-expanded",open?"true":"false");navMenuBtn.setAttribute("aria-label",open?"Menu band karo":"Menu kholo");});siteNav.addEventListener("click",function(ev){if(ev.target.tagName==="A"&&siteNav.classList.contains("open")){siteNav.classList.remove("open");navMenuBtn.setAttribute("aria-expanded","false");}});}
+if(navMenuBtn&&siteNav){navMenuBtn.addEventListener("click",function(){var open=siteNav.classList.toggle("open");navMenuBtn.setAttribute("aria-expanded",open?"true":"false");navMenuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");});siteNav.addEventListener("click",function(ev){if(ev.target.tagName==="A"&&siteNav.classList.contains("open")){siteNav.classList.remove("open");navMenuBtn.setAttribute("aria-expanded","false");}});}
 })();
 </script>
 </body>

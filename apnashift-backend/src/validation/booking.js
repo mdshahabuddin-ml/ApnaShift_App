@@ -41,6 +41,12 @@ export const bookingCreateSchema = z.object({
     errorMap: () => ({ message: 'vehicle_type pickup, mini_truck ya mini_tractor ho.' }),
   }),
   helper_needed: z.boolean({ invalid_type_error: 'helper_needed true/false ho.' }).default(false),
+  // UPI default; cash bhi chalega. 'online' reserved (gateway nahi hai).
+  payment_method: z
+    .enum(['cash', 'upi', 'online'], {
+      errorMap: () => ({ message: 'payment_method cash, upi ya online ho.' }),
+    })
+    .default('upi'),
   item_description: z
     .string()
     .trim()
@@ -65,6 +71,23 @@ export const driverStatusSchema = z.object({
   }),
 });
 
+// Customer cancellation reasons (fixed set — DB CHECK mirrors this list).
+export const CANCEL_REASONS = [
+  'wrong_pickup',
+  'wrong_drop',
+  'wrong_vehicle',
+  'changed_plan',
+  'duplicate',
+  'driver_issue',
+  'other',
+];
+
+export const cancelSchema = z.object({
+  reason: z.enum(CANCEL_REASONS, {
+    errorMap: () => ({ message: 'Cancel ka reason chuno (wrong_pickup, wrong_drop, wrong_vehicle, changed_plan, duplicate, driver_issue, other).' }),
+  }),
+});
+
 export const ratingSchema = z.object({
   stars: z
     .number({ invalid_type_error: 'stars 1 se 5 tak number ho.' })
@@ -82,6 +105,16 @@ export const ratingSchema = z.object({
 export const paginationSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
+});
+
+// POST /api/bookings/:id/flag-dispute — driver ya customer, reason required.
+// Sirf flag hai; commission auto-change nahi hota.
+export const disputeSchema = z.object({
+  reason: z
+    .string({ required_error: 'Dispute ki wajah (reason) likho.' })
+    .trim()
+    .min(3, 'Wajah kam se kam 3 akshar.')
+    .max(500, 'Wajah 500 akshar se zyada nahi.'),
 });
 
 export function parseQuery(schema, data) {

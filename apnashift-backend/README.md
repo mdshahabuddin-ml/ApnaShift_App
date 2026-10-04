@@ -28,7 +28,19 @@ Express, Postgres (pg, no ORM), JWT, bcrypt, zod.
   Rates `pricing_rules` table se. Total nearest Rs 10, range total ±10%.
 - `POST /api/bookings` — user, price server ginata hai (client price ignore).
 - `GET /api/bookings` (paginated) / `GET /api/bookings/:id` — apni bookings.
-- `PATCH /api/bookings/:id/cancel` — sirf pending/accepted me.
+- `PATCH /api/bookings/:id/cancel` — sirf pending/accepted me, reason required
+  (`wrong_pickup|wrong_drop|wrong_vehicle|changed_plan|duplicate|driver_issue|other`).
+- Live tracking: `POST /api/driver/bookings/:id/location` (driver, active trip),
+  `GET /api/bookings/:id/location` + `/location/stream` SSE (user, apni booking),
+  `GET /api/admin/tracking/active` (admin). Frontend: `tracking.html` (customer),
+  driver dashboard me location sharing, admin dashboard me Tracking tab.
+  Purani GPS rows: `npm run tracking:prune` (30 din retention).
+- Cash payments + commission + settlement: delivery par immutable payment
+  (`collected`), server-side paise math, configurable commission
+  (`GET|PUT /api/admin/commission`), driver ledger (`GET /api/driver/ledger`),
+  admin settlement dashboard (`GET /api/admin/driver-balances`,
+  `GET|POST /api/admin/settlements`, `GET /api/admin/ledger`,
+  `POST /api/admin/adjustments`). Frontend: driver hisab card, admin Settlement tab.
 - Driver (verified): `GET /api/driver/bookings/available`,
   `PATCH /api/driver/bookings/:id/accept` (atomic — race me ek jeetega),
   `PATCH /api/driver/bookings/:id/status` (accepted→arrived→in_transit→delivered),

@@ -14,6 +14,8 @@ import { bookingsRoutes } from './routes/bookings.js';
 import { driverRoutes as driverBookingRoutes } from './routes/driver.js';
 import { driversPublicRoutes } from './routes/driversPublic.js';
 import { enterpriseRoutes } from './routes/enterprise.js';
+import { geoRoutes } from './routes/geo.js';
+import { mssqlRoutes } from './routes/mssql.js';
 
 export function createApp() {
   const app = express();
@@ -64,6 +66,11 @@ export function createApp() {
   app.use('/api/driver', driverBookingRoutes);
   app.use('/api/drivers', driversPublicRoutes);
   app.use('/api/enterprise', enterpriseRoutes);
+  // Geoapify proxy (maps config + geocode autocomplete + routing).
+  // Auth-gated server-side so the provider key/quota stays protected.
+  app.use('/api/geo', geoRoutes);
+  // MS SQL Server verification (read-only; PostgreSQL flows untouched).
+  app.use('/api/mssql', mssqlRoutes);
 
   // 404 — unknown routes.
   app.use((req, res) => {

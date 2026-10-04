@@ -142,13 +142,15 @@ describeDb('bookings flow (DB)', () => {
 
     const first = await request(app)
       .patch(`/api/bookings/${booking.id}/cancel`)
-      .set('Authorization', `Bearer ${token}`);
+      .set('Authorization', `Bearer ${token}`)
+      .send({ reason: 'changed_plan' });
     expect(first.status).toBe(200);
     expect(first.body.booking.status).toBe('cancelled');
 
     const second = await request(app)
       .patch(`/api/bookings/${booking.id}/cancel`)
-      .set('Authorization', `Bearer ${token}`);
+      .set('Authorization', `Bearer ${token}`)
+      .send({ reason: 'changed_plan' });
     expect(second.status).toBe(409);
   });
 
@@ -163,7 +165,8 @@ describeDb('bookings flow (DB)', () => {
 
     const cancelAccepted = await request(app)
       .patch(`/api/bookings/${booking.id}/cancel`)
-      .set('Authorization', `Bearer ${token}`);
+      .set('Authorization', `Bearer ${token}`)
+      .send({ reason: 'driver_issue' });
     expect(cancelAccepted.status).toBe(200);
 
     const booking2 = await makeBooking(token);
@@ -175,7 +178,8 @@ describeDb('bookings flow (DB)', () => {
 
     const cancelDelivered = await request(app)
       .patch(`/api/bookings/${booking2.id}/cancel`)
-      .set('Authorization', `Bearer ${token}`);
+      .set('Authorization', `Bearer ${token}`)
+      .send({ reason: 'changed_plan' });
     expect(cancelDelivered.status).toBe(409);
   });
 

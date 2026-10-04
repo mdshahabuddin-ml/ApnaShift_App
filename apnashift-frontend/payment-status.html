@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payment Status | ApnaShift Admin</title>
+<meta name="description" content="ApnaShift admin — driver commission due aur settlement.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#14213d;
+    --yellow:#fcbf49;
+    --bg:#f4f6fa;
+    --border:#c9d0de;
+    --ink:#20242e;
+    --muted:#5b6070;
+    --red:#c0392b;
+    --green:#1a7a3a;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    line-height:1.6;
+  }
+  :focus-visible{
+    outline:3px solid var(--navy);
+    outline-offset:2px;
+    box-shadow:0 0 0 6px var(--yellow);
+    border-radius:8px;
+  }
+  .site-header{background:var(--navy);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:50}
+  .site-header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px}
+  .site-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.3rem;line-height:1;color:#fff;text-decoration:none}
+  .site-brand small{display:block;font-family:"Noto Sans",system-ui,sans-serif;font-weight:600;font-size:.64rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow)}
+  .site-nav{display:flex;gap:4px;margin-left:8px;align-items:center}
+  .site-nav> a{color:#dbe2f0;text-decoration:none;font-weight:600;font-size:.9rem;padding:8px 10px;border-radius:8px}
+  .site-nav> a:hover{background:#1f2f52;color:#fff}
+  #navMenuBtn{display:none;background:transparent;border:2px solid var(--yellow);border-radius:8px;color:var(--yellow);font:inherit;font-weight:800;padding:6px 12px;cursor:pointer}
+  @media (max-width:760px){#navMenuBtn{display:block;margin-left:auto}.site-nav{display:none;position:absolute;top:100%;left:0;right:0;background:var(--navy);flex-direction:column;align-items:stretch;padding:8px 16px 14px;margin:0}.site-nav.open{display:flex}.site-header-inner{flex-wrap:wrap;position:relative}}
+  main{max-width:960px;margin:0 auto;padding:20px 16px 40px}
+  .top-row{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px}
+  h1{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;color:var(--navy);font-size:1.6rem;margin:0}
+  .sub{margin:0;color:var(--muted);font-size:.9rem}
+  .logout-btn{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:.95rem;padding:10px 16px;border-radius:10px;border:2px solid var(--navy);background:#fff;color:var(--navy);cursor:pointer}
+  .logout-btn:hover{background:#fff8e2}
+  .card{background:#fff;border:2px solid var(--navy);border-radius:var(--radius);padding:18px;box-shadow:6px 6px 0 var(--yellow);margin-bottom:16px}
+  .card h2{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;color:var(--navy);font-size:1.2rem;margin:0 0 6px}
+  #pageAlert{display:none;border-radius:10px;padding:11px 12px;font-size:.9rem;font-weight:600;margin:0 0 14px}
+  #pageAlert.show{display:block}
+  #pageAlert.err{background:#fdecea;color:#7a1f14;border:2px solid var(--red)}
+  #pageAlert.ok{background:#e6f6ea;color:#0d5c26;border:2px solid var(--green)}
+  #pageAlert.info{background:#fff3cf;color:var(--navy);border:2px solid var(--navy)}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px}
+  .btn{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:.92rem;padding:10px 16px;border-radius:10px;border:2px solid var(--navy);cursor:pointer;background:var(--yellow);color:var(--navy);box-shadow:0 3px 0 var(--navy)}
+  .btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--navy)}
+  .btn[disabled]{opacity:.6;cursor:wait;transform:none}
+  .btn.ghost{background:#fff}
+  .btn.small{font-size:.82rem;padding:7px 12px;box-shadow:none}
+  .list{display:grid;gap:10px;margin-top:10px}
+  .row-card{background:#fff;border:2px solid var(--border);border-radius:10px;padding:12px}
+  .row-card.dues{border-color:var(--red)}
+  .row-card.clear{border-color:var(--green)}
+  .row-card h3{margin:0 0 4px;color:var(--navy);font-size:1rem}
+  .row-card p{margin:4px 0;font-size:.86rem;color:var(--ink)}
+  .row-card .meta{font-size:.82rem;color:var(--muted)}
+  .badge{display:inline-block;font-size:.76rem;font-weight:700;padding:2px 8px;border-radius:99px;border:1px solid var(--border);background:#eef1f7;color:var(--navy);margin-right:6px}
+  .badge.ok{background:#e6f6ea;border-color:var(--green);color:#0d5c26}
+  .badge.bad{background:#fdecea;border-color:var(--red);color:#7a1f14}
+  .settle-form{display:grid;gap:8px;margin-top:10px}
+  @media(min-width:640px){.settle-form{grid-template-columns:1fr 1fr 1fr auto;align-items:end}}
+  .settle-form .field{margin:0}
+  label{display:block;font-weight:600;font-size:.82rem;color:var(--navy);margin-bottom:4px}
+  select,input[type="text"],input[type="number"]{width:100%;font:inherit;color:var(--ink);background:#fff;border:2px solid var(--border);border-radius:10px;padding:9px 10px}
+  select:focus,input:focus{border-color:var(--navy);outline:none}
+  .loading,.empty{padding:14px;text-align:center;color:var(--muted);font-size:.9rem;background:#fff;border:2px dashed var(--border);border-radius:10px}
+  .site-footer{background:var(--navy);color:#dbe2f0;padding:22px 16px 30px}
+  .site-foot-inner{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+  .site-foot-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;color:#fff;font-size:1.05rem}
+  .site-foot-links{display:flex;gap:16px;flex-wrap:wrap}
+  .site-foot-links a{color:var(--yellow);font-size:.86rem;font-weight:600;text-decoration:none}
+  .site-foot-links a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="index.html" aria-label="ApnaShift home">ApnaShift<small>Shifting • Transport</small></a>
+    <nav class="site-nav" id="siteNav" aria-label="Main navigation">
+      <a href="index.html">Home</a>
+      <a href="admin-dashboard.html">Dashboard</a>
+      <a href="payment-status.html">Payments</a>
+      <a href="help.html">Help</a>
+    </nav>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+  </div>
+</header>
+
+<main>
+  <div class="top-row">
+    <div>
+      <h1>Payment Status</h1>
+      <p class="sub">Driver commission due dekho aur settlement jama karo. Sab hisab server par hota hai.</p>
+    </div>
+    <button class="logout-btn" id="logoutBtn" type="button">Logout</button>
+  </div>
+
+  <div id="pageAlert" role="alert" aria-live="assertive"></div>
+
+  <section class="card" aria-labelledby="sumTitle">
+    <h2 id="sumTitle">Kul baaki</h2>
+    <div class="controls">
+      <button class="btn ghost" id="refreshBtn" type="button">Refresh</button>
+    </div>
+    <div id="summaryBox" aria-live="polite"><p class="loading">Load ho raha hai…</p></div>
+  </section>
+
+  <section class="card" aria-labelledby="listTitle">
+    <h2 id="listTitle">Driver commission due</h2>
+    <p class="sub">Sabse zyada baaki wala sabse upar.</p>
+    <div class="list" id="driversList" aria-live="polite"><p class="loading">List load ho rahi hai…</p></div>
+  </section>
+
+<footer class="site-footer">
+  <div class="site-foot-inner">
+    <div class="site-foot-brand">ApnaShift</div>
+    <div class="site-foot-links">
+      <a href="index.html">Home</a>
+      <a href="help.html">Help</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms &amp; Conditions</a>
+    </div>
+  </div>
+</footer>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var API_BASE_URL = "https://apnashiftapp-production.up.railway.app";
+  var TOKEN_KEY = "apnashift_admin_token";
+  var LOGIN_PAGE = "admin-login.html";
+
+  function getToken(){
+    try{ return localStorage.getItem(TOKEN_KEY); }catch(e){ return null; }
+  }
+  function clearAndGoLogin(){
+    try{ localStorage.removeItem(TOKEN_KEY); }catch(e){}
+    window.location.href = LOGIN_PAGE;
+  }
+  var bootToken = getToken();
+  if(!bootToken){
+    window.location.href = LOGIN_PAGE;
+    return;
+  }
+
+  var pageAlert = document.getElementById("pageAlert");
+  var summaryBox = document.getElementById("summaryBox");
+  var driversList = document.getElementById("driversList");
+  var refreshBtn = document.getElementById("refreshBtn");
+
+  function showAlert(type, msg){
+    pageAlert.className = "show " + type;
+    pageAlert.textContent = msg;
+  }
+  function hideAlert(){
+    pageAlert.className = "";
+    pageAlert.textContent = "";
+  }
+  function esc(s){
+    return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function authHeaders(extra){
+    var h = { "Authorization": "Bearer " + getToken() };
+    if(extra){ for(var k in extra){ if(extra.hasOwnProperty(k)) h[k] = extra[k]; } }
+    return h;
+  }
+  function parseRes(res){
+    return res.json().then(function(data){
+      return { status: res.status, body: data };
+    }).catch(function(){
+      return { status: res.status, body: null };
+    });
+  }
+  function checkAuth(result){
+    if(result.status === 401){
+      clearAndGoLogin();
+      return true;
+    }
+    return false;
+  }
+  function networkMsg(){ return "Network error — net check karke dobara try karo."; }
+
+  function driverCard(b){
+    var dueBadge = b.outstanding_rs > 0
+      ? '<span class="badge bad">Baaki Rs ' + esc(b.outstanding_rs) + '</span>'
+      : '<span class="badge ok">Clear</span>';
+    var html = '<div class="row-card ' + (b.outstanding_rs > 0 ? "dues" : "clear") + '">';
+    html += '<h3>' + esc(b.driver_name || "Naam nahi") + ' ' + dueBadge + '</h3>';
+    html += '<p class="meta">Trips: ' + esc(b.completed_cash_bookings) + ' • Cash: Rs ' + esc(b.cash_collected_rs) +
+      ' • Kamai: Rs ' + esc(b.driver_earning_rs) + '</p>';
+    html += '<p class="meta">Commission: Rs ' + esc(b.commission_rs) + ' • Jama: Rs ' + esc(b.settled_rs) + '</p>';
+    html += '<div class="settle-form">';
+    html += '<div class="field"><label for="amt-' + esc(b.driver_id) + '">Amount (Rs)</label>' +
+      '<input type="number" id="amt-' + esc(b.driver_id) + '" min="0" step="any" placeholder="150"></div>';
+    html += '<div class="field"><label for="mth-' + esc(b.driver_id) + '">Method</label>' +
+      '<select id="mth-' + esc(b.driver_id) + '"><option value="cash">cash</option>' +
+      '<option value="bank_transfer">bank_transfer</option><option value="upi">upi</option></select></div>';
+    html += '<div class="field"><label for="ref-' + esc(b.driver_id) + '">Reference (bank/upi)</label>' +
+      '<input type="text" id="ref-' + esc(b.driver_id) + '" maxlength="100" placeholder="UPI-12345"></div>';
+    html += '<div class="field"><label>&nbsp;</label>' +
+      '<button class="btn small" type="button" data-settle="' + esc(b.driver_id) + '">Settle Karein</button></div>';
+    html += '</div></div>';
+    return html;
+  }
+
+  function loadBalances(){
+    refreshBtn.disabled = true;
+    refreshBtn.textContent = "Load ho raha hai…";
+    driversList.innerHTML = '<p class="loading">List load ho rahi hai…</p>';
+    summaryBox.innerHTML = '<p class="loading">Load ho raha hai…</p>';
+    fetch(API_BASE_URL + "/api/admin/driver-balances?limit=100", { method: "GET", headers: authHeaders() })
+      .then(parseRes)
+      .then(function(result){
+        if(checkAuth(result)) return;
+        if(result.status !== 200 || !result.body || result.body.ok !== true){
+          throw new Error((result.body && result.body.error) || "load_failed");
+        }
+        var arr = result.body.balances || [];
+        var totalDue = 0, totalTrips = 0;
+        for(var i = 0; i < arr.length; i++){
+          totalDue += Number(arr[i].outstanding_rs) || 0;
+          totalTrips += Number(arr[i].completed_cash_bookings) || 0;
+        }
+        summaryBox.innerHTML = '<p class="meta" style="font-size:.95rem;color:var(--navy);font-weight:700">Kul baaki: Rs ' +
+          esc(Math.round(totalDue * 100) / 100) + ' • Drivers: ' + esc(arr.length) + ' • Trips: ' + esc(totalTrips) + '</p>';
+        driversList.innerHTML = arr.length ? arr.map(driverCard).join("") : '<p class="empty">Koi cash trip poori nahi hui.</p>';
+        hideAlert();
+      })
+      .catch(function(err){
+        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : "List load nahi hui. Dobara try karo.";
+        driversList.innerHTML = '<p class="empty">List load nahi hui.</p>';
+        summaryBox.innerHTML = '<p class="empty">—</p>';
+        showAlert("err", msg);
+      })
+      .then(function(){
+        refreshBtn.disabled = false;
+        refreshBtn.textContent = "Refresh";
+      });
+  }
+  refreshBtn.addEventListener("click", loadBalances);
+
+  driversList.addEventListener("click", function(ev){
+    var btn = ev.target.closest ? ev.target.closest("button[data-settle]") : null;
+    if(!btn) return;
+    var id = btn.getAttribute("data-settle");
+    if(!id) return;
+    var amtEl = document.getElementById("amt-" + id);
+    var mthEl = document.getElementById("mth-" + id);
+    var refEl = document.getElementById("ref-" + id);
+    var amt = amtEl ? Number(String(amtEl.value).trim()) : NaN;
+    if(!isFinite(amt) || amt <= 0){
+      showAlert("err", "Amount 0 se zyada number ho.");
+      return;
+    }
+    var body = { driver_id: id, amount_rs: amt, method: mthEl ? mthEl.value : "cash" };
+    var ref = refEl ? String(refEl.value).trim() : "";
+    if(ref) body.reference_no = ref;
+    btn.disabled = true;
+    showAlert("info", "Settlement jama ho raha hai…");
+    fetch(API_BASE_URL + "/api/admin/settlements", {
+      method: "POST", headers: authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify(body)
+    })
+      .then(parseRes)
+      .then(function(result){
+        if(checkAuth(result)) return;
+        if(result.status === 201){
+          showAlert("ok", "Settlement jama ho gaya. Baaki: Rs " + ((result.body && result.body.outstanding_rs) || 0));
+          loadBalances();
+          return;
+        }
+        var code = result.body && result.body.error;
+        if(code === "settlement_exceeds_outstanding") showAlert("err", "Baaki se zyada amount nahi jama ho sakti.");
+        else if(code === "duplicate_settlement") showAlert("err", "Ye reference pehle use ho chuka hai.");
+        else if(result.status === 400) showAlert("err", "Details sahi likho (amount>0, bank/upi par reference zaroori).");
+        else if(result.status === 404) showAlert("err", "Driver nahi mila.");
+        else if(result.status === 403) showAlert("err", "Ye action allowed nahi hai — dobara login karo.");
+        else showAlert("err", "Settlement nahi hua. Dobara try karo.");
+        btn.disabled = false;
+      })
+      .catch(function(err){
+        showAlert("err", (err && err.message === "Failed to fetch") ? networkMsg() : "Settlement nahi hua. Dobara try karo.");
+        btn.disabled = false;
+      });
+  });
+
+  document.getElementById("logoutBtn").addEventListener("click", clearAndGoLogin);
+
+  var navMenuBtn = document.getElementById("navMenuBtn"), siteNav = document.getElementById("siteNav");
+  if(navMenuBtn && siteNav){
+    navMenuBtn.addEventListener("click", function(){
+      var open = siteNav.classList.toggle("open");
+      navMenuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+  }
+
+  loadBalances();
+})();
+</script>
+</body>
+</html>
