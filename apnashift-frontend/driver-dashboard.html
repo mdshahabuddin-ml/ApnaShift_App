@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Driver Dashboard | ApnaShift</title>
-<meta name="description" content="Driver dashboard — naye trips dekho, accept karo aur apni kamai track karo.">
+<meta name="description" content="Driver dashboard — view new trips, accept trips, and track your earnings.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
@@ -115,14 +115,14 @@
       <a href="enterprise.html">Enterprise</a>
       <a href="help.html">Help</a>
     </nav>
-    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">☰</button>
   </div>
 </header>
 
 <main>
   <section class="card" aria-labelledby="pageTitle">
     <h1 id="pageTitle">Driver Dashboard</h1>
-    <p class="sub">Namaste! Naye trips dekho, accept karo aur apni kamai track karo.</p>
+    <p class="sub">Welcome! View new trips, accept trips, and track your earnings.</p>
     <div id="globalAlert" role="alert" aria-live="assertive"></div>
     <div class="row-btns">
       <button class="btn primary small" id="refreshBtn" type="button">Refresh</button>
@@ -132,58 +132,58 @@
 
   <section class="card" aria-labelledby="profileTitle">
     <h2 id="profileTitle">Profile</h2>
-    <div id="profileBox" aria-live="polite"><p class="loading">Profile load ho raha hai…</p></div>
+    <div id="profileBox" aria-live="polite"><p class="loading">Loading profile…</p></div>
   </section>
 
   <section class="card" aria-labelledby="earnTitle">
-    <h2 id="earnTitle">7 din ki kamai</h2>
+    <h2 id="earnTitle">7-Day Earnings</h2>
     <div class="earn-grid">
-      <div class="earn-cell"><span>Kamai (Rs)</span><strong id="earnRs">—</strong></div>
+      <div class="earn-cell"><span>Earnings (₹)</span><strong id="earnRs">—</strong></div>
       <div class="earn-cell"><span>Trips</span><strong id="earnTrips">—</strong></div>
     </div>
-    <p class="hint" id="earnStatus" aria-live="polite">Kamai load ho rahi hai…</p>
+    <p class="hint" id="earnStatus" aria-live="polite">Loading earnings…</p>
   </section>
 
   <section class="card" aria-labelledby="availTitle">
     <h2 id="availTitle">Available bookings</h2>
-    <p class="sub">Naye trips — pasand aaye to jaldi accept karo.</p>
-    <div id="availList" aria-live="polite"><p class="loading">Bookings load ho rahi hain…</p></div>
+    <p class="sub">New trips — accept quickly if you like one.</p>
+    <div id="availList" aria-live="polite"><p class="loading">Loading bookings…</p></div>
   </section>
 
   <section class="card" aria-labelledby="activeTitle">
     <h2 id="activeTitle">My Active Trip</h2>
-    <p class="sub">Chalu trip — status aage badhao.</p>
-    <div id="activeTrip" aria-live="polite"><p class="loading">Bookings load hone par active trip dikhegi…</p></div>
+    <p class="sub">Ongoing trip — move the status forward.</p>
+    <div id="activeTrip" aria-live="polite"><p class="loading">Your active trip will appear once bookings load…</p></div>
   </section>
 
   <section class="card" aria-labelledby="myTitle">
-    <h2 id="myTitle">Meri bookings</h2>
-    <p class="sub">Accept ki hui trips yahan dikhengi.</p>
+    <h2 id="myTitle">My bookings</h2>
+    <p class="sub">Trips you accepted will appear here.</p>
     <details id="historyWrap">
       <summary>Past trips history</summary>
-      <div id="myList" aria-live="polite"><p class="loading">Apni bookings load ho rahi hain…</p></div>
+      <div id="myList" aria-live="polite"><p class="loading">Loading your bookings…</p></div>
     </details>
   </section>
 
   <section class="card" aria-labelledby="moneyTitle">
-    <h2 id="moneyTitle">Paise ka hisab</h2>
-    <p class="sub">Cash collection, kamai aur ApnaShift ko dena baaki commission.</p>
+    <h2 id="moneyTitle">Money summary</h2>
+    <p class="sub">Cash collected, earnings, and commission due to ApnaShift.</p>
     <div class="earn-grid">
-      <div class="earn-cell"><span>Cash liya (Rs)</span><strong id="ledgerCash">—</strong></div>
-      <div class="earn-cell"><span>Meri kamai (Rs)</span><strong id="ledgerEarn">—</strong></div>
-      <div class="earn-cell"><span>Commission baaki (Rs)</span><strong id="ledgerDue">—</strong></div>
-      <div class="earn-cell"><span>Hisab diya (Rs)</span><strong id="ledgerSettled">—</strong></div>
+      <div class="earn-cell"><span>Cash collected (₹)</span><strong id="ledgerCash">—</strong></div>
+      <div class="earn-cell"><span>My earnings (₹)</span><strong id="ledgerEarn">—</strong></div>
+      <div class="earn-cell"><span>Commission due (₹)</span><strong id="ledgerDue">—</strong></div>
+      <div class="earn-cell"><span>Settled (₹)</span><strong id="ledgerSettled">—</strong></div>
     </div>
-    <p class="hint" id="ledgerStatus" aria-live="polite">Hisab load ho raha hai…</p>
+    <p class="hint" id="ledgerStatus" aria-live="polite">Loading summary…</p>
     <div id="dueWarn" aria-live="polite"></div>
     <div id="ledgerList" aria-live="polite"></div>
   </section>
 
   <section class="card" aria-labelledby="shareTitle">
     <h2 id="shareTitle">Live location</h2>
-    <p class="sub">Active trip ke liye location share karo — customer tumhari gaadi live dekh payega. Trip khatam hote hi sharing apne aap band.</p>
-    <div id="shareList" aria-live="polite"><p class="loading">Bookings load hone par sharing dikhegi…</p></div>
-    <p class="hint" id="shareStatus">Sharing band hai.</p>
+    <p class="sub">Share location for your active trip — the customer can see your vehicle live. Sharing stops automatically when the trip ends.</p>
+    <div id="shareList" aria-live="polite"><p class="loading">Sharing options will appear once bookings load…</p></div>
+    <p class="hint" id="shareStatus">Sharing is off.</p>
   </section>
 
 <footer class="site-footer">
@@ -293,38 +293,38 @@
   }
 
   function mapError(status, body, fallback){
-    if(status === 401) return "Session khatam ho gaya. Dobara login karo.";
+    if(status === 401) return "Session expired. Please log in again.";
     if(status === 403 && isUnverified(body)) return "VERIFICATION_PENDING";
-    if(status === 403) return "Ye kaam allowed nahi hai.";
-    if(status === 404) return "Booking nahi mili. Refresh karo.";
+    if(status === 403) return "This action is not allowed.";
+    if(status === 404) return "Booking not found. Please refresh.";
     if(status === 409){
       var c = body && (body.code || body.error);
-      if(c === "already_accepted") return "Ye booking already accept ho gayi hai.";
-      if(c === "invalid_transition") return "Ye step allowed nahi hai. Refresh karke dobara dekho.";
-      return serverMsg(body) || "Ye action abhi allowed nahi hai.";
+      if(c === "already_accepted") return "This booking has already been accepted.";
+      if(c === "invalid_transition") return "This step is not allowed. Please refresh and try again.";
+      return serverMsg(body) || "This action is not allowed right now.";
     }
-    if(status === 400) return serverMsg(body) || "Details sahi nahi hain.";
-    if(status >= 500) return "Server busy hai. Thodi der baad try karo.";
-    return serverMsg(body) || fallback || "Kuch galat ho gaya. Dobara try karo.";
+    if(status === 400) return serverMsg(body) || "Details are not valid.";
+    if(status >= 500) return "Server is busy. Please try again later.";
+    return serverMsg(body) || fallback || "Something went wrong. Please try again.";
   }
 
   function renderProfile(user){
     var verified = !!(user && (user.is_verified === true || user.is_verified === 1));
     var html = "";
-    html += '<p class="profile-line"><strong>Naam:</strong> ' + esc(user.name || "—") + " ";
+    html += '<p class="profile-line"><strong>Name:</strong> ' + esc(user.name || "—") + " ";
     html += verified
       ? '<span class="pill ok">Verified</span>'
       : '<span class="pill pending">Pending review</span>';
     html += "</p>";
     html += '<p class="profile-line"><strong>Phone:</strong> ' + esc(user.phone || "—") + "</p>";
-    html += '<p class="profile-line"><strong>Gaadi:</strong> ' + esc(user.vehicle_type || "—") + "</p>";
-    html += '<p class="profile-line"><strong>Number:</strong> ' + esc(user.vehicle_number || "—") + "</p>";
+    html += '<p class="profile-line"><strong>Vehicle:</strong> ' + esc(user.vehicle_type || "—") + "</p>";
+    html += '<p class="profile-line"><strong>Vehicle Number:</strong> ' + esc(user.vehicle_number || "—") + "</p>";
     html += '<p class="profile-line"><strong>UPI ID:</strong> ' + esc(user.upi_id || "—") + "</p>";
     html += '<div class="row-btns"><input type="text" id="upiInput" maxlength="321" placeholder="naam@bank" value="' + esc(user.upi_id || "") + '" aria-label="UPI ID" style="flex:1;min-width:160px;font:inherit;padding:9px 12px;border:2px solid var(--border);border-radius:10px">';
-    html += '<button type="button" class="btn ghost small" id="upiSaveBtn">UPI save karo</button></div>';
+    html += '<button type="button" class="btn ghost small" id="upiSaveBtn">Save UPI ID</button></div>';
     html += '<p class="hint" id="upiStatus"></p>';
     if(!verified){
-      html += '<div class="pending-box">Verification pending hai. Team review ke baad naye trips dikhenge.</div>';
+      html += '<div class="pending-box">Verification is pending. New trips will appear after team review.</div>';
     }
     profileBox.innerHTML = html;
     var saveBtn = document.getElementById("upiSaveBtn");
@@ -334,7 +334,7 @@
         var st = document.getElementById("upiStatus");
         var val = inp ? inp.value.trim() : "";
         saveBtn.disabled = true;
-        st.textContent = "Save ho raha hai…";
+        st.textContent = "Saving…";
         fetch(API_BASE_URL + "/api/driver/profile", {
           method: "PATCH",
           headers: authHeaders(),
@@ -342,13 +342,13 @@
         }).then(parseRes).then(function(r){
           if(r.status === 401){ clearAndRedirect(); return; }
           if(r.status === 200){
-            st.textContent = "UPI ID save ho gayi.";
+            st.textContent = "UPI ID saved.";
             loadProfile();
             return;
           }
-          st.textContent = (r.status === 400) ? "UPI ID format naam@bank jaisa ho." : "Save nahi hui. Dobara try karo.";
+          st.textContent = (r.status === 400) ? "UPI ID must look like name@bank." : "Could not save. Please try again.";
         }).catch(function(){
-          st.textContent = "Network error hai. Internet check karo.";
+          st.textContent = "Network error. Please check your internet.";
         }).then(function(){
           saveBtn.disabled = false;
         });
@@ -357,34 +357,34 @@
   }
 
   // Money lines come ONLY from backend numbers (payment/estimate).
-  // Frontend kabhi commission % assume nahi karta — docs ke liye bhi nahi.
+  // Frontend never assumes a commission % — not even for docs.
   function moneyLine(b){
     var p = b.payment;
     if(p){
       var s = '<p class="meta">💰 Cash collected: <strong>Rs ' + esc(p.gross_rs) + "</strong>";
       s += " • Commission: Rs " + esc(p.platform_commission_rs != null ? p.platform_commission_rs : "—");
-      s += " • Aapki kamai: <strong>Rs " + esc(p.driver_earning_rs != null ? p.driver_earning_rs : "—") + "</strong>";
-      if(p.settlement_status === "settled") s += ' • <span class="pill ok">Hisab clear</span>';
-      else if(p.settlement_status === "partial") s += ' • <span class="pill pending">Aanshik hisab</span>';
-      else s += ' • <span class="pill pending">Commission baaki</span>';
+      s += " • Your earnings: <strong>Rs " + esc(p.driver_earning_rs != null ? p.driver_earning_rs : "—") + "</strong>";
+      if(p.settlement_status === "settled") s += ' • <span class="pill ok">Settled</span>';
+      else if(p.settlement_status === "partial") s += ' • <span class="pill pending">Partially settled</span>';
+      else s += ' • <span class="pill pending">Commission due</span>';
       return s + "</p>";
     }
     var e = b.estimate;
     if(e){
-      return '<p class="meta">💰 Kiraya: <strong>Rs ' + esc(e.gross_rs) + "</strong> (" +
+      return '<p class="meta">💰 Fare: <strong>Rs ' + esc(e.gross_rs) + "</strong> (" +
         esc(e.payment_method === "upi" ? "UPI" : e.payment_method === "online" ? "Online" : "Cash") + ")" +
-        " • Commission ~Rs " + esc(e.commission_rs) +
-        " • Andaza kamai ~Rs " + esc(e.earning_rs) + "</p>";
+        " • Est. commission Rs " + esc(e.commission_rs) +
+        " • Est. earnings Rs " + esc(e.earning_rs) + "</p>";
     }
     if(b.price_rs !== undefined && b.price_rs !== null){
-      return '<p class="meta">💰 Kiraya: <strong>Rs ' + esc(b.price_rs) + "</strong></p>";
+      return '<p class="meta">💰 Fare: <strong>Rs ' + esc(b.price_rs) + "</strong></p>";
     }
     return "";
   }
 
   var CANCEL_LABEL = {
-    wrong_pickup: "Galat pickup location", wrong_drop: "Galat drop location",
-    wrong_vehicle: "Galat gaadi type", changed_plan: "Customer ka plan badal gaya",
+    wrong_pickup: "Wrong pickup location", wrong_drop: "Wrong drop location",
+    wrong_vehicle: "Wrong vehicle type", changed_plan: "Customer changed plans",
     duplicate: "Duplicate booking", driver_issue: "Driver issue", other: "Other"
   };
   function bookingCard(b, showAccept, showAdvance){
@@ -396,28 +396,28 @@
     html += "<p><strong>Drop:</strong> " + esc(addrText(b.drop)) + "</p>";
     if(b.status === "cancelled"){
       var cr = b.cancellation && b.cancellation.reason;
-      html += '<div class="pending-box">Customer ne cancel ki — wajah: ' + esc(CANCEL_LABEL[cr] || cr || "—") + '</div>';
+      html += '<div class="pending-box">Cancelled by customer — reason: ' + esc(CANCEL_LABEL[cr] || cr || "—") + '</div>';
     }
     html += moneyLine(b);
     if(b.item_description) html += "<p>" + esc(b.item_description) + "</p>";
     html += '<p class="meta">';
-    if(b.vehicle_type) html += "Gaadi: " + esc(b.vehicle_type) + " • ";
+    if(b.vehicle_type) html += "Vehicle: " + esc(b.vehicle_type) + " • ";
     if(b.distance_km !== undefined && b.distance_km !== null) html += esc(b.distance_km) + " km • ";
     if(b.price_rs !== undefined && b.price_rs !== null) html += "Rs " + esc(b.price_rs) + " • ";
-    if(b.helper_needed) html += "Helper chahiye • ";
+    if(b.helper_needed) html += "Helper needed • ";
     html += esc(fmtDate(b.created_at));
     html += "</p>";
     if(showAccept){
-      html += '<button type="button" class="btn primary small" data-act="accept" data-id="' + esc(id) + '">Accept Karein</button>';
+      html += '<button type="button" class="btn primary small" data-act="accept" data-id="' + esc(id) + '">Accept</button>';
     }
     if(showAdvance && next){
       html += '<button type="button" class="btn primary small" data-act="advance" data-id="' + esc(id) + '" data-next="' + esc(next) + '">' + esc(nextLabelFor(next)) + "</button>";
     }
     if(!b.disputed && b.status !== "cancelled" && b.status !== "delivered"){
-      html += '<button type="button" class="btn ghost small" data-act="dispute" data-id="' + esc(id) + '">Vivad uthao</button>';
+      html += '<button type="button" class="btn ghost small" data-act="dispute" data-id="' + esc(id) + '">Report an Issue</button>';
     }
     if(b.disputed){
-      html += '<p class="meta">Vivad darj hai' + (b.dispute_reason ? ": " + esc(b.dispute_reason) : "") + " — admin review karega.</p>";
+      html += '<p class="meta">Issue reported' + (b.dispute_reason ? ": " + esc(b.dispute_reason) : "") + " — admin will review it.</p>";
     }
     html += "</article>";
     return html;
@@ -431,25 +431,25 @@
   }
 
   function nextLabelFor(next){
-    if(next === "arrived") return "Pahunch gaya";
-    if(next === "in_transit") return "Trip shuru";
+    if(next === "arrived") return "Arrived";
+    if(next === "in_transit") return "Start trip";
     if(next === "delivered") return "Delivered";
-    return "Aage badhao";
+    return "Move forward";
   }
 
   function loadProfile(){
-    profileBox.innerHTML = '<p class="loading">Profile load ho raha hai…</p>';
+    profileBox.innerHTML = '<p class="loading">Loading profile…</p>';
     return fetch(API_BASE_URL + "/api/auth/me", { headers: { "Authorization": "Bearer " + getToken() } })
       .then(parseRes)
       .then(function(r){
         if(r.status === 401){ clearAndRedirect(); return null; }
         if(r.status !== 200 || !r.body){
-          profileBox.innerHTML = '<div class="empty">Profile nahi mili. Refresh karo.</div>';
-          throw new Error(mapError(r.status, r.body, "Profile load nahi hui."));
+          profileBox.innerHTML = '<div class="empty">Profile not found. Please refresh.</div>';
+          throw new Error(mapError(r.status, r.body, "Could not load profile."));
         }
         var user = r.body.user || r.body;
         if(user && user.role && user.role !== "driver"){
-          showAlert("err", "Ye login driver ka nahi hai.");
+          showAlert("err", "This login is not a driver account.");
           clearAndRedirect();
           return null;
         }
@@ -458,11 +458,11 @@
       })
       .catch(function(err){
         if(err && err.message && err.message.indexOf("Failed to fetch") !== -1){
-          profileBox.innerHTML = '<div class="empty">Network error hai. Internet check karo.</div>';
-          showAlert("err", "Network error hai. Internet check karo.");
+          profileBox.innerHTML = '<div class="empty">Network error. Please check your internet.</div>';
+          showAlert("err", "Network error. Please check your internet.");
           return null;
         }
-        if(profileBox.innerHTML.indexOf("booking") === -1 && profileBox.textContent.indexOf("Profile nahi") === -1){
+        if(profileBox.innerHTML.indexOf("booking") === -1 && profileBox.textContent.indexOf("Profile not found") === -1){
           // Keep existing content on unexpected errors.
         }
         throw err;
@@ -470,7 +470,7 @@
   }
 
   function loadEarnings(){
-    earnStatus.textContent = "Kamai load ho rahi hai…";
+    earnStatus.textContent = "Loading earnings…";
     return fetch(API_BASE_URL + "/api/driver/earnings/weekly", { headers: { "Authorization": "Bearer " + getToken() } })
       .then(parseRes)
       .then(function(r){
@@ -478,37 +478,37 @@
         if(r.status !== 200 || !r.body){
           earnRs.textContent = "—";
           earnTrips.textContent = "—";
-          earnStatus.textContent = mapError(r.status, r.body, "Kamai load nahi hui.");
+          earnStatus.textContent = mapError(r.status, r.body, "Could not load earnings.");
           return;
         }
         earnRs.textContent = "Rs " + (r.body.earnings_rs !== undefined && r.body.earnings_rs !== null ? r.body.earnings_rs : 0);
         earnTrips.textContent = String(r.body.completed_count !== undefined && r.body.completed_count !== null ? r.body.completed_count : 0);
-        earnStatus.textContent = "Pichle 7 din ka hisaab.";
+        earnStatus.textContent = "Earnings summary for the last 7 days.";
       })
       .catch(function(){
         earnRs.textContent = "—";
         earnTrips.textContent = "—";
-        earnStatus.textContent = "Network error hai. Internet check karo.";
+        earnStatus.textContent = "Network error. Please check your internet.";
       });
   }
 
   function loadAvailable(){
-    availList.innerHTML = '<p class="loading">Bookings load ho rahi hain…</p>';
+    availList.innerHTML = '<p class="loading">Loading bookings…</p>';
     return fetch(API_BASE_URL + "/api/driver/bookings/available?limit=20", { headers: { "Authorization": "Bearer " + getToken() } })
       .then(parseRes)
       .then(function(r){
         if(r.status === 401){ clearAndRedirect(); return; }
         if(r.status === 403 && isUnverified(r.body)){
-          availList.innerHTML = '<div class="empty">Verification pending hai. Team review ke baad naye trips dikhenge.</div>';
+          availList.innerHTML = '<div class="empty">Verification is pending. New trips will appear after team review.</div>';
           return;
         }
         if(r.status !== 200 || !r.body){
-          availList.innerHTML = '<div class="empty">' + esc(mapError(r.status, r.body, "Bookings load nahi huin.")) + "</div>";
+          availList.innerHTML = '<div class="empty">' + esc(mapError(r.status, r.body, "Could not load bookings.")) + "</div>";
           return;
         }
         var list = r.body.bookings || [];
         if(!list.length){
-          availList.innerHTML = '<div class="empty">Abhi koi nayi booking nahi hai. Refresh karke dekho.</div>';
+          availList.innerHTML = '<div class="empty">No new bookings right now. Please refresh and check again.</div>';
           return;
         }
         var html = "";
@@ -516,30 +516,30 @@
         availList.innerHTML = html;
       })
       .catch(function(){
-        availList.innerHTML = '<div class="empty">Network error hai. Internet check karo.</div>';
+        availList.innerHTML = '<div class="empty">Network error. Please check your internet.</div>';
       });
   }
 
   function loadMine(){
-    myList.innerHTML = '<p class="loading">Apni bookings load ho rahi hain…</p>';
+    myList.innerHTML = '<p class="loading">Loading your bookings…</p>';
     return fetch(API_BASE_URL + "/api/driver/bookings?limit=20", { headers: { "Authorization": "Bearer " + getToken() } })
       .then(parseRes)
       .then(function(r){
         if(r.status === 401){ clearAndRedirect(); return; }
         if(r.status === 403 && isUnverified(r.body)){
-          myList.innerHTML = '<div class="empty">Verification pending hai. Review ke baad trips yahan dikhengi.</div>';
+          myList.innerHTML = '<div class="empty">Verification is pending. Trips will appear here after review.</div>';
           renderShare([]);
           return;
         }
         if(r.status !== 200 || !r.body){
-          myList.innerHTML = '<div class="empty">' + esc(mapError(r.status, r.body, "Apni bookings load nahi huin.")) + "</div>";
+          myList.innerHTML = '<div class="empty">' + esc(mapError(r.status, r.body, "Could not load your bookings.")) + "</div>";
           return;
         }
         var list = r.body.bookings || [];
         var activeBox = document.getElementById("activeTrip");
         if(!list.length){
-          myList.innerHTML = '<div class="empty">Abhi tumne koi trip accept nahi ki hai.</div>';
-          if(activeBox) activeBox.innerHTML = '<div class="empty">Koi active trip nahi hai.</div>';
+          myList.innerHTML = '<div class="empty">You have not accepted any trip yet.</div>';
+          if(activeBox) activeBox.innerHTML = '<div class="empty">No active trip.</div>';
           renderShare([]);
           return;
         }
@@ -552,18 +552,18 @@
         }
         if(activeBox){
           activeBox.innerHTML = act ? bookingCard(act, false, true)
-            : '<div class="empty">Koi active trip nahi hai.</div>';
+            : '<div class="empty">No active trip.</div>';
         }
         var html = "";
         for(var i = 0; i < rest.length; i++){ html += bookingCard(rest[i], false, true); }
         if(act && !rest.length){
-          html = '<div class="empty">Purani trips yahan aayengi.</div>';
+          html = '<div class="empty">Past trips will appear here.</div>';
         }
         myList.innerHTML = html;
         renderShare(list);
       })
       .catch(function(){
-        myList.innerHTML = '<div class="empty">Network error hai. Internet check karo.</div>';
+        myList.innerHTML = '<div class="empty">Network error. Please check your internet.</div>';
       });
   }
 
@@ -574,18 +574,18 @@
     var settledEl = document.getElementById("ledgerSettled");
     var statusEl = document.getElementById("ledgerStatus");
     var listEl = document.getElementById("ledgerList");
-    statusEl.textContent = "Hisab load ho raha hai…";
+    statusEl.textContent = "Loading summary…";
     return fetch(API_BASE_URL + "/api/driver/ledger", { headers: { "Authorization": "Bearer " + getToken() } })
       .then(parseRes)
       .then(function(r){
         if(r.status === 401){ clearAndRedirect(); return; }
         if(r.status === 403 && isUnverified(r.body)){
-          statusEl.textContent = "Verification ke baad hisab dikhega.";
+          statusEl.textContent = "Visible after verification.";
           listEl.innerHTML = "";
           return;
         }
         if(r.status !== 200 || !r.body){
-          statusEl.textContent = mapError(r.status, r.body, "Hisab load nahi hua.");
+          statusEl.textContent = mapError(r.status, r.body, "Could not load summary.");
           return;
         }
         var s = r.body.summary || {};
@@ -593,27 +593,61 @@
         earnEl.textContent = "Rs " + (s.driver_earning_rs != null ? s.driver_earning_rs : 0);
         dueEl.textContent = "Rs " + (s.outstanding_rs != null ? s.outstanding_rs : 0);
         settledEl.textContent = "Rs " + (s.settled_rs != null ? s.settled_rs : 0);
-        statusEl.textContent = "Trips: " + (s.completed_cash_bookings != null ? s.completed_cash_bookings : 0) + " • Commission baaki office me jama karo.";
+        statusEl.textContent = "Trips: " + (s.completed_cash_bookings != null ? s.completed_cash_bookings : 0) + " • Please pay the remaining commission to the office.";
         var pays = r.body.payments || [];
         if(!pays.length){
-          listEl.innerHTML = '<div class="empty">Abhi koi cash trip poori nahi hui — delivery ke baad entry yahan aayegi.</div>';
+          listEl.innerHTML = '<div class="empty">No completed cash trips yet — entries appear after delivery.</div>';
           return;
         }
         var html = "";
         for(var i = 0; i < Math.min(pays.length, 10); i++){
           var p = pays[i];
           html += '<div class="booking"><h3>Trip #' + esc(p.booking_id) + '<span class="status-tag">' + esc(p.settlement_status || "") + "</span></h3>";
-          html += '<p class="meta">Cash: Rs ' + esc(p.gross_rs) + " • Kamai: Rs " + esc(p.driver_earning_rs) +
-            " • Commission: Rs " + esc(p.platform_commission_rs) + " • " + esc(fmtDate(p.collected_at)) + "</p></div>";
+          html += '<p class="meta">Cash: Rs ' + esc(p.gross_rs) + " • Earnings: Rs " + esc(p.driver_earning_rs) +
+            " • Commission: Rs " + esc(p.platform_commission_rs) + " • " + esc(fmtDate(p.collected_at)) + "</p>";
+          // COD: confirm only after receiving cash from the customer — never auto-confirmed.
+          if(p.payment_method === "cash" && p.payment_status === "pending"){
+            html += '<div class="row-btns"><button type="button" class="btn small" data-confirm-cash="' + esc(p.id) + '">Cash received — confirm</button></div>';
+          } else if(p.payment_method === "cash" && p.payment_status === "collected"){
+            html += '<p class="meta">Cash confirmed.</p>';
+          }
+          html += "</div>";
         }
         listEl.innerHTML = html;
       })
       .catch(function(){
-        statusEl.textContent = "Network error hai. Internet check karo.";
+        statusEl.textContent = "Network error. Please check your internet.";
       });
   }
 
-  // Commission due + limit warning (80% par peela, limit par laal).
+  // COD cash confirm — driver button only, pending cash only.
+  document.addEventListener("click", function(ev){
+    var btn = ev.target.closest ? ev.target.closest("[data-confirm-cash]") : null;
+    if(!btn) return;
+    var pid = btn.getAttribute("data-confirm-cash");
+    if(!pid) return;
+    if(!window.confirm("Did you receive the full cash from the customer? This cannot be changed after confirming.")) return;
+    btn.disabled = true;
+    fetch(API_BASE_URL + "/api/driver/payments/" + encodeURIComponent(pid) + "/confirm-cash", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + getToken() }
+    }).then(parseRes).then(function(r){
+      if(r.status === 401){ clearAndRedirect(); return; }
+      if(r.status === 200 && r.body && r.body.ok === true){
+        loadLedger();
+        loadDue();
+        return;
+      }
+      if(r.status === 409) alert("Already confirmed, or this payment cannot be confirmed.");
+      else alert("Could not confirm — please try again.");
+      btn.disabled = false;
+    }).catch(function(){
+      alert("Internet issue.");
+      btn.disabled = false;
+    });
+  });
+
+  // Commission due + limit warning (yellow at 80%, red at limit).
   function loadDue(){
     var warnEl = document.getElementById("dueWarn");
     if(!warnEl) return Promise.resolve();
@@ -627,11 +661,11 @@
         var due = Number(r.body.outstanding_rs) || 0;
         var limit = Number(r.body.limit_rs) || 0;
         if(limit > 0 && due >= limit){
-          warnEl.innerHTML = '<div class="pending-box">Baaki Rs ' + esc(due) + ' — limit Rs ' + esc(limit) +
-            ' cross ho gayi! Nayi booking accept karne se pehle hisab clear karo.</div>';
+          warnEl.innerHTML = '<div class="pending-box">Due Rs ' + esc(due) + ' — crossed limit Rs ' + esc(limit) +
+            '! Please clear dues before accepting new bookings.</div>';
         } else if(limit > 0 && due >= limit * 0.8){
-          warnEl.innerHTML = '<div class="pending-box">Baaki Rs ' + esc(due) + ' — limit Rs ' + esc(limit) +
-            ' ke paas hai. Jaldi hisab clear karo, warna naya accept band ho jayega.</div>';
+          warnEl.innerHTML = '<div class="pending-box">Due Rs ' + esc(due) + ' — near the limit Rs ' + esc(limit) +
+            '. Please clear dues soon, or new accepts will stop.</div>';
         }
       })
       .catch(function(){ /* ledger section already covers network errors */ });
@@ -656,28 +690,28 @@
   function acceptBooking(id, btn){
     btn.disabled = true;
     var old = btn.textContent;
-    btn.textContent = "Accept ho raha hai…";
+    btn.textContent = "Accepting…";
     fetch(API_BASE_URL + "/api/driver/bookings/" + encodeURIComponent(id) + "/accept", {
       method: "PATCH",
       headers: authHeaders()
     }).then(parseRes).then(function(r){
       if(r.status === 401){ clearAndRedirect(); return; }
       if(r.status === 200){
-        showAlert("ok", "Booking accept ho gayi — My Active Trip me dekho.");
+        showAlert("ok", "Booking accepted — see My Active Trip.");
         loadAvailable();
         loadMine();
         return;
       }
       if(r.status === 403 && r.body && r.body.error === "commission_limit_exceeded"){
-        showAlert("err", "Baaki Rs " + (r.body.outstanding_rs != null ? r.body.outstanding_rs : "—") +
-          " — limit cross ho gayi. Pehle hisab clear karo, phir accept karo.");
+        showAlert("err", "Due Rs " + (r.body.outstanding_rs != null ? r.body.outstanding_rs : "—") +
+          " — limit crossed. Please clear dues first, then accept.");
         loadDue();
         return;
       }
-      showAlert("err", mapError(r.status, r.body, "Accept nahi hui."));
+      showAlert("err", mapError(r.status, r.body, "Could not accept."));
       if(r.status === 409){ loadAvailable(); }
     }).catch(function(){
-      showAlert("err", "Network error hai. Internet check karo.");
+      showAlert("err", "Network error. Please check your internet.");
     }).then(function(){
       btn.disabled = false;
       btn.textContent = old;
@@ -687,7 +721,7 @@
   function advanceBooking(id, next, btn){
     btn.disabled = true;
     var old = btn.textContent;
-    btn.textContent = "Update ho raha hai…";
+    btn.textContent = "Updating…";
     fetch(API_BASE_URL + "/api/driver/bookings/" + encodeURIComponent(id) + "/status", {
       method: "PATCH",
       headers: authHeaders(),
@@ -695,14 +729,14 @@
     }).then(parseRes).then(function(r){
       if(r.status === 401){ clearAndRedirect(); return; }
       if(r.status === 200){
-        showAlert("ok", "Status update ho gaya.");
+        showAlert("ok", "Status updated.");
         loadMine();
         return;
       }
-      showAlert("err", mapError(r.status, r.body, "Status update nahi hua."));
+      showAlert("err", mapError(r.status, r.body, "Could not update status."));
       if(r.status === 409){ loadMine(); }
     }).catch(function(){
-      showAlert("err", "Network error hai. Internet check karo.");
+      showAlert("err", "Network error. Please check your internet.");
     }).then(function(){
       btn.disabled = false;
       btn.textContent = old;
@@ -730,14 +764,14 @@
     for(var i = 0; i < shareLastList.length; i++){
       if(SHAREABLE[shareLastList[i].status]) active.push(shareLastList[i]);
     }
-    // Trip khatam/cancel hui to sharing se hatao.
+    // Remove the trip from sharing when it ends or is cancelled.
     var alive = {};
     for(var j = 0; j < active.length; j++){ alive[active[j].id] = 1; }
     for(var k in shareIds){
       if(shareIds.hasOwnProperty(k) && shareIds[k] && !alive[k]){ delete shareIds[k]; delete shareLastSent[k]; }
     }
     if(!active.length){
-      shareList.innerHTML = '<div class="empty">Koi active trip nahi hai — accept karne ke baad yahan sharing dikhegi.</div>';
+      shareList.innerHTML = '<div class="empty">No active trip — sharing appears here after you accept one.</div>';
     } else {
       var html = "";
       for(var m = 0; m < active.length; m++){
@@ -745,8 +779,8 @@
         var on = !!shareIds[b.id];
         html += '<div class="booking"><h3>Trip #' + esc(b.id) + '<span class="status-tag">' + esc(b.status || "") + "</span></h3>";
         html += "<p>" + esc(addrText(b.pickup)) + " → " + esc(addrText(b.drop)) + "</p>";
-        html += '<p class="meta">' + (on ? "Sharing ON hai — GPS bheja ja raha hai." : "Sharing OFF hai.") + "</p>";
-        html += '<button type="button" class="btn small ' + (on ? "ghost" : "primary") + '" data-act="' + (on ? "unshare" : "share") + '" data-id="' + esc(b.id) + '">' + (on ? "Sharing band karo" : "Location share karo") + "</button></div>";
+        html += '<p class="meta">' + (on ? "Sharing is ON — sending GPS." : "Sharing is OFF.") + "</p>";
+        html += '<button type="button" class="btn small ' + (on ? "ghost" : "primary") + '" data-act="' + (on ? "unshare" : "share") + '" data-id="' + esc(b.id) + '">' + (on ? "Stop sharing" : "Share location") + "</button></div>";
       }
       shareList.innerHTML = html;
     }
@@ -756,8 +790,8 @@
     var n = shareCount();
     if(msg){ shareStatus.textContent = msg; return; }
     shareStatus.textContent = n > 0
-      ? ("Sharing ON hai (" + n + " trip). Page khula rakho — GPS har ~5 sec me bheja jayega.")
-      : "Sharing band hai.";
+      ? ("Sharing is ON (" + n + " trip). Keep this page open — GPS is sent every ~5 sec.")
+      : "Sharing is off.";
   }
   function postPosition(bookingId, pos){
     var now = Date.now();
@@ -768,7 +802,7 @@
     if(typeof pos.coords.speed === "number" && pos.coords.speed !== null && pos.coords.speed >= 0){
       body.speed_mps = Math.round(pos.coords.speed * 100) / 100;
     }
-    // Compass heading (0..360). Null/NaN wale devices par bhejo mat (server NULL rakhega).
+    // Compass heading (0..360). Don't send on devices with null/NaN (server keeps NULL).
     if(typeof pos.coords.heading === "number" && isFinite(pos.coords.heading) && pos.coords.heading >= 0 && pos.coords.heading <= 360){
       body.heading_deg = Math.round(pos.coords.heading * 10) / 10;
     }
@@ -777,17 +811,17 @@
       headers: authHeaders(),
       body: JSON.stringify(body)
     }).then(parseRes).then(function(r){
-      if(r.status === 401){ stopSharing("Session khatam — dobara login karo."); clearAndRedirect(); return; }
+      if(r.status === 401){ stopSharing("Session expired — please log in again."); clearAndRedirect(); return; }
       if(r.status === 201){ updateShareStatus(); return; }
       if(r.status === 409){
         delete shareIds[bookingId];
         renderShare(shareLastList);
         loadMine();
-        updateShareStatus("Ek trip khatam ho gayi — uski sharing band kar di.");
+        updateShareStatus("A trip ended — its sharing is now off.");
         return;
       }
-      // 429/400 chupchaap skip — agla GPS cycle retry karega.
-    }).catch(function(){ /* network blip — agla cycle retry */ });
+      // 429/400 silently skipped — next GPS cycle retries.
+    }).catch(function(){ /* network blip — next cycle retries */ });
   }
   function startWatch(){
     if(shareWatchId !== null || !("geolocation" in navigator)) return;
@@ -795,14 +829,14 @@
       shareWatchId = navigator.geolocation.watchPosition(function(pos){
         for(var id in shareIds){ if(shareIds.hasOwnProperty(id) && shareIds[id]) postPosition(id, pos); }
       }, function(err){
-        var msg = "Location nahi mil rahi.";
-        if(err && err.code === 1) msg = "Location permission deny hai — browser settings me allow karo.";
-        else if(err && err.code === 2) msg = "GPS position nahi mili — khuli jagah par try karo.";
-        else if(err && err.code === 3) msg = "GPS timeout — dobara try ho raha hai.";
+        var msg = "Location unavailable.";
+        if(err && err.code === 1) msg = "Location permission denied — please allow it in browser settings.";
+        else if(err && err.code === 2) msg = "GPS position unavailable — try in an open area.";
+        else if(err && err.code === 3) msg = "GPS timeout — retrying.";
         stopSharing(msg);
       }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 });
     } catch(e){
-      stopSharing("Is device/browser me location supported nahi hai.");
+      stopSharing("Location is not supported on this device/browser.");
     }
   }
   function stopSharing(msg){
@@ -815,7 +849,7 @@
   }
   function setSharing(id, on){
     if(on){
-      if(!("geolocation" in navigator)){ updateShareStatus("Is device/browser me location supported nahi hai."); renderShare(shareLastList); return; }
+      if(!("geolocation" in navigator)){ updateShareStatus("Location is not supported on this device/browser."); renderShare(shareLastList); return; }
       shareIds[id] = 1;
       startWatch();
     } else {
@@ -841,10 +875,10 @@
     }
     else if(act === "dispute"){
       var reason = null;
-      try { reason = window.prompt("Vivad ki wajah likho (admin dekhega):", ""); } catch(e){ return; }
+      try { reason = window.prompt("Describe the issue (admin will review it):", ""); } catch(e){ return; }
       if(reason == null) return;
       reason = String(reason).trim();
-      if(reason.length < 3){ showAlert("err", "Wajah kam se kam 3 akshar likho."); return; }
+      if(reason.length < 3){ showAlert("err", "Please write at least 3 characters."); return; }
       t.disabled = true;
       fetch(API_BASE_URL + "/api/driver/bookings/" + encodeURIComponent(id) + "/flag-dispute", {
         method: "POST",
@@ -853,14 +887,14 @@
       }).then(parseRes).then(function(r){
         if(r.status === 401){ clearAndRedirect(); return; }
         if(r.status === 200){
-          showAlert("ok", "Vivad darj ho gaya — admin review karega.");
+          showAlert("ok", "Issue reported — admin will review it.");
           loadMine();
           return;
         }
-        showAlert("err", mapError(r.status, r.body, "Vivad darj nahi hua."));
+        showAlert("err", mapError(r.status, r.body, "Could not report the issue."));
         t.disabled = false;
       }).catch(function(){
-        showAlert("err", "Network error hai. Internet check karo.");
+        showAlert("err", "Network error. Please check your internet.");
         t.disabled = false;
       });
     }
@@ -881,7 +915,7 @@
     navMenuBtn.addEventListener("click", function(){
       var open = siteNav.classList.toggle("open");
       navMenuBtn.setAttribute("aria-expanded", open ? "true" : "false");
-      navMenuBtn.setAttribute("aria-label", open ? "Menu band karo" : "Menu kholo");
+      navMenuBtn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
     });
     siteNav.addEventListener("click", function(ev){
       if(ev.target.tagName === "A" && siteNav.classList.contains("open")){

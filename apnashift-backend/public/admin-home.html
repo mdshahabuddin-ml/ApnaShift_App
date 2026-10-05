@@ -136,7 +136,10 @@
 (function(){
   "use strict";
 
-  var API_BASE_URL = "https://apnashiftapp-production.up.railway.app";
+  // Backend base URL with local development fallback (same on all pages —
+  // localhost pages talk to localhost API, production pages to production,
+  // so login tokens always match the API that issued them).
+  var API_BASE_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.protocol === "file:") ? "http://localhost:3000" : "https://apnashiftapp-production.up.railway.app";
   var TOKEN_KEY = "apnashift_admin_token";
 
   function getToken(){ try { return localStorage.getItem(TOKEN_KEY); } catch(e){ return null; } }

@@ -368,7 +368,10 @@
   "use strict";
 
   // Backend base URL — Railway production backend.
-  var API_BASE_URL = "https://apnashiftapp-production.up.railway.app";
+  // Backend base URL with local development fallback (same on all pages —
+  // localhost pages talk to localhost API, production pages to production,
+  // so login tokens always match the API that issued them).
+  var API_BASE_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.protocol === "file:") ? "http://localhost:3000" : "https://apnashiftapp-production.up.railway.app";
   var TOKEN_KEY = "apnashift_user_token";
 
   // Auto redirect when a valid customer session already exists.
@@ -588,6 +591,17 @@
   var lphone = document.getElementById("lphone");
   var lpass = document.getElementById("lpass");
   var loginBtn = document.getElementById("loginBtn");
+
+  // Testing convenience: ?phone=6000000001 se login box auto-bhar jata hai.
+  // Password kabhi URL se NAHI aata (browser history me save ho jata — insecure).
+  try {
+    var qPhone = "";
+    try { qPhone = new URLSearchParams(window.location.search).get("phone") || ""; } catch(e2){}
+    var cleanedQ = cleanPhone(qPhone);
+    if(/^[6-9]\d{9}$/.test(cleanedQ) && lphone && !lphone.value){
+      lphone.value = cleanedQ;
+    }
+  } catch(e){}
 
   loginForm.addEventListener("input", hideAlert);
   loginForm.addEventListener("submit", function(ev){

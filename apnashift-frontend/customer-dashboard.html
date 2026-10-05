@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mera Dashboard | ApnaShift</title>
-<meta name="description" content="ApnaShift customer dashboard — apni bookings, driver status aur rating ek jagah dekho.">
+<title>My Dashboard | ApnaShift</title>
+<meta name="description" content="ApnaShift customer dashboard — view your bookings, driver status and ratings in one place.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
@@ -246,7 +246,7 @@
       </details>
       <a href="help.html">Help</a>
     </nav>
-    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">☰</button>
   </div>
 </header>
 
@@ -254,20 +254,19 @@
   <div class="alert" id="pageAlert" role="alert" aria-live="assertive"></div>
 
   <section class="card" aria-labelledby="welcomeTitle">
-    <h1 id="welcomeTitle">Namaste!</h1>
-    <p class="sub">Apni bookings yahin se dekho aur nayi gaadi book karo.</p>
-    <p class="profile-line">Naam: <strong id="profileName">–</strong></p>
-    <p class="profile-line">Phone: <strong id="profilePhone">–</strong></p>
+    <h1 id="welcomeTitle">Hello!</h1>
+    <p class="sub">View your bookings here and book a new vehicle.</p>
+    <p class="profile-line">Name: <strong id="profileName">–</strong></p>
     <div class="btnrow">
-      <a class="btn primary" href="booking.html">Book a Vehicle — Gaadi Book Karo</a>
+      <a class="btn primary" href="booking.html">Book a Vehicle</a>
       <button type="button" class="btn ghost small" id="logoutBtn">Logout</button>
     </div>
   </section>
 
-  <div class="spinner" id="loadingSpin" role="status" aria-live="polite"><span class="ring" aria-hidden="true"></span>Bookings load ho rahi hain…</div>
+  <div class="spinner" id="loadingSpin" role="status" aria-live="polite"><span class="ring" aria-hidden="true"></span>Loading bookings…</div>
 
   <section class="card" id="activeSection" aria-labelledby="activeTitle" hidden>
-    <h2 id="activeTitle">Chalu booking</h2>
+    <h2 id="activeTitle">Active booking</h2>
     <div id="activeBody"></div>
   </section>
 
@@ -278,34 +277,34 @@
 
   <section class="card empty" id="emptyState" hidden aria-labelledby="emptyTitle">
     <h2 id="emptyTitle">No bookings yet</h2>
-    <p>Abhi tak koi booking nahi hai — pehli shifting aasani se book karo.</p>
-    <a class="btn primary" href="booking.html">Book a Vehicle — Pehli Booking Karo</a>
+    <p>You have no bookings yet — book your first shifting easily.</p>
+    <a class="btn primary" href="booking.html">Book a Vehicle</a>
   </section>
 
   <section class="card" aria-labelledby="helpTitle">
-    <h2 id="helpTitle">Madad chahiye?</h2>
-    <p class="helpline">Booking me dikkat ho to <a href="help.html">Help page kholo</a> — jawab jaldi milega.</p>
+    <h2 id="helpTitle">Need help?</h2>
+    <p class="helpline">Having trouble with a booking? Open the <a href="help.html">Help page</a>.</p>
   </section>
 
   <div class="dialog-backdrop" id="cancelDialog" role="dialog" aria-modal="true" aria-labelledby="cancelDialogTitle">
     <div class="dialog">
-      <h2 id="cancelDialogTitle">Booking cancel karein?</h2>
-      <p class="sub" id="cancelDialogSub">Ye booking cancel ho jayegi. Reason chunna zaroori hai.</p>
-      <label for="cancelReason">Cancel ka reason</label>
+      <h2 id="cancelDialogTitle">Cancel booking?</h2>
+      <p class="sub" id="cancelDialogSub">This booking will be cancelled. Choosing a reason is required.</p>
+      <label for="cancelReason">Cancellation reason</label>
       <select id="cancelReason">
-        <option value="">— Reason chuno —</option>
-        <option value="wrong_pickup">Galat pickup location</option>
-        <option value="wrong_drop">Galat drop location</option>
-        <option value="wrong_vehicle">Galat gaadi type</option>
-        <option value="changed_plan">Plan badal gaya</option>
-        <option value="duplicate">Duplicate booking ho gayi</option>
-        <option value="driver_issue">Driver se dikkat</option>
+        <option value="">— Choose a reason —</option>
+        <option value="wrong_pickup">Wrong pickup location</option>
+        <option value="wrong_drop">Wrong drop location</option>
+        <option value="wrong_vehicle">Wrong vehicle type</option>
+        <option value="changed_plan">Plans changed</option>
+        <option value="duplicate">Duplicate booking</option>
+        <option value="driver_issue">Driver issue</option>
         <option value="other">Other</option>
       </select>
       <p class="error-text" id="cancelDialogErr"></p>
       <div class="btnrow">
-        <button type="button" class="btn danger small" id="cancelConfirmBtn">Haan, cancel karo</button>
-        <button type="button" class="btn ghost small" id="cancelBackBtn">Wapas jao</button>
+        <button type="button" class="btn danger small" id="cancelConfirmBtn">Yes, cancel it</button>
+        <button type="button" class="btn ghost small" id="cancelBackBtn">Go back</button>
       </div>
     </div>
   </div>
@@ -424,8 +423,8 @@
   }
 
   function driverLine(booking){
-    if(booking && booking.driver_id) return "Driver assigned — driver raste me hai.";
-    return "Searching for driver — thodi der me driver milega.";
+    if(booking && booking.driver_id) return "Driver assigned — driver is on the way.";
+    return "Searching for driver — a driver will be assigned shortly.";
   }
 
   function statusPill(status){
@@ -436,7 +435,7 @@
   // Timeline for active bookings; cancelled bookings show a single note.
   function timelineHtml(status){
     if(status === "cancelled"){
-      return '<ul class="timeline"><li class="now"><span class="dot" aria-hidden="true">✕</span><span>Cancelled — booking radd ho gayi.</span></li></ul>';
+      return '<ul class="timeline"><li class="now"><span class="dot" aria-hidden="true">✕</span><span>Cancelled.</span></li></ul>';
     }
     var currentIdx = -1;
     for(var i = 0; i < STEPS.length; i++){
@@ -454,7 +453,7 @@
     return html + "</ol>";
   }
 
-  var PAY_STATUS_LABEL = { collected: "De diya", pending: "Pending", failed: "Failed", refunded: "Refund ho gaya" };
+  var PAY_STATUS_LABEL = { collected: "Paid", pending: "Pending", failed: "Failed", refunded: "Refunded" };
   function payMethodLabel(m){
     if(m === "upi") return "UPI";
     if(m === "online") return "Online";
@@ -462,12 +461,12 @@
   }
 
   var CANCEL_REASON_LABEL = {
-    wrong_pickup: "Galat pickup location",
-    wrong_drop: "Galat drop location",
-    wrong_vehicle: "Galat gaadi type",
-    changed_plan: "Plan badal gaya",
+    wrong_pickup: "Wrong pickup location",
+    wrong_drop: "Wrong drop location",
+    wrong_vehicle: "Wrong vehicle type",
+    changed_plan: "Plans changed",
     duplicate: "Duplicate booking",
-    driver_issue: "Driver se dikkat",
+    driver_issue: "Driver issue",
     other: "Other"
   };
 
@@ -483,24 +482,24 @@
       html += '<div class="pay-box" aria-label="UPI payment">' +
         "<div><strong>Driver UPI ID:</strong></div>" +
         '<div class="upi-big">' + uid + "</div>" +
-        '<button type="button" class="btn ghost small" data-copy-upi="' + uid + '">Copy Karein</button>' +
-        '<p class="meta">Payment driver ko seedha is UPI ID par karein, trip complete hote hi</p>' +
+        '<button type="button" class="btn ghost small" data-copy-upi="' + uid + '">Copy</button>' +
+        '<p class="meta">Pay the driver directly to this UPI ID right after the trip is complete</p>' +
         "</div>";
     } else if(b.payment_method === "cash"){
       html += '<div class="pay-box" aria-label="Cash payment">' +
-        "<p style='margin:0'>Driver ko cash se payment karein trip complete hone par</p>" +
+        "<p style='margin:0'>Pay the driver in cash when the trip is complete</p>" +
         "</div>";
     }
     if(!b.disputed){
       var bid = escapeHtml(b.id);
-      html += '<details class="dispute-box"><summary>Problem hui payment me?</summary>' +
-        '<label for="dreason-' + bid + '" style="position:absolute;left:-9999px">Wajah likho</label>' +
-        '<input id="dreason-' + bid + '" data-dispute-reason="' + bid + '" maxlength="500" placeholder="Wajah likho (jaise: zyada kiraya)">' +
-        '<div class="btnrow"><button type="button" class="btn ghost small" data-dispute-send="' + bid + '">Bhejo</button></div>' +
+      html += '<details class="dispute-box"><summary>Faced a payment issue?</summary>' +
+        '<label for="dreason-' + bid + '" style="position:absolute;left:-9999px">Describe the issue</label>' +
+        '<input id="dreason-' + bid + '" data-dispute-reason="' + bid + '" maxlength="500" placeholder="Describe the issue (e.g., overcharged)">' +
+        '<div class="btnrow"><button type="button" class="btn ghost small" data-dispute-send="' + bid + '">Send</button></div>' +
         '<p class="error-text" data-dispute-err="' + bid + '"></p>' +
         "</details>";
     } else if(b.dispute_reason){
-      html += '<p class="meta">Vivad darj hai: ' + escapeHtml(b.dispute_reason) + " — admin review karega.</p>";
+      html += '<p class="meta">Issue reported: ' + escapeHtml(b.dispute_reason) + " — admin will review it.</p>";
     }
     return html;
   }
@@ -512,23 +511,23 @@
       cancelLine = "<div><strong>Cancel reason:</strong> " + escapeHtml(CANCEL_REASON_LABEL[reason] || reason || "–") + "</div>";
     }
     return '<details class="booking-details">' +
-      "<summary>Details dekho</summary>" +
+      "<summary>View details</summary>" +
       '<div class="detail-grid">' +
       "<div><strong>Booking ID:</strong> " + escapeHtml(b.id) + "</div>" +
       "<div><strong>Status:</strong> " + escapeHtml(STATUS_LABEL[b.status] || b.status) + "</div>" +
       "<div><strong>Pickup:</strong> " + escapeHtml(addrText(b.pickup)) + "</div>" +
       "<div><strong>Drop:</strong> " + escapeHtml(addrText(b.drop)) + "</div>" +
-      "<div><strong>Gaadi:</strong> " + escapeHtml(b.vehicle_type || "–") + "</div>" +
-      "<div><strong>Helper:</strong> " + escapeHtml(b.helper_needed ? "Haan" : "Nahi") + "</div>" +
-      "<div><strong>Samaan:</strong> " + escapeHtml(b.item_description || "–") + "</div>" +
+      "<div><strong>Vehicle:</strong> " + escapeHtml(b.vehicle_type || "–") + "</div>" +
+      "<div><strong>Helper:</strong> " + escapeHtml(b.helper_needed ? "Yes" : "No") + "</div>" +
+      "<div><strong>Items:</strong> " + escapeHtml(b.item_description || "–") + "</div>" +
       "<div><strong>Scheduled:</strong> " + escapeHtml(fmtDate(b.scheduled_time)) + "</div>" +
       "<div><strong>Delivered:</strong> " + escapeHtml(fmtDate(b.delivered_at)) + "</div>" +
-      "<div><strong>Doori:</strong> " + escapeHtml(b.distance_km !== undefined && b.distance_km !== null ? b.distance_km + " km" : "–") + "</div>" +
-      "<div><strong>Kiraya:</strong> " + escapeHtml(b.price_rs !== undefined && b.price_rs !== null ? "Rs " + b.price_rs : "–") + "</div>" +
+      "<div><strong>Distance:</strong> " + escapeHtml(b.distance_km !== undefined && b.distance_km !== null ? b.distance_km + " km" : "–") + "</div>" +
+      "<div><strong>Fare:</strong> " + escapeHtml(b.price_rs !== undefined && b.price_rs !== null ? "₹" + b.price_rs : "–") + "</div>" +
       "<div><strong>Booked on:</strong> " + escapeHtml(fmtDate(b.created_at)) + "</div>" +
       "<div><strong>Driver:</strong> " + escapeHtml(driverLine(b)) + "</div>" +
       "<div><strong>Payment:</strong> " + escapeHtml(payMethodLabel(b.payment_method)) +
-      (b.payment ? " • " + escapeHtml(PAY_STATUS_LABEL[b.payment.payment_status] || b.payment.payment_status) : " • Abhi baaki") + "</div>" +
+      (b.payment ? " • " + escapeHtml(PAY_STATUS_LABEL[b.payment.payment_status] || b.payment.payment_status) : " • Pending") + "</div>" +
       paymentSectionHtml(b) +
       cancelLine +
       "</div></details>";
@@ -541,12 +540,12 @@
       stars += '<label><input type="radio" name="stars-' + id + '" value="' + s + '"' + (s === 5 ? "" : "") + ' aria-label="' + s + ' star"><span>' + s + " ★</span></label>";
     }
     return '<div class="rate-box" data-rate="' + id + '">' +
-      "<div><strong>Driver ko rating do</strong></div>" +
-      '<div class="stars" role="radiogroup" aria-label="1 se 5 star chuno">' + stars + "</div>" +
+      "<div><strong>Rate your driver</strong></div>" +
+      '<div class="stars" role="radiogroup" aria-label="Choose 1 to 5 stars">' + stars + "</div>" +
       '<label for="cmt-' + id + '" style="font-size:.86rem;font-weight:600;color:var(--navy)">Comment (optional)</label>' +
-      '<textarea class="comment" id="cmt-' + id + '" maxlength="500" placeholder="Example: Driver samay par aaya, samaan ache se rakha"></textarea>' +
+      '<textarea class="comment" id="cmt-' + id + '" maxlength="500" placeholder="Example: Driver arrived on time, handled luggage well"></textarea>' +
       '<p class="error-text" id="rate-err-' + id + '"></p>' +
-      '<div class="btnrow"><button type="button" class="btn primary small" data-submit-rate="' + id + '">Rating bhejo</button></div>' +
+      '<div class="btnrow"><button type="button" class="btn primary small" data-submit-rate="' + id + '">Send rating</button></div>' +
       "</div>";
   }
 
@@ -554,7 +553,7 @@
     var cancellable = (b.status === "pending" || b.status === "accepted");
     var html = '<article class="booking' + (isActive ? " active" : "") + '" data-booking="' + escapeHtml(b.id) + '">' +
       '<div class="booking-head"><span class="booking-id">#' + escapeHtml(b.id) + "</span>" + statusPill(b.status) +
-      (b.disputed ? ' <span class="pill cancelled">Vivad</span>' : "") + "</div>" +
+      (b.disputed ? ' <span class="pill cancelled">Disputed</span>' : "") + "</div>" +
       '<div class="route"><div>📍 <strong>Pickup:</strong> ' + escapeHtml(addrText(b.pickup)) + "</div>" +
       "<div>🏁 <strong>Drop:</strong> " + escapeHtml(addrText(b.drop)) + "</div></div>" +
       '<p class="meta">🚚 ' + escapeHtml(b.vehicle_type || "–") +
@@ -569,13 +568,13 @@
     if(trackable || (isActive && cancellable) || disputable){
       html += '<div class="btnrow">';
       if(trackable){
-        html += '<a class="btn primary small" href="tracking.html?booking=' + escapeHtml(b.id) + '">Live track karo</a>';
+        html += '<a class="btn primary small" href="tracking.html?booking=' + escapeHtml(b.id) + '">Track live</a>';
       }
       if(isActive && cancellable){
         html += '<button type="button" class="btn danger small" data-cancel="' + escapeHtml(b.id) + '">Cancel Booking</button>';
       }
       if(disputable){
-        html += '<button type="button" class="btn ghost small" data-dispute="' + escapeHtml(b.id) + '">Vivad uthao</button>';
+        html += '<button type="button" class="btn ghost small" data-dispute="' + escapeHtml(b.id) + '">Report an Issue</button>';
       }
       html += '</div>';
     }
@@ -609,7 +608,7 @@
           throw new Error("profile");
         }
         var user = meResult.body.user || {};
-        document.getElementById("welcomeTitle").textContent = "Namaste" + (user.name ? ", " + user.name : "") + "!";
+        document.getElementById("welcomeTitle").textContent = "Hello" + (user.name ? ", " + user.name : "") + "!";
         document.getElementById("profileName").textContent = user.name || "–";
         document.getElementById("profilePhone").textContent = user.phone || "–";
         return fetch(API_BASE_URL + "/api/bookings?page=1&limit=50", { headers: authHeaders() });
@@ -627,9 +626,9 @@
       .catch(function(err){
         if(err && err.message === "unauth") return;
         if(err && err.message === "profile"){
-          showAlert("err", "Profile load nahi hui — dobara login karke try karo.");
+          showAlert("err", "Couldn't load your profile — please log in again and try.");
         } else {
-          showAlert("err", "Bookings load nahi hui — internet check karke page refresh karo.");
+          showAlert("err", "Couldn't load bookings — check your internet and refresh the page.");
         }
       })
       .then(function(){
@@ -676,7 +675,7 @@
     cancelReasonSel.value = "";
     cancelDialogErr.textContent = "";
     cancelConfirmBtn.disabled = false;
-    cancelConfirmBtn.textContent = "Haan, cancel karo";
+    cancelConfirmBtn.textContent = "Yes, cancel it";
     cancelDialog.classList.add("show");
     try { cancelReasonSel.focus(); } catch(e){}
   }
@@ -696,12 +695,12 @@
     if(!pendingCancelId) return;
     var reason = cancelReasonSel.value;
     if(!reason){
-      cancelDialogErr.textContent = "Reason chunna zaroori hai.";
+      cancelDialogErr.textContent = "Choosing a reason is required.";
       return;
     }
     cancelDialogErr.textContent = "";
     cancelConfirmBtn.disabled = true;
-    cancelConfirmBtn.textContent = "Cancel ho rahi hai…";
+    cancelConfirmBtn.textContent = "Cancelling…";
     var doneBtn = pendingCancelBtn;
     fetch(API_BASE_URL + "/api/bookings/" + encodeURIComponent(pendingCancelId) + "/cancel", {
       method: "PATCH",
@@ -711,48 +710,48 @@
       if(result.status === 401){ redirectToLogin(); return; }
       if(result.status === 200){
         closeCancelDialog();
-        showAlert("ok", "Booking cancel ho gayi.");
+        showAlert("ok", "Booking cancelled.");
         loadDashboard();
         return;
       }
       var code = result.body && result.body.error;
       if(result.status === 409 || code === "invalid_transition"){
         closeCancelDialog();
-        showAlert("err", "Ye booking ab cancel nahi ho sakti — driver nikal chuka hai ya trip poori ho gayi.");
+        showAlert("err", "This booking can no longer be cancelled — the driver is on the way or the trip is complete.");
         loadDashboard();
       } else if(result.status === 400){
-        cancelDialogErr.textContent = "Reason sahi chuno.";
+        cancelDialogErr.textContent = "Please choose a valid reason.";
       } else if(result.status === 403){
         closeCancelDialog();
-        showAlert("err", "Ye action allowed nahi hai — dobara login karke try karo.");
+        showAlert("err", "This action is not allowed — please log in again and try.");
       } else if(result.status === 404){
         closeCancelDialog();
-        showAlert("err", "Booking mili nahi — list refresh ho rahi hai.");
+        showAlert("err", "Booking not found — refreshing the list.");
         loadDashboard();
       } else if(result.status === 429){
-        cancelDialogErr.textContent = "Bahut koshish ho gayi — thodi der rukkar try karo.";
+        cancelDialogErr.textContent = "Too many attempts — please wait a while and try again.";
       } else if(result.status >= 500){
-        cancelDialogErr.textContent = "Server me dikkat hai — thodi der baad try karo.";
+        cancelDialogErr.textContent = "Server issue — please try again later.";
       } else {
-        cancelDialogErr.textContent = "Cancel nahi hui — dobara try karo.";
+        cancelDialogErr.textContent = "Could not cancel — please try again.";
       }
       cancelConfirmBtn.disabled = false;
-      cancelConfirmBtn.textContent = "Haan, cancel karo";
+      cancelConfirmBtn.textContent = "Yes, cancel it";
       if(doneBtn){ doneBtn.disabled = false; doneBtn.textContent = "Cancel Booking"; }
     }).catch(function(){
-      cancelDialogErr.textContent = "Internet me dikkat hai — connection check karke try karo.";
+      cancelDialogErr.textContent = "Internet issue — check your connection and try again.";
       cancelConfirmBtn.disabled = false;
-      cancelConfirmBtn.textContent = "Haan, cancel karo";
+      cancelConfirmBtn.textContent = "Yes, cancel it";
     });
   });
 
-  // Dispute action: reason puchkar flag lagao (paisa auto-change nahi hota).
+  // Dispute action: ask reason, then flag (money never auto-changes).
   function sendDispute(bookingId, btn){
     var reason = null;
-    try { reason = window.prompt("Vivad ki wajah likho (admin dekhega):", ""); } catch(e){ return; }
+    try { reason = window.prompt("Describe the issue (admin will review it):", ""); } catch(e){ return; }
     if(reason == null) return;
     reason = String(reason).trim();
-    if(reason.length < 3){ showAlert("err", "Wajah kam se kam 3 akshar likho."); return; }
+    if(reason.length < 3){ showAlert("err", "Please write at least 3 characters."); return; }
     if(btn){ btn.disabled = true; }
     fetch(API_BASE_URL + "/api/bookings/" + encodeURIComponent(bookingId) + "/flag-dispute", {
       method: "POST",
@@ -761,15 +760,15 @@
     }).then(readBody).then(function(result){
       if(result.status === 401){ redirectToLogin(); return; }
       if(result.status === 200){
-        showAlert("ok", "Vivad darj ho gaya — admin review karega.");
+        showAlert("ok", "Issue reported — admin will review it.");
         loadDashboard();
         return;
       }
-      if(result.status === 404) showAlert("err", "Booking mili nahi.");
-      else showAlert("err", "Vivad darj nahi hua — dobara try karo.");
+      if(result.status === 404) showAlert("err", "Booking not found.");
+      else showAlert("err", "Could not report the issue — please try again.");
       if(btn){ btn.disabled = false; }
     }).catch(function(){
-      showAlert("err", "Internet me dikkat hai — connection check karke try karo.");
+      showAlert("err", "Internet issue — check your connection and try again.");
       if(btn){ btn.disabled = false; }
     });
   }
@@ -777,9 +776,9 @@
   function copyText(text, btn){
     function done(ok){
       if(!btn) return;
-      var old = btn.getAttribute("data-label") || "Copy Karein";
+      var old = btn.getAttribute("data-label") || "Copy";
       if(!btn.getAttribute("data-label")) btn.setAttribute("data-label", old);
-      btn.textContent = ok ? "Copy ho gaya!" : "Copy nahi hua";
+      btn.textContent = ok ? "Copied!" : "Couldn't copy";
       setTimeout(function(){ btn.textContent = btn.getAttribute("data-label") || old; }, 1600);
     }
     if(navigator.clipboard && navigator.clipboard.writeText){
@@ -805,7 +804,7 @@
     var errBox = document.querySelector('[data-dispute-err="' + bookingId + '"]');
     var reason = input ? String(input.value || "").trim() : "";
     function err(m){ if(errBox){ errBox.className = "error-text"; errBox.textContent = m; } else if(m){ showAlert("err", m); } }
-    if(reason.length < 3){ err("Wajah kam se kam 3 akshar likho."); return; }
+    if(reason.length < 3){ err("Please write at least 3 characters."); return; }
     err("");
     fetch(API_BASE_URL + "/api/bookings/" + encodeURIComponent(bookingId) + "/flag-dispute", {
       method: "POST",
@@ -814,14 +813,14 @@
     }).then(readBody).then(function(result){
       if(result.status === 401){ redirectToLogin(); return; }
       if(result.status === 200){
-        if(errBox){ errBox.className = "ok-text"; errBox.textContent = "Vivad darj ho gaya — admin review karega."; }
+        if(errBox){ errBox.className = "ok-text"; errBox.textContent = "Issue reported — admin will review it."; }
         loadDashboard();
         return;
       }
-      if(result.status === 404) err("Booking mili nahi.");
-      else err("Vivad darj nahi hua — dobara try karo.");
+      if(result.status === 404) err("Booking not found.");
+      else err("Could not report the issue — please try again.");
     }).catch(function(){
-      err("Internet me dikkat hai — connection check karke try karo.");
+      err("Internet issue — check your connection and try again.");
     });
   }
 
@@ -856,7 +855,7 @@
       var picked = document.querySelector('input[name="stars-' + bookingId + '"]:checked');
       var commentEl = document.getElementById("cmt-" + bookingId);
       if(!picked){
-        setRateErr(bookingId, "1 se 5 tak star chuno.");
+        setRateErr(bookingId, "Please choose 1 to 5 stars.");
         return;
       }
       setRateErr(bookingId, "");
@@ -865,7 +864,7 @@
       var comment = commentEl ? commentEl.value.trim() : "";
       if(comment) payload.comment = comment;
       rateBtn.disabled = true;
-      rateBtn.textContent = "Bheja ja raha hai…";
+      rateBtn.textContent = "Sending…";
       fetch(API_BASE_URL + "/api/bookings/" + encodeURIComponent(bookingId) + "/rating", {
         method: "POST",
         headers: authHeaders(),
@@ -874,29 +873,29 @@
         if(result.status === 401){ redirectToLogin(); return; }
         if(result.status === 201){
           var box = document.querySelector('[data-rate="' + bookingId + '"]');
-          if(box) box.innerHTML = "<p class='meta'><strong>Shukriya!</strong> Aapki rating darj ho gayi. ★ " + escapeHtml(stars) + "</p>";
-          showAlert("ok", "Rating ke liye shukriya!");
+          if(box) box.innerHTML = "<p class='meta'><strong>Thank you!</strong> Your rating has been recorded. ★ " + escapeHtml(stars) + "</p>";
+          showAlert("ok", "Thanks for rating!");
           return;
         }
         var errCode = result.body && result.body.error;
         if(result.status === 409 && errCode === "already_rated"){
-          showAlert("info", "Is booking ki rating pehle hi di ja chuki hai.");
+          showAlert("info", "This booking has already been rated.");
         } else if(result.status === 409){
-          showAlert("err", "Delivery poori hone ke baad hi rating di ja sakti hai.");
+          showAlert("err", "You can rate only after delivery is complete.");
         } else if(result.status === 429){
-          showAlert("err", "Bahut koshish ho gayi — thodi der rukkar try karo.");
+          showAlert("err", "Too many attempts — please wait a while and try again.");
         } else if(result.status >= 500){
-          showAlert("err", "Server me dikkat hai — thodi der baad try karo.");
+          showAlert("err", "Server issue — please try again later.");
         } else {
           var detail = result.body && result.body.details && result.body.details[0] && result.body.details[0].message;
-          showAlert("err", detail || "Rating nahi bheji gayi — dobara try karo.");
+          showAlert("err", detail || "Could not send rating — please try again.");
         }
         rateBtn.disabled = false;
-        rateBtn.textContent = "Rating bhejo";
+        rateBtn.textContent = "Send rating";
       }).catch(function(){
-        showAlert("err", "Internet me dikkat hai — connection check karke try karo.");
+        showAlert("err", "Internet issue — check your connection and try again.");
         rateBtn.disabled = false;
-        rateBtn.textContent = "Rating bhejo";
+        rateBtn.textContent = "Send rating";
       });
     }
   });
@@ -909,7 +908,7 @@
   loadDashboard();
 
   var navMenuBtn=document.getElementById("navMenuBtn"),siteNav=document.getElementById("siteNav");
-  if(navMenuBtn&&siteNav){navMenuBtn.addEventListener("click",function(){var open=siteNav.classList.toggle("open");navMenuBtn.setAttribute("aria-expanded",open?"true":"false");navMenuBtn.setAttribute("aria-label",open?"Menu band karo":"Menu kholo");});siteNav.addEventListener("click",function(ev){if(ev.target.tagName==="A"&&siteNav.classList.contains("open")){siteNav.classList.remove("open");navMenuBtn.setAttribute("aria-expanded","false");}});}
+  if(navMenuBtn&&siteNav){navMenuBtn.addEventListener("click",function(){var open=siteNav.classList.toggle("open");navMenuBtn.setAttribute("aria-expanded",open?"true":"false");navMenuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");});siteNav.addEventListener("click",function(ev){if(ev.target.tagName==="A"&&siteNav.classList.contains("open")){siteNav.classList.remove("open");navMenuBtn.setAttribute("aria-expanded","false");}});}
 })();
 </script>
 </body>
