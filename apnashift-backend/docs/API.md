@@ -273,9 +273,7 @@ creation-time `commission_percent` snapshot + `payment: null` aata hai
   settled, outstanding — sab derived, koi stored balance nahi) + 50 payments
   + 50 settlements. Sirf apna data.
 - Delivery (`PATCH .../status` → `delivered`) ek transaction me booking +
-  immutable payment (gross=booking price) + audit likhta hai. UPI turant
-  `collected`; COD (cash) `pending` rehta hai jab tak driver confirm na
-  kare (kabhi auto-confirm nahi).
+  immutable payment (`collected`, gross=booking price) + audit likhta hai.
 
 ### Customer: fare + method + status
 `GET /api/bookings` me `payment: { method, status, gross_rs }` (commission
@@ -298,29 +296,7 @@ cancel se ledger kharab nahi hota (payment banti hi delivered par hai).
   unique (`409 duplicate_settlement`). FIFO oldest-pehle allocate karta hai.
 - `POST /api/admin/adjustments` `{ payment_id, commission_delta_paise,
   earning_delta_paise, reason }` — append-only sudhaar (payments rows kabhi
-  UPDATE/DELETE nahi hote; koi DELETE endpoint hai hi nahi). Finalized
-  (PAID/DISPUTED) week wali payment par `409 settlement_finalized`.
-
-### COD + weekly settlement (Mon–Sun IST, paise me hisab)
-- Booking me `cash` = COD, `upi` = Online (UPI). `online` enum abhi bhi
-  reserved hai (gateway nahi) — create par `400 unsupported_payment_method`.
-- COD delivery par payment `pending` banti hai; driver
-  `POST /api/driver/payments/:id/confirm-cash` se haath me mila cash
-  confirm karta hai (doosri baar `409 already_confirmed`). UPI ka flow
-  purana jaisa (`collected` at delivery). Customer ko `pending` status
-  "Pending" dikhta hai (paisa driver ko dena hai).
-- `POST /api/admin/settlement-periods/generate` `{ driver_id?,
-  week_start? }` — ek driver + ek hafta = ek row, dobara chalane par
-  skip (UNIQUE backstop). Sirf `collected` payments ginti hain.
-- `GET /api/admin/settlement-periods` (+ driver variant
-  `GET /api/driver/settlement-periods` — sirf apna) — status me OVERDUE
-  derived hai (beeta hafta + baaki + not frozen).
-- `POST /api/admin/settlement-periods/:id/payments` — hafte ke andar
-  FIFO, receipt `settlements` me week se linked. PAID final (`409`
-  aage), DISPUTED pehle resolve karo.
-- `PATCH .../dispute` + `.../resolve` (admin) — sab audit me
-  (`settlement.period_*`). Purana global settlement/adjustment flow
-  final hafton ko chhoota hi nahi (sync rehta hai).
+  UPDATE/DELETE nahi hote; koi DELETE endpoint hai hi nahi).
 
 ## Admin (token, role admin)
 

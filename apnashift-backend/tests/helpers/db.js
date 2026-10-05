@@ -23,7 +23,7 @@ export async function truncateAll(client) {
   // Clear all transactional tables + restore pricing seed (else ratesFor returns 400 unknown_vehicle).
   // pricing_rules is TRUNCATEd (so pricing PUT mutations do not leak), then seed re-inserted.
   await client.query(
-    'TRUNCATE users, drivers, admins, bookings, ratings, pricing_rules, audit_logs, pricing_history, idempotency_keys, enterprise_inquiries, driver_locations, payments, payment_adjustments, settlements, settlement_period_items, settlement_periods, password_reset_otps RESTART IDENTITY CASCADE',
+    'TRUNCATE users, drivers, admins, bookings, ratings, pricing_rules, audit_logs, pricing_history, idempotency_keys, enterprise_inquiries, driver_locations, payments, payment_adjustments, settlements, password_reset_otps RESTART IDENTITY CASCADE',
   );
   await client.query(
     `INSERT INTO pricing_rules (vehicle_type, base_rs, per_km_rs, helper_rs) VALUES

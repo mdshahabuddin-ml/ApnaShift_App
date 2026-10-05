@@ -15,7 +15,6 @@ import { driverRoutes as driverBookingRoutes } from './routes/driver.js';
 import { driversPublicRoutes } from './routes/driversPublic.js';
 import { enterpriseRoutes } from './routes/enterprise.js';
 import { geoRoutes } from './routes/geo.js';
-import { driverSettlementRoutes, adminSettlementRoutes } from './routes/settlements.js';
 import { mssqlRoutes } from './routes/mssql.js';
 
 export function createApp() {
@@ -30,24 +29,7 @@ export function createApp() {
     app.set('trust proxy', Number(config.trustProxy) || config.trustProxy);
   }
 
-  // Helmet default CSP blocks inline <script>/<style> — but all 24
-  // frontend pages are inline-script apps served from here, so allow
-  // 'unsafe-inline' for scripts + styles (no inline event handlers exist).
-  // connect-src must allow the production API + localhost (pages call the
-  // API cross-origin in local testing) — else fetch() is CSP-blocked.
-  // Everything else keeps helmet's strict defaults.
-  app.use(
-    helmet({
-      contentSecurityPolicy: {
-        directives: {
-          ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-          'script-src': ["'self'", "'unsafe-inline'"],
-          'style-src': ["'self'", "'unsafe-inline'", 'https:'],
-          'connect-src': ["'self'", 'https:', 'http://localhost:3000'],
-        },
-      },
-    }),
-  );
+  app.use(helmet());
   app.use(
     cors({
       origin: config.corsOrigin === '*' ? '*' : config.corsOrigin.split(',').map((s) => s.trim()),
@@ -63,11 +45,6 @@ export function createApp() {
   // Clean URL: /enterprise -> public/enterprise.html (static file pattern).
   app.get('/enterprise', (req, res) => {
     res.sendFile(path.join(publicDir, 'enterprise.html'));
-  });
-
-  // Browsers auto-ask /favicon.ico — 204 keeps consoles clean (no icon yet).
-  app.get('/favicon.ico', (req, res) => {
-    res.status(204).end();
   });
 
   // Basic abuse protection for all /api routes.
@@ -87,8 +64,6 @@ export function createApp() {
   app.use('/api/admin', adminRoutes);
   app.use('/api/bookings', bookingsRoutes);
   app.use('/api/driver', driverBookingRoutes);
-  app.use('/api/driver', driverSettlementRoutes);
-  app.use('/api/admin', adminSettlementRoutes);
   app.use('/api/drivers', driversPublicRoutes);
   app.use('/api/enterprise', enterpriseRoutes);
   // Geoapify proxy (maps config + geocode autocomplete + routing).
