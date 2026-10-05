@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preview Compare (dev only) | ApnaShift</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+:root{--navy:#14213d;--yellow:#fcbf49}
+  *{box-sizing:border-box}
+  html, body{height:100%}
+  body{
+    margin:0;
+    font-family:system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    display:flex;
+    flex-direction:column;
+  }
+  .bar{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    padding:8px 10px;
+    background:#f4f6fa;
+    border-bottom:2px solid #14213d;
+    flex-wrap:wrap;
+  }
+  .bar label{
+    font-size:.8rem;
+    font-weight:700;
+    color:#14213d;
+  }
+  .bar input{
+    flex:1;
+    min-width:140px;
+    font:inherit;
+    font-size:.85rem;
+    padding:7px 9px;
+    border:1px solid #c9d0de;
+    border-radius:6px;
+  }
+  .bar button{
+    font:inherit;
+    font-size:.85rem;
+    font-weight:700;
+    padding:7px 16px;
+    border-radius:6px;
+    border:2px solid #14213d;
+    background:#fcbf49;
+    color:#14213d;
+    cursor:pointer;
+  }
+  .split{
+    flex:1;
+    display:flex;
+    min-height:0;
+  }
+  .pane{
+    flex:1 1 50%;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+  }
+  .pane .tag{
+    font-size:.72rem;
+    font-weight:700;
+    color:#5b6070;
+    padding:3px 8px;
+    background:#f4f6fa;
+    border-bottom:1px solid #c9d0de;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .pane iframe{
+    flex:1;
+    width:100%;
+    border:0;
+    min-height:0;
+  }
+  .divider{
+    flex:0 0 3px;
+    background:#14213d;
+  }
+  @media (max-width:700px){
+    .split{flex-direction:column}
+    .divider{flex:0 0 3px}
+    .pane{flex:1 1 auto;min-height:0}
+  }
+.site-header{background:var(--navy);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:50}
+.site-header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px}
+.site-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.3rem;line-height:1;color:#fff;text-decoration:none}
+.site-brand small{display:block;font-family:"Noto Sans",system-ui,sans-serif;font-weight:600;font-size:.64rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow)}
+.site-nav{display:flex;gap:4px;margin-left:8px;align-items:center}
+.site-nav> a,.nav-drop summary{color:#dbe2f0;text-decoration:none;font-weight:600;font-size:.9rem;padding:8px 10px;border-radius:8px}
+.site-nav> a:hover,.nav-drop summary:hover{background:#1f2f52;color:#fff}
+.nav-drop{position:relative}
+.nav-drop summary{cursor:pointer;list-style:none}
+.nav-drop summary::-webkit-details-marker{display:none}
+.nav-drop summary:hover{background:#1f2f52;color:#fff}
+.nav-drop[open] summary{background:#1f2f52;color:#fff}
+.drop-menu{display:flex;flex-direction:column;gap:2px}
+@media(min-width:761px){.drop-menu{position:absolute;top:100%;left:0;background:var(--navy);border:1px solid #2a3d66;border-radius:8px;padding:6px;min-width:180px}.drop-menu a{white-space:nowrap}}
+#navMenuBtn{display:none;background:transparent;border:2px solid var(--yellow);border-radius:8px;color:var(--yellow);font:inherit;font-weight:800;padding:6px 12px;cursor:pointer}
+.site-footer{background:var(--navy);color:#dbe2f0;padding:22px 16px 30px}
+.site-foot-inner{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+.site-foot-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;color:#fff;font-size:1.05rem}
+.site-foot-links{display:flex;gap:16px;flex-wrap:wrap}
+.site-foot-links a{color:var(--yellow);font-size:.86rem;font-weight:600;text-decoration:none}
+.site-foot-links a:hover{text-decoration:underline}
+@media (max-width:760px){#navMenuBtn{display:block;margin-left:auto}.site-nav{display:none;position:absolute;top:100%;left:0;right:0;background:var(--navy);flex-direction:column;align-items:stretch;padding:8px 16px 14px;margin:0;border-top:1px solid #2a3d66}.site-nav.open{display:flex}.site-header-inner{flex-wrap:wrap;position:relative}}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="index.html" aria-label="ApnaShift home">ApnaShift<small>Shifting • Transport</small></a>
+    <nav class="site-nav" id="siteNav" aria-label="Main navigation">
+      <a href="index.html">Home</a>
+      <a href="booking.html">Book</a>
+      <a href="user-auth.html">Login</a>
+      <details class="nav-drop">
+        <summary>Driver</summary>
+        <div class="drop-menu">
+          <a href="driver-register.html">Join as Driver</a>
+          <a href="driver-login.html">Driver Login</a>
+        </div>
+      </details>
+      <a href="enterprise.html">Enterprise</a>
+      <a href="help.html">Help</a>
+    </nav>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+  </div>
+</header>
+
+<div class="bar">
+  <label for="leftUrl">Left</label>
+  <input id="leftUrl" value="http://localhost:8080/">
+  <label for="rightUrl">Right</label>
+  <input id="rightUrl" value="http://localhost:3000/driver-register.html">
+  <button id="loadBtn" type="button">Load</button>
+</div>
+
+<div class="split">
+  <div class="pane">
+    <div class="tag" id="leftTag">http://localhost:8080/</div>
+    <iframe id="leftFrame" src="http://localhost:8080/" title="Left preview"></iframe>
+  </div>
+  <div class="divider" aria-hidden="true"></div>
+  <div class="pane">
+    <div class="tag" id="rightTag">http://localhost:3000/driver-register.html</div>
+    <iframe id="rightFrame" src="http://localhost:3000/driver-register.html" title="Right preview"></iframe>
+  </div>
+</div>
+<footer class="site-footer">
+  <div class="site-foot-inner">
+    <div class="site-foot-brand">ApnaShift</div>
+    <div class="site-foot-links">
+      <a href="index.html">Home</a>
+      <a href="help.html">Help</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms &amp; Conditions</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var leftUrl = document.getElementById("leftUrl");
+  var rightUrl = document.getElementById("rightUrl");
+  var leftFrame = document.getElementById("leftFrame");
+  var rightFrame = document.getElementById("rightFrame");
+  var leftTag = document.getElementById("leftTag");
+  var rightTag = document.getElementById("rightTag");
+
+  function load(){
+    var l = leftUrl.value.trim() || "http://localhost:8080/";
+    var r = rightUrl.value.trim() || "http://localhost:3000/driver-register.html";
+    leftFrame.src = l;
+    rightFrame.src = r;
+    leftTag.textContent = l;
+    rightTag.textContent = r;
+  }
+
+  document.getElementById("loadBtn").addEventListener("click", load);
+  leftUrl.addEventListener("keydown", function(e){ if(e.key === "Enter") load(); });
+  rightUrl.addEventListener("keydown", function(e){ if(e.key === "Enter") load(); });
+var navMenuBtn=document.getElementById("navMenuBtn"),siteNav=document.getElementById("siteNav");
+if(navMenuBtn&&siteNav){navMenuBtn.addEventListener("click",function(){var open=siteNav.classList.toggle("open");navMenuBtn.setAttribute("aria-expanded",open?"true":"false");navMenuBtn.setAttribute("aria-label",open?"Menu band karo":"Menu kholo");});siteNav.addEventListener("click",function(ev){if(ev.target.tagName==="A"&&siteNav.classList.contains("open")){siteNav.classList.remove("open");navMenuBtn.setAttribute("aria-expanded","false");}});}
+})();
+</script>
+</body>
+</html>

@@ -3,539 +3,523 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ApnaShift — Become a Driver Partner</title>
-<meta name="description" content="Join ApnaShift as a driver partner, accept booking requests, and earn with reliable transportation services.">
+<title>Become an ApnaShift Driver Partner | ApnaShift</title>
+<meta name="description" content="Join ApnaShift and grow your earning opportunities with flexible vehicle and logistics services.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --navy:#14213d; --yellow:#fcbf49; --paper:#fff9ec; --card:#fff;
-    --ink:#20242e; --muted:#5b6070; --line:#e9dcc0; --red:#c0392b; --green:#1a7a3a;
-    --radius:16px;
+    --navy:#14213d;
+    --yellow:#fcbf49;
+    --bg:#f4f6fa;
+    --border:#c9d0de;
+    --ink:#20242e;
+    --muted:#5b6070;
+    --red:#c0392b;
+    --green:#1a7a3a;
+    --radius:14px;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--paper);color:var(--ink);
-    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.55;
-    background-image:radial-gradient(circle at 12px 12px, rgba(20,33,61,.055) 2px, transparent 2.5px);
-    background-size:28px 28px;}
-  :focus-visible{outline:3px solid var(--navy);outline-offset:2px;box-shadow:0 0 0 6px var(--yellow);border-radius:8px;}
-  .topbar{background:var(--navy);color:#fff;padding:14px 16px;}
-  .topbar-inner{max-width:720px;margin:0 auto;display:flex;align-items:center;gap:12px;}
-  .brand{font-weight:800;font-size:1.3rem;}
-  .brand small{display:block;font-weight:600;font-size:.7rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow);}
-  .topbar a{margin-left:auto;color:var(--yellow);font-weight:700;font-size:.85rem;}
-  main{max-width:720px;margin:0 auto;padding:18px 16px 44px;}
-  .hero{background:var(--card);border:2px solid var(--navy);border-radius:var(--radius);
-    padding:22px 18px;box-shadow:7px 7px 0 var(--navy);position:relative;overflow:hidden;}
-  .hero::before{content:"";position:absolute;top:0;left:0;right:0;height:8px;
-    background:repeating-linear-gradient(-45deg,var(--yellow) 0 16px,var(--navy) 16px 32px);}
-  h1{color:var(--navy);font-size:1.7rem;line-height:1.15;margin:10px 0 8px;}
-  h1 .marker{background:linear-gradient(transparent 55%, var(--yellow) 55%, var(--yellow) 96%, transparent 96%);padding:0 4px;}
-  .sub{margin:0 0 14px;color:#2e3442;}
-  .cta-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;}
-  .btn{font:inherit;font-weight:800;padding:12px 18px;border-radius:12px;border:2px solid var(--navy);
-    background:var(--yellow);color:var(--navy);cursor:pointer;text-decoration:none;display:inline-block;}
-  .btn.ghost{background:#fff;}
-  .btn.small{padding:8px 14px;font-size:.9rem;}
-  .btn:disabled{opacity:.6;cursor:wait;}
-  .card{background:var(--card);border:2px solid var(--navy);border-radius:var(--radius);
-    padding:18px 16px;box-shadow:7px 7px 0 var(--yellow);margin-top:16px;}
-  .card h2{color:var(--navy);margin:0;font-size:1.25rem;}
-  .steps-bar{display:flex;gap:6px;margin:12px 0 4px;}
-  .steps-bar span{flex:1;height:8px;border-radius:99px;background:#eee2c6;border:1px solid var(--line);}
-  .steps-bar span.done{background:var(--navy);}
-  .steps-bar span.now{background:var(--yellow);}
-  .step-label{font-size:.82rem;color:var(--muted);font-weight:700;margin-bottom:6px;}
-  .step{display:none;} .step.active{display:block;}
-  .sec-title{font-weight:800;color:var(--navy);margin:14px 0 2px;font-size:1rem;}
-  .sec-sub{color:var(--muted);font-size:.84rem;margin:0 0 4px;}
-  label{display:block;font-weight:700;font-size:.88rem;color:var(--navy);margin:10px 0 4px;}
-  label .req{color:var(--red);}
-  input,select,textarea{font:inherit;width:100%;padding:10px 11px;border:2px solid var(--navy);
-    border-radius:10px;background:#fffdf4;color:var(--ink);}
-  textarea{min-height:64px;resize:vertical;}
-  .hint{font-weight:400;color:var(--muted);font-size:.8rem;margin:3px 0 0;}
-  .row{display:grid;gap:10px;}
-  @media(min-width:640px){.row.c2{grid-template-columns:1fr 1fr;}}
-  .err-text{display:none;color:var(--red);font-size:.84rem;font-weight:600;margin:4px 0 0;}
-  .field.invalid input,.field.invalid select,.field.invalid textarea{border-color:var(--red);background:#fff5f3;}
-  .field.invalid .err-text{display:block;}
-  #formAlert{display:none;border-radius:10px;padding:10px 12px;font-weight:600;font-size:.9rem;margin-bottom:12px;}
-  #formAlert.show{display:block;}
-  #formAlert.err{background:#fdecea;color:#7a1f14;border:2px solid var(--red);}
-  #formAlert.info{background:#fff3cf;color:var(--navy);border:2px solid var(--navy);}
-  #formAlert.ok{background:#e6f6ea;color:#0d5c26;border:2px solid var(--green);}
-  .nav-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
-  .nav-row .spacer{flex:1;}
-  .checkline{display:flex;gap:10px;align-items:flex-start;font-weight:600;font-size:.9rem;
-    border:1.5px solid var(--line);border-radius:10px;padding:10px;margin-top:10px;background:#fffdf4;}
-  .checkline input{width:20px;height:20px;margin-top:2px;flex:0 0 20px;accent-color:var(--navy);}
-  .review-table{width:100%;border-collapse:collapse;font-size:.86rem;margin-top:8px;}
-  .review-table th,.review-table td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top;}
-  .review-table th{background:#f7f3e8;color:var(--navy);width:38%;}
-  #success{display:none;margin-top:16px;background:var(--navy);color:#fff;border-radius:var(--radius);
-    padding:24px 20px;border:2px solid var(--navy);box-shadow:7px 7px 0 var(--yellow);text-align:center;}
-  #success.show{display:block;}
-  #success h2{color:var(--yellow);font-size:1.5rem;margin:0 0 8px;}
-  #success .appid{font-size:1.2rem;font-weight:800;background:#ffffff22;border:1.5px dashed var(--yellow);
-    border-radius:10px;padding:8px;margin:10px 0;display:inline-block;}
-  .muted{color:var(--muted);font-size:.84rem;}
-  code{background:#f1ede0;padding:1px 6px;border-radius:6px;font-size:.8rem;}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    line-height:1.6;
+  }
+  :focus-visible{
+    outline:3px solid var(--navy);
+    outline-offset:2px;
+    box-shadow:0 0 0 6px var(--yellow);
+    border-radius:8px;
+  }
+  .site-header{background:var(--navy);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:50}
+  .site-header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px}
+  .site-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.3rem;line-height:1;color:#fff;text-decoration:none}
+  .site-brand small{display:block;font-family:"Noto Sans",system-ui,sans-serif;font-weight:600;font-size:.64rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow)}
+  .site-nav{display:flex;gap:4px;margin-left:8px;align-items:center}
+  .site-nav> a,.nav-drop summary{color:#dbe2f0;text-decoration:none;font-weight:600;font-size:.9rem;padding:8px 10px;border-radius:8px}
+  .site-nav> a:hover,.nav-drop summary:hover{background:#1f2f52;color:#fff}
+  .nav-drop{position:relative}
+  .nav-drop summary{cursor:pointer;list-style:none}
+  .nav-drop summary::-webkit-details-marker{display:none}
+  .nav-drop[open] summary{background:#1f2f52;color:#fff}
+  .drop-menu{display:flex;flex-direction:column;gap:2px}
+  @media(min-width:761px){.drop-menu{position:absolute;top:100%;left:0;background:var(--navy);border:1px solid #2a3d66;border-radius:8px;padding:6px;min-width:180px}.drop-menu a{white-space:nowrap}}
+  #navMenuBtn{display:none;background:transparent;border:2px solid var(--yellow);border-radius:8px;color:var(--yellow);font:inherit;font-weight:800;padding:6px 12px;cursor:pointer}
+  .site-footer{background:var(--navy);color:#dbe2f0;padding:22px 16px 30px}
+  .site-foot-inner{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+  .site-foot-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;color:#fff;font-size:1.05rem}
+  .site-foot-links{display:flex;gap:16px;flex-wrap:wrap}
+  .site-foot-links a{color:var(--yellow);font-size:.86rem;font-weight:600;text-decoration:none}
+  .site-foot-links a:hover{text-decoration:underline}
+  @media (max-width:760px){#navMenuBtn{display:block;margin-left:auto}.site-nav{display:none;position:absolute;top:100%;left:0;right:0;background:var(--navy);flex-direction:column;align-items:stretch;padding:8px 16px 14px;margin:0;border-top:1px solid #2a3d66}.site-nav.open{display:flex}.site-header-inner{flex-wrap:wrap;position:relative}}
+  main{
+    max-width:560px;
+    margin:0 auto;
+    padding:20px 16px 40px;
+  }
+  .card{
+    background:#fff;
+    border:2px solid var(--navy);
+    border-radius:var(--radius);
+    padding:22px 18px;
+    box-shadow:6px 6px 0 var(--yellow);
+  }
+  h1{
+    font-family:"Baloo 2", "Comic Sans MS", system-ui, sans-serif;
+    color:var(--navy);
+    font-size:1.55rem;
+    line-height:1.2;
+    margin:0 0 6px;
+  }
+  .sub{
+    margin:0 0 8px;
+    color:var(--muted);
+    font-size:.92rem;
+  }
+  .steps-bar{display:flex;gap:6px;margin:14px 0 4px}
+  .steps-bar span{flex:1;height:8px;border-radius:99px;background:#e3e8f2;border:1px solid var(--border)}
+  .steps-bar span.done{background:var(--navy)}
+  .steps-bar span.now{background:var(--yellow)}
+  .step-label{font-size:.82rem;color:var(--muted);font-weight:600;margin-bottom:6px}
+  .step{display:none}
+  .step.active{display:block}
+  .sec-title{font-weight:800;color:var(--navy);margin:14px 0 2px;font-size:1rem}
+  .sec-sub{color:var(--muted);font-size:.84rem;margin:0 0 4px}
+  .field{margin-bottom:14px}
+  label{
+    display:block;
+    font-weight:600;
+    font-size:.92rem;
+    color:var(--navy);
+    margin-bottom:6px;
+  }
+  label .req{color:var(--red)}
+  .hint{
+    font-weight:400;
+    color:var(--muted);
+    font-size:.82rem;
+    margin:4px 0 0;
+  }
+  input, select, textarea{
+    width:100%;
+    font:inherit;
+    color:var(--ink);
+    background:#fff;
+    border:2px solid var(--border);
+    border-radius:10px;
+    padding:11px 12px;
+  }
+  input:focus, select:focus, textarea:focus{
+    border-color:var(--navy);
+    outline:none;
+  }
+  .error-text{
+    display:none;
+    color:var(--red);
+    font-size:.86rem;
+    font-weight:600;
+    margin:6px 0 0;
+  }
+  .field.invalid input,
+  .field.invalid select{border-color:var(--red);background:#fff5f3}
+  .field.invalid .error-text{display:block}
+  .row{display:grid;gap:10px}
+  @media(min-width:560px){.row.c2{grid-template-columns:1fr 1fr}}
+  #formAlert{
+    display:none;
+    border-radius:10px;
+    padding:11px 12px;
+    font-size:.9rem;
+    font-weight:600;
+    margin:0 0 14px;
+  }
+  #formAlert.show{display:block}
+  #formAlert.err{background:#fdecea;color:#7a1f14;border:2px solid var(--red)}
+  #formAlert.ok{background:#e6f6ea;color:#0d5c26;border:2px solid var(--green)}
+  #formAlert.info{background:#fff3cf;color:var(--navy);border:2px solid var(--navy)}
+  .nav-row{display:flex;gap:10px;margin-top:16px}
+  .nav-row .spacer{flex:1}
+  .btn{
+    font-family:"Baloo 2", "Comic Sans MS", system-ui, sans-serif;
+    font-weight:800;
+    font-size:1rem;
+    padding:11px 18px;
+    border-radius:12px;
+    border:2px solid var(--navy);
+    cursor:pointer;
+  }
+  .btn.next{background:var(--yellow);color:var(--navy);box-shadow:0 4px 0 var(--navy)}
+  .btn.next:active{transform:translateY(3px);box-shadow:0 1px 0 var(--navy)}
+  .btn.back{background:#fff;color:var(--navy)}
+  .btn[disabled]{opacity:.6;cursor:wait}
+  .consentline{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    font-size:.88rem;
+    margin:10px 0 0;
+  }
+  .consentline input{width:20px;height:20px;flex:0 0 20px;margin-top:3px;accent-color:var(--navy)}
+  .review-table{width:100%;border-collapse:collapse;font-size:.86rem;margin-top:8px}
+  .review-table th,.review-table td{border:1px solid var(--border);padding:6px 8px;text-align:left;vertical-align:top}
+  .review-table th{background:#eef1f7;color:var(--navy);width:38%}
+  #success{
+    display:none;
+    margin-top:16px;
+    background:var(--navy);
+    color:#fff;
+    border-radius:var(--radius);
+    padding:24px 20px;
+    border:2px solid var(--navy);
+    box-shadow:6px 6px 0 var(--yellow);
+    text-align:center;
+  }
+  #success.show{display:block}
+  #success h2{
+    font-family:"Baloo 2", "Comic Sans MS", system-ui, sans-serif;
+    color:var(--yellow);
+    margin:0 0 8px;
+    font-size:1.45rem;
+  }
+  #success p{margin:6px 0;color:#dbe2f0}
+  #success .appid{
+    font-size:1.15rem;font-weight:800;background:#ffffff22;
+    border:1.5px dashed var(--yellow);border-radius:10px;
+    padding:8px 12px;display:inline-block;margin:8px 0;
+  }
+  #success a{color:var(--yellow);font-weight:600}
 </style>
 </head>
 <body>
-<header class="topbar">
-  <div class="topbar-inner">
-    <div class="brand">ApnaShift<small>Driver Partner</small></div>
-    <a href="/driver.html">Already registered? Login</a>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="index.html" aria-label="ApnaShift home">ApnaShift<small>Shifting • Transport</small></a>
+    <nav class="site-nav" id="siteNav" aria-label="Main navigation">
+      <a href="index.html">Home</a>
+      <a href="booking.html">Book</a>
+      <a href="user-auth.html">Login</a>
+      <details class="nav-drop">
+        <summary>Driver</summary>
+        <div class="drop-menu">
+          <a href="driver-register.html">Join as Driver</a>
+          <a href="driver-login.html">Driver Login</a>
+        </div>
+      </details>
+      <a href="enterprise.html">Enterprise</a>
+      <a href="help.html">Help</a>
+    </nav>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
   </div>
 </header>
 
 <main>
-  <section class="hero">
-    <h1>Become an <span class="marker">ApnaShift Driver Partner</span></h1>
-    <p class="sub">Join ApnaShift, accept delivery and vehicle booking requests, and earn by providing reliable transportation services.</p>
-    <div class="cta-row">
-      <a class="btn" href="#wizard" id="ctaBtn">Register as Driver Partner</a>
-      <a class="btn ghost" href="/driver.html">Already registered? Login</a>
-    </div>
-    <p class="muted" style="margin:10px 0 0">Registration free hai. Submit ke baad owner verify karega — tabhi booking milegi.</p>
-  </section>
+  <section class="card" id="wizard" aria-labelledby="pageTitle">
+    <h1 id="pageTitle">Become an ApnaShift Driver Partner</h1>
+    <p class="sub">Join ApnaShift and grow your earning opportunities with flexible vehicle and logistics services.</p>
 
-  <section class="card" id="wizard" aria-labelledby="wizTitle">
-    <h2 id="wizTitle">Driver Partner Registration</h2>
     <div class="steps-bar" id="stepsBar" aria-hidden="true"></div>
-    <div class="step-label" id="stepLabel">Step 1 of 7</div>
-    <div id="formAlert" role="alert"></div>
+    <div class="step-label" id="stepLabel">Step 1 of 5 — Personal</div>
+    <div id="formAlert" role="alert" aria-live="assertive"></div>
 
-    <!-- STEP 1: Personal -->
+    <!-- STEP 1 -->
     <div class="step active" data-step="1">
       <div class="sec-title">Step 1 — Personal Details</div>
-      <p class="sec-sub">Naam, contact aur pata likho. <b>*</b> zaroori hai.</p>
+      <div class="field" data-f="name"><label for="f-name">Full Name <span class="req">*</span></label>
+        <input id="f-name" maxlength="80" autocomplete="name" placeholder="Example: Raju Yadav"><p class="error-text"></p></div>
       <div class="row c2">
-        <div class="field" data-f="name"><label for="f-name">Full Name <span class="req">*</span></label>
-          <input id="f-name" maxlength="80" autocomplete="name" placeholder="Example: Raju Yadav"><p class="err-text"></p></div>
         <div class="field" data-f="phone"><label for="f-phone">Mobile Number <span class="req">*</span></label>
-          <input id="f-phone" inputmode="numeric" maxlength="15" autocomplete="tel" placeholder="98765 43210"><p class="err-text"></p>
-          <p class="hint">10 digit Indian mobile. +91/space chalega.</p></div>
+          <input id="f-phone" type="tel" inputmode="numeric" maxlength="15" autocomplete="tel" placeholder="98765 43210"><p class="error-text"></p></div>
+        <div class="field" data-f="email"><label for="f-email">Email <span class="req">*</span></label>
+          <input id="f-email" type="email" maxlength="120" autocomplete="email" placeholder="raju@example.com"><p class="error-text"></p></div>
       </div>
-      <div class="row c2">
-        <div class="field" data-f="email"><label for="f-email">Email Address <span class="req">*</span></label>
-          <input id="f-email" type="email" maxlength="120" autocomplete="email" placeholder="raju@example.com"><p class="err-text"></p></div>
-        <div class="field" data-f="dob"><label for="f-dob">Date of Birth <span class="req">*</span></label>
-          <input id="f-dob" type="date" max=""><p class="err-text"></p>
-          <p class="hint">Commercial driving ke liye 18+ hona zaroori hai.</p></div>
-      </div>
-      <div class="field" data-f="gender"><label for="f-gender">Gender (optional)</label>
-        <select id="f-gender"><option value="">— Chuno —</option><option value="male">Male</option>
-        <option value="female">Female</option><option value="other">Other</option>
-        <option value="prefer_not_to_say">Prefer not to say</option></select><p class="err-text"></p></div>
       <div class="row c2">
         <div class="field" data-f="city"><label for="f-city">City <span class="req">*</span></label>
-          <input id="f-city" maxlength="120" placeholder="Example: Indore"><p class="err-text"></p></div>
-        <div class="field" data-f="state"><label for="f-state">State <span class="req">*</span></label>
-          <input id="f-state" maxlength="80" placeholder="Example: Madhya Pradesh"><p class="err-text"></p></div>
-      </div>
-      <div class="field" data-f="address"><label for="f-address">Current Address <span class="req">*</span></label>
-        <textarea id="f-address" maxlength="500" placeholder="House no, street, area"></textarea><p class="err-text"></p></div>
-      <div class="row c2">
+          <input id="f-city" maxlength="120" placeholder="Example: Indore"><p class="error-text"></p></div>
         <div class="field" data-f="password"><label for="f-pass">Password <span class="req">*</span></label>
-          <input id="f-pass" type="password" placeholder="Min 8 akshar"><p class="err-text"></p></div>
-        <div class="field" data-f="password2"><label for="f-pass2">Password dobara <span class="req">*</span></label>
-          <input id="f-pass2" type="password" placeholder="Same password"><p class="err-text"></p></div>
+          <input id="f-pass" type="password" autocomplete="new-password" placeholder="Min 8 akshar"><p class="error-text"></p></div>
       </div>
-      <div class="sec-title">Emergency Contact (optional)</div>
-      <div class="row c2">
-        <div class="field" data-f="emg_name"><label for="f-emg-name">Contact Name</label>
-          <input id="f-emg-name" maxlength="80" placeholder="Example: Sunita Yadav"><p class="err-text"></p></div>
-        <div class="field" data-f="emg_rel"><label for="f-emg-rel">Relationship</label>
-          <input id="f-emg-rel" maxlength="40" placeholder="Wife / Brother / Friend"><p class="err-text"></p></div>
-      </div>
-      <div class="field" data-f="emg_phone"><label for="f-emg-phone">Emergency Mobile</label>
-        <input id="f-emg-phone" inputmode="numeric" maxlength="15" placeholder="98765 43210"><p class="err-text"></p></div>
+      <div class="field" data-f="upi"><label for="f-upi">UPI ID (abhi ya baad me daal sakte hain)</label>
+        <input id="f-upi" maxlength="321" autocomplete="off" placeholder="yourname@upi"><p class="error-text"></p></div>
+      <p class="hint">Password login ke liye chahiye — min 8 akshar rakho. UPI ID baad me dashboard se bhi jod sakte ho.</p>
     </div>
 
-    <!-- STEP 2: Mobile verification (no OTP infra — honest notice) -->
+    <!-- STEP 2 -->
     <div class="step" data-step="2">
-      <div class="sec-title">Step 2 — Contact Verification</div>
-      <p class="sec-sub">Number format check ho gaya hai. OTP system abhi ban raha hai — isliye koi fake OTP mat bharo.</p>
-      <div class="card" style="box-shadow:none;margin-top:8px">
-        <b>Tumhara number:</b> <code id="verifyPhone">—</code><br>
-        <span class="muted">Isi number par owner approval ke baad booking alerts aayenge. Galat ho to Previous dabakar sudharo.</span>
-        <label class="checkline"><input type="checkbox" id="v-confirm">
-          <span>Ye number mera hai aur isi par contact ho sakta hai. <span class="req" style="color:var(--red)">*</span></span></label>
-        <p class="err-text" id="v-err" style="display:none;color:var(--red);font-weight:600">Aage badhne ke liye tick karo.</p>
-      </div>
-      <p class="muted">OTP login (Send OTP → Verify) abhi available nahi hai — backend me OTP infrastructure banana baaki hai. Tab tak password se login hoga.</p>
-    </div>
-
-    <!-- STEP 3: Vehicle -->
-    <div class="step" data-step="3">
-      <div class="sec-title">Step 3 — Vehicle Details</div>
-      <p class="sec-sub">Abhi sirf ye 3 categories supported hain (backend enum). Bike/Auto jald aayenge.</p>
+      <div class="sec-title">Step 2 — Vehicle Details</div>
       <div class="row c2">
         <div class="field" data-f="vtype"><label for="f-vtype">Vehicle Type <span class="req">*</span></label>
           <select id="f-vtype"><option value="pickup">Pickup Truck</option>
-          <option value="mini_truck">Mini Truck</option><option value="mini_tractor">Mini Tractor</option></select><p class="err-text"></p></div>
+          <option value="mini_truck">Mini Truck</option><option value="mini_tractor">Mini Tractor</option></select><p class="error-text"></p></div>
         <div class="field" data-f="vnum"><label for="f-vnum">Vehicle Registration Number <span class="req">*</span></label>
-          <input id="f-vnum" maxlength="20" placeholder="MP09AB1234" style="text-transform:uppercase"><p class="err-text"></p></div>
+          <input id="f-vnum" maxlength="20" placeholder="MP09AB1234" style="text-transform:uppercase"><p class="error-text"></p></div>
       </div>
-      <div class="row c2">
-        <div class="field" data-f="vmake"><label for="f-vmake">Vehicle Make</label>
-          <input id="f-vmake" maxlength="40" placeholder="Tata / Mahindra"><p class="err-text"></p></div>
-        <div class="field" data-f="vmodel"><label for="f-vmodel">Vehicle Model</label>
-          <input id="f-vmodel" maxlength="40" placeholder="Ace / Bolero Pickup"><p class="err-text"></p></div>
-      </div>
+      <div class="field" data-f="vmodel"><label for="f-vmodel">Vehicle Model</label>
+        <input id="f-vmodel" maxlength="40" placeholder="Tata Ace / Bolero Pickup"><p class="error-text"></p></div>
       <div class="row c2">
         <div class="field" data-f="vyear"><label for="f-vyear">Vehicle Year</label>
-          <input id="f-vyear" type="number" min="1990" max="2100" placeholder="2021"><p class="err-text"></p></div>
-        <div class="field" data-f="vcap"><label for="f-vcap">Capacity (kg)</label>
-          <input id="f-vcap" type="number" min="0" max="50000" placeholder="750"><p class="err-text"></p></div>
-      </div>
-      <div class="row c2">
-        <div class="field" data-f="vfuel"><label for="f-vfuel">Fuel Type</label>
-          <select id="f-vfuel"><option value="">— Chuno —</option><option value="diesel">Diesel</option>
-          <option value="petrol">Petrol</option><option value="cng">CNG</option>
-          <option value="electric">Electric</option><option value="other">Other</option></select><p class="err-text"></p></div>
-        <div class="field" data-f="vown"><label for="f-vown">Vehicle Ownership</label>
-          <select id="f-vown"><option value="">— Chuno —</option><option value="owned">Owned</option>
-          <option value="financed">Financed</option><option value="rented">Rented</option>
-          <option value="other">Other</option></select><p class="err-text"></p></div>
+          <input id="f-vyear" type="number" min="1990" max="2100" placeholder="2021"><p class="error-text"></p></div>
+        <div class="field" data-f="vcap"><label for="f-vcap">Vehicle Capacity (kg)</label>
+          <input id="f-vcap" type="number" min="0" max="50000" placeholder="750"><p class="error-text"></p></div>
       </div>
     </div>
 
-    <!-- STEP 4: License + documents -->
-    <div class="step" data-step="4">
-      <div class="sec-title">Step 4 — Driving License</div>
-      <div class="row c2">
-        <div class="field" data-f="dlnum"><label for="f-dlnum">Driving License Number <span class="req">*</span></label>
-          <input id="f-dlnum" maxlength="25" placeholder="MP09 20190012345" style="text-transform:uppercase"><p class="err-text"></p></div>
-        <div class="field" data-f="dltype"><label for="f-dltype">License Type / Category</label>
-          <input id="f-dltype" maxlength="20" placeholder="LMV / HMV"><p class="err-text"></p></div>
-      </div>
+    <!-- STEP 3 -->
+    <div class="step" data-step="3">
+      <div class="sec-title">Step 3 — Driver Details</div>
+      <div class="field" data-f="dlnum"><label for="f-dlnum">Driving License Number <span class="req">*</span></label>
+        <input id="f-dlnum" maxlength="25" placeholder="MP09 20190012345" style="text-transform:uppercase"><p class="error-text"></p></div>
       <div class="row c2">
         <div class="field" data-f="dlexp"><label for="f-dlexp">License Expiry Date <span class="req">*</span></label>
-          <input id="f-dlexp" type="date"><p class="err-text"></p>
+          <input id="f-dlexp" type="date"><p class="error-text"></p>
           <p class="hint">Expired license par application reject ho jayegi.</p></div>
-        <div class="field" data-f="dlstate"><label for="f-dlstate">Issuing State</label>
-          <input id="f-dlstate" maxlength="80" placeholder="Madhya Pradesh"><p class="err-text"></p></div>
-      </div>
-      <div class="sec-title">Vehicle Documents (number + expiry likho)</div>
-      <p class="sec-sub">Photo upload abhi supported nahi hai (storage infra baaki hai) — owner documents baad me maangega. Galat details par reject ho sakta hai.</p>
-      <div class="row c2">
-        <div class="field" data-f="rc"><label for="f-rc">RC / Registration Certificate No.</label>
-          <input id="f-rc" maxlength="30" placeholder="RC number"><p class="err-text"></p></div>
-        <div class="field" data-f="permit"><label for="f-permit">Permit No. (agar gaadi par lagu ho)</label>
-          <input id="f-permit" maxlength="30" placeholder="Optional"><p class="err-text"></p></div>
-      </div>
-      <div class="row c2">
-        <div class="field" data-f="ins"><label for="f-ins">Vehicle Insurance Expiry</label>
-          <input id="f-ins" type="date"><p class="err-text"></p></div>
-        <div class="field" data-f="pol"><label for="f-pol">Pollution Certificate Expiry</label>
-          <input id="f-pol" type="date"><p class="err-text"></p></div>
+        <div class="field" data-f="scity"><label for="f-scity">Operating City <span class="req">*</span></label>
+          <input id="f-scity" maxlength="120" placeholder="Example: Indore"><p class="error-text"></p></div>
       </div>
     </div>
 
-    <!-- STEP 5: Service area -->
+    <!-- STEP 4 -->
+    <div class="step" data-step="4">
+      <div class="sec-title">Step 4 — Documents</div>
+      <p class="sec-sub">Photo upload abhi supported nahi hai — number aur expiry likho, owner baad me documents maangega.</p>
+      <div class="row c2">
+        <div class="field" data-f="rc"><label for="f-rc">Vehicle RC Number</label>
+          <input id="f-rc" maxlength="30" placeholder="RC number"><p class="error-text"></p></div>
+        <div class="field" data-f="ins"><label for="f-ins">Insurance Expiry Date</label>
+          <input id="f-ins" type="date"><p class="error-text"></p></div>
+      </div>
+    </div>
+
+    <!-- STEP 5 -->
     <div class="step" data-step="5">
-      <div class="sec-title">Step 5 — Service Area</div>
-      <p class="sec-sub">Kahan kaam karoge? Booking tumhari gaadi type + area ke hisaab se milegi.</p>
-      <div class="row c2">
-        <div class="field" data-f="scity"><label for="f-scity">City <span class="req">*</span></label>
-          <input id="f-scity" maxlength="120" placeholder="Example: Indore"><p class="err-text"></p></div>
-        <div class="field" data-f="sstate"><label for="f-sstate">State <span class="req">*</span></label>
-          <input id="f-sstate" maxlength="80" placeholder="Madhya Pradesh"><p class="err-text"></p></div>
-      </div>
-      <div class="field" data-f="sareas"><label for="f-sareas">Service Areas (comma me likho)</label>
-        <input id="f-sareas" maxlength="300" placeholder="Vijay Nagar, Palasia, Rau"><p class="err-text"></p></div>
-      <div class="field" data-f="sradius"><label for="f-sradius">Preferred Operating Radius (km)</label>
-        <input id="f-sradius" type="number" min="1" max="200" placeholder="25"><p class="err-text"></p></div>
-    </div>
-
-    <!-- STEP 6: Payout placeholder -->
-    <div class="step" data-step="6">
-      <div class="sec-title">Step 6 — Bank / Payout Details</div>
-      <div class="card" style="box-shadow:none;margin-top:8px">
-        <b>Bank details abhi nahi maang rahe.</b><br>
-        <span class="muted">ApnaShift me payout system abhi active nahi hai. Approval ke baad payouts ke liye owner tumse bank details secure tareeke se lega. Is step me kuch bharne ki zaroorat nahi — bas Next dabao.</span>
-      </div>
-    </div>
-
-    <!-- STEP 7: Review + consent -->
-    <div class="step" data-step="7">
-      <div class="sec-title">Step 7 — Review &amp; Submit</div>
-      <p class="sec-sub">Sab check karo, phir 4 consent par tick karke Submit dabao.</p>
+      <div class="sec-title">Step 5 — Review &amp; Submit</div>
+      <p class="sec-sub">Sab check karo, phir consent karke Submit dabao.</p>
       <div id="reviewBox"></div>
-      <label class="checkline"><input type="checkbox" class="consent" id="c1"><span>I confirm that the information provided is accurate.</span></label>
-      <label class="checkline"><input type="checkbox" class="consent" id="c2"><span>I agree to the ApnaShift Driver Partner Terms and Conditions.</span></label>
-      <label class="checkline"><input type="checkbox" class="consent" id="c3"><span>I agree to the Privacy Policy.</span></label>
-      <label class="checkline"><input type="checkbox" class="consent" id="c4"><span>I understand that my application may require verification before activation.</span></label>
+      <label class="consentline"><input type="checkbox" id="c1">
+        <span>Maine sahi details bhari hain. <span class="req">*</span></span></label>
+      <label class="consentline"><input type="checkbox" id="c2">
+        <span>Main <a href="terms.html">Terms</a> &amp; <a href="privacy.html">Privacy Policy</a> se sehmat hoon. <span class="req">*</span></span></label>
     </div>
 
     <div class="nav-row">
-      <button class="btn ghost small" id="prevBtn">← Previous</button>
-      <button class="btn ghost small" id="clearBtn" type="button">Clear form</button>
+      <button class="btn back" id="prevBtn" type="button">← Previous</button>
       <span class="spacer"></span>
-      <button class="btn small" id="nextBtn">Next →</button>
-      <button class="btn small" id="submitBtn" style="display:none" disabled>Submit Application</button>
+      <button class="btn next" id="nextBtn" type="button">Next →</button>
+      <button class="btn next" id="submitBtn" type="button" style="display:none" disabled>Submit Application</button>
     </div>
-    <p class="muted" id="draftNote"></p>
   </section>
 
-  <section id="success" aria-live="polite">
-    <h2>Application Submitted Successfully</h2>
+  <section id="success" aria-live="polite" aria-labelledby="successTitle">
+    <h2 id="successTitle">Application Submitted Successfully</h2>
     <div><span class="appid" id="appId">—</span></div>
     <p>Status: <b id="appStatus">PENDING_REVIEW</b> • Date: <b id="appDate">—</b></p>
-    <p><b>Next steps:</b> Owner tumhari details + documents verify karega (1–2 din). Approve hote hi login karke booking accept kar sakoge. Reject hua to wajah admin page par dikhegi.</p>
-    <p><a class="btn" href="/driver.html" style="margin-top:8px">Driver Login par jao</a></p>
+    <p><b>Next steps:</b> Owner tumhari details verify karega (1–2 din). Approve hote hi <a href="driver-login.html">Driver Login</a> karke booking accept kar sakoge.</p>
   </section>
 </main>
 
+<footer class="site-footer">
+  <div class="site-foot-inner">
+    <div class="site-foot-brand">ApnaShift</div>
+    <div class="site-foot-links">
+      <a href="index.html">Home</a>
+      <a href="help.html">Help</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms &amp; Conditions</a>
+    </div>
+  </div>
+</footer>
+
 <script>
 (function(){
-"use strict";
-var DRAFT_KEY = "apnashift_driver_reg_draft";
-var TOTAL = 7, cur = 1;
-var $ = function(id){ return document.getElementById(id); };
-var alertBox = $("formAlert"), bar = $("stepsBar"), stepLabel = $("stepLabel");
-var FIELDS = ["name","phone","email","dob","gender","city","state","address","password","password2",
-  "emg_name","emg_rel","emg_phone","vtype","vnum","vmake","vmodel","vyear","vcap","vfuel","vown",
-  "dlnum","dltype","dlexp","dlstate","rc","permit","ins","pol","scity","sstate","sareas","sradius"];
-var IDS = { name:"f-name", phone:"f-phone", email:"f-email", dob:"f-dob", gender:"f-gender",
-  city:"f-city", state:"f-state", address:"f-address", password:"f-pass", password2:"f-pass2",
-  emg_name:"f-emg-name", emg_rel:"f-emg-rel", emg_phone:"f-emg-phone", vtype:"f-vtype", vnum:"f-vnum",
-  vmake:"f-vmake", vmodel:"f-vmodel", vyear:"f-vyear", vcap:"f-vcap", vfuel:"f-vfuel", vown:"f-vown",
-  dlnum:"f-dlnum", dltype:"f-dltype", dlexp:"f-dlexp", dlstate:"f-dlstate", rc:"f-rc", permit:"f-permit",
-  ins:"f-ins", pol:"f-pol", scity:"f-scity", sstate:"f-sstate", sareas:"f-sareas", sradius:"f-sradius" };
+  "use strict";
 
-for(var i=1;i<=TOTAL;i++){ var s=document.createElement("span"); bar.appendChild(s); }
-$("f-dob").max = new Date().toISOString().slice(0,10);
+  // Backend base URL — Railway production backend.
+  var API_BASE_URL = "https://apnashiftapp-production.up.railway.app";
+  var TOKEN_KEY = "apnashift_driver_token";
 
-function apiBase(){ return window.location.origin; }
-function val(k){ var el=$(IDS[k]); return el ? el.value.trim() : ""; }
-function setVal(k,v){ var el=$(IDS[k]); if(el) el.value = v || ""; }
-function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
-function showAlert(t,m){ alertBox.className="show "+(t==="err"?"err":(t==="ok"?"ok":"info")); alertBox.textContent=m; }
-function hideAlert(){ alertBox.className=""; alertBox.textContent=""; }
-function cleanPhone(raw){
-  var p=String(raw||"").trim().replace(/[\s\-().]/g,"");
-  if(p.indexOf("+91")===0) p=p.slice(3);
-  else if(p.length===12&&p.indexOf("91")===0) p=p.slice(2);
-  else if(p.length===11&&p.charAt(0)==="0") p=p.slice(1);
-  return p;
-}
-var PHONE_RE=/^[6-9]\d{9}$/, EMAIL_RE=/^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+  var TOTAL = 5, cur = 1;
+  var NAMES = ["Personal", "Vehicle", "Driver", "Documents", "Review"];
+  var $ = function(id){ return document.getElementById(id); };
+  var alertBox = $("formAlert"), bar = $("stepsBar"), stepLabel = $("stepLabel");
+  var IDS = { name:"f-name", phone:"f-phone", email:"f-email", city:"f-city", password:"f-pass", upi:"f-upi",
+    vtype:"f-vtype", vnum:"f-vnum", vmodel:"f-vmodel", vyear:"f-vyear", vcap:"f-vcap",
+    dlnum:"f-dlnum", dlexp:"f-dlexp", scity:"f-scity", rc:"f-rc", ins:"f-ins" };
 
-function setErr(key,msg){
-  var wrap=document.querySelector('.field[data-f="'+key+'"]');
-  if(!wrap) return !msg;
-  var e=wrap.querySelector(".err-text");
-  if(msg){ wrap.classList.add("invalid"); if(e) e.textContent=msg; return false; }
-  wrap.classList.remove("invalid"); if(e) e.textContent=""; return true;
-}
-function req(key,msg){ var v=val(key); if(!v){ setErr(key,msg||"Ye khaana zaroori hai."); return null; } setErr(key,""); return v; }
-function optLen(key,min,max,msg){
-  var v=val(key); if(!v){ setErr(key,""); return ""; }
-  if(v.length<min||v.length>max){ setErr(key,msg); return null; }
-  setErr(key,""); return v;
-}
-function optDate(key){
-  var v=val(key); if(!v){ setErr(key,""); return ""; }
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(v)){ setErr(key,"Date YYYY-MM-DD me ho."); return null; }
-  var p=v.split("-").map(Number), dt=new Date(Date.UTC(p[0],p[1]-1,p[2]));
-  if(dt.getUTCFullYear()!==p[0]||dt.getUTCMonth()!==p[1]-1||dt.getUTCDate()!==p[2]){ setErr(key,"Sahi calendar date likho."); return null; }
-  setErr(key,""); return v;
-}
-function calcAge(dobStr){
-  var p=dobStr.split("-").map(Number), b=new Date(p[0],p[1]-1,p[2]), n=new Date(), a=n.getFullYear()-b.getFullYear();
-  if(n.getMonth()<b.getMonth()||(n.getMonth()===b.getMonth()&&n.getDate()<b.getDate())) a--;
-  return a;
-}
+  for(var i = 0; i < TOTAL; i++){ var s = document.createElement("span"); bar.appendChild(s); }
 
-// ---- per-step validation ----
-function validStep(n){
-  hideAlert(); var ok=true, first=null;
-  function bad(key,msg){ if(setErr(key,msg)===false){ ok=false; first=first||document.querySelector('.field[data-f="'+key+'"] input,.field[data-f="'+key+'"] select,.field[data-f="'+key+'"] textarea'); } }
-  function good(key){ setErr(key,""); }
-  if(n===1){
-    var nm=val("name");
-    if(nm.length<2) bad("name","Poora naam likho (min 2 akshar)."); else good("name");
-    var ph=cleanPhone(val("phone"));
-    if(!val("phone")) bad("phone","Mobile number likho."); else if(!PHONE_RE.test(ph)) bad("phone","10 digit Indian mobile (6-9 se shuru)."); else good("phone");
-    var em=val("email");
-    if(!em) bad("email","Email likho."); else if(em.length>120||!EMAIL_RE.test(em)) bad("email","Sahi email likho."); else good("email");
-    var db=val("dob"), age=db?calcAge(db):-1;
-    if(!db) bad("dob","Date of birth chuno."); else if(age<18||age>100) bad("dob","Umar 18-100 saal ho."); else good("dob");
-    ["gender"].forEach(good);
-    if(!val("city")||val("city").length<2) bad("city","Sheher likho."); else good("city");
-    if(!val("state")||val("state").length<2) bad("state","State likho."); else good("state");
-    if(!val("address")||val("address").length<5) bad("address","Poora address likho (min 5 akshar)."); else good("address");
-    if(val("password").length<8) bad("password","Password min 8 akshar."); else good("password");
-    if(val("password2")!==val("password")||!val("password2")) bad("password2","Password match nahi ho raha."); else good("password2");
-    var en=val("emg_name"); if(en&&en.length<2) bad("emg_name","Naam min 2 akshar."); else good("emg_name");
-    var er=val("emg_rel"); if(er&&(er.length<2||er.length>40)) bad("emg_rel","Rishta 2-40 akshar."); else good("emg_rel");
-    var ep=val("emg_phone"); if(ep&&!PHONE_RE.test(cleanPhone(ep))) bad("emg_phone","Sahi 10 digit number likho ya khaali chhodo."); else good("emg_phone");
+  var navMenuBtn = $("navMenuBtn"), siteNav = $("siteNav");
+  navMenuBtn.addEventListener("click", function(){
+    var open = siteNav.classList.toggle("open");
+    navMenuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+
+  function val(k){ var el = $(IDS[k]); return el ? el.value.trim() : ""; }
+  function esc(s){ return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+  function showAlert(t, m){ alertBox.className = "show " + t; alertBox.textContent = m; }
+  function hideAlert(){ alertBox.className = ""; alertBox.textContent = ""; }
+  function cleanPhone(raw){
+    var p = String(raw || "").trim().replace(/[\s\-().]/g, "");
+    if(p.indexOf("+91") === 0) p = p.slice(3);
+    else if(p.length === 12 && p.indexOf("91") === 0) p = p.slice(2);
+    else if(p.length === 11 && p.charAt(0) === "0") p = p.slice(1);
+    return p;
   }
-  if(n===2){
-    var c=$("v-confirm").checked;
-    $("v-err").style.display=c?"none":"block";
-    if(!c){ ok=false; showAlert("err","Aage badhne ke liye number confirm par tick karo."); }
+  var PHONE_RE = /^[6-9]\d{9}$/, EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+  function setErr(key, msg){
+    var wrap = document.querySelector('.field[data-f="' + key + '"]');
+    if(!wrap) return !msg;
+    var e = wrap.querySelector(".error-text");
+    if(msg){ wrap.classList.add("invalid"); if(e) e.textContent = msg; return false; }
+    wrap.classList.remove("invalid"); if(e) e.textContent = ""; return true;
   }
-  if(n===3){
-    if(!val("vtype")) bad("vtype","Gaadi chuno."); else good("vtype");
-    var vn=val("vnum").toUpperCase();
-    if(!vn) bad("vnum","Gaadi number likho."); else if(vn.length<4||vn.length>20||!/^[A-Z0-9 ]+$/.test(vn)) bad("vnum","4-20 akshar, A-Z/0-9/space."); else good("vnum");
-    if(optLen("vmake",2,40,"Make 2-40 akshar.")===null) ok=false;
-    if(optLen("vmodel",2,40,"Model 2-40 akshar.")===null) ok=false;
-    var vy=val("vyear");
-    if(vy&&(!/^\d+$/.test(vy)||+vy<1990||+vy>2100)){ bad("vyear","Year 1990-2100."); ok=false; } else good("vyear");
-    var vc=val("vcap");
-    if(vc&&(!/^\d+$/.test(vc)||+vc<0||+vc>50000)){ bad("vcap","Capacity 0-50000 kg."); ok=false; } else good("vcap");
-    ["vfuel","vown"].forEach(good);
+
+  function validDate(v){
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(v)) return false;
+    var p = v.split("-").map(Number), dt = new Date(Date.UTC(p[0], p[1] - 1, p[2]));
+    return dt.getUTCFullYear() === p[0] && dt.getUTCMonth() === p[1] - 1 && dt.getUTCDate() === p[2];
   }
-  if(n===4){
-    var dl=val("dlnum").toUpperCase();
-    if(!dl) bad("dlnum","License number likho."); else if(!/^[A-Z0-9 ]{5,25}$/.test(dl)) bad("dlnum","5-25 akshar (A-Z, 0-9, space)."); else good("dlnum");
-    if(optLen("dltype",2,20,"Type 2-20 akshar (LMV/HMV).")===null) ok=false;
-    var de=val("dlexp");
-    if(!de) bad("dlexp","Expiry date chuno."); else {
-      var t=new Date(de+"T00:00:00"), now=new Date(); now.setHours(0,0,0,0);
-      if(isNaN(t.getTime())){ bad("dlexp","Sahi date chuno."); ok=false; }
-      else if(t<=now){ bad("dlexp","Expired license nahi chalega — future date chuno."); ok=false; }
-      else good("dlexp");
+
+  function validStep(n){
+    hideAlert();
+    var ok = true, first = null;
+    function bad(key, msg){ if(setErr(key, msg) === false){ ok = false; first = first || document.querySelector('.field[data-f="' + key + '"] input,.field[data-f="' + key + '"] select'); } }
+    function good(key){ setErr(key, ""); }
+    if(n === 1){
+      if(val("name").length < 2) bad("name", "Poora naam likho (min 2 akshar)."); else good("name");
+      var ph = cleanPhone(val("phone"));
+      if(!val("phone")) bad("phone", "Mobile number likho."); else if(!PHONE_RE.test(ph)) bad("phone", "10 digit Indian mobile (6-9 se shuru)."); else good("phone");
+      var em = val("email");
+      if(!em) bad("email", "Email likho."); else if(em.length > 120 || !EMAIL_RE.test(em)) bad("email", "Sahi email likho."); else good("email");
+      if(val("city").length < 2) bad("city", "Sheher likho."); else good("city");
+      if(val("password").length < 8) bad("password", "Password min 8 akshar."); else good("password");
+      var upi = val("upi");
+      if(upi && !/^[\w.-]{2,256}@[a-zA-Z]{2,64}$/.test(upi)) bad("upi", "UPI ID naam@bank jaisi ho."); else good("upi");
     }
-    if(optLen("dlstate",2,80,"State 2-80 akshar.")===null) ok=false;
-    if(optLen("rc",2,30,"RC 2-30 akshar.")===null) ok=false;
-    if(optLen("permit",2,30,"Permit 2-30 akshar.")===null) ok=false;
-    if(optDate("ins")===null) ok=false;
-    if(optDate("pol")===null) ok=false;
+    if(n === 2){
+      if(!val("vtype")) bad("vtype", "Gaadi chuno."); else good("vtype");
+      var vn = val("vnum").toUpperCase();
+      if(!vn) bad("vnum", "Gaadi number likho."); else if(vn.length < 4 || vn.length > 20 || !/^[A-Z0-9 ]+$/.test(vn)) bad("vnum", "4-20 akshar, A-Z/0-9/space."); else good("vnum");
+      var vm = val("vmodel");
+      if(vm && (vm.length < 2 || vm.length > 40)) bad("vmodel", "Model 2-40 akshar."); else good("vmodel");
+      var vy = val("vyear");
+      if(vy && (!/^\d+$/.test(vy) || +vy < 1990 || +vy > 2100)) bad("vyear", "Year 1990-2100."); else good("vyear");
+      var vc = val("vcap");
+      if(vc && (!/^\d+$/.test(vc) || +vc < 0 || +vc > 50000)) bad("vcap", "Capacity 0-50000 kg."); else good("vcap");
+    }
+    if(n === 3){
+      var dl = val("dlnum").toUpperCase();
+      if(!dl) bad("dlnum", "License number likho."); else if(!/^[A-Z0-9 ]{5,25}$/.test(dl)) bad("dlnum", "5-25 akshar (A-Z, 0-9, space)."); else good("dlnum");
+      var de = val("dlexp");
+      if(!de) bad("dlexp", "Expiry date chuno.");
+      else if(!validDate(de)) bad("dlexp", "Sahi date chuno.");
+      else {
+        var t = new Date(de + "T00:00:00"), now = new Date(); now.setHours(0, 0, 0, 0);
+        if(t <= now) bad("dlexp", "Expired license nahi chalega — future date chuno."); else good("dlexp");
+      }
+      if(val("scity").length < 2) bad("scity", "Operating city likho."); else good("scity");
+    }
+    if(n === 4){
+      var rc = val("rc");
+      if(rc && (rc.length < 2 || rc.length > 30)) bad("rc", "RC 2-30 akshar."); else good("rc");
+      var ins = val("ins");
+      if(ins && !validDate(ins)) bad("ins", "Sahi date chuno (YYYY-MM-DD)."); else good("ins");
+    }
+    if(!ok){
+      if(first && first.focus) first.focus();
+      showAlert("err", "Kuch khaane sudharne hain — laal line padho.");
+    }
+    return ok;
   }
-  if(n===5){
-    if(!val("scity")||val("scity").length<2) bad("scity","Service city likho."); else good("scity");
-    if(!val("sstate")||val("sstate").length<2) bad("sstate","Service state likho."); else good("sstate");
-    if(optLen("sareas",2,300,"Areas 300 akshar tak.")===null) ok=false;
-    var sr=val("sradius");
-    if(sr&&(!/^\d+$/.test(sr)||+sr<1||+sr>200)){ bad("sradius","Radius 1-200 km."); ok=false; } else good("sradius");
+
+  function render(){
+    document.querySelectorAll(".step").forEach(function(el){ el.classList.toggle("active", +el.dataset.step === cur); });
+    var spans = bar.children;
+    for(var i = 0; i < spans.length; i++){ spans[i].className = i < cur - 1 ? "done" : (i === cur - 1 ? "now" : ""); }
+    stepLabel.textContent = "Step " + cur + " of " + TOTAL + " — " + NAMES[cur - 1];
+    $("prevBtn").style.visibility = cur === 1 ? "hidden" : "visible";
+    $("nextBtn").style.display = cur === TOTAL ? "none" : "";
+    $("submitBtn").style.display = cur === TOTAL ? "" : "none";
+    if(cur === TOTAL) buildReview();
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
-  if(!ok&&first&&first.focus) first.focus();
-  if(!ok&&n!==2) showAlert("err","Kuch khaane sudharne hain — laal line padho.");
-  return ok;
-}
+  $("nextBtn").addEventListener("click", function(){ if(validStep(cur) && cur < TOTAL){ cur++; render(); } });
+  $("prevBtn").addEventListener("click", function(){ hideAlert(); if(cur > 1){ cur--; render(); } });
+  ["c1", "c2"].forEach(function(id){
+    $(id).addEventListener("change", function(){
+      $("submitBtn").disabled = !($("c1").checked && $("c2").checked);
+    });
+  });
 
-// ---- navigation ----
-function render(){
-  document.querySelectorAll(".step").forEach(function(s){ s.classList.toggle("active",+s.dataset.step===cur); });
-  var spans=bar.children;
-  for(var i=0;i<spans.length;i++){ spans[i].className=i<cur-1?"done":(i===cur-1?"now":""); }
-  stepLabel.textContent="Step "+cur+" of "+TOTAL;
-  $("prevBtn").style.visibility=cur===1?"hidden":"visible";
-  $("nextBtn").style.display=cur===TOTAL?"none":"";
-  $("submitBtn").style.display=cur===TOTAL?"":"none";
-  if(cur===2) $("verifyPhone").textContent="+91 "+cleanPhone(val("phone"));
-  if(cur===TOTAL) buildReview();
-  window.scrollTo({top:$("wizard").offsetTop-10,behavior:"smooth"});
-}
-$("nextBtn").onclick=function(){ if(validStep(cur)&&cur<TOTAL){ cur++; render(); saveDraft(); } };
-$("prevBtn").onclick=function(){ hideAlert(); if(cur>1){ cur--; render(); } };
-document.querySelectorAll(".consent").forEach(function(c){ c.addEventListener("change",function(){
-  var all=["c1","c2","c3","c4"].every(function(id){ return $(id).checked; });
-  $("submitBtn").disabled=!all;
-});});
-$("ctaBtn").addEventListener("click",function(){ setTimeout(function(){ var f=$("f-name"); if(f) f.focus(); },400); });
+  function row(k, v){ if(v === undefined || v === null || v === "") return ""; return "<tr><th>" + esc(k) + "</th><td>" + esc(v) + "</td></tr>"; }
+  function buildReview(){
+    var vt = $("f-vtype"), h = "<table class='review-table'>";
+    h += row("Naam", val("name")) + row("Mobile", "+91 " + cleanPhone(val("phone"))) + row("Email", val("email")) + row("City", val("city")) + row("UPI ID", val("upi"));
+    h += row("Gaadi", vt.options[vt.selectedIndex].text + " • " + val("vnum").toUpperCase());
+    h += row("Model/Year", [val("vmodel"), val("vyear")].filter(Boolean).join(" ") + (val("vcap") ? " • " + val("vcap") + " kg" : ""));
+    h += row("License", val("dlnum").toUpperCase() + " • exp " + val("dlexp")) + row("Operating City", val("scity"));
+    h += row("RC / Insurance", [val("rc"), val("ins")].filter(Boolean).join(" / "));
+    $("reviewBox").innerHTML = h + "</table>";
+  }
 
-// ---- draft (accidental loss protection) ----
-var draftTimer=null;
-function saveDraft(){
-  try{
-    var d={}; FIELDS.forEach(function(k){ d[k]=val(k); });
-    localStorage.setItem(DRAFT_KEY,JSON.stringify({step:cur,data:d,at:new Date().toISOString()}));
-    $("draftNote").textContent="Draft auto-save ho gaya (sirf is browser me).";
-  }catch(e){}
-}
-FIELDS.forEach(function(k){ var el=$(IDS[k]); if(el){ el.addEventListener("input",function(){ hideAlert(); clearTimeout(draftTimer); draftTimer=setTimeout(saveDraft,800); }); el.addEventListener("change",function(){ clearTimeout(draftTimer); draftTimer=setTimeout(saveDraft,800); }); } });
-$("clearBtn").onclick=function(){ if(!confirm("Saara bhara data saaf kar dun?")) return;
-  FIELDS.forEach(function(k){ setVal(k,""); }); ["c1","c2","c3","c4","v-confirm"].forEach(function(id){ $(id).checked=false; });
-  try{ localStorage.removeItem(DRAFT_KEY); }catch(e){}
-  document.querySelectorAll(".field.invalid").forEach(function(f){ f.classList.remove("invalid"); });
-  $("submitBtn").disabled=true; cur=1; render(); showAlert("info","Form saaf ho gaya."); };
-(function restore(){
-  try{
-    var raw=localStorage.getItem(DRAFT_KEY); if(!raw) return;
-    var d=JSON.parse(raw); if(!d||!d.data) return;
-    Object.keys(d.data).forEach(function(k){ if(IDS[k]) setVal(k,d.data[k]); });
-    if(d.step>=1&&d.step<=TOTAL) cur=d.step;
-    $("draftNote").textContent="Purana draft wapas lagaya gaya.";
-  }catch(e){}
-})();
-
-// ---- review ----
-function row(k,v){ if(v===undefined||v===null||v==="") return ""; return "<tr><th>"+esc(k)+"</th><td>"+esc(v)+"</td></tr>"; }
-function buildReview(){
-  var h="<table class='review-table'>";
-  h+=row("Naam",val("name"))+row("Mobile","+91 "+cleanPhone(val("phone")))+row("Email",val("email"))+row("DOB",val("dob"));
-  h+=row("Gender",val("gender")||"—")+row("City",val("city")+", "+val("state"))+row("Address",val("address"));
-  h+=row("Emergency",val("emg_name")?val("emg_name")+" ("+val("emg_rel")+"), "+val("emg_phone"):"—");
-  var vt=$("f-vtype"); h+=row("Gaadi",vt.options[vt.selectedIndex].text+" • "+val("vnum").toUpperCase());
-  h+=row("Make/Model",[val("vmake"),val("vmodel"),val("vyear")].filter(Boolean).join(" ")+" "+(val("vcap")?("• "+val("vcap")+" kg"):""));
-  h+=row("Fuel/Ownership",[val("vfuel"),val("vown")].filter(Boolean).join(" / "));
-  h+=row("License",val("dlnum").toUpperCase()+(val("dltype")?" ("+val("dltype")+")":"")+" • exp "+val("dlexp"));
-  h+=row("RC / Permit",[val("rc"),val("permit")].filter(Boolean).join(" / "));
-  h+=row("Insurance / Pollution",[val("ins"),val("pol")].filter(Boolean).join(" / "));
-  h+=row("Service Area",val("scity")+", "+val("sstate")+(val("sareas")?" • "+val("sareas"):"")+(val("sradius")?" • "+val("sradius")+" km":""));
-  $("reviewBox").innerHTML=h+"</table>";
-}
-
-// ---- submit ----
-var ERR_HINDI={
-  phone_taken:"Ye mobile number pehle se registered hai. Login karo ya doosra number use karo.",
-  driver_already_registered:"Ye email pehle se registered hai. Login karo.",
-  license_already_registered:"Ye license number pehle se registered hai.",
-  vehicle_already_registered:"Ye gaadi number pehle se registered hai.",
-  validation_failed:"Kuch details galat hain — laal line check karo.",
-  invalid_credentials:"Login galat hai."
-};
-$("submitBtn").onclick=async function(){
-  hideAlert();
-  if(!["c1","c2","c3","c4"].every(function(id){ return $(id).checked; })){ showAlert("err","Submit ke liye 4 consent par tick zaroori hai."); return; }
-  var btn=$("submitBtn"); btn.disabled=true; btn.textContent="Bhej rahe hain…";
-  var payload={
-    name:val("name"), phone:cleanPhone(val("phone")), email:val("email").toLowerCase(), dob:val("dob"),
-    gender:val("gender")||undefined, city:val("city"), state:val("state"), address:val("address"),
-    password:val("password"),
-    vehicle_type:val("vtype"), vehicle_number:val("vnum").toUpperCase(),
-    vehicle_make:val("vmake")||undefined, vehicle_model:val("vmodel")||undefined,
-    vehicle_year:val("vyear")?Number(val("vyear")):undefined,
-    capacity_kg:val("vcap")?Number(val("vcap")):undefined,
-    fuel_type:val("vfuel")||undefined, ownership:val("vown")||undefined,
-    license_number:val("dlnum").toUpperCase(), license_type:val("dltype")||undefined,
-    license_expiry:val("dlexp"), license_state:val("dlstate")||undefined,
-    rc_number:val("rc")||undefined, insurance_expiry:val("ins")||undefined,
-    pollution_expiry:val("pol")||undefined, permit_number:val("permit")||undefined,
-    service_city:val("scity"), service_state:val("sstate"),
-    service_areas:val("sareas")||undefined, service_radius_km:val("sradius")?Number(val("sradius")):undefined,
-    emergency_name:val("emg_name")||undefined, emergency_relation:val("emg_rel")||undefined,
-    emergency_phone:val("emg_phone")?cleanPhone(val("emg_phone")):undefined,
-    consent:true
+  var ERR_MSG = {
+    phone_taken: "Ye mobile number pehle se registered hai. Driver Login try karo.",
+    driver_already_registered: "Ye email pehle se registered hai. Driver Login try karo.",
+    license_already_registered: "Ye license number pehle se registered hai.",
+    vehicle_already_registered: "Ye gaadi number pehle se registered hai.",
+    validation_failed: "Kuch details galat hain — laal line check karo.",
+    too_many_attempts: "Bahut koshish ho gayi — 15 minute rukkar try karo."
   };
-  try{
-    var res=await fetch(apiBase()+"/api/drivers/register",{method:"POST",
-      headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
-    var data=null; try{ data=await res.json(); }catch(e){}
-    if(!res.ok||!data||data.ok!==true){
-      var code=data&&(data.error||"server_error");
-      var msg=ERR_HINDI[code]||("Error: "+code);
-      if(data&&data.details&&data.details[0]) msg+=" ("+data.details[0].field+": "+data.details[0].message+")";
-      throw new Error(msg);
-    }
-    try{ localStorage.removeItem(DRAFT_KEY); }catch(e){}
-    $("wizard").style.display="none";
-    $("appId").textContent=data.application.id;
-    $("appStatus").textContent=data.application.status;
-    $("appDate").textContent=new Date(data.application.registered_at).toLocaleString("en-IN");
-    $("success").classList.add("show");
-    $("success").scrollIntoView({behavior:"smooth"});
-  }catch(e){ showAlert("err",e.message==="Failed to fetch"?"Network error — net check karke dobara try karo.":e.message); }
-  finally{ btn.disabled=false; btn.textContent="Submit Application"; }
-};
-render();
+
+  $("submitBtn").addEventListener("click", function(){
+    hideAlert();
+    if(!$("c1").checked || !$("c2").checked){ showAlert("err", "Submit ke liye dono consent par tick zaroori hai."); return; }
+    var btn = $("submitBtn");
+    btn.disabled = true; btn.textContent = "Bhej rahe hain…";
+    var payload = {
+      name: val("name"), phone: cleanPhone(val("phone")), email: val("email").toLowerCase(),
+      city: val("city"), password: val("password"),
+      upi_id: val("upi") || undefined,
+      vehicle_type: val("vtype"), vehicle_number: val("vnum").toUpperCase(),
+      vehicle_model: val("vmodel") || undefined,
+      vehicle_year: val("vyear") ? Number(val("vyear")) : undefined,
+      capacity_kg: val("vcap") ? Number(val("vcap")) : undefined,
+      license_number: val("dlnum").toUpperCase(), license_expiry: val("dlexp"),
+      service_city: val("scity"),
+      rc_number: val("rc") || undefined, insurance_expiry: val("ins") || undefined,
+      consent: true
+    };
+    fetch(API_BASE_URL + "/api/drivers/register", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }).then(function(res){
+      return res.json().then(function(data){ return { status: res.status, body: data }; })
+        .catch(function(){ return { status: res.status, body: null }; });
+    }).then(function(result){
+      if(![200, 201].includes(result.status) || !result.body || result.body.ok !== true){
+        var code = result.body && result.body.error;
+        var msg = ERR_MSG[code] || "Kuch gadbad ho gayi. Net check karke dobara try karo.";
+        if(result.body && result.body.details && result.body.details[0]) msg += " (" + result.body.details[0].message + ")";
+        throw new Error(msg);
+      }
+      try{ if(result.body.token) localStorage.setItem(TOKEN_KEY, result.body.token); }catch(e){}
+      $("wizard").style.display = "none";
+      $("appId").textContent = result.body.application.id;
+      $("appStatus").textContent = result.body.application.status;
+      $("appDate").textContent = new Date(result.body.application.registered_at).toLocaleString("en-IN");
+      $("success").classList.add("show");
+      showAlert("ok", "Application submit ho gayi.");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }).catch(function(e){
+      showAlert("err", e.message === "Failed to fetch" ? "Network error — net check karke try karo." : e.message);
+    }).then(function(){ btn.disabled = false; btn.textContent = "Submit Application"; gate(); });
+    function gate(){ btn.disabled = !($("c1").checked && $("c2").checked); }
+  });
+  render();
 })();
 </script>
 </body>

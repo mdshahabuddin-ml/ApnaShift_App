@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pricing | ApnaShift Admin</title>
+<meta name="description" content="ApnaShift admin — pricing rates dekho aur badlo.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#14213d;
+    --yellow:#fcbf49;
+    --bg:#f4f6fa;
+    --border:#c9d0de;
+    --ink:#20242e;
+    --muted:#5b6070;
+    --red:#c0392b;
+    --green:#1a7a3a;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    line-height:1.6;
+  }
+  :focus-visible{
+    outline:3px solid var(--navy);
+    outline-offset:2px;
+    box-shadow:0 0 0 4px var(--yellow);
+    border-radius:6px;
+  }
+  .site-header{background:var(--navy);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:50}
+  .site-header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px}
+  .site-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.3rem;line-height:1;color:#fff;text-decoration:none}
+  .site-brand small{display:block;font-family:"Noto Sans",system-ui,sans-serif;font-weight:600;font-size:.64rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow)}
+  .site-header .spacer{flex:1}
+  .logout-btn{background:transparent;border:2px solid var(--yellow);border-radius:8px;color:var(--yellow);font:inherit;font-weight:800;padding:6px 12px;cursor:pointer}
+  main{max-width:960px;margin:0 auto;padding:20px 16px 40px}
+  .card{background:#fff;border:2px solid var(--navy);border-radius:var(--radius);padding:18px;box-shadow:6px 6px 0 var(--yellow);margin-bottom:16px}
+  .card h1,.card h2{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;color:var(--navy);margin:0 0 8px}
+  .card h1{font-size:1.5rem}
+  .card h2{font-size:1.2rem;margin-top:16px}
+  .sub{margin:0 0 10px;color:var(--muted);font-size:.9rem}
+  .alert{display:none;border-radius:10px;padding:11px 12px;font-size:.9rem;font-weight:600;margin:0 0 14px}
+  .alert.show{display:block}
+  .alert.err{background:#fdecea;color:#7a1f14;border:2px solid var(--red)}
+  .alert.ok{background:#e6f6ea;color:#0d5c26;border:2px solid var(--green)}
+  table{width:100%;border-collapse:collapse;font-size:.86rem;margin-top:10px}
+  th,td{border:1px solid var(--border);padding:7px 8px;text-align:left;vertical-align:top}
+  th{background:#f7f3e8;color:var(--navy)}
+  .table-wrap{overflow-x:auto}
+  .form-grid{display:grid;gap:10px;margin-top:10px}
+  @media(min-width:640px){.form-grid{grid-template-columns:repeat(2,1fr)}}
+  .field{display:flex;flex-direction:column;gap:4px}
+  .field label{font-weight:600;font-size:.84rem;color:var(--navy)}
+  select,input{font:inherit;color:var(--ink);background:#fff;border:1px solid var(--border);border-radius:6px;padding:9px 11px}
+  .btn{font-family:"Baloo 2",system-ui,sans-serif;font-weight:800;font-size:.9rem;padding:9px 16px;border-radius:10px;border:2px solid var(--navy);background:var(--yellow);color:var(--navy);cursor:pointer}
+  .btn.ghost{background:#fff}
+  .btn:disabled{opacity:.6;cursor:wait}
+  .meta{font-size:.82rem;color:var(--muted)}
+  .empty,.loading{color:var(--muted);font-size:.9rem}
+  .back{font-size:.9rem;margin-top:12px}
+  .back a{color:var(--navy);font-weight:700}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="admin-home.html" aria-label="ApnaShift admin home">ApnaShift<small>Admin Panel</small></a>
+    <div class="spacer"></div>
+    <button class="logout-btn" id="logoutBtn" type="button">Logout</button>
+  </div>
+</header>
+
+<main>
+  <div class="alert" id="pageAlert" role="alert" aria-live="assertive"></div>
+
+  <section class="card" aria-labelledby="pageTitle">
+    <h1 id="pageTitle">Pricing</h1>
+    <p class="sub">Rates sirf nayi bookings par lagte hain — purani bookings ka snapshot nahi badalta.</p>
+    <p><button class="btn ghost" id="loadBtn" type="button">Rates load karo</button></p>
+    <div class="table-wrap" id="ratesWrap" aria-live="polite"><p class="loading">Load dabao.</p></div>
+
+    <h2>Rate badlo</h2>
+    <div class="form-grid">
+      <div class="field">
+        <label for="vehicleSel">Gaadi</label>
+        <select id="vehicleSel">
+          <option value="pickup">pickup</option>
+          <option value="mini_truck">mini_truck</option>
+          <option value="mini_tractor">mini_tractor</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="baseInp">Base Rs (khali = no change)</label>
+        <input type="number" id="baseInp" min="0" placeholder="350">
+      </div>
+      <div class="field">
+        <label for="kmInp">Per km Rs (khali = no change)</label>
+        <input type="number" id="kmInp" min="0" step="0.5" placeholder="17.5">
+      </div>
+      <div class="field">
+        <label for="helperInp">Helper Rs (khali = no change)</label>
+        <input type="number" id="helperInp" min="0" placeholder="200">
+      </div>
+      <div class="field">
+        <label for="commInp">Commission % (khali = no change)</label>
+        <input type="number" id="commInp" min="0" max="100" step="0.5" placeholder="15">
+      </div>
+    </div>
+    <p style="margin-top:10px"><button class="btn" id="saveBtn" type="button">Save rate</button></p>
+
+    <h2>History</h2>
+    <p><button class="btn ghost" id="histBtn" type="button">History load karo</button></p>
+    <div class="table-wrap" id="histWrap" aria-live="polite"><p class="loading">Load dabao.</p></div>
+
+    <p class="back"><a href="admin-home.html">← Admin Home</a> • <a href="admin-dashboard.html">Full dashboard</a></p>
+  </section>
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  var API_BASE_URL = "https://apnashiftapp-production.up.railway.app";
+  var TOKEN_KEY = "apnashift_admin_token";
+
+  function getToken(){ try { return localStorage.getItem(TOKEN_KEY); } catch(e){ return null; } }
+  if(!getToken()){ window.location.href = "admin-login.html"; return; }
+
+  var alertBox = document.getElementById("pageAlert");
+  var ratesWrap = document.getElementById("ratesWrap");
+  var histWrap = document.getElementById("histWrap");
+  var loadBtn = document.getElementById("loadBtn");
+  var saveBtn = document.getElementById("saveBtn");
+  var histBtn = document.getElementById("histBtn");
+  var vehicleSel = document.getElementById("vehicleSel");
+  var baseInp = document.getElementById("baseInp");
+  var kmInp = document.getElementById("kmInp");
+  var helperInp = document.getElementById("helperInp");
+  var commInp = document.getElementById("commInp");
+
+  function showAlert(type, msg){
+    if(!msg){ alertBox.className = "alert"; alertBox.textContent = ""; return; }
+    alertBox.className = "alert show " + (type === "err" ? "err" : "ok");
+    alertBox.textContent = msg;
+  }
+  function authHeaders(extra){
+    var h = { "Authorization": "Bearer " + getToken() };
+    if(extra){ for(var k in extra){ h[k] = extra[k]; } }
+    return h;
+  }
+  function readBody(res){
+    return res.json().then(function(data){
+      return { status: res.status, body: data };
+    }).catch(function(){
+      return { status: res.status, body: null };
+    });
+  }
+  function checkAuth(result){
+    if(result.status === 401){
+      try { localStorage.removeItem(TOKEN_KEY); } catch(e){}
+      window.location.href = "admin-login.html";
+      return true;
+    }
+    return false;
+  }
+  function esc(v){
+    return String(v === undefined || v === null ? "" : v)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+  function fmtDate(iso){
+    if(!iso) return "—";
+    var d = new Date(iso);
+    if(isNaN(d.getTime())) return String(iso);
+    return d.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+  }
+
+  function loadRates(){
+    showAlert(null, "");
+    loadBtn.disabled = true;
+    ratesWrap.innerHTML = '<p class="loading">Load ho raha hai…</p>';
+    fetch(API_BASE_URL + "/api/admin/pricing-rules", { headers: authHeaders() })
+      .then(readBody)
+      .then(function(result){
+        if(checkAuth(result)) return;
+        if(result.status !== 200 || !result.body || result.body.ok !== true) throw new Error("load_failed");
+        var rules = Array.isArray(result.body.rules) ? result.body.rules : [];
+        if(!rules.length){ ratesWrap.innerHTML = '<p class="empty">Koi rate nahi mila.</p>'; return; }
+        var h = "<table><tr><th>Gaadi</th><th>Base</th><th>Per km</th><th>Helper</th><th>Comm. %</th><th>Updated</th></tr>";
+        for(var i = 0; i < rules.length; i++){
+          var r = rules[i];
+          h += "<tr><td>" + esc(r.vehicle_type) + "</td><td>" + esc(r.base_rs) +
+            "</td><td>" + esc(r.per_km_rs) + "</td><td>" + esc(r.helper_rs) +
+            "</td><td>" + esc(r.commission_pct) + "</td><td>" + esc(fmtDate(r.updated_at)) + "</td></tr>";
+        }
+        ratesWrap.innerHTML = h + "</table>";
+      })
+      .catch(function(){
+        ratesWrap.innerHTML = '<p class="empty">Load nahi hua — dobara try karo.</p>';
+        showAlert("err", "Rates load nahi hue.");
+      })
+      .then(function(){ loadBtn.disabled = false; });
+  }
+
+  function numOrUndef(el){
+    var s = String(el.value || "").trim();
+    if(s === "") return undefined;
+    var n = Number(s);
+    return isFinite(n) ? n : NaN;
+  }
+
+  function saveRate(){
+    var body = { vehicle_type: vehicleSel.value };
+    var b = numOrUndef(baseInp), k = numOrUndef(kmInp), hp = numOrUndef(helperInp), c = numOrUndef(commInp);
+    if(b === undefined && k === undefined && hp === undefined && c === undefined){
+      showAlert("err", "Kam se kam ek field bharo.");
+      return;
+    }
+    if(b !== undefined){ if(!(b >= 0)){ showAlert("err", "Base Rs 0 ya zyada ho."); return; } body.base_rs = b; }
+    if(k !== undefined){ if(!(k >= 0)){ showAlert("err", "Per km Rs 0 ya zyada ho."); return; } body.per_km_rs = k; }
+    if(hp !== undefined){ if(!(hp >= 0)){ showAlert("err", "Helper Rs 0 ya zyada ho."); return; } body.helper_rs = hp; }
+    if(c !== undefined){ if(!(c >= 0 && c <= 100)){ showAlert("err", "Commission 0–100 ke beech ho."); return; } body.commission_pct = c; }
+    showAlert(null, "");
+    saveBtn.disabled = true;
+    fetch(API_BASE_URL + "/api/admin/pricing-rules", {
+      method: "PUT",
+      headers: authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify(body)
+    }).then(readBody).then(function(result){
+      if(checkAuth(result)) return;
+      if(result.status === 200 && result.body && result.body.ok === true){
+        showAlert("ok", "Rate save ho gaya (history #" + result.body.history_id + ").");
+        baseInp.value = ""; kmInp.value = ""; helperInp.value = ""; commInp.value = "";
+        loadRates();
+        return;
+      }
+      if(result.status === 400) showAlert("err", "Details galat hain — values check karo.");
+      else showAlert("err", "Save nahi hua — dobara try karo.");
+    }).catch(function(){
+      showAlert("err", "Internet me dikkat hai.");
+    }).then(function(){ saveBtn.disabled = false; });
+  }
+
+  function loadHistory(){
+    showAlert(null, "");
+    histBtn.disabled = true;
+    histWrap.innerHTML = '<p class="loading">Load ho raha hai…</p>';
+    fetch(API_BASE_URL + "/api/admin/pricing-rules/history?limit=20", { headers: authHeaders() })
+      .then(readBody)
+      .then(function(result){
+        if(checkAuth(result)) return;
+        if(result.status !== 200 || !result.body || result.body.ok !== true) throw new Error("load_failed");
+        var arr = Array.isArray(result.body.history) ? result.body.history : [];
+        if(!arr.length){ histWrap.innerHTML = '<p class="empty">History khaali hai.</p>'; return; }
+        var h = "<table><tr><th>ID</th><th>Gaadi</th><th>Badlav</th><th>Kab</th></tr>";
+        for(var i = 0; i < arr.length; i++){
+          var x = arr[i];
+          h += "<tr><td>" + esc(x.id) + "</td><td>" + esc(x.vehicle_type) +
+            "</td><td><span class='meta'>" + esc(JSON.stringify(x.old)) + " → " +
+            esc(JSON.stringify(x.new)) + "</span></td><td>" + esc(fmtDate(x.created_at)) + "</td></tr>";
+        }
+        histWrap.innerHTML = h + "</table>";
+      })
+      .catch(function(){
+        histWrap.innerHTML = '<p class="empty">Load nahi hua — dobara try karo.</p>';
+        showAlert("err", "History load nahi hui.");
+      })
+      .then(function(){ histBtn.disabled = false; });
+  }
+
+  loadBtn.addEventListener("click", loadRates);
+  saveBtn.addEventListener("click", saveRate);
+  histBtn.addEventListener("click", loadHistory);
+
+  document.getElementById("logoutBtn").addEventListener("click", function(){
+    try { localStorage.removeItem(TOKEN_KEY); } catch(e){}
+    window.location.href = "admin-login.html";
+  });
+
+  loadRates();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vehicle Book Karo | ApnaShift</title>
+<meta name="description" content="ApnaShift par vehicle book karo — pickup aur drop details bharkar sahi kiraya pao.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#14213d;
+    --yellow:#fcbf49;
+    --bg:#f4f6fa;
+    --border:#c9d0de;
+    --ink:#20242e;
+    --muted:#5b6070;
+    --red:#c0392b;
+    --green:#1a7a3a;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    line-height:1.6;
+  }
+  :focus-visible{
+    outline:3px solid var(--navy);
+    outline-offset:2px;
+    box-shadow:0 0 0 6px var(--yellow);
+    border-radius:8px;
+  }
+  main{
+    max-width:560px;
+    margin:0 auto;
+    padding:20px 16px 40px;
+  }
+  .card{
+    background:#fff;
+    border:2px solid var(--navy);
+    border-radius:var(--radius);
+    padding:22px 18px;
+    box-shadow:6px 6px 0 var(--yellow);
+  }
+  h1{
+    font-family:"Baloo 2", "Comic Sans MS", system-ui, sans-serif;
+    color:var(--navy);
+    font-size:1.6rem;
+    line-height:1.2;
+    margin:0 0 6px;
+  }
+  .sub{
+    margin:0 0 12px;
+    color:var(--muted);
+    font-size:.92rem;
+  }
+  .field{margin-bottom:14px}
+  label{
+    display:block;
+    font-weight:600;
+    font-size:.92rem;
+    color:var(--navy);
+    margin-bottom:6px;
+  }
+  label .req{color:var(--red)}
+  .hint{
+    font-weight:400;
+    color:var(--muted);
+    font-size:.82rem;
+    margin:4px 0 0;
+  }
+  input,select,textarea{
+    width:100%;
+    font:inherit;
+    color:var(--ink);
+    background:#fff;
+    border:2px solid var(--border);
+    border-radius:10px;
+    padding:11px 12px;
+  }
+  input:focus,select:focus,textarea:focus{
+    border-color:var(--navy);
+    outline:none;
+  }
+  textarea{resize:vertical;min-height:76px}
+  input[type="checkbox"]{
+    width:20px;
+    height:20px;
+    flex:0 0 20px;
+    margin-top:3px;
+    accent-color:var(--navy);
+  }
+  .row2{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+  @media(max-width:420px){.row2{grid-template-columns:1fr}}
+  .checkline{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    font-size:.9rem;
+    margin:4px 0 14px;
+  }
+  .error-text{
+    display:none;
+    color:var(--red);
+    font-size:.86rem;
+    font-weight:600;
+    margin:6px 0 0;
+  }
+  .field.invalid input,.field.invalid select,.field.invalid textarea{border-color:var(--red);background:#fff5f3}
+  .field.invalid .error-text{display:block}
+  .alert{
+    display:none;
+    border-radius:10px;
+    padding:11px 12px;
+    font-size:.9rem;
+    font-weight:600;
+    margin:0 0 14px;
+  }
+  .alert.show{display:block}
+  .alert.err{background:#fdecea;color:#7a1f14;border:2px solid var(--red)}
+  .alert.ok{background:#e6f6ea;color:#0d5c26;border:2px solid var(--green)}
+  .alert.info{background:#e8effc;color:#1c2f5e;border:2px solid var(--navy)}
+  .btn{
+    width:100%;
+    font-family:"Baloo 2", "Comic Sans MS", system-ui, sans-serif;
+    font-size:1.05rem;
+    font-weight:800;
+    color:var(--navy);
+    background:var(--yellow);
+    border:2px solid var(--navy);
+    border-radius:12px;
+    padding:12px 14px;
+    cursor:pointer;
+    box-shadow:0 4px 0 var(--navy);
+  }
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--navy)}
+  .btn[disabled]{opacity:.65;cursor:wait;transform:none}
+  .btn.ghost{background:#fff}
+  .btnrow{display:grid;gap:10px;margin-top:6px}
+  .fare{
+    display:none;
+    margin-top:16px;
+    background:#fff;
+    border:2px dashed var(--navy);
+    border-radius:var(--radius);
+    padding:16px;
+  }
+  .fare.show{display:block}
+  .fare h2{
+    font-family:"Baloo 2", "Comic Sans MS", system-ui, sans-serif;
+    color:var(--navy);
+    font-size:1.2rem;
+    margin:0 0 8px;
+  }
+  .fare table{width:100%;border-collapse:collapse;font-size:.92rem}
+  .fare td{padding:6px 4px;border-bottom:1px solid var(--border)}
+  .fare td:last-child{text-align:right;font-weight:600}
+  .fare tr.total td{border-bottom:none;font-size:1.05rem;color:var(--navy)}
+  #successCard{
+    display:none;
+    margin-top:16px;
+    background:var(--navy);
+    color:#fff;
+    border-radius:var(--radius);
+    padding:22px 18px;
+    border:2px solid var(--navy);
+    box-shadow:6px 6px 0 var(--yellow);
+    text-align:center;
+  }
+  #successCard.show{display:block}
+  #successCard h2{
+    font-family:"Baloo 2", "Comic Sans MS", system-ui, sans-serif;
+    color:var(--yellow);
+    margin:0 0 6px;
+    font-size:1.4rem;
+  }
+  #successCard p{margin:6px 0;color:#dbe2f0;overflow-wrap:anywhere}
+  #successCard a{color:var(--yellow);font-weight:600}
+  .backlink{display:inline-block;margin-top:14px;color:var(--navy);font-weight:600;font-size:.9rem}
+  .site-header{background:var(--navy);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:50}
+  .site-header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px}
+  .site-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.3rem;line-height:1;color:#fff;text-decoration:none}
+  .site-brand small{display:block;font-family:"Noto Sans",system-ui,sans-serif;font-weight:600;font-size:.64rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow)}
+  .site-nav{display:flex;gap:4px;margin-left:8px;align-items:center}
+  .site-nav> a,.nav-drop summary{color:#dbe2f0;text-decoration:none;font-weight:600;font-size:.9rem;padding:8px 10px;border-radius:8px}
+  .site-nav> a:hover,.nav-drop summary:hover{background:#1f2f52;color:#fff}
+  .nav-drop{position:relative}
+  .nav-drop summary{cursor:pointer;list-style:none}
+  .nav-drop summary::-webkit-details-marker{display:none}
+  .nav-drop[open] summary{background:#1f2f52;color:#fff}
+  .drop-menu{display:flex;flex-direction:column;gap:2px}
+  @media(min-width:761px){.drop-menu{position:absolute;top:100%;left:0;background:var(--navy);border:1px solid #2a3d66;border-radius:8px;padding:6px;min-width:180px}.drop-menu a{white-space:nowrap}}
+  #navMenuBtn{display:none;background:transparent;border:2px solid var(--yellow);border-radius:8px;color:var(--yellow);font:inherit;font-weight:800;padding:6px 12px;cursor:pointer}
+  .site-footer{background:var(--navy);color:#dbe2f0;padding:22px 16px 30px}
+  .site-foot-inner{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+  .site-foot-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;color:#fff;font-size:1.05rem}
+  .site-foot-links{display:flex;gap:16px;flex-wrap:wrap}
+  .site-foot-links a{color:var(--yellow);font-size:.86rem;font-weight:600;text-decoration:none}
+  .site-foot-links a:hover{text-decoration:underline}
+  @media (max-width:760px){#navMenuBtn{display:block;margin-left:auto}.site-nav{display:none;position:absolute;top:100%;left:0;right:0;background:var(--navy);flex-direction:column;align-items:stretch;padding:8px 16px 14px;margin:0;border-top:1px solid #2a3d66}.site-nav.open{display:flex}.site-header-inner{flex-wrap:wrap;position:relative}}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="index.html" aria-label="ApnaShift home">ApnaShift<small>Shifting • Transport</small></a>
+    <nav class="site-nav" id="siteNav" aria-label="Main navigation">
+      <a href="index.html">Home</a>
+      <a href="user-auth.html">Login</a>
+      <details class="nav-drop">
+        <summary>Driver</summary>
+        <div class="drop-menu">
+          <a href="driver-register.html">Join as Driver</a>
+          <a href="driver-login.html">Driver Login</a>
+        </div>
+      </details>
+      <a href="help.html">Help</a>
+    </nav>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+  </div>
+</header>
+
+<main>
+  <section class="card" aria-labelledby="pageTitle">
+    <h1 id="pageTitle">Vehicle Book Karo</h1>
+    <p class="sub">Pickup aur drop ki details bharo, pehle sahi kiraya dekho, phir booking pakki karo.</p>
+
+    <div class="alert" id="formAlert" role="alert" aria-live="assertive"></div>
+
+    <form id="bookingForm" novalidate>
+      <div class="field" id="f-pickupAddr">
+        <label for="pickupAddr">Pickup address <span class="req" aria-hidden="true">*</span></label>
+        <input type="text" id="pickupAddr" name="pickup-address" autocomplete="street-address" maxlength="300" placeholder="Example: 12 MG Road, Indore" aria-describedby="pickupAddr-err" list="pickupSuggest" required>
+        <datalist id="pickupSuggest"></datalist>
+        <p class="error-text" id="pickupAddr-err"></p>
+      </div>
+      <div class="row2">
+        <div class="field" id="f-pickupLat">
+          <label for="pickupLat">Pickup latitude <span class="req" aria-hidden="true">*</span></label>
+          <input type="number" id="pickupLat" name="pickup-lat" step="any" min="-90" max="90" value="22.7196" aria-describedby="pickupLat-hint pickupLat-err" required>
+          <p class="hint" id="pickupLat-hint">Indore ke aas-paas: 22.7196, 75.8577</p>
+          <p class="error-text" id="pickupLat-err"></p>
+        </div>
+        <div class="field" id="f-pickupLng">
+          <label for="pickupLng">Pickup longitude <span class="req" aria-hidden="true">*</span></label>
+          <input type="number" id="pickupLng" name="pickup-lng" step="any" min="-180" max="180" value="75.8577" aria-describedby="pickupLng-err" required>
+          <p class="error-text" id="pickupLng-err"></p>
+        </div>
+      </div>
+
+      <div class="field" id="f-dropAddr">
+        <label for="dropAddr">Drop address <span class="req" aria-hidden="true">*</span></label>
+        <input type="text" id="dropAddr" name="drop-address" autocomplete="street-address" maxlength="300" placeholder="Example: 45 AB Road, Indore" aria-describedby="dropAddr-err" list="dropSuggest" required>
+        <datalist id="dropSuggest"></datalist>
+        <p class="error-text" id="dropAddr-err"></p>
+      </div>
+      <div class="row2">
+        <div class="field" id="f-dropLat">
+          <label for="dropLat">Drop latitude <span class="req" aria-hidden="true">*</span></label>
+          <input type="number" id="dropLat" name="drop-lat" step="any" min="-90" max="90" value="22.7200" aria-describedby="dropLat-err" required>
+          <p class="error-text" id="dropLat-err"></p>
+        </div>
+        <div class="field" id="f-dropLng">
+          <label for="dropLng">Drop longitude <span class="req" aria-hidden="true">*</span></label>
+          <input type="number" id="dropLng" name="drop-lng" step="any" min="-180" max="180" value="75.8600" aria-describedby="dropLng-err" required>
+          <p class="error-text" id="dropLng-err"></p>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="field" id="f-schedDate">
+          <label for="schedDate">Tareekh (optional)</label>
+          <input type="date" id="schedDate" name="scheduled-date" aria-describedby="schedDate-hint schedDate-err">
+          <p class="hint" id="schedDate-hint">Khali chhoda to abhi ki booking hogi.</p>
+          <p class="error-text" id="schedDate-err"></p>
+        </div>
+        <div class="field" id="f-schedTime">
+          <label for="schedTime">Samay (optional)</label>
+          <input type="time" id="schedTime" name="scheduled-time" aria-describedby="schedTime-err">
+          <p class="error-text" id="schedTime-err"></p>
+        </div>
+      </div>
+
+      <div class="field" id="f-vehicle">
+        <label for="vehicle">Gaadi chuno <span class="req" aria-hidden="true">*</span></label>
+        <select id="vehicle" name="vehicle-type" aria-describedby="vehicle-err" required>
+          <option value="pickup">Pickup — chhota samaan</option>
+          <option value="mini_truck">Mini Truck — ghar ka samaan</option>
+          <option value="mini_tractor">Mini Tractor — bhari samaan</option>
+        </select>
+        <p class="error-text" id="vehicle-err"></p>
+      </div>
+
+      <fieldset class="field" id="f-payMethod">
+        <legend>Payment kaise karoge? <span class="req" aria-hidden="true">*</span></legend>
+        <label class="checkline" for="payUpi">
+          <input type="radio" id="payUpi" name="payment-method" value="upi" checked>
+          <span>UPI se <strong>(default, recommended)</strong> — driver ke UPI ID par</span>
+        </label>
+        <label class="checkline" for="payCash">
+          <input type="radio" id="payCash" name="payment-method" value="cash">
+          <span>Cash se — driver ko haath me</span>
+        </label>
+        <p class="error-text" id="payMethod-err"></p>
+      </fieldset>
+
+      <label class="checkline" for="helper">
+        <input type="checkbox" id="helper" name="helper-needed">
+        <span>Mujhe helper chahiye (samaan uthane ke liye madad)</span>
+      </label>
+
+      <div class="field" id="f-itemDesc">
+        <label for="itemDesc">Samaan ki details (optional)</label>
+        <textarea id="itemDesc" name="item-description" maxlength="500" placeholder="Example: 1 double bed, 4 dabbe, 1 fridge" aria-describedby="itemDesc-hint itemDesc-err"></textarea>
+        <p class="hint" id="itemDesc-hint">Driver ko andaza lag jayega kitna samaan hai.</p>
+        <p class="error-text" id="itemDesc-err"></p>
+      </div>
+
+      <div class="btnrow">
+        <button type="button" class="btn ghost" id="estimateBtn">Get Estimate — Kiraya Dekho</button>
+      </div>
+    </form>
+
+    <section class="fare" id="fareCard" aria-live="polite" aria-labelledby="fareTitle">
+      <h2 id="fareTitle">Kiraye ka hisaab</h2>
+      <table>
+        <tbody>
+          <tr><td>Doori</td><td id="fareDist">–</td></tr>
+          <tr><td>Base kiraya</td><td id="fareBase">–</td></tr>
+          <tr><td>Doori ka kiraya</td><td id="fareDistFare">–</td></tr>
+          <tr><td>Helper charge</td><td id="fareHelper">–</td></tr>
+          <tr class="total"><td>Kul kiraya</td><td id="fareTotal">–</td></tr>
+          <tr><td>Andaza range</td><td id="fareRange">–</td></tr>
+        </tbody>
+      </table>
+      <div class="btnrow" style="margin-top:12px">
+        <button type="button" class="btn" id="confirmBtn">Confirm Booking — Pakki Karo</button>
+      </div>
+    </section>
+
+    <section id="successCard" aria-live="polite" aria-labelledby="successTitle">
+      <h2 id="successTitle">Booking pakki ho gayi!</h2>
+      <p id="successText">Booking ID mil gayi hai.</p>
+      <p><a href="customer-dashboard.html">Meri bookings dekho — Dashboard kholo</a></p>
+    </section>
+
+    <a class="backlink" href="customer-dashboard.html">← Dashboard par wapas jao</a>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="site-foot-inner">
+    <div class="site-foot-brand">ApnaShift</div>
+    <div class="site-foot-links">
+      <a href="index.html">Home</a>
+      <a href="help.html">Help</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms &amp; Conditions</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  // Backend base URL with local development fallback.
+  var API_BASE_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.protocol === "file:") ? "http://localhost:3000" : "https://apnashiftapp-production.up.railway.app";
+  var TOKEN_KEY = "apnashift_user_token";
+  var VEHICLES = ["pickup", "mini_truck", "mini_tractor"];
+
+  var alertBox = document.getElementById("formAlert");
+  var estimateBtn = document.getElementById("estimateBtn");
+  var confirmBtn = document.getElementById("confirmBtn");
+  var fareCard = document.getElementById("fareCard");
+  var successCard = document.getElementById("successCard");
+
+  // Require login before the booking form can be used.
+  function getToken(){
+    try { return localStorage.getItem(TOKEN_KEY); }
+    catch(e){ return null; }
+  }
+  if(!getToken()){
+    window.location.href = "user-auth.html";
+    return;
+  }
+
+  function showAlert(type, msg){
+    alertBox.className = "alert show " + (type === "ok" ? "ok" : type === "info" ? "info" : "err");
+    alertBox.textContent = msg;
+  }
+
+  function hideAlert(){
+    alertBox.className = "alert";
+    alertBox.textContent = "";
+  }
+
+  function setErr(fieldId, errId, inputEl, msg){
+    var f = document.getElementById(fieldId);
+    var e = document.getElementById(errId);
+    if(msg){
+      f.classList.add("invalid");
+      e.textContent = msg;
+      if(inputEl && inputEl.setAttribute) inputEl.setAttribute("aria-invalid", "true");
+      return false;
+    }
+    f.classList.remove("invalid");
+    e.textContent = "";
+    if(inputEl && inputEl.removeAttribute) inputEl.removeAttribute("aria-invalid");
+    return true;
+  }
+
+  function authHeaders(){
+    return {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + getToken()
+    };
+  }
+
+  // Geoapify address autocomplete (server-side proxy /api/geo/autocomplete —
+  // key backend env me rehta hai). Suggestion chunne par lat/lng auto-bharte hain.
+  function attachAutocomplete(addrId, latId, lngId, listId){
+    var addr = document.getElementById(addrId);
+    var latEl = document.getElementById(latId);
+    var lngEl = document.getElementById(lngId);
+    var list = document.getElementById(listId);
+    if(!addr || !latEl || !lngEl || !list) return;
+    var timer = null, cache = {};
+    addr.addEventListener("input", function(){
+      var q = String(addr.value || "").trim();
+      if(q.length < 3){ list.innerHTML = ""; return; }
+      if(timer) clearTimeout(timer);
+      timer = setTimeout(function(){
+        if(cache[q]){ renderS(cache[q]); return; }
+        fetch(API_BASE_URL + "/api/geo/autocomplete?text=" + encodeURIComponent(q) + "&limit=5", {
+          headers: { "Authorization": "Bearer " + getToken() }
+        }).then(function(r){ return r.json().catch(function(){ return null; }); })
+        .then(function(b){
+          var arr = (b && b.ok && Array.isArray(b.results)) ? b.results : [];
+          cache[q] = arr;
+          renderS(arr);
+        }).catch(function(){ /* suggestion fail chupchaap — manual lat/lng chalta hai */ });
+      }, 400);
+    });
+    function renderS(arr){
+      list.innerHTML = "";
+      for(var i = 0; i < arr.length; i++){
+        var o = document.createElement("option");
+        o.value = arr[i].formatted;
+        o.setAttribute("data-lat", arr[i].lat);
+        o.setAttribute("data-lng", arr[i].lng);
+        list.appendChild(o);
+      }
+    }
+    // Poora suggestion text match ho to coords bhar do.
+    addr.addEventListener("change", function(){
+      var opts = list.querySelectorAll ? list.querySelectorAll("option") : [];
+      for(var i = 0; i < opts.length; i++){
+        if(opts[i].value === addr.value){
+          var la = Number(opts[i].getAttribute("data-lat"));
+          var ln = Number(opts[i].getAttribute("data-lng"));
+          if(isFinite(la) && isFinite(ln)){ latEl.value = la; lngEl.value = ln; }
+          break;
+        }
+      }
+    });
+  }
+  attachAutocomplete("pickupAddr", "pickupLat", "pickupLng", "pickupSuggest");
+  attachAutocomplete("dropAddr", "dropLat", "dropLng", "dropSuggest");
+
+  function readBody(res){
+    return res.json().then(function(data){
+      return { status: res.status, body: data };
+    }).catch(function(){
+      return { status: res.status, body: null };
+    });
+  }
+
+  function parseNum(value){
+    if(value === null || value === undefined || String(value).trim() === "") return null;
+    var n = Number(String(value).trim());
+    return (isFinite(n) ? n : null);
+  }
+
+  function validLat(n){ return n !== null && n >= -90 && n <= 90; }
+  function validLng(n){ return n !== null && n >= -180 && n <= 180; }
+
+  function fmtRs(n){
+    if(n === null || n === undefined || !isFinite(Number(n))) return "–";
+    return "Rs " + Number(n);
+  }
+
+  // Validate the full form and return a clean payload, or null on failure.
+  function validateForm(){
+    hideAlert();
+    var ok = true;
+    var firstBad = null;
+    function bad(inputEl){ if(!firstBad) firstBad = inputEl; ok = false; }
+
+    var pickupAddr = document.getElementById("pickupAddr");
+    var pickupLatEl = document.getElementById("pickupLat");
+    var pickupLngEl = document.getElementById("pickupLng");
+    var dropAddr = document.getElementById("dropAddr");
+    var dropLatEl = document.getElementById("dropLat");
+    var dropLngEl = document.getElementById("dropLng");
+    var schedDate = document.getElementById("schedDate");
+    var schedTime = document.getElementById("schedTime");
+    var vehicle = document.getElementById("vehicle");
+    var helper = document.getElementById("helper");
+    var itemDesc = document.getElementById("itemDesc");
+
+    if(!pickupAddr.value.trim()){
+      setErr("f-pickupAddr", "pickupAddr-err", pickupAddr, "Pickup ka poora address likho.");
+      bad(pickupAddr);
+    } else { setErr("f-pickupAddr", "pickupAddr-err", pickupAddr, ""); }
+
+    var pLat = parseNum(pickupLatEl.value);
+    if(!validLat(pLat)){
+      setErr("f-pickupLat", "pickupLat-err", pickupLatEl, "-90 se 90 ke beech sahi latitude likho.");
+      bad(pickupLatEl);
+    } else { setErr("f-pickupLat", "pickupLat-err", pickupLatEl, ""); }
+
+    var pLng = parseNum(pickupLngEl.value);
+    if(!validLng(pLng)){
+      setErr("f-pickupLng", "pickupLng-err", pickupLngEl, "-180 se 180 ke beech sahi longitude likho.");
+      bad(pickupLngEl);
+    } else { setErr("f-pickupLng", "pickupLng-err", pickupLngEl, ""); }
+
+    if(!dropAddr.value.trim()){
+      setErr("f-dropAddr", "dropAddr-err", dropAddr, "Drop ka poora address likho.");
+      bad(dropAddr);
+    } else { setErr("f-dropAddr", "dropAddr-err", dropAddr, ""); }
+
+    var dLat = parseNum(dropLatEl.value);
+    if(!validLat(dLat)){
+      setErr("f-dropLat", "dropLat-err", dropLatEl, "-90 se 90 ke beech sahi latitude likho.");
+      bad(dropLatEl);
+    } else { setErr("f-dropLat", "dropLat-err", dropLatEl, ""); }
+
+    var dLng = parseNum(dropLngEl.value);
+    if(!validLng(dLng)){
+      setErr("f-dropLng", "dropLng-err", dropLngEl, "-180 se 180 ke beech sahi longitude likho.");
+      bad(dropLngEl);
+    } else { setErr("f-dropLng", "dropLng-err", dropLngEl, ""); }
+
+    if(VEHICLES.indexOf(vehicle.value) === -1){
+      setErr("f-vehicle", "vehicle-err", vehicle, "List me se gaadi chuno.");
+      bad(vehicle);
+    } else { setErr("f-vehicle", "vehicle-err", vehicle, ""); }
+
+    // Scheduled time is optional, but date and time must be given together.
+    var scheduledISO = null;
+    var hasDate = !!schedDate.value;
+    var hasTime = !!schedTime.value;
+    if(hasDate !== hasTime){
+      var msg = "Tareekh aur samay dono bharo, ya dono khali chhodo.";
+      setErr("f-schedDate", "schedDate-err", schedDate, hasDate ? "" : msg);
+      setErr("f-schedTime", "schedTime-err", schedTime, hasTime ? "" : msg);
+      bad(hasDate ? schedTime : schedDate);
+    } else if(hasDate && hasTime){
+      var dt = new Date(schedDate.value + "T" + schedTime.value + ":00");
+      if(isNaN(dt.getTime())){
+        setErr("f-schedTime", "schedTime-err", schedTime, "Sahi tareekh aur samay chuno.");
+        bad(schedTime);
+      } else if(dt.getTime() <= Date.now()){
+        setErr("f-schedTime", "schedTime-err", schedTime, "Aane wala samay chuno — beeta hua samay nahi chalega.");
+        bad(schedTime);
+      } else {
+        setErr("f-schedDate", "schedDate-err", schedDate, "");
+        setErr("f-schedTime", "schedTime-err", schedTime, "");
+        scheduledISO = dt.toISOString();
+      }
+    } else {
+      setErr("f-schedDate", "schedDate-err", schedDate, "");
+      setErr("f-schedTime", "schedTime-err", schedTime, "");
+    }
+
+    var desc = itemDesc.value.trim();
+    if(desc.length > 500){
+      setErr("f-itemDesc", "itemDesc-err", itemDesc, "500 akshar se kam likho.");
+      bad(itemDesc);
+    } else { setErr("f-itemDesc", "itemDesc-err", itemDesc, ""); }
+
+    if(!ok){ if(firstBad) firstBad.focus(); return null; }
+
+    var payChecked = document.querySelector('input[name="payment-method"]:checked');
+    var payVal = payChecked ? payChecked.value : "upi";
+    if(payVal !== "upi" && payVal !== "cash"){ payVal = "upi"; }
+
+    return {
+      pickup: { address: pickupAddr.value.trim(), lat: pLat, lng: pLng },
+      drop: { address: dropAddr.value.trim(), lat: dLat, lng: dLng },
+      vehicle_type: vehicle.value,
+      helper_needed: !!helper.checked,
+      payment_method: payVal,
+      item_description: desc,
+      scheduled_time: scheduledISO
+    };
+  }
+
+  // Shared error mapping for estimate and booking calls.
+  function handleApiError(result, fallbackMsg){
+    var body = result.body || {};
+    var code = body.error;
+    if(result.status === 400){
+      var detail = body.details && body.details[0] && body.details[0].message;
+      showAlert("err", detail || "Details me kuch galat hai — form check karke dobara try karo.");
+      return;
+    }
+    if(result.status === 401){
+      window.location.href = "user-auth.html";
+      return;
+    }
+    if(result.status === 409 || code === "distance_too_far"){
+      showAlert("err", "Ye doori hamari service se bahar hai — paas ka address try karo.");
+      return;
+    }
+    if(result.status === 422){
+      showAlert("err", "Details sahi nahi lag rahi — form check karke dobara try karo.");
+      return;
+    }
+    if(result.status === 429){
+      showAlert("err", "Bahut koshish ho gayi — thodi der rukkar ek baar try karo.");
+      return;
+    }
+    if(result.status >= 500){
+      showAlert("err", "Server me dikkat hai — thodi der baad dobara try karo.");
+      return;
+    }
+    showAlert("err", fallbackMsg);
+  }
+
+  function setLoading(btn, busy, busyText, idleText){
+    btn.disabled = !!busy;
+    btn.textContent = busy ? busyText : idleText;
+  }
+
+  // Step 1: fetch a price estimate from the backend.
+  estimateBtn.addEventListener("click", function(){
+    var clean = validateForm();
+    if(!clean) return;
+    hideAlert();
+    fareCard.classList.remove("show");
+    setLoading(estimateBtn, true, "Kiraya nikal raha hai…", "Get Estimate — Kiraya Dekho");
+
+    fetch(API_BASE_URL + "/api/bookings/estimate-price", {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({
+        pickup: { lat: clean.pickup.lat, lng: clean.pickup.lng },
+        drop: { lat: clean.drop.lat, lng: clean.drop.lng },
+        vehicle_type: clean.vehicle_type,
+        helper_needed: clean.helper_needed
+      })
+    }).then(readBody).then(function(result){
+      if(result.status !== 200 || !result.body){
+        handleApiError(result, "Kiraya nahi nikal paya — dobara try karo.");
+        return;
+      }
+      var d = result.body;
+      document.getElementById("fareDist").textContent = (d.distance_km !== undefined ? d.distance_km + " km" : "–");
+      document.getElementById("fareBase").textContent = fmtRs(d.base_fare);
+      document.getElementById("fareDistFare").textContent = fmtRs(d.distance_fare);
+      document.getElementById("fareHelper").textContent = fmtRs(d.helper_charge !== undefined ? d.helper_charge : 0);
+      document.getElementById("fareTotal").textContent = fmtRs(d.total);
+      var range = "–";
+      if(d.estimate_min !== undefined && d.estimate_max !== undefined){
+        range = "Rs " + d.estimate_min + " – Rs " + d.estimate_max;
+      }
+      document.getElementById("fareRange").textContent = range;
+      fareCard.classList.add("show");
+      showAlert("ok", "Kiraya taiyaar hai — pasand aaye to booking pakki karo.");
+      confirmBtn.focus();
+    }).catch(function(){
+      showAlert("err", "Internet me dikkat hai — connection check karke dobara try karo.");
+    }).then(function(){
+      setLoading(estimateBtn, false, "", "Get Estimate — Kiraya Dekho");
+    });
+  });
+
+  // Step 2: create the booking. Success comes only from the backend response.
+  confirmBtn.addEventListener("click", function(){
+    var clean = validateForm();
+    if(!clean) return;
+    hideAlert();
+    setLoading(confirmBtn, true, "Booking pakki ho rahi hai…", "Confirm Booking — Pakki Karo");
+
+    var payload = {
+      pickup: clean.pickup,
+      drop: clean.drop,
+      vehicle_type: clean.vehicle_type,
+      helper_needed: clean.helper_needed,
+      payment_method: clean.payment_method
+    };
+    if(clean.item_description) payload.item_description = clean.item_description;
+    if(clean.scheduled_time) payload.scheduled_time = clean.scheduled_time;
+
+    fetch(API_BASE_URL + "/api/bookings", {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify(payload)
+    }).then(readBody).then(function(result){
+      if(result.status !== 201 || !result.body || result.body.ok !== true || !result.body.booking){
+        handleApiError(result, "Booking pakki nahi hui — details check karke dobara try karo.");
+        return;
+      }
+      var b = result.body.booking;
+      document.getElementById("successText").textContent =
+        "Booking ID: " + b.id + (b.price_rs !== undefined ? " — Kul kiraya Rs " + b.price_rs : "");
+      successCard.classList.add("show");
+      showAlert("ok", "Booking pakki ho gayi! Driver milte hi khabar milegi.");
+      successCard.scrollIntoView({ behavior: "smooth", block: "start" });
+    }).catch(function(){
+      showAlert("err", "Internet me dikkat hai — connection check karke dobara try karo.");
+    }).then(function(){
+      setLoading(confirmBtn, false, "", "Confirm Booking — Pakki Karo");
+    });
+  });
+
+  document.getElementById("bookingForm").addEventListener("input", hideAlert);
+
+  var navMenuBtn=document.getElementById("navMenuBtn"),siteNav=document.getElementById("siteNav");
+  if(navMenuBtn&&siteNav){navMenuBtn.addEventListener("click",function(){var open=siteNav.classList.toggle("open");navMenuBtn.setAttribute("aria-expanded",open?"true":"false");navMenuBtn.setAttribute("aria-label",open?"Menu band karo":"Menu kholo");});siteNav.addEventListener("click",function(ev){if(ev.target.tagName==="A"&&siteNav.classList.contains("open")){siteNav.classList.remove("open");navMenuBtn.setAttribute("aria-expanded","false");}});}
+})();
+</script>
+</body>
+</html>

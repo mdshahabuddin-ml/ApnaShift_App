@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Bookings | ApnaShift</title>
+<meta name="description" content="Apni saari bookings dekho, status track karo aur zaroorat par cancel karo.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#14213d;
+    --yellow:#fcbf49;
+    --bg:#f4f6fa;
+    --border:#c9d0de;
+    --ink:#20242e;
+    --muted:#5b6070;
+    --red:#c0392b;
+    --green:#1a7a3a;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    line-height:1.6;
+  }
+  :focus-visible{
+    outline:3px solid var(--navy);
+    outline-offset:2px;
+    box-shadow:0 0 0 6px var(--yellow);
+    border-radius:8px;
+  }
+  .site-header{background:var(--navy);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:50}
+  .site-header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px}
+  .site-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.3rem;line-height:1;color:#fff;text-decoration:none}
+  .site-brand small{display:block;font-family:"Noto Sans",system-ui,sans-serif;font-weight:600;font-size:.64rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow)}
+  .site-nav{display:flex;gap:4px;margin-left:8px;align-items:center}
+  .site-nav> a{color:#dbe2f0;text-decoration:none;font-weight:600;font-size:.9rem;padding:8px 10px;border-radius:8px}
+  .site-nav> a:hover{background:#1f2f52;color:#fff}
+  #navMenuBtn{display:none;background:transparent;border:2px solid var(--yellow);border-radius:8px;color:var(--yellow);font:inherit;font-weight:800;padding:6px 12px;cursor:pointer}
+  @media (max-width:760px){#navMenuBtn{display:block;margin-left:auto}.site-nav{display:none;position:absolute;top:100%;left:0;right:0;background:var(--navy);flex-direction:column;align-items:stretch;padding:8px 16px 14px;margin:0}.site-nav.open{display:flex}.site-header-inner{flex-wrap:wrap;position:relative}}
+  main{max-width:960px;margin:0 auto;padding:20px 16px 40px}
+  h1{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;color:var(--navy);font-size:1.6rem;margin:0 0 6px}
+  .sub{margin:0 0 12px;color:var(--muted);font-size:.9rem}
+  .card{background:#fff;border:2px solid var(--navy);border-radius:var(--radius);padding:18px;box-shadow:6px 6px 0 var(--yellow);margin-bottom:16px}
+  #pageAlert{display:none;border-radius:10px;padding:11px 12px;font-size:.9rem;font-weight:600;margin:0 0 14px}
+  #pageAlert.show{display:block}
+  #pageAlert.err{background:#fdecea;color:#7a1f14;border:2px solid var(--red)}
+  #pageAlert.ok{background:#e6f6ea;color:#0d5c26;border:2px solid var(--green)}
+  #pageAlert.info{background:#fff3cf;color:var(--navy);border:2px solid var(--navy)}
+  .booking{border:2px solid var(--border);border-radius:10px;padding:12px;margin:10px 0;background:#fff}
+  .booking-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+  .booking-id{font-size:.8rem;color:var(--muted);font-weight:600}
+  .pill{display:inline-block;font-size:.78rem;font-weight:800;padding:3px 12px;border-radius:999px;border:2px solid var(--navy);background:#fff;color:var(--navy)}
+  .pill.pending{background:#fff4d6}
+  .pill.accepted,.pill.arrived{background:#eaf0ff}
+  .pill.in_transit{background:var(--navy);color:var(--yellow)}
+  .pill.delivered{background:#e6f6ea;color:#0d5c26;border-color:var(--green)}
+  .pill.cancelled{background:#fdecea;color:#7a1f14;border-color:var(--red)}
+  .route{font-size:.92rem;margin:4px 0}
+  .meta{font-size:.84rem;color:var(--muted);margin:4px 0}
+  .meta strong{color:var(--ink)}
+  .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+  .btn{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:.92rem;padding:10px 16px;border-radius:10px;border:2px solid var(--navy);cursor:pointer;background:var(--yellow);color:var(--navy);box-shadow:0 3px 0 var(--navy);text-decoration:none;display:inline-block}
+  .btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--navy)}
+  .btn[disabled]{opacity:.6;cursor:wait;transform:none}
+  .btn.ghost{background:#fff}
+  .btn.small{font-size:.85rem;padding:8px 14px;box-shadow:none}
+  .btn.danger{background:#fdecea;color:#7a1f14}
+  .more-wrap{text-align:center;margin-top:12px}
+  .loading,.empty{padding:14px;text-align:center;color:var(--muted);font-size:.9rem;background:#fff;border:2px dashed var(--border);border-radius:10px}
+  .empty .btn{margin-top:10px}
+  .dialog-backdrop{display:none;position:fixed;inset:0;background:rgba(20,33,61,.55);z-index:1000;padding:16px}
+  .dialog-backdrop.show{display:flex;align-items:center;justify-content:center}
+  .dialog{background:#fff;border:2px solid var(--navy);border-radius:var(--radius);box-shadow:6px 6px 0 var(--yellow);max-width:440px;width:100%;padding:20px 18px}
+  .dialog h2{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;color:var(--navy);font-size:1.25rem;margin:0 0 8px}
+  .dialog label{display:block;font-weight:600;font-size:.88rem;color:var(--navy);margin:10px 0 6px}
+  .dialog select{width:100%;font:inherit;color:var(--ink);background:#fff;border:2px solid var(--border);border-radius:10px;padding:10px 12px}
+  .dialog .error-text{color:var(--red);font-size:.84rem;font-weight:600;min-height:1.2em;margin:6px 0 0}
+  .site-footer{background:var(--navy);color:#dbe2f0;padding:22px 16px 30px}
+  .site-foot-inner{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+  .site-foot-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;color:#fff;font-size:1.05rem}
+  .site-foot-links{display:flex;gap:16px;flex-wrap:wrap}
+  .site-foot-links a{color:var(--yellow);font-size:.86rem;font-weight:600;text-decoration:none}
+  .site-foot-links a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="index.html" aria-label="ApnaShift home">ApnaShift<small>Shifting • Transport</small></a>
+    <nav class="site-nav" id="siteNav" aria-label="Main navigation">
+      <a href="index.html">Home</a>
+      <a href="create-booking.html">Book</a>
+      <a href="my-bookings.html">My Bookings</a>
+      <a href="help.html">Help</a>
+    </nav>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+  </div>
+</header>
+
+<main>
+  <h1>My Bookings</h1>
+  <p class="sub" id="countLine">Bookings load ho rahi hain…</p>
+
+  <div id="pageAlert" role="alert" aria-live="assertive"></div>
+
+  <section class="card" aria-labelledby="listTitle">
+    <div id="bookingsList" aria-live="polite"><p class="loading">Bookings load ho rahi hain…</p></div>
+    <div class="more-wrap">
+      <button type="button" class="btn ghost" id="moreBtn" hidden>Aur dikhao</button>
+    </div>
+  </section>
+
+  <div class="dialog-backdrop" id="cancelDialog" role="dialog" aria-modal="true" aria-labelledby="cancelDialogTitle">
+    <div class="dialog">
+      <h2 id="cancelDialogTitle">Booking cancel karein?</h2>
+      <p class="sub" id="cancelDialogSub">Ye booking cancel ho jayegi. Reason chunna zaroori hai.</p>
+      <label for="cancelReason">Cancel ka reason</label>
+      <select id="cancelReason">
+        <option value="">— Reason chuno —</option>
+        <option value="wrong_pickup">Galat pickup location</option>
+        <option value="wrong_drop">Galat drop location</option>
+        <option value="wrong_vehicle">Galat gaadi type</option>
+        <option value="changed_plan">Plan badal gaya</option>
+        <option value="duplicate">Duplicate booking ho gayi</option>
+        <option value="driver_issue">Driver se dikkat</option>
+        <option value="other">Other</option>
+      </select>
+      <p class="error-text" id="cancelDialogErr"></p>
+      <div class="btnrow">
+        <button type="button" class="btn danger small" id="cancelConfirmBtn">Haan, cancel karo</button>
+        <button type="button" class="btn ghost small" id="cancelBackBtn">Wapas jao</button>
+      </div>
+    </div>
+  </div>
+
+<footer class="site-footer">
+  <div class="site-foot-inner">
+    <div class="site-foot-brand">ApnaShift</div>
+    <div class="site-foot-links">
+      <a href="index.html">Home</a>
+      <a href="help.html">Help</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms &amp; Conditions</a>
+    </div>
+  </div>
+</footer>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var API_BASE_URL = "https://apnashiftapp-production.up.railway.app";
+  var TOKEN_KEY = "apnashift_user_token";
+  var PAGE_LIMIT = 10;
+  var STATUS_LABEL = {
+    pending: "Pending", accepted: "Confirmed", arrived: "Arriving",
+    in_transit: "In Progress", delivered: "Completed", cancelled: "Cancelled"
+  };
+  var CANCEL_LABEL = {
+    wrong_pickup: "Galat pickup location", wrong_drop: "Galat drop location",
+    wrong_vehicle: "Galat gaadi type", changed_plan: "Plan badal gaya",
+    duplicate: "Duplicate booking", driver_issue: "Driver se dikkat", other: "Other"
+  };
+
+  function getToken(){
+    try{ return localStorage.getItem(TOKEN_KEY); }catch(e){ return null; }
+  }
+  if(!getToken()){
+    window.location.href = "user-auth.html";
+    return;
+  }
+
+  var alertBox = document.getElementById("pageAlert");
+  var countLine = document.getElementById("countLine");
+  var bookingsList = document.getElementById("bookingsList");
+  var moreBtn = document.getElementById("moreBtn");
+  var cancelDialog = document.getElementById("cancelDialog");
+  var cancelReasonSel = document.getElementById("cancelReason");
+  var cancelDialogErr = document.getElementById("cancelDialogErr");
+  var cancelConfirmBtn = document.getElementById("cancelConfirmBtn");
+  var cancelBackBtn = document.getElementById("cancelBackBtn");
+
+  var page = 1, total = 0, loading = false;
+  var pendingCancelId = null;
+
+  function showAlert(type, msg){
+    if(!msg){ alertBox.className = "alert"; alertBox.textContent = ""; return; }
+    alertBox.className = "alert show " + (type === "err" ? "err" : type === "ok" ? "ok" : "info");
+    alertBox.textContent = msg;
+  }
+  function esc(v){
+    return String(v === undefined || v === null ? "" : v)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+  function authHeaders(){
+    return { "Content-Type": "application/json", "Authorization": "Bearer " + getToken() };
+  }
+  function readBody(res){
+    return res.json().then(function(data){
+      return { status: res.status, body: data };
+    }).catch(function(){
+      return { status: res.status, body: null };
+    });
+  }
+  function fmtDate(v){
+    if(!v) return "–";
+    var d = new Date(v);
+    if(isNaN(d.getTime())) return String(v);
+    return d.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+  }
+  function addrText(p){
+    if(!p) return "–";
+    if(typeof p === "string") return p;
+    return p.address || "–";
+  }
+  function cancellable(b){
+    return b.status === "pending" || b.status === "accepted";
+  }
+
+  function bookingCardHtml(b){
+    var html = '<article class="booking" data-booking="' + esc(b.id) + '">' +
+      '<div class="booking-head"><span class="booking-id">#' + esc(b.id) + "</span>" +
+      '<span class="pill ' + esc(b.status || "") + '">' + esc(STATUS_LABEL[b.status] || b.status || "Unknown") + "</span></div>" +
+      '<div class="route">📍 <strong>Pickup:</strong> ' + esc(addrText(b.pickup)) + "</div>" +
+      '<div class="route">🏁 <strong>Drop:</strong> ' + esc(addrText(b.drop)) + "</div>" +
+      '<p class="meta">🚚 ' + esc(b.vehicle_type || "–") +
+      (b.price_rs !== undefined && b.price_rs !== null ? " • <strong>Rs " + esc(b.price_rs) + "</strong>" : "") +
+      " • " + esc(fmtDate(b.created_at)) + "</p>" +
+      '<p class="meta" data-cancel-note="' + esc(b.id) + '"' +
+      (b.status === "cancelled" && b.cancellation && b.cancellation.reason ? "" : ' hidden') + ">" +
+      (b.status === "cancelled" ? "Cancel wajah: " + esc(CANCEL_LABEL[b.cancellation && b.cancellation.reason] || (b.cancellation && b.cancellation.reason) || "–") : "") + "</p>";
+    if(cancellable(b)){
+      html += '<div class="btnrow" data-actions="' + esc(b.id) + '">' +
+        '<button type="button" class="btn danger small" data-cancel="' + esc(b.id) + '">Cancel Karein</button></div>';
+    }
+    return html + "</article>";
+  }
+
+  // List load karo — fresh=true par page 1 se (error ke baad refresh).
+  function loadList(fresh){
+    if(loading) return;
+    loading = true;
+    if(fresh){
+      page = 1;
+      bookingsList.innerHTML = '<p class="loading">Bookings load ho rahi hain…</p>';
+      moreBtn.hidden = true;
+    } else {
+      moreBtn.disabled = true;
+      moreBtn.textContent = "Load ho raha hai…";
+    }
+    fetch(API_BASE_URL + "/api/bookings?page=" + page + "&limit=" + PAGE_LIMIT, { headers: authHeaders() })
+      .then(readBody)
+      .then(function(result){
+        if(result.status === 401){ window.location.href = "user-auth.html"; throw new Error("unauth"); }
+        if(result.status !== 200 || !result.body || result.body.ok !== true) throw new Error("load");
+        var arr = result.body.bookings || [];
+        total = (result.body.total !== undefined) ? result.body.total : arr.length;
+        if(fresh){
+          if(!arr.length){
+            countLine.textContent = "Abhi koi booking nahi.";
+            bookingsList.innerHTML = '<div class="empty">Abhi koi booking nahi.' +
+              '<br><a class="btn" href="create-booking.html">Pehli Booking Karo</a></div>';
+            moreBtn.hidden = true;
+            return;
+          }
+          bookingsList.innerHTML = arr.map(bookingCardHtml).join("");
+        } else {
+          var tmp = document.createElement("div");
+          tmp.innerHTML = arr.map(bookingCardHtml).join("");
+          while(tmp.firstChild) bookingsList.appendChild(tmp.firstChild);
+        }
+        var shown = bookingsList.querySelectorAll("article.booking").length;
+        countLine.textContent = "Kul " + total + " bookings • " + shown + " dikh rahi hain.";
+        if(shown < total){
+          page += 1;
+          moreBtn.hidden = false;
+        } else {
+          moreBtn.hidden = true;
+        }
+        showAlert(null, "");
+      })
+      .catch(function(err){
+        if(err && err.message === "unauth") return;
+        if(fresh){
+          bookingsList.innerHTML = '<p class="empty">Bookings load nahi huin — internet check karke refresh karo.</p>';
+          countLine.textContent = "Load nahi hua.";
+        }
+        showAlert("err", "Bookings load nahi huin — internet check karke dobara try karo.");
+      })
+      .then(function(){
+        loading = false;
+        moreBtn.disabled = false;
+        moreBtn.textContent = "Aur dikhao";
+      });
+  }
+  moreBtn.addEventListener("click", function(){ loadList(false); });
+
+  // Cancel dialog.
+  function openCancelDialog(id){
+    pendingCancelId = id;
+    cancelReasonSel.value = "";
+    cancelDialogErr.textContent = "";
+    cancelConfirmBtn.disabled = false;
+    cancelConfirmBtn.textContent = "Haan, cancel karo";
+    cancelDialog.classList.add("show");
+    try { cancelReasonSel.focus(); } catch(e){}
+  }
+  function closeCancelDialog(){
+    cancelDialog.classList.remove("show");
+    pendingCancelId = null;
+  }
+  cancelBackBtn.addEventListener("click", closeCancelDialog);
+  cancelDialog.addEventListener("click", function(ev){
+    if(ev.target === cancelDialog) closeCancelDialog();
+  });
+  document.addEventListener("keydown", function(ev){
+    if(ev.key === "Escape" && cancelDialog.classList.contains("show")) closeCancelDialog();
+  });
+
+  // Card ko bina reload update karo: pill + buttons + wajah.
+  function markCancelledInPlace(id, reason){
+    var card = bookingsList.querySelector('article.booking[data-booking="' + id + '"]');
+    if(!card){ loadList(true); return; }
+    var pill = card.querySelector(".pill");
+    if(pill){
+      pill.className = "pill cancelled";
+      pill.textContent = STATUS_LABEL.cancelled;
+    }
+    var actions = card.querySelector('[data-actions="' + id + '"]');
+    if(actions) actions.parentNode.removeChild(actions);
+    var note = card.querySelector('[data-cancel-note="' + id + '"]');
+    if(note){
+      note.hidden = false;
+      note.textContent = "Cancel wajah: " + (CANCEL_LABEL[reason] || reason);
+    }
+  }
+
+  cancelConfirmBtn.addEventListener("click", function(){
+    if(!pendingCancelId) return;
+    var reason = cancelReasonSel.value;
+    if(!reason){
+      cancelDialogErr.textContent = "Reason chunna zaroori hai.";
+      return;
+    }
+    cancelDialogErr.textContent = "";
+    cancelConfirmBtn.disabled = true;
+    cancelConfirmBtn.textContent = "Cancel ho rahi hai…";
+    var id = pendingCancelId;
+    fetch(API_BASE_URL + "/api/bookings/" + encodeURIComponent(id) + "/cancel", {
+      method: "PATCH",
+      headers: authHeaders(),
+      body: JSON.stringify({ reason: reason })
+    }).then(readBody).then(function(result){
+      if(result.status === 401){ window.location.href = "user-auth.html"; return; }
+      if(result.status === 200){
+        closeCancelDialog();
+        markCancelledInPlace(id, reason);
+        showAlert("ok", "Booking cancel ho gayi.");
+        return;
+      }
+      var code = result.body && result.body.error;
+      closeCancelDialog();
+      if(result.status === 409 || code === "invalid_transition"){
+        showAlert("err", "Ye booking ab cancel nahi ho sakti — driver nikal chuka hai ya trip poori ho gayi. List refresh ho rahi hai.");
+      } else if(result.status === 400){
+        showAlert("err", "Reason sahi chuno — list refresh ho rahi hai.");
+      } else if(result.status === 403){
+        showAlert("err", "Ye action allowed nahi hai — dobara login karke try karo. List refresh ho rahi hai.");
+      } else if(result.status === 404){
+        showAlert("err", "Booking mili nahi — list refresh ho rahi hai.");
+      } else if(result.status === 429){
+        showAlert("err", "Bahut koshish ho gayi — thodi der rukkar try karo. List refresh ho rahi hai.");
+      } else if(result.status >= 500){
+        showAlert("err", "Server me dikkat hai — thodi der baad try karo. List refresh ho rahi hai.");
+      } else {
+        showAlert("err", "Cancel nahi hui — dobara try karo. List refresh ho rahi hai.");
+      }
+      loadList(true);
+    }).catch(function(){
+      closeCancelDialog();
+      showAlert("err", "Internet me dikkat hai — connection check karo. List refresh ho rahi hai.");
+      loadList(true);
+    });
+  });
+
+  document.addEventListener("click", function(ev){
+    var cancelBtn = ev.target.closest ? ev.target.closest("[data-cancel]") : null;
+    if(cancelBtn){
+      var cancelId = cancelBtn.getAttribute("data-cancel");
+      if(cancelId) openCancelDialog(cancelId);
+    }
+  });
+
+  var navMenuBtn = document.getElementById("navMenuBtn"), siteNav = document.getElementById("siteNav");
+  if(navMenuBtn && siteNav){
+    navMenuBtn.addEventListener("click", function(){
+      var open = siteNav.classList.toggle("open");
+      navMenuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+  }
+
+  loadList(true);
+})();
+</script>
+</body>
+</html>

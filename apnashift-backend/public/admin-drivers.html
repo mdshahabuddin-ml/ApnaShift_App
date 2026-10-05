@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drivers | ApnaShift Admin</title>
+<meta name="description" content="ApnaShift admin — driver verification aur management.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#14213d;
+    --yellow:#fcbf49;
+    --bg:#f4f6fa;
+    --border:#c9d0de;
+    --ink:#20242e;
+    --muted:#5b6070;
+    --red:#c0392b;
+    --green:#1a7a3a;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    line-height:1.6;
+  }
+  :focus-visible{
+    outline:3px solid var(--navy);
+    outline-offset:2px;
+    box-shadow:0 0 0 4px var(--yellow);
+    border-radius:6px;
+  }
+  .site-header{background:var(--navy);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:50}
+  .site-header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px}
+  .site-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.3rem;line-height:1;color:#fff;text-decoration:none}
+  .site-brand small{display:block;font-family:"Noto Sans",system-ui,sans-serif;font-weight:600;font-size:.64rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow)}
+  .site-header .spacer{flex:1}
+  .logout-btn{background:transparent;border:2px solid var(--yellow);border-radius:8px;color:var(--yellow);font:inherit;font-weight:800;padding:6px 12px;cursor:pointer}
+  main{max-width:960px;margin:0 auto;padding:20px 16px 40px}
+  .card{background:#fff;border:2px solid var(--navy);border-radius:var(--radius);padding:18px;box-shadow:6px 6px 0 var(--yellow);margin-bottom:16px}
+  .card h1{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;color:var(--navy);margin:0 0 8px;font-size:1.5rem}
+  .sub{margin:0 0 10px;color:var(--muted);font-size:.9rem}
+  .alert{display:none;border-radius:10px;padding:11px 12px;font-size:.9rem;font-weight:600;margin:0 0 14px}
+  .alert.show{display:block}
+  .alert.err{background:#fdecea;color:#7a1f14;border:2px solid var(--red)}
+  .alert.ok{background:#e6f6ea;color:#0d5c26;border:2px solid var(--green)}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:12px}
+  .field{display:flex;flex-direction:column;gap:4px}
+  .field label{font-weight:600;font-size:.84rem;color:var(--navy)}
+  select,input{font:inherit;color:var(--ink);background:#fff;border:1px solid var(--border);border-radius:6px;padding:9px 11px}
+  .btn{font-family:"Baloo 2",system-ui,sans-serif;font-weight:800;font-size:.9rem;padding:9px 16px;border-radius:10px;border:2px solid var(--navy);background:var(--yellow);color:var(--navy);cursor:pointer}
+  .btn.ghost{background:#fff}
+  .btn.small{padding:5px 10px;font-size:.8rem}
+  .btn.danger{background:#fdecea;border-color:var(--red);color:#7a1f14}
+  .btn:disabled{opacity:.6;cursor:wait}
+  .row-card{border:1.5px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;background:#fffdf4}
+  .row-card h3{margin:0 0 4px;font-size:1rem;color:var(--navy)}
+  .row-card p{margin:2px 0;font-size:.88rem}
+  .meta{font-size:.82rem;color:var(--muted)}
+  .badge{display:inline-block;font-size:.74rem;font-weight:800;padding:2px 10px;border-radius:999px;border:1.5px solid var(--navy);margin-right:4px}
+  .badge.ok{background:#e6f6ea;color:#0d5c26;border-color:var(--green)}
+  .badge.warn{background:#fff3cf;color:#7a5b00;border-color:var(--yellow)}
+  .badge.bad{background:#fdecea;color:#7a1f14;border-color:var(--red)}
+  .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .empty,.loading{color:var(--muted);font-size:.9rem}
+  .back{font-size:.9rem;margin-top:12px}
+  .back a{color:var(--navy);font-weight:700}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="admin-home.html" aria-label="ApnaShift admin home">ApnaShift<small>Admin Panel</small></a>
+    <div class="spacer"></div>
+    <button class="logout-btn" id="logoutBtn" type="button">Logout</button>
+  </div>
+</header>
+
+<main>
+  <div class="alert" id="pageAlert" role="alert" aria-live="assertive"></div>
+
+  <section class="card" aria-labelledby="pageTitle">
+    <h1 id="pageTitle">Drivers</h1>
+    <p class="sub">Status filter karo, verify/reject/deactivate karo. <span id="totalLine"></span></p>
+    <div class="controls">
+      <div class="field">
+        <label for="statusSel">Status</label>
+        <select id="statusSel">
+          <option value="pending">pending</option>
+          <option value="verified">verified</option>
+          <option value="review">review</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="pageInp">Page</label>
+        <input type="number" id="pageInp" value="1" min="1" style="width:90px">
+      </div>
+      <button class="btn" id="loadBtn" type="button">Load</button>
+    </div>
+    <div id="driversList" aria-live="polite"><p class="loading">Status chuno aur Load dabao.</p></div>
+    <p class="back"><a href="admin-home.html">← Admin Home</a> • <a href="admin-dashboard.html">Full dashboard</a></p>
+  </section>
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  var API_BASE_URL = "https://apnashiftapp-production.up.railway.app";
+  var TOKEN_KEY = "apnashift_admin_token";
+
+  function getToken(){ try { return localStorage.getItem(TOKEN_KEY); } catch(e){ return null; } }
+  if(!getToken()){ window.location.href = "admin-login.html"; return; }
+
+  var alertBox = document.getElementById("pageAlert");
+  var totalLine = document.getElementById("totalLine");
+  var statusSel = document.getElementById("statusSel");
+  var pageInp = document.getElementById("pageInp");
+  var loadBtn = document.getElementById("loadBtn");
+  var driversList = document.getElementById("driversList");
+
+  function showAlert(type, msg){
+    if(!msg){ alertBox.className = "alert"; alertBox.textContent = ""; return; }
+    alertBox.className = "alert show " + (type === "err" ? "err" : "ok");
+    alertBox.textContent = msg;
+  }
+  function authHeaders(extra){
+    var h = { "Authorization": "Bearer " + getToken() };
+    if(extra){ for(var k in extra){ h[k] = extra[k]; } }
+    return h;
+  }
+  function readBody(res){
+    return res.json().then(function(data){
+      return { status: res.status, body: data };
+    }).catch(function(){
+      return { status: res.status, body: null };
+    });
+  }
+  function checkAuth(result){
+    if(result.status === 401){
+      try { localStorage.removeItem(TOKEN_KEY); } catch(e){}
+      window.location.href = "admin-login.html";
+      return true;
+    }
+    return false;
+  }
+  function esc(v){
+    return String(v === undefined || v === null ? "" : v)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  function badgeFor(d){
+    var h = "";
+    h += d.is_verified
+      ? '<span class="badge ok">verified</span>'
+      : '<span class="badge warn">pending</span>';
+    h += d.is_active
+      ? '<span class="badge ok">active</span>'
+      : '<span class="badge bad">inactive</span>';
+    if(d.needs_review) h += '<span class="badge bad">review</span>';
+    return h;
+  }
+
+  function driverCard(d){
+    var h = '<div class="row-card">';
+    h += '<h3>' + esc(d.name || "Naam nahi") + '</h3>';
+    h += '<p>' + badgeFor(d) + '</p>';
+    h += '<p class="meta">' + esc(d.phone || "—") +
+      (d.email ? " • " + esc(d.email) : "") + '</p>';
+    h += '<p>Gaadi: ' + esc(d.vehicle_type || "—") +
+      (d.vehicle_number ? " • " + esc(d.vehicle_number) : "") + '</p>';
+    h += '<p class="meta">Rating: ' + esc(d.avg_rating === null ? "—" : d.avg_rating) +
+      ' • Trips: ' + esc(d.total_trips || 0) +
+      (d.city ? " • " + esc(d.city) : "") +
+      (d.rejection_reason ? '<br>Wajah: ' + esc(d.rejection_reason) : "") + '</p>';
+    h += '<div class="actions">';
+    if(!d.is_verified){
+      h += '<button class="btn small" type="button" data-act="verify" data-id="' + esc(d.id) + '">Verify</button>';
+      h += '<button class="btn small ghost" type="button" data-act="reject" data-id="' + esc(d.id) + '">Reject</button>';
+    }
+    if(d.is_active){
+      h += '<button class="btn small danger" type="button" data-act="deactivate" data-id="' + esc(d.id) + '">Deactivate</button>';
+    } else {
+      h += '<button class="btn small" type="button" data-act="reactivate" data-id="' + esc(d.id) + '">Reactivate</button>';
+    }
+    h += '</div></div>';
+    return h;
+  }
+
+  function loadDrivers(){
+    var status = statusSel.value;
+    var page = Math.max(1, Number(pageInp.value) || 1);
+    showAlert(null, "");
+    loadBtn.disabled = true;
+    driversList.innerHTML = '<p class="loading">Load ho raha hai…</p>';
+    fetch(API_BASE_URL + "/api/admin/drivers?status=" + encodeURIComponent(status) +
+      "&page=" + page + "&limit=20", { headers: authHeaders() })
+      .then(readBody)
+      .then(function(result){
+        if(checkAuth(result)) return;
+        if(result.status !== 200 || !result.body || result.body.ok !== true){
+          throw new Error("load_failed");
+        }
+        var arr = Array.isArray(result.body.drivers) ? result.body.drivers : [];
+        totalLine.textContent = "Total: " + (result.body.total || 0) + " (page " + (result.body.page || page) + ")";
+        driversList.innerHTML = arr.length
+          ? arr.map(driverCard).join("")
+          : '<p class="empty">Is status me koi driver nahi mila.</p>';
+      })
+      .catch(function(){
+        driversList.innerHTML = '<p class="empty">Load nahi hua — dobara try karo.</p>';
+        showAlert("err", "Drivers load nahi hue. Internet check karke dobara try karo.");
+      })
+      .then(function(){ loadBtn.disabled = false; });
+  }
+
+  function driverAction(act, id, btn){
+    var url = null, opts = { method: "PATCH", headers: authHeaders({ "Content-Type": "application/json" }) };
+    if(act === "reject"){
+      var reason = null;
+      try { reason = window.prompt("Reject ki wajah likho (kam se kam 3 akshar):"); } catch(e){}
+      if(!reason) return;
+      if(reason.trim().length < 3){ showAlert("err", "Wajah kam se kam 3 akshar likho."); return; }
+      url = API_BASE_URL + "/api/admin/drivers/" + encodeURIComponent(id) + "/reject";
+      opts.body = JSON.stringify({ reason: reason.trim() });
+    } else {
+      url = API_BASE_URL + "/api/admin/drivers/" + encodeURIComponent(id) + "/" + act;
+      opts.body = JSON.stringify({});
+    }
+    btn.disabled = true;
+    showAlert(null, "");
+    fetch(url, opts).then(readBody).then(function(result){
+      if(checkAuth(result)) return;
+      if(result.status === 200 && result.body && result.body.ok === true){
+        showAlert("ok", "Driver " + act + " ho gaya.");
+        loadDrivers();
+        return;
+      }
+      if(result.status === 404) showAlert("err", "Driver nahi mila.");
+      else showAlert("err", "Action nahi hua — dobara try karo.");
+      btn.disabled = false;
+    }).catch(function(){
+      showAlert("err", "Internet me dikkat hai.");
+      btn.disabled = false;
+    });
+  }
+
+  driversList.addEventListener("click", function(ev){
+    var btn = ev.target.closest ? ev.target.closest("button[data-act]") : null;
+    if(!btn) return;
+    driverAction(btn.getAttribute("data-act"), btn.getAttribute("data-id"), btn);
+  });
+
+  loadBtn.addEventListener("click", loadDrivers);
+
+  document.getElementById("logoutBtn").addEventListener("click", function(){
+    try { localStorage.removeItem(TOKEN_KEY); } catch(e){}
+    window.location.href = "admin-login.html";
+  });
+
+  loadDrivers();
+})();
+</script>
+</body>
+</html>

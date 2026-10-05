@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Booking Detail | ApnaShift</title>
+<meta name="description" content="Apni booking ka kiraya, commission hisab aur driver payment details dekho.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#14213d;
+    --yellow:#fcbf49;
+    --bg:#f4f6fa;
+    --border:#c9d0de;
+    --ink:#20242e;
+    --muted:#5b6070;
+    --red:#c0392b;
+    --green:#1a7a3a;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    line-height:1.6;
+  }
+  :focus-visible{
+    outline:3px solid var(--navy);
+    outline-offset:2px;
+    box-shadow:0 0 0 6px var(--yellow);
+    border-radius:8px;
+  }
+  .site-header{background:var(--navy);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:50}
+  .site-header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px}
+  .site-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.3rem;line-height:1;color:#fff;text-decoration:none}
+  .site-brand small{display:block;font-family:"Noto Sans",system-ui,sans-serif;font-weight:600;font-size:.64rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow)}
+  .site-nav{display:flex;gap:4px;margin-left:8px;align-items:center}
+  .site-nav> a{color:#dbe2f0;text-decoration:none;font-weight:600;font-size:.9rem;padding:8px 10px;border-radius:8px}
+  .site-nav> a:hover{background:#1f2f52;color:#fff}
+  #navMenuBtn{display:none;background:transparent;border:2px solid var(--yellow);border-radius:8px;color:var(--yellow);font:inherit;font-weight:800;padding:6px 12px;cursor:pointer}
+  @media (max-width:760px){#navMenuBtn{display:block;margin-left:auto}.site-nav{display:none;position:absolute;top:100%;left:0;right:0;background:var(--navy);flex-direction:column;align-items:stretch;padding:8px 16px 14px;margin:0}.site-nav.open{display:flex}.site-header-inner{flex-wrap:wrap;position:relative}}
+  main{max-width:960px;margin:0 auto;padding:20px 16px 40px}
+  h1{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;color:var(--navy);font-size:1.6rem;margin:0 0 6px}
+  .sub{margin:0 0 12px;color:var(--muted);font-size:.9rem}
+  .card{background:#fff;border:2px solid var(--navy);border-radius:var(--radius);padding:18px;box-shadow:6px 6px 0 var(--yellow);margin-bottom:16px}
+  .card h2{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;color:var(--navy);font-size:1.2rem;margin:0 0 8px}
+  #pageAlert{display:none;border-radius:10px;padding:11px 12px;font-size:.9rem;font-weight:600;margin:0 0 14px}
+  #pageAlert.show{display:block}
+  #pageAlert.err{background:#fdecea;color:#7a1f14;border:2px solid var(--red)}
+  #pageAlert.ok{background:#e6f6ea;color:#0d5c26;border:2px solid var(--green)}
+  #pageAlert.info{background:#fff3cf;color:var(--navy);border:2px solid var(--navy)}
+  .badge{display:inline-block;font-size:.8rem;font-weight:800;padding:4px 12px;border-radius:999px;border:2px solid var(--navy);background:#fff;color:var(--navy)}
+  .badge.pending{background:#fff4d6}
+  .badge.accepted,.badge.arrived{background:#eaf0ff;color:var(--navy)}
+  .badge.in_transit{background:var(--navy);color:var(--yellow)}
+  .badge.delivered{background:#e6f6ea;color:#0d5c26;border-color:var(--green)}
+  .badge.cancelled{background:#fdecea;color:#7a1f14;border-color:var(--red)}
+  .kv{display:grid;gap:6px;font-size:.94rem}
+  .kv div strong{color:var(--navy)}
+  .money{background:var(--bg);border:2px solid var(--border);border-radius:10px;padding:12px;margin-top:10px;font-size:.94rem}
+  .money .big{font-family:"Baloo 2",system-ui,sans-serif;font-size:1.3rem;font-weight:800;color:var(--navy)}
+  .pay-box{background:#fff8e2;border:2px dashed var(--navy);border-radius:10px;padding:12px;margin-top:10px}
+  .pay-box .upi-big{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.5rem;color:var(--navy);word-break:break-all;margin:4px 0 8px}
+  .pay-box .meta{font-size:.84rem;color:var(--muted);margin:8px 0 0}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  .btn{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:.95rem;padding:11px 18px;border-radius:12px;border:2px solid var(--navy);cursor:pointer;background:var(--yellow);color:var(--navy);box-shadow:0 4px 0 var(--navy);text-decoration:none;display:inline-block}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--navy)}
+  .btn[disabled]{opacity:.65;cursor:wait}
+  .btn.ghost{background:#fff}
+  .btn.small{font-size:.9rem;padding:9px 14px}
+  .meta{font-size:.84rem;color:var(--muted)}
+  .loading{color:var(--muted)}
+  .site-footer{background:var(--navy);color:#dbe2f0;padding:22px 16px 30px}
+  .site-foot-inner{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+  .site-foot-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;color:#fff;font-size:1.05rem}
+  .site-foot-links{display:flex;gap:16px;flex-wrap:wrap}
+  .site-foot-links a{color:var(--yellow);font-size:.86rem;font-weight:600;text-decoration:none}
+  .site-foot-links a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="index.html" aria-label="ApnaShift home">ApnaShift<small>Shifting • Transport</small></a>
+    <nav class="site-nav" id="siteNav" aria-label="Main navigation">
+      <a href="index.html">Home</a>
+      <a href="create-booking.html">Book</a>
+      <a href="customer-dashboard.html">My Bookings</a>
+      <a href="help.html">Help</a>
+    </nav>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+  </div>
+</header>
+
+<main>
+  <h1>Booking Detail</h1>
+  <p class="sub" id="bookLine">Booking load ho rahi hai…</p>
+
+  <div id="pageAlert" role="alert" aria-live="assertive"></div>
+
+  <section class="card" aria-labelledby="tripTitle">
+    <h2 id="tripTitle">Trip <span class="badge pending" id="statusBadge">—</span></h2>
+    <div class="kv" id="tripBox"><p class="loading">Load ho raha hai…</p></div>
+  </section>
+
+  <section class="card" aria-labelledby="moneyTitle">
+    <h2 id="moneyTitle">Kiraya breakup</h2>
+    <div id="moneyBox" aria-live="polite"><p class="loading">Load ho raha hai…</p></div>
+  </section>
+
+  <section class="card" aria-labelledby="payTitle">
+    <h2 id="payTitle">Payment</h2>
+    <div id="payBox" aria-live="polite"><p class="loading">Load ho raha hai…</p></div>
+  </section>
+
+  <section class="card" id="rateSection" aria-labelledby="rateTitle" hidden>
+    <h2 id="rateTitle">Rating</h2>
+    <div id="rateBox" aria-live="polite"></div>
+  </section>
+
+  <section class="card" aria-labelledby="testTitle">
+    <h2 id="testTitle">Test: delivery</h2>
+    <p class="sub">Test button — assigned driver ke login se trip delivered mark karta hai (commission backend me banega).</p>
+    <div class="controls">
+      <button type="button" class="btn ghost small" id="deliverBtn">Mark Delivered</button>
+      <a class="btn ghost small" href="customer-dashboard.html">← My Bookings</a>
+    </div>
+    <p class="meta" id="testStatus" aria-live="polite"></p>
+  </section>
+
+<footer class="site-footer">
+  <div class="site-foot-inner">
+    <div class="site-foot-brand">ApnaShift</div>
+    <div class="site-foot-links">
+      <a href="index.html">Home</a>
+      <a href="help.html">Help</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms &amp; Conditions</a>
+    </div>
+  </div>
+</footer>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var API_BASE_URL = "https://apnashiftapp-production.up.railway.app";
+  var USER_TOKEN_KEY = "apnashift_user_token";
+  var DRIVER_TOKEN_KEY = "apnashift_driver_token";
+  var STATUS_LABEL = {
+    pending: "Pending", accepted: "Confirmed", arrived: "Arriving",
+    in_transit: "In Progress", delivered: "Completed", cancelled: "Cancelled"
+  };
+
+  function getUserToken(){
+    try{ return localStorage.getItem(USER_TOKEN_KEY); }catch(e){ return null; }
+  }
+  function getDriverToken(){
+    try{ return localStorage.getItem(DRIVER_TOKEN_KEY); }catch(e){ return null; }
+  }
+  if(!getUserToken()){
+    window.location.href = "user-auth.html";
+    return;
+  }
+
+  var qs = {};
+  try {
+    window.location.search.replace(/^\?/, "").split("&").forEach(function(p){
+      var kv = p.split("="); if(kv[0]) qs[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1] || "");
+    });
+  } catch(e){}
+  var bookingId = qs.id || "";
+  if(!/^[0-9a-fA-F-]{36}$/.test(bookingId)){
+    showAlert("err", "Booking ID sahi nahi hai (?id= lagakar kholo).");
+    document.getElementById("bookLine").textContent = "Booking nahi mili.";
+    return;
+  }
+
+  var alertBox = document.getElementById("pageAlert");
+  var bookLine = document.getElementById("bookLine");
+  var statusBadge = document.getElementById("statusBadge");
+  var tripBox = document.getElementById("tripBox");
+  var moneyBox = document.getElementById("moneyBox");
+  var payBox = document.getElementById("payBox");
+  var deliverBtn = document.getElementById("deliverBtn");
+  var testStatus = document.getElementById("testStatus");
+  var rateSection = document.getElementById("rateSection");
+  var rateBox = document.getElementById("rateBox");
+  var booking = null;
+
+  function showAlert(type, msg){
+    if(!msg){ alertBox.className = "alert"; alertBox.textContent = ""; return; }
+    alertBox.className = "alert show " + (type === "err" ? "err" : type === "ok" ? "ok" : "info");
+    alertBox.textContent = msg;
+  }
+  function esc(v){
+    return String(v === undefined || v === null ? "" : v)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+  function userHeaders(){
+    return { "Authorization": "Bearer " + getUserToken() };
+  }
+  function driverHeaders(){
+    return { "Content-Type": "application/json", "Authorization": "Bearer " + getDriverToken() };
+  }
+  function readBody(res){
+    return res.json().then(function(data){
+      return { status: res.status, body: data };
+    }).catch(function(){
+      return { status: res.status, body: null };
+    });
+  }
+  function addrText(p){
+    if(!p) return "–";
+    if(typeof p === "string") return p;
+    return p.address || "–";
+  }
+  function money(n){
+    if(n === undefined || n === null || !isFinite(Number(n))) return "–";
+    return "Rs " + Number(n);
+  }
+
+  // Driver ka hissa display ke liye: total - commission.
+  // % backend snapshot se aata hai (commission_percent) — hard-code nahi.
+  function splitMoney(totalRs, pct){
+    var total = Number(totalRs);
+    var p = Number(pct);
+    if(!isFinite(total) || total < 0) return null;
+    if(!isFinite(p) || p < 0 || p > 100) return { total: total, commission: null, driver: null };
+    var grossP = Math.round(total * 100);
+    var commP = Math.floor((grossP * Math.round(p * 100) + 5000) / 10000);
+    return { total: total, commission: commP / 100, driver: (grossP - commP) / 100 };
+  }
+
+  function render(){
+    if(!booking) return;
+    bookLine.textContent = "Booking #" + booking.id;
+    statusBadge.textContent = STATUS_LABEL[booking.status] || booking.status || "—";
+    statusBadge.className = "badge " + (booking.status || "pending");
+
+    tripBox.innerHTML =
+      "<div><strong>Pickup:</strong> " + esc(addrText(booking.pickup)) + "</div>" +
+      "<div><strong>Drop:</strong> " + esc(addrText(booking.drop)) + "</div>" +
+      "<div><strong>Gaadi:</strong> " + esc(booking.vehicle_type || "–") + "</div>" +
+      "<div><strong>Driver:</strong> " + esc(booking.driver && booking.driver.name ? booking.driver.name : (booking.driver_id ? "Assign ho gaya" : "Abhi assign nahi hua")) + "</div>";
+
+    var s = splitMoney(booking.price_rs, booking.commission_percent);
+    var m = '<div class="money">';
+    m += '<div>Total price: <span class="big">' + esc(money(booking.price_rs)) + "</span></div>";
+    if(s && s.commission !== null){
+      m += "<div>Commission (" + esc(booking.commission_percent) + "%): " + esc(money(s.commission)) + "</div>";
+      m += "<div>Driver ka hissa: <strong>" + esc(money(s.driver)) + "</strong></div>";
+      m += '<p class="meta" style="margin:6px 0 0">Commission booking banne waqt lock hua tha (snapshot).</p>';
+    } else {
+      m += '<p class="meta" style="margin:6px 0 0">Commission rate is booking par set nahi hai.</p>';
+    }
+    m += "</div>";
+    moneyBox.innerHTML = m;
+
+    var d = booking.driver;
+    var p = "";
+    if(d && d.id && booking.payment_method === "upi" && d.upi_id){
+      p += '<div class="pay-box" aria-label="UPI payment">' +
+        "<div><strong>Isi UPI par pay karein:</strong></div>" +
+        '<div class="upi-big">' + esc(d.upi_id) + "</div>" +
+        '<button type="button" class="btn ghost small" data-copy-upi="' + esc(d.upi_id) + '">Copy Karein</button>' +
+        '<p class="meta">Payment driver ko seedha is UPI ID par karein, trip complete hote hi</p>' +
+        "</div>";
+    } else if(booking.payment_method === "cash"){
+      p += '<div class="pay-box" aria-label="Cash payment">' +
+        "<p style='margin:0'><strong>Cash se pay karein</strong> — driver ko trip complete hone par</p>" +
+        "</div>";
+    } else if(d && d.id){
+      p += '<p class="meta">Driver assign ho gaya hai. Payment trip complete hone par.</p>';
+    } else {
+      p += '<p class="meta">Driver assign hote hi yahan payment details aayengi.</p>';
+    }
+    payBox.innerHTML = p;
+  }
+
+  function load(){
+    return fetch(API_BASE_URL + "/api/bookings/" + encodeURIComponent(bookingId), { headers: userHeaders() })
+      .then(readBody)
+      .then(function(result){
+        if(result.status === 401){ window.location.href = "user-auth.html"; throw new Error("unauth"); }
+        if(result.status === 404){ showAlert("err", "Ye booking tumhari nahi hai ya mili nahi."); throw new Error("notfound"); }
+        if(result.status !== 200 || !result.body || !result.body.booking) throw new Error("load");
+        booking = result.body.booking;
+        render();
+        showAlert(null, "");
+        checkRating();
+      })
+      .catch(function(err){
+        if(err && (err.message === "unauth" || err.message === "notfound")) return;
+        showAlert("err", "Load nahi hua — internet check karke refresh karo.");
+      });
+  }
+
+  // Delivered trip par rating state check — nahi di to button, di to note.
+  function starStr(n){
+    var s = "";
+    for(var i = 1; i <= 5; i++){ s += (i <= n ? "★" : "☆"); }
+    return s;
+  }
+  function checkRating(){
+    rateSection.hidden = true;
+    rateBox.innerHTML = "";
+    if(!booking || booking.status !== "delivered") return;
+    fetch(API_BASE_URL + "/api/bookings/" + encodeURIComponent(bookingId) + "/rating", { headers: userHeaders() })
+      .then(readBody)
+      .then(function(result){
+        if(result.status === 401){ window.location.href = "user-auth.html"; return; }
+        rateSection.hidden = false;
+        if(result.status === 200 && result.body && result.body.rating){
+          var r = result.body.rating;
+          rateBox.innerHTML = '<p class="meta">Aap ' + esc(starStr(r.stars)) + ' de chuke hain' +
+            (r.comment ? " — “" + esc(r.comment) + "”" : "") + ".</p>";
+        } else {
+          rateBox.innerHTML = '<div class="controls"><a class="btn" href="rate-trip.html?id=' +
+            encodeURIComponent(bookingId) + '">Rating Dein</a></div>';
+        }
+      })
+      .catch(function(){
+        // Rating check fail chupchaap — trip details unaffected.
+      });
+  }
+
+  function copyText(text, btn){
+    function done(ok){
+      if(!btn) return;
+      if(!btn.getAttribute("data-label")) btn.setAttribute("data-label", btn.textContent);
+      btn.textContent = ok ? "Copy ho gaya!" : "Copy nahi hua";
+      setTimeout(function(){ btn.textContent = btn.getAttribute("data-label"); }, 1600);
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ done(true); }, function(){ done(false); });
+      return;
+    }
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "absolute";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      done(!!ok);
+    } catch(e){ done(false); }
+  }
+
+  document.addEventListener("click", function(ev){
+    var copyBtn = ev.target.closest ? ev.target.closest("[data-copy-upi]") : null;
+    if(copyBtn){ copyText(copyBtn.getAttribute("data-copy-upi") || "", copyBtn); }
+  });
+
+  // Test button: assigned driver ke login se chain (arrived → in_transit →
+  // delivered) poori karta hai. Delivered par backend commission banata hai.
+  var NEXT_AFTER = { accepted: "arrived", arrived: "in_transit", in_transit: "delivered" };
+  deliverBtn.addEventListener("click", function(){
+    testStatus.textContent = "";
+    if(!booking){
+      testStatus.textContent = "Pehle booking load hone do.";
+      return;
+    }
+    if(!getDriverToken()){
+      testStatus.textContent = "Driver login chahiye (driver-login.html) — wahi driver jo assign hai.";
+      return;
+    }
+    if(booking.status === "delivered"){
+      testStatus.textContent = "Trip pehle se delivered hai.";
+      return;
+    }
+    if(booking.status === "cancelled" || booking.status === "pending"){
+      testStatus.textContent = "Ye status deliver nahi ho sakta (pending/cancelled).";
+      return;
+    }
+    deliverBtn.disabled = true;
+    testStatus.textContent = "Status badal raha hai…";
+    function step(status){
+      var next = NEXT_AFTER[status];
+      if(!next){
+        testStatus.textContent = "Ho gaya — page refresh karke dekho.";
+        deliverBtn.disabled = false;
+        load();
+        return;
+      }
+      fetch(API_BASE_URL + "/api/driver/bookings/" + encodeURIComponent(bookingId) + "/status", {
+        method: "PATCH",
+        headers: driverHeaders(),
+        body: JSON.stringify({ status: next })
+      }).then(readBody).then(function(result){
+        if(result.status === 401){
+          testStatus.textContent = "Driver session khatam — dobara driver login karo.";
+          deliverBtn.disabled = false;
+          return;
+        }
+        if(result.status === 403){
+          testStatus.textContent = "Ye driver is trip ka nahi hai (ya verify nahi). Assigned driver se login karo.";
+          deliverBtn.disabled = false;
+          return;
+        }
+        if(result.status !== 200){
+          testStatus.textContent = "Step " + next + " nahi hua (" + ((result.body && result.body.error) || result.status) + ").";
+          deliverBtn.disabled = false;
+          return;
+        }
+        booking.status = next;
+        step(next);
+      }).catch(function(){
+        testStatus.textContent = "Network error — dobara try karo.";
+        deliverBtn.disabled = false;
+      });
+    }
+    step(booking.status);
+  });
+
+  var navMenuBtn = document.getElementById("navMenuBtn"), siteNav = document.getElementById("siteNav");
+  if(navMenuBtn && siteNav){
+    navMenuBtn.addEventListener("click", function(){
+      var open = siteNav.classList.toggle("open");
+      navMenuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+  }
+
+  load();
+})();
+</script>
+</body>
+</html>

@@ -1,392 +1,566 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Enterprise Logistics Solutions | ApnaShift</title>
-<meta name="description" content="ApnaShift provides flexible vehicle and logistics solutions for businesses with centralized management and transparent operations.">
+<title>Enterprise Solutions | ApnaShift</title>
+<meta name="description" content="Business transport inquiry — apni company ki delivery needs batao, team sampark karegi.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --navy:#14213d; --yellow:#fcbf49; --paper:#fff9ec; --card:#fff;
-    --ink:#20242e; --muted:#5b6070; --line:#e9dcc0; --red:#c0392b; --green:#1a7a3a;
-    --radius:16px;
+    --navy:#14213d;
+    --yellow:#fcbf49;
+    --bg:#f4f6fa;
+    --border:#c9d0de;
+    --ink:#20242e;
+    --muted:#5b6070;
+    --red:#c0392b;
+    --green:#1a7a3a;
+    --radius:14px;
   }
   *{box-sizing:border-box}
-  html{scroll-behavior:smooth}
-  body{margin:0;background:var(--paper);color:var(--ink);
-    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.6;
-    background-image:radial-gradient(circle at 12px 12px, rgba(20,33,61,.05) 2px, transparent 2.5px);
-    background-size:28px 28px;}
-  :focus-visible{outline:3px solid var(--navy);outline-offset:2px;box-shadow:0 0 0 6px var(--yellow);border-radius:8px;}
-  .topbar{background:var(--navy);color:#fff;padding:14px 16px;}
-  .topbar-inner{max-width:1120px;margin:0 auto;display:flex;align-items:center;gap:12px;}
-  .brand{font-weight:800;font-size:1.3rem;}
-  .brand small{display:block;font-weight:600;font-size:.68rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow);}
-  .topbar a{margin-left:auto;color:var(--yellow);font-weight:700;font-size:.88rem;text-decoration:none;}
-  main{max-width:1120px;margin:0 auto;padding:22px 16px 48px;}
-  .hero{display:grid;gap:20px;align-items:start;}
-  @media(min-width:960px){.hero{grid-template-columns:1.05fr .95fr;}}
-  .hero-copy{padding:8px 4px;}
-  .badge{display:inline-block;font-size:.75rem;font-weight:800;letter-spacing:1.5px;
-    background:var(--navy);color:var(--yellow);border-radius:999px;padding:6px 14px;}
-  h1{color:var(--navy);font-size:2rem;line-height:1.15;margin:14px 0 10px;}
-  h1 .marker{background:linear-gradient(transparent 55%, var(--yellow) 55%, var(--yellow) 96%, transparent 96%);padding:0 4px;}
-  @media(min-width:640px){h1{font-size:2.5rem;}}
-  .sub{color:#2e3442;font-size:1.02rem;margin:0 0 14px;}
-  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 18px;}
-  .chips span{font-size:.82rem;font-weight:700;color:var(--navy);background:#fff3cf;
-    border:1.5px solid var(--navy);border-radius:999px;padding:5px 12px;}
-  .cta-row{display:flex;gap:10px;flex-wrap:wrap;}
-  .btn{font:inherit;font-weight:800;padding:12px 20px;border-radius:12px;border:2px solid var(--navy);
-    background:var(--yellow);color:var(--navy);cursor:pointer;text-decoration:none;display:inline-block;}
-  .btn.ghost{background:#fff;}
-  .btn:disabled{opacity:.6;cursor:wait;}
-  .card{background:var(--card);border:2px solid var(--navy);border-radius:var(--radius);
-    padding:20px 18px;box-shadow:7px 7px 0 var(--navy);}
-  .card h2{color:var(--navy);margin:0;font-size:1.3rem;}
-  .card .desc{color:var(--muted);font-size:.9rem;margin:4px 0 6px;}
-  .sec-title{font-weight:800;color:var(--navy);margin:16px 0 2px;font-size:1rem;}
-  .sec-sub{color:var(--muted);font-size:.84rem;margin:0 0 4px;}
-  label{display:block;font-weight:700;font-size:.88rem;color:var(--navy);margin:10px 0 4px;}
-  label .req{color:var(--red);}
-  input,select,textarea{font:inherit;width:100%;padding:10px 11px;border:2px solid var(--navy);
-    border-radius:10px;background:#fffdf4;color:var(--ink);}
-  textarea{min-height:110px;resize:vertical;}
-  input[type="checkbox"]{width:20px;height:20px;accent-color:var(--navy);}
-  input[type="date"],input[type="number"]{min-height:44px;}
-  .row{display:grid;gap:10px;}
-  @media(min-width:640px){.row.c2{grid-template-columns:1fr 1fr;}}
-  .hint{color:var(--muted);font-size:.8rem;margin:3px 0 0;}
-  .err-text{display:none;color:var(--red);font-size:.84rem;font-weight:600;margin:4px 0 0;}
-  .field.invalid input,.field.invalid select,.field.invalid textarea{border-color:var(--red);background:#fff5f3;}
-  .field.invalid .err-text{display:block;}
-  .check-grid{display:grid;gap:8px;margin-top:6px;}
-  @media(min-width:640px){.check-grid.c2{grid-template-columns:1fr 1fr;}}
-  .checkline{display:flex;gap:10px;align-items:flex-start;font-weight:600;font-size:.88rem;
-    border:1.5px solid var(--line);border-radius:10px;padding:9px 10px;background:#fffdf4;cursor:pointer;}
-  .checkline input{flex:0 0 20px;margin-top:2px;}
-  .consentline{display:flex;gap:10px;align-items:flex-start;font-weight:600;font-size:.9rem;margin-top:10px;}
-  .consentline input{flex:0 0 20px;margin-top:3px;}
-  #formAlert{display:none;border-radius:10px;padding:10px 12px;font-weight:600;font-size:.9rem;margin:12px 0 0;}
-  #formAlert.show{display:block;}
-  #formAlert.err{background:#fdecea;color:#7a1f14;border:2px solid var(--red);}
-  #formAlert.ok{background:#e6f6ea;color:#0d5c26;border:2px solid var(--green);}
-  #successCard{display:none;text-align:center;padding:26px 18px;}
-  #successCard.show{display:block;}
-  #successCard h2{font-size:1.5rem;}
-  .inqid{font-size:1.05rem;font-weight:800;background:#fff3cf;border:1.5px dashed var(--navy);
-    border-radius:10px;padding:8px 12px;display:inline-block;margin:8px 4px;word-break:break-all;}
-  .section{margin-top:44px;}
-  .section h2{color:var(--navy);font-size:1.5rem;margin:0 0 4px;}
-  .section .lede{color:var(--muted);margin:0 0 16px;}
-  .benefits{display:grid;gap:12px;}
-  @media(min-width:640px){.benefits{grid-template-columns:1fr 1fr;}}
-  @media(min-width:960px){.benefits{grid-template-columns:1fr 1fr 1fr;}}
-  .benefit{background:var(--card);border:2px solid var(--navy);border-radius:14px;padding:14px;
-    box-shadow:4px 4px 0 var(--line);}
-  .benefit b{color:var(--navy);display:block;margin-bottom:4px;}
-  .benefit p{margin:0;font-size:.9rem;color:#2e3442;}
-  .steps{list-style:none;margin:0;padding:0;display:grid;gap:12px;}
-  @media(min-width:960px){.steps{grid-template-columns:repeat(4,1fr);}}
-  .steps li{background:var(--navy);color:#fff;border-radius:14px;padding:16px 14px;border:2px solid var(--navy);}
-  .steps .n{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;
-    background:var(--yellow);color:var(--navy);font-weight:800;margin-bottom:8px;}
-  .steps b{display:block;margin-bottom:4px;}
-  .steps p{margin:0;font-size:.86rem;color:#dbe2f0;}
-  .trust{background:var(--card);border:2px solid var(--navy);border-radius:var(--radius);
-    padding:20px 18px;box-shadow:7px 7px 0 var(--yellow);text-align:center;}
-  .sectors{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px;}
-  .sectors span{font-size:.82rem;font-weight:700;color:var(--navy);background:#fff3cf;
-    border:1.5px solid var(--navy);border-radius:999px;padding:5px 12px;}
-  footer{max-width:1120px;margin:0 auto;padding:0 16px 36px;color:var(--muted);font-size:.82rem;text-align:center;}
-  .char-count{font-size:.78rem;color:var(--muted);text-align:right;margin:2px 0 0;}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    line-height:1.6;
+  }
+  :focus-visible{
+    outline:3px solid var(--navy);
+    outline-offset:2px;
+    box-shadow:0 0 0 6px var(--yellow);
+    border-radius:8px;
+  }
+  /* Header (same as index) */
+  .site-header{background:var(--navy);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:50}
+  .site-header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px}
+  .site-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.3rem;line-height:1;color:#fff;text-decoration:none}
+  .site-brand small{display:block;font-family:"Noto Sans",system-ui,sans-serif;font-weight:600;font-size:.64rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow)}
+  .site-nav{display:flex;gap:4px;margin-left:8px;align-items:center}
+  .site-nav> a,.nav-drop summary{color:#dbe2f0;text-decoration:none;font-weight:600;font-size:.9rem;padding:8px 10px;border-radius:8px}
+  .site-nav> a:hover,.nav-drop summary:hover{background:#1f2f52;color:#fff}
+  .nav-drop{position:relative}
+  .nav-drop summary{cursor:pointer;list-style:none}
+  .nav-drop summary::-webkit-details-marker{display:none}
+  .nav-drop[open] summary{background:#1f2f52;color:#fff}
+  .drop-menu{display:flex;flex-direction:column;gap:2px}
+  @media(min-width:761px){.drop-menu{position:absolute;top:100%;left:0;background:var(--navy);border:1px solid #2a3d66;border-radius:8px;padding:6px;min-width:180px}.drop-menu a{white-space:nowrap}}
+  #navMenuBtn{display:none;background:transparent;border:2px solid var(--yellow);border-radius:8px;color:var(--yellow);font:inherit;font-weight:800;padding:6px 12px;cursor:pointer}
+  .site-footer{background:var(--navy);color:#dbe2f0;padding:22px 16px 30px}
+  .site-foot-inner{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+  .site-foot-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;color:#fff;font-size:1.05rem}
+  .site-foot-links{display:flex;gap:16px;flex-wrap:wrap}
+  .site-foot-links a{color:var(--yellow);font-size:.86rem;font-weight:600;text-decoration:none}
+  .site-foot-links a:hover{text-decoration:underline}
+  @media (max-width:760px){#navMenuBtn{display:block;margin-left:auto}.site-nav{display:none;position:absolute;top:100%;left:0;right:0;background:var(--navy);flex-direction:column;align-items:stretch;padding:8px 16px 14px;margin:0;border-top:1px solid #2a3d66}.site-nav.open{display:flex}.site-header-inner{flex-wrap:wrap;position:relative}}
+  /* Page layout */
+  main{max-width:560px;margin:0 auto;padding:20px 16px 40px}
+  .hero{background:#fff;border:2px solid var(--navy);border-radius:var(--radius);padding:26px 20px;box-shadow:7px 7px 0 var(--yellow);text-align:center;position:relative;overflow:hidden;margin-bottom:16px}
+  .hero::before{content:"";position:absolute;top:0;left:0;right:0;height:8px;background:repeating-linear-gradient(-45deg,var(--yellow) 0 16px,var(--navy) 16px 32px)}
+  h1{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;color:var(--navy);font-size:1.7rem;line-height:1.2;margin:10px 0 8px}
+  .sub{margin:0 auto 6px;color:var(--muted);font-size:.95rem;max-width:560px}
+  .card{background:#fff;border:2px solid var(--navy);border-radius:var(--radius);padding:22px 18px;box-shadow:6px 6px 0 var(--yellow);margin-bottom:16px}
+  h2{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;color:var(--navy);font-size:1.25rem;margin:0 0 8px}
+  .strip{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
+  .strip li{background:var(--bg);border:2px solid var(--border);border-radius:10px;padding:10px 12px;font-size:.9rem}
+  .steps{margin:10px 0 0;padding-left:20px;font-size:.9rem;color:var(--ink)}
+  .steps li{margin:4px 0}
+  fieldset{border:2px solid var(--border);border-radius:10px;padding:12px;margin:0 0 16px}
+  legend{font-family:"Baloo 2",system-ui,sans-serif;font-weight:800;color:var(--navy);padding:0 6px}
+  .field{margin-bottom:14px}
+  label{display:block;font-weight:600;font-size:.92rem;color:var(--navy);margin-bottom:6px}
+  label .req{color:var(--red)}
+  .hint{font-weight:400;color:var(--muted);font-size:.82rem;margin:4px 0 0}
+  input[type="text"],input[type="email"],input[type="tel"],input[type="url"],input[type="number"],input[type="date"],select,textarea{
+    width:100%;font:inherit;color:var(--ink);background:#fff;border:2px solid var(--border);border-radius:10px;padding:11px 12px;
+  }
+  input:focus,select:focus,textarea:focus{border-color:var(--navy);outline:none}
+  textarea{resize:vertical;min-height:90px}
+  .check-grid{display:grid;gap:8px}
+  .check{display:flex;gap:8px;align-items:flex-start;background:var(--bg);border:2px solid var(--border);border-radius:10px;padding:9px 10px;font-size:.88rem;font-weight:400;color:var(--ink)}
+  .check input{width:auto;margin-top:4px}
+  .error-text{display:none;color:var(--red);font-size:.86rem;font-weight:600;margin:6px 0 0}
+  .field.invalid input,.field.invalid select,.field.invalid textarea{border-color:var(--red);background:#fff5f3}
+  .field.invalid .error-text{display:block}
+  #formAlert{display:none;border-radius:10px;padding:11px 12px;font-size:.9rem;font-weight:600;margin:0 0 14px}
+  #formAlert.show{display:block}
+  #formAlert.err{background:#fdecea;color:#7a1f14;border:2px solid var(--red)}
+  #formAlert.ok{background:#e6f6ea;color:#0d5c26;border:2px solid var(--green)}
+  button[type="submit"]{width:100%;font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-size:1.1rem;font-weight:800;color:var(--navy);background:var(--yellow);border:2px solid var(--navy);border-radius:12px;padding:12px 14px;cursor:pointer;box-shadow:0 4px 0 var(--navy)}
+  button[type="submit"]:active{transform:translateY(3px);box-shadow:0 1px 0 var(--navy)}
+  button[type="submit"][disabled]{opacity:.65;cursor:wait;transform:none}
+  .consent{display:flex;gap:10px;align-items:flex-start;background:#fff8e2;border:2px solid var(--navy);border-radius:10px;padding:10px 12px;font-size:.88rem;margin-bottom:14px}
+  .consent input{width:auto;margin-top:4px}
+  #success{display:none;background:var(--navy);color:#fff;border-radius:var(--radius);padding:22px 18px;border:2px solid var(--navy);box-shadow:6px 6px 0 var(--yellow);text-align:center}
+  #success.show{display:block}
+  #success h2{color:var(--yellow);margin:0 0 6px;font-size:1.4rem}
+  #success p{margin:6px 0;color:#dbe2f0}
+  #success .id-box{background:#fff;color:var(--navy);border-radius:10px;padding:10px;font-weight:800;margin:10px 0}
 </style>
 </head>
 <body>
-<header class="topbar">
-  <div class="topbar-inner">
-    <div class="brand">ApnaShift<small>Shifting • Transport</small></div>
-    <a href="/">Home</a>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="index.html" aria-label="ApnaShift home">ApnaShift<small>Shifting • Transport</small></a>
+    <nav class="site-nav" id="siteNav" aria-label="Main navigation">
+      <a href="index.html">Home</a>
+      <a href="booking.html">Book</a>
+      <a href="user-auth.html">Login</a>
+      <details class="nav-drop">
+        <summary>Driver</summary>
+        <div class="drop-menu">
+          <a href="driver-register.html">Join as Driver</a>
+          <a href="driver-login.html">Driver Login</a>
+        </div>
+      </details>
+      <a href="enterprise.html">Enterprise</a>
+      <a href="help.html">Help</a>
+    </nav>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
   </div>
 </header>
 
 <main>
-  <div class="hero">
-    <div class="hero-copy">
-      <span class="badge">APNASHIFT ENTERPRISE</span>
-      <h1>Reliable Business Logistics, <span class="marker">Built Around Your Needs</span></h1>
-      <p class="sub">Manage business transportation and logistics with reliable vehicle access, transparent operations, and centralized control.</p>
-      <div class="chips" aria-label="Highlights">
-        <span>Reliable Logistics</span><span>Flexible Fleet</span>
-        <span>Transparent Pricing</span><span>Centralized Management</span>
-      </div>
-      <div class="cta-row">
-        <a class="btn" href="#inquiry">Get Started</a>
-        <a class="btn ghost" href="#process">Talk to Our Team</a>
-      </div>
-    </div>
-
-    <section class="card" id="inquiry" aria-labelledby="formTitle">
-      <h2 id="formTitle">Tell Us About Your Business</h2>
-      <p class="desc">Share your requirements and our team will get in touch with you.</p>
-      <div id="formAlert" role="alert"></div>
-
-      <form id="entForm" novalidate>
-        <div class="sec-title">Contact Details</div>
-        <div class="row c2">
-          <div class="field" data-f="full_name"><label for="f-name">Full Name <span class="req">*</span></label>
-            <input id="f-name" maxlength="100" autocomplete="name" placeholder="Example: Priya Sharma"><p class="err-text"></p></div>
-          <div class="field" data-f="phone"><label for="f-phone">Phone Number <span class="req">*</span></label>
-            <input id="f-phone" type="tel" inputmode="numeric" maxlength="15" autocomplete="tel" placeholder="98765 43210"><p class="err-text"></p></div>
-        </div>
-        <div class="field" data-f="email"><label for="f-email">Work Email <span class="req">*</span></label>
-          <input id="f-email" type="email" maxlength="160" autocomplete="email" placeholder="you@company.com"><p class="err-text"></p></div>
-        <div class="row c2">
-          <div class="field" data-f="company"><label for="f-company">Company Name <span class="req">*</span></label>
-            <input id="f-company" maxlength="160" autocomplete="organization" placeholder="Example: Sharma Retail Pvt Ltd"><p class="err-text"></p></div>
-          <div class="field" data-f="designation"><label for="f-designation">Job Title / Designation</label>
-            <input id="f-design" maxlength="100" placeholder="Operations Manager"><p class="err-text"></p></div>
-        </div>
-        <div class="field" data-f="website"><label for="f-website">Company Website</label>
-          <input id="f-website" type="url" inputmode="url" maxlength="255" autocomplete="url" placeholder="https://company.com"><p class="err-text"></p>
-          <p class="hint">Optional. https:// likhna zaroori nahi — hum jod denge.</p></div>
-
-        <div class="sec-title">Business Information</div>
-        <div class="row c2">
-          <div class="field" data-f="btype"><label for="f-btype">Business Type</label>
-            <select id="f-btype"><option value="">— Select —</option><option value="ecommerce">E-commerce</option>
-            <option value="retail">Retail</option><option value="manufacturing">Manufacturing</option>
-            <option value="construction">Construction</option><option value="hospitality">Hospitality</option>
-            <option value="healthcare">Healthcare</option><option value="education">Education</option>
-            <option value="corporate">Corporate</option><option value="other">Other</option></select><p class="err-text"></p></div>
-          <div class="field" data-f="csize"><label for="f-csize">Company Size</label>
-            <select id="f-csize"><option value="">— Select —</option><option value="1-10">1–10</option>
-            <option value="11-50">11–50</option><option value="51-200">51–200</option>
-            <option value="201-500">201–500</option><option value="500+">500+</option></select><p class="err-text"></p></div>
-        </div>
-        <div class="row c2">
-          <div class="field" data-f="cities"><label for="f-cities">Operating City / Cities</label>
-            <input id="f-cities" maxlength="300" placeholder="Indore, Bhopal"><p class="err-text"></p></div>
-          <div class="field" data-f="ostate"><label for="f-ostate">Operating State</label>
-            <input id="f-ostate" maxlength="80" placeholder="Madhya Pradesh"><p class="err-text"></p></div>
-        </div>
-        <div class="field" data-f="locs"><label for="f-locs">Number of Locations</label>
-          <input id="f-locs" type="number" min="1" max="100000" placeholder="3"><p class="err-text"></p></div>
-
-        <div class="sec-title">Tell Us About Your Logistics Requirements</div>
-        <p class="sec-sub">Service Required (ek ya zyada chuno)</p>
-        <div class="check-grid c2" id="svcGrid">
-          <label class="checkline"><input type="checkbox" value="local_delivery"><span>Local Delivery</span></label>
-          <label class="checkline"><input type="checkbox" value="business_transport"><span>Business Transportation</span></label>
-          <label class="checkline"><input type="checkbox" value="goods_transport"><span>Goods Transportation</span></label>
-          <label class="checkline"><input type="checkbox" value="fleet_services"><span>Fleet Services</span></label>
-          <label class="checkline"><input type="checkbox" value="employee_transport"><span>Employee Transportation</span></label>
-          <label class="checkline"><input type="checkbox" value="scheduled_deliveries"><span>Scheduled Deliveries</span></label>
-          <label class="checkline"><input type="checkbox" value="on_demand_delivery"><span>On-Demand Delivery</span></label>
-          <label class="checkline"><input type="checkbox" value="intercity_transport"><span>Intercity Transportation</span></label>
-          <label class="checkline"><input type="checkbox" value="other"><span>Other</span></label>
-        </div>
-        <p class="sec-sub" style="margin-top:10px">Vehicle Type (ek ya zyada chuno)</p>
-        <div class="check-grid c2" id="vehGrid">
-          <label class="checkline"><input type="checkbox" value="bike"><span>Bike</span></label>
-          <label class="checkline"><input type="checkbox" value="auto"><span>Auto</span></label>
-          <label class="checkline"><input type="checkbox" value="mini_truck"><span>Mini Truck</span></label>
-          <label class="checkline"><input type="checkbox" value="pickup"><span>Pickup</span></label>
-          <label class="checkline"><input type="checkbox" value="lcv"><span>Light Commercial Vehicle</span></label>
-          <label class="checkline"><input type="checkbox" value="truck"><span>Truck</span></label>
-          <label class="checkline"><input type="checkbox" value="other"><span>Other</span></label>
-        </div>
-        <div class="row c2">
-          <div class="field" data-f="fleet"><label for="f-fleet">Expected Fleet Size</label>
-            <select id="f-fleet"><option value="">— Select —</option><option value="1-5">1–5</option>
-            <option value="6-20">6–20</option><option value="21-50">21–50</option>
-            <option value="51-100">51–100</option><option value="100+">100+</option></select><p class="err-text"></p></div>
-          <div class="field" data-f="trips"><label for="f-trips">Expected Monthly Trips</label>
-            <select id="f-trips"><option value="">— Select —</option><option value="1-100">1–100</option>
-            <option value="101-500">101–500</option><option value="501-1000">501–1,000</option>
-            <option value="1000+">1,000+</option></select><p class="err-text"></p></div>
-        </div>
-
-        <div class="field" data-f="reqs" style="margin-top:6px"><label for="f-reqs">Tell us about your requirements</label>
-          <textarea id="f-reqs" maxlength="1000" placeholder="Describe your transportation requirements, locations, expected volume, vehicle requirements, or any other details."></textarea>
-          <p class="char-count"><span id="charCount">0</span> / 1000</p><p class="err-text"></p></div>
-
-        <div class="sec-title">Budget / Service Timeline</div>
-        <div class="row c2">
-          <div class="field" data-f="start"><label for="f-start">Expected Start Date</label>
-            <input id="f-start" type="date"><p class="err-text"></p></div>
-          <div class="field" data-f="freq"><label for="f-freq">Service Frequency</label>
-            <select id="f-freq"><option value="">— Select —</option><option value="daily">Daily</option>
-            <option value="weekly">Weekly</option><option value="monthly">Monthly</option>
-            <option value="on_demand">On Demand</option></select><p class="err-text"></p></div>
-        </div>
-        <div class="field" data-f="budget"><label for="f-budget">Budget Range (optional)</label>
-          <select id="f-budget"><option value="">— Select —</option><option value="under_25k">Under ₹25,000/month</option>
-          <option value="25k_50k">₹25,000–₹50,000/month</option><option value="50k_1l">₹50,000–₹1,00,000/month</option>
-          <option value="1l_plus">₹1,00,000+</option><option value="discuss">Discuss with team</option></select><p class="err-text"></p></div>
-
-        <label class="consentline"><input type="checkbox" id="c-terms"><span>I agree to the ApnaShift Terms and Conditions. <span class="req" style="color:var(--red)">*</span></span></label>
-        <label class="consentline"><input type="checkbox" id="c-privacy"><span>I agree to the Privacy Policy. <span class="req" style="color:var(--red)">*</span></span></label>
-
-        <div style="margin-top:14px"><button class="btn" id="submitBtn" type="submit" disabled style="width:100%">Submit Inquiry</button></div>
-      </form>
-
-      <div id="successCard" aria-live="polite">
-        <h2>Thank You for Contacting ApnaShift</h2>
-        <p>Your enterprise inquiry has been submitted successfully. Our team will review your requirements and contact you soon.</p>
-        <div><span class="inqid" id="inqId">—</span></div>
-        <p class="hint">Submission Date: <b id="inqDate">—</b> • Status: <b>NEW</b></p>
-        <p><a class="btn" href="/">Back to Home</a></p>
-      </div>
-    </section>
-  </div>
-
-  <section class="section" aria-labelledby="whyTitle">
-    <h2 id="whyTitle">Why Businesses Choose ApnaShift</h2>
-    <p class="lede">Business logistics ke liye seedha-saadha system — bina jhanjhat.</p>
-    <div class="benefits">
-      <div class="benefit"><b>1. Reliable Vehicle Access</b><p>Access transportation options based on your business requirements.</p></div>
-      <div class="benefit"><b>2. Transparent Operations</b><p>Track and manage logistics with clear operational visibility.</p></div>
-      <div class="benefit"><b>3. Flexible Solutions</b><p>Choose services and vehicle types based on your business needs.</p></div>
-      <div class="benefit"><b>4. Centralized Management</b><p>Manage business transportation from a centralized platform.</p></div>
-      <div class="benefit"><b>5. Scalable Fleet</b><p>Support growing transportation requirements.</p></div>
-      <div class="benefit"><b>6. Real-Time Visibility</b><p>Get better visibility into active logistics operations.</p></div>
-    </div>
+  <section class="hero" aria-labelledby="heroTitle">
+    <h1 id="heroTitle">Business transport, bina jhanjhat</h1>
+    <p class="sub">Apni delivery need batao — team sampark karke aage baat karegi.</p>
   </section>
 
-  <section class="section" id="process" aria-labelledby="procTitle">
-    <h2 id="procTitle">How It Works</h2>
-    <p class="lede">Requirement se operations tak — 4 simple steps.</p>
+  <section class="card" aria-labelledby="whyTitle">
+    <h2 id="whyTitle">Kyun inquiry bhejein?</h2>
+    <ul class="strip">
+      <li>Ek hi form me apni saari transport needs saaf-saaf batao.</li>
+      <li>Vehicle type aur frequency apne kaam ke hisaab se chuno.</li>
+      <li>Scheduled ya on-demand — dono tarah ki needs bhej sakte ho.</li>
+      <li>Form ke baad team khud sampark karke requirement samjhegi.</li>
+    </ul>
+  </section>
+
+  <section class="card" aria-labelledby="howTitle">
+    <h2 id="howTitle">Kaise kaam karta hai?</h2>
     <ol class="steps">
-      <li><span class="n">01</span><b>Tell Us Your Requirements</b><p>Form bharo — business aur logistics needs likho.</p></li>
-      <li><span class="n">02</span><b>Our Team Reviews Your Needs</b><p>Hum requirements samajhkar tumse contact karenge.</p></li>
-      <li><span class="n">03</span><b>We Design a Suitable Solution</b><p>Tumhare volume aur routes ke hisaab se plan banega.</p></li>
-      <li><span class="n">04</span><b>Start Your Enterprise Logistics Operations</b><p>Approve hote hi operations shuru karo.</p></li>
+      <li>Neeche form bharo aur bhejo.</li>
+      <li>Team tumhari requirement padhegi.</li>
+      <li>Di hui details par sampark karke aage baat hogi.</li>
     </ol>
   </section>
 
-  <section class="section" aria-labelledby="trustTitle">
-    <div class="trust">
-      <h2 id="trustTitle" style="margin:0">Built for Growing Businesses</h2>
-      <p class="lede" style="margin:6px 0 0">Designed for businesses across retail, e-commerce, manufacturing, hospitality and more.</p>
-      <div class="sectors"><span>Retail</span><span>E-commerce</span><span>Manufacturing</span>
-        <span>Construction</span><span>Hospitality</span><span>Healthcare</span><span>Education</span><span>Corporate</span></div>
-    </div>
-  </section>
-</main>
+  <section class="card" aria-labelledby="formTitle">
+    <h2 id="formTitle">Business inquiry form</h2>
+    <p class="sub">Star (<span aria-hidden="true">*</span>) wale fields zaroori hain.</p>
+    <div id="formAlert" role="alert" aria-live="assertive"></div>
 
-<footer>ApnaShift Enterprise — inquiry ka matlab booking/contract pakka hona nahi hai. Team review ke baad contact karegi.</footer>
+    <form id="inqForm" novalidate>
+      <fieldset>
+        <legend>Contact details</legend>
+        <div class="field" id="f-full_name">
+          <label for="full_name">Poora naam <span class="req" aria-hidden="true">*</span></label>
+          <input type="text" id="full_name" name="full_name" maxlength="100" autocomplete="name" required>
+          <p class="error-text" id="e-full_name"></p>
+        </div>
+        <div class="field" id="f-email">
+          <label for="email">Email <span class="req" aria-hidden="true">*</span></label>
+          <input type="email" id="email" name="email" maxlength="120" autocomplete="email" required>
+          <p class="error-text" id="e-email"></p>
+        </div>
+        <div class="field" id="f-phone">
+          <label for="phone">Phone number <span class="req" aria-hidden="true">*</span></label>
+          <input type="tel" id="phone" name="phone" inputmode="numeric" maxlength="15" autocomplete="tel" placeholder="98765 43210" required>
+          <p class="hint">10 digit ka Indian mobile. +91 ya space chalega.</p>
+          <p class="error-text" id="e-phone"></p>
+        </div>
+        <div class="field" id="f-company_name">
+          <label for="company_name">Company ka naam <span class="req" aria-hidden="true">*</span></label>
+          <input type="text" id="company_name" name="company_name" maxlength="150" autocomplete="organization" required>
+          <p class="error-text" id="e-company_name"></p>
+        </div>
+        <div class="field">
+          <label for="website">Website</label>
+          <input type="url" id="website" name="website" maxlength="200" inputmode="url" placeholder="https://example.com">
+          <p class="hint">Khali bhi chhod sakte ho.</p>
+        </div>
+        <div class="field">
+          <label for="designation">Designation</label>
+          <input type="text" id="designation" name="designation" maxlength="100" placeholder="Operations Manager">
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Business details</legend>
+        <div class="field">
+          <label for="business_type">Business type</label>
+          <select id="business_type" name="business_type">
+            <option value="">Chuno (optional)</option>
+            <option value="ecommerce">Ecommerce</option>
+            <option value="retail">Retail</option>
+            <option value="manufacturing">Manufacturing</option>
+            <option value="construction">Construction</option>
+            <option value="hospitality">Hospitality</option>
+            <option value="healthcare">Healthcare</option>
+            <option value="education">Education</option>
+            <option value="corporate">Corporate</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="company_size">Company size</label>
+          <select id="company_size" name="company_size">
+            <option value="">Chuno (optional)</option>
+            <option value="1-10">1-10</option>
+            <option value="11-50">11-50</option>
+            <option value="51-200">51-200</option>
+            <option value="201-500">201-500</option>
+            <option value="500+">500+</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="cities">Cities</label>
+          <input type="text" id="cities" name="cities" maxlength="200" placeholder="Delhi, Noida">
+          <p class="hint">Comma se alag karke likho.</p>
+        </div>
+        <div class="field">
+          <label for="operating_state">State</label>
+          <input type="text" id="operating_state" name="operating_state" maxlength="100" placeholder="Delhi">
+        </div>
+        <div class="field">
+          <label for="locations_count">Locations ki ginti</label>
+          <input type="number" id="locations_count" name="locations_count" min="1" max="10000" step="1">
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Requirement details</legend>
+        <div class="field">
+          <span id="srvLabel" style="display:block;font-weight:600;font-size:.92rem;color:var(--navy);margin-bottom:6px">Chahiye services</span>
+          <div class="check-grid" role="group" aria-labelledby="srvLabel">
+            <label class="check"><input type="checkbox" name="services_required" value="local_delivery"> Local delivery</label>
+            <label class="check"><input type="checkbox" name="services_required" value="business_transport"> Business transport</label>
+            <label class="check"><input type="checkbox" name="services_required" value="goods_transport"> Goods transport</label>
+            <label class="check"><input type="checkbox" name="services_required" value="fleet_services"> Fleet services</label>
+            <label class="check"><input type="checkbox" name="services_required" value="employee_transport"> Employee transport</label>
+            <label class="check"><input type="checkbox" name="services_required" value="scheduled_deliveries"> Scheduled deliveries</label>
+            <label class="check"><input type="checkbox" name="services_required" value="on_demand_delivery"> On-demand delivery</label>
+            <label class="check"><input type="checkbox" name="services_required" value="intercity_transport"> Intercity transport</label>
+            <label class="check"><input type="checkbox" name="services_required" value="other"> Other</label>
+          </div>
+        </div>
+        <div class="field">
+          <span id="vehLabel" style="display:block;font-weight:600;font-size:.92rem;color:var(--navy);margin-bottom:6px">Vehicle types</span>
+          <div class="check-grid" role="group" aria-labelledby="vehLabel">
+            <label class="check"><input type="checkbox" name="vehicle_types" value="bike"> Bike</label>
+            <label class="check"><input type="checkbox" name="vehicle_types" value="auto"> Auto</label>
+            <label class="check"><input type="checkbox" name="vehicle_types" value="mini_truck"> Mini truck</label>
+            <label class="check"><input type="checkbox" name="vehicle_types" value="pickup"> Pickup</label>
+            <label class="check"><input type="checkbox" name="vehicle_types" value="lcv"> LCV</label>
+            <label class="check"><input type="checkbox" name="vehicle_types" value="truck"> Truck</label>
+            <label class="check"><input type="checkbox" name="vehicle_types" value="other"> Other</label>
+          </div>
+        </div>
+        <div class="field">
+          <label for="fleet_size">Fleet size</label>
+          <select id="fleet_size" name="fleet_size">
+            <option value="">Chuno (optional)</option>
+            <option value="1-5">1-5</option>
+            <option value="6-20">6-20</option>
+            <option value="21-50">21-50</option>
+            <option value="51-100">51-100</option>
+            <option value="100+">100+</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="monthly_trips">Monthly trips</label>
+          <select id="monthly_trips" name="monthly_trips">
+            <option value="">Chuno (optional)</option>
+            <option value="1-100">1-100</option>
+            <option value="101-500">101-500</option>
+            <option value="501-1000">501-1000</option>
+            <option value="1000+">1000+</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="start_date">Start date</label>
+          <input type="date" id="start_date" name="start_date">
+        </div>
+        <div class="field">
+          <label for="service_frequency">Service frequency</label>
+          <select id="service_frequency" name="service_frequency">
+            <option value="">Chuno (optional)</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+            <option value="on_demand">On demand</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="budget_range">Budget range</label>
+          <select id="budget_range" name="budget_range">
+            <option value="">Chuno (optional)</option>
+            <option value="under_25k">Under 25k</option>
+            <option value="25k_50k">25k - 50k</option>
+            <option value="50k_1l">50k - 1L</option>
+            <option value="1l_plus">1L plus</option>
+            <option value="discuss">Discuss karenge</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="requirements">Requirement likho</label>
+          <textarea id="requirements" name="requirements" maxlength="1000" aria-describedby="reqCount" placeholder="Apni need short me likho"></textarea>
+          <p class="hint" id="reqCount">0 / 1000</p>
+        </div>
+      </fieldset>
+
+      <div class="consent">
+        <input type="checkbox" id="consent" name="consent" required>
+        <label for="consent" style="margin:0">Main sampark ke liye apni details dene par sehmat hun. <span class="req" aria-hidden="true">*</span></label>
+      </div>
+
+      <button type="submit" id="submitBtn" disabled>Bhejo</button>
+    </form>
+  </section>
+
+  <section id="success" aria-live="polite" aria-labelledby="successTitle">
+    <h2 id="successTitle">Dhanyavaad! Inquiry mil gayi.</h2>
+    <p>Team jald sampark karegi.</p>
+    <div class="id-box" id="successMeta">—</div>
+    <p id="successDate"></p>
+  </section>
+
+<footer class="site-footer">
+  <div class="site-foot-inner">
+    <div class="site-foot-brand">ApnaShift</div>
+    <div class="site-foot-links">
+      <a href="index.html">Home</a>
+      <a href="help.html">Help</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms &amp; Conditions</a>
+    </div>
+  </div>
+</footer>
+</main>
 
 <script>
 (function(){
-"use strict";
-var $ = function(id){ return document.getElementById(id); };
-var form = $("entForm"), alertBox = $("formAlert"), submitBtn = $("submitBtn");
-var reqs = $("f-reqs"), charCount = $("charCount");
-var EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-var PHONE_RE = /^[6-9]\d{9}$/;
+  "use strict";
+  // Base URL: local backend for dev, Railway for production.
+  var API_BASE_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.protocol === "file:") ? "http://localhost:3000" : "https://apnashiftapp-production.up.railway.app";
 
-function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
-function showAlert(t,m){ alertBox.className="show "+(t==="err"?"err":"ok"); alertBox.textContent=m; }
-function hideAlert(){ alertBox.className=""; alertBox.textContent=""; }
-function cleanPhone(raw){
-  var p=String(raw||"").trim().replace(/[\s\-().]/g,"");
-  if(p.indexOf("+91")===0) p=p.slice(3);
-  else if(p.length===12&&p.indexOf("91")===0) p=p.slice(2);
-  else if(p.length===11&&p.charAt(0)==="0") p=p.slice(1);
-  return p;
-}
-function setErr(key,msg){
-  var w=document.querySelector('.field[data-f="'+key+'"]');
-  if(!w) return !msg;
-  var e=w.querySelector(".err-text");
-  if(msg){ w.classList.add("invalid"); if(e) e.textContent=msg;
-    var inp=w.querySelector("input,select,textarea"); if(inp) inp.setAttribute("aria-invalid","true");
-    return false; }
-  w.classList.remove("invalid"); if(e) e.textContent="";
-  var inp2=w.querySelector("input,select,textarea"); if(inp2) inp2.removeAttribute("aria-invalid");
-  return true;
-}
-function checkedValues(gridId){
-  var out=[];
-  document.querySelectorAll("#"+gridId+" input:checked").forEach(function(c){ out.push(c.value); });
-  return out;
-}
+  var form = document.getElementById("inqForm");
+  var submitBtn = document.getElementById("submitBtn");
+  var consent = document.getElementById("consent");
+  var alertBox = document.getElementById("formAlert");
+  var successBox = document.getElementById("success");
+  var successMeta = document.getElementById("successMeta");
+  var successDate = document.getElementById("successDate");
+  var reqBox = document.getElementById("requirements");
+  var reqCount = document.getElementById("reqCount");
 
-reqs.addEventListener("input",function(){ charCount.textContent=String(reqs.value.length); hideAlert(); });
-form.addEventListener("input",hideAlert);
-form.addEventListener("change",function(){ hideAlert(); gate(); });
-function gate(){ submitBtn.disabled = !($("c-terms").checked && $("c-privacy").checked); }
+  var PHONE_RE = /^[6-9]\d{9}$/;
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function validate(){
-  var ok=true, first=null;
-  function bad(k,m){ if(setErr(k,m)===false){ ok=false; first=first||document.querySelector('.field[data-f="'+k+'"] input,.field[data-f="'+k+'"] select,.field[data-f="'+k+'"] textarea'); } }
-  var nm=$("f-name").value.trim();
-  if(nm.length<2) bad("full_name","Please enter your full name."); else setErr("full_name","");
-  var em=$("f-email").value.trim();
-  if(!em) bad("email","Please enter a valid work email."); else if(em.length>160||!EMAIL_RE.test(em)) bad("email","Please enter a valid work email."); else setErr("email","");
-  var ph=cleanPhone($("f-phone").value);
-  if(!$("f-phone").value.trim()) bad("phone","Please enter your phone number."); else if(!PHONE_RE.test(ph)) bad("phone","Please enter a valid 10-digit mobile number."); else setErr("phone","");
-  var co=$("f-company").value.trim();
-  if(co.length<2) bad("company","Please enter your company name."); else setErr("company","");
-  var ws=$("f-website").value.trim();
-  if(ws){ var w2=/^https?:\/\//i.test(ws)?ws:"https://"+ws;
-    if(!/^https?:\/\/[^/\s]+\.[^/\s]+/.test(w2)) bad("website","Please enter a valid website URL."); else setErr("website",""); }
-  else setErr("website","");
-  ["designation","btype","csize","cities","ostate","locs","fleet","trips","start","freq","budget"].forEach(function(k){ setErr(k,""); });
-  var lc=$("f-locs").value.trim();
-  if(lc&&(!/^\d+$/.test(lc)||+lc<1||+lc>100000)){ bad("locs","Locations 1–100000 ke beech ho."); }
-  var rq=reqs.value;
-  if(rq.length>1000) bad("reqs","Requirements 1000 characters tak."); else setErr("reqs","");
-  var sd=$("f-start").value;
-  if(sd&&!/^\d{4}-\d{2}-\d{2}$/.test(sd)) bad("start","Start date YYYY-MM-DD me ho."); else setErr("start","");
-  if(!ok&&first&&first.focus) first.focus();
-  return {ok:ok,phone:ph};
-}
+  function cleanPhone(raw){
+    var p = String(raw || "").trim().replace(/[\s\-().]/g, "");
+    if(p.indexOf("+91") === 0){ p = p.slice(3); }
+    else if(p.length === 12 && p.indexOf("91") === 0){ p = p.slice(2); }
+    else if(p.length === 11 && p.charAt(0) === "0"){ p = p.slice(1); }
+    return p;
+  }
 
-var ERR_MSG={
-  duplicate_inquiry:"Ye inquiry pehle se mili hui hai (same email + company, pichle 30 din). Hum jald contact karenge.",
-  validation_failed:"Please check the highlighted fields and try again.",
-  too_many_attempts:"Bahut saari koshishen — thodi der rukkar try karo."
-};
+  function showAlert(type, msg){
+    if(!msg){ alertBox.className = ""; alertBox.textContent = ""; return; }
+    alertBox.className = "show " + (type === "err" ? "err" : "ok");
+    alertBox.textContent = msg;
+  }
 
-form.addEventListener("submit",async function(ev){
-  ev.preventDefault(); hideAlert();
-  if(!$("c-terms").checked||!$("c-privacy").checked){ showAlert("err","Please accept the Terms and Privacy Policy."); return; }
-  var v=validate();
-  if(!v.ok){ showAlert("err","Please enter valid details — laal line check karo."); return; }
-  function opt(id){ var s=$(id).value.trim(); return s||undefined; }
-  function optNum(id){ var s=$(id).value.trim(); return s?Number(s):undefined; }
-  var payload={
-    full_name:$("f-name").value.trim(), email:$("f-email").value.trim().toLowerCase(), phone:v.phone,
-    company_name:$("f-company").value.trim(), website:opt("f-website"), designation:opt("f-design"),
-    business_type:opt("f-btype"), company_size:opt("f-csize"), cities:opt("f-cities"),
-    operating_state:opt("f-ostate"), locations_count:optNum("f-locs"),
-    services_required:checkedValues("svcGrid"), vehicle_types:checkedValues("vehGrid"),
-    fleet_size:opt("f-fleet"), monthly_trips:opt("f-trips"), start_date:opt("f-start"),
-    service_frequency:opt("f-freq"), budget_range:opt("f-budget"),
-    requirements:reqs.value.trim()||undefined, consent:true
-  };
-  submitBtn.disabled=true; submitBtn.textContent="Submitting…";
-  try{
-    var res=await fetch("/api/enterprise/inquiries",{method:"POST",
-      headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
-    var data=null; try{ data=await res.json(); }catch(e){}
-    if(!res.ok||!data||data.ok!==true){
-      var code=data&&(data.error||"server_error");
-      var msg=ERR_MSG[code]||"Something went wrong while submitting your inquiry. Please try again.";
-      if(data&&data.details&&data.details[0]) msg+=" ("+data.details[0].message+")";
-      throw new Error(msg);
+  function setErr(fieldId, errId, msg){
+    var f = document.getElementById(fieldId);
+    var e = document.getElementById(errId);
+    if(!f || !e) return !msg;
+    if(msg){ f.classList.add("invalid"); e.textContent = msg; return false; }
+    f.classList.remove("invalid"); e.textContent = "";
+    return true;
+  }
+
+  function checkedValues(name){
+    var out = [];
+    var nodes = form.querySelectorAll('input[name="' + name + '"]:checked');
+    for(var i = 0; i < nodes.length; i++){ out.push(nodes[i].value); }
+    return out;
+  }
+
+  function fmtDate(iso){
+    if(!iso) return "";
+    try {
+      var d = new Date(iso);
+      if(isNaN(d.getTime())) return String(iso);
+      return d.toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" });
+    } catch(e){ return String(iso); }
+  }
+
+  // Enable submit only after consent is checked.
+  consent.addEventListener("change", function(){
+    submitBtn.disabled = !consent.checked;
+  });
+
+  // Live character count for requirements box.
+  reqBox.addEventListener("input", function(){
+    reqCount.textContent = String(reqBox.value.length) + " / 1000";
+  });
+
+  ["full_name", "email", "phone", "company_name"].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el){ el.addEventListener("input", function(){ showAlert(null, ""); }); }
+  });
+
+  form.addEventListener("submit", function(ev){
+    ev.preventDefault();
+    showAlert(null, "");
+
+    var ok = true;
+    var firstBad = null;
+
+    var fullName = document.getElementById("full_name").value.trim();
+    var email = document.getElementById("email").value.trim();
+    var phoneRaw = document.getElementById("phone").value;
+    var company = document.getElementById("company_name").value.trim();
+    var cleaned = cleanPhone(phoneRaw);
+
+    if(!fullName){
+      setErr("f-full_name", "e-full_name", "Apna poora naam likho.");
+      ok = false; firstBad = firstBad || document.getElementById("full_name");
+    } else { setErr("f-full_name", "e-full_name", ""); }
+
+    if(!email){
+      setErr("f-email", "e-email", "Apni email likho.");
+      ok = false; firstBad = firstBad || document.getElementById("email");
+    } else if(!EMAIL_RE.test(email)){
+      setErr("f-email", "e-email", "Sahi email likho. Example: naam@company.com");
+      ok = false; firstBad = firstBad || document.getElementById("email");
+    } else { setErr("f-email", "e-email", ""); }
+
+    if(!phoneRaw.trim()){
+      setErr("f-phone", "e-phone", "Apna phone number likho.");
+      ok = false; firstBad = firstBad || document.getElementById("phone");
+    } else if(!PHONE_RE.test(cleaned)){
+      setErr("f-phone", "e-phone", "Sahi 10 digit mobile number likho jo 6-9 se shuru ho.");
+      ok = false; firstBad = firstBad || document.getElementById("phone");
+    } else { setErr("f-phone", "e-phone", ""); }
+
+    if(!company){
+      setErr("f-company_name", "e-company_name", "Company ka naam likho.");
+      ok = false; firstBad = firstBad || document.getElementById("company_name");
+    } else { setErr("f-company_name", "e-company_name", ""); }
+
+    if(!consent.checked){
+      showAlert("err", "Aage badhne ke liye sehmati (consent) zaroori hai.");
+      ok = false;
     }
-    form.style.display="none";
-    $("inqId").textContent=data.inquiry.id;
-    $("inqDate").textContent=new Date(data.inquiry.created_at).toLocaleString("en-IN");
-    $("successCard").classList.add("show");
-    $("successCard").scrollIntoView({behavior:"smooth"});
-  }catch(e){ showAlert("err",e.message==="Failed to fetch"?"Network error — connection check karke try karo.":e.message); }
-  finally{ submitBtn.disabled=false; submitBtn.textContent="Submit Inquiry"; gate(); }
-});
-gate();
+
+    if(!ok){ if(firstBad) firstBad.focus(); return; }
+
+    // Build payload, skipping empty optional fields.
+    var payload = {
+      full_name: fullName,
+      email: email,
+      phone: cleaned,
+      company_name: company,
+      consent: true
+    };
+    function addIf(key, val){
+      if(val === undefined || val === null) return;
+      var s = String(val).trim();
+      if(s !== "") payload[key] = s;
+    }
+    addIf("website", document.getElementById("website").value);
+    addIf("designation", document.getElementById("designation").value);
+    addIf("business_type", document.getElementById("business_type").value);
+    addIf("company_size", document.getElementById("company_size").value);
+    addIf("cities", document.getElementById("cities").value);
+    addIf("operating_state", document.getElementById("operating_state").value);
+    addIf("fleet_size", document.getElementById("fleet_size").value);
+    addIf("monthly_trips", document.getElementById("monthly_trips").value);
+    addIf("start_date", document.getElementById("start_date").value);
+    addIf("service_frequency", document.getElementById("service_frequency").value);
+    addIf("budget_range", document.getElementById("budget_range").value);
+    addIf("requirements", reqBox.value);
+
+    var locRaw = document.getElementById("locations_count").value.trim();
+    if(locRaw !== ""){
+      var n = parseInt(locRaw, 10);
+      if(!isNaN(n) && n > 0){ payload.locations_count = n; }
+    }
+    var srv = checkedValues("services_required");
+    if(srv.length) payload.services_required = srv;
+    var veh = checkedValues("vehicle_types");
+    if(veh.length) payload.vehicle_types = veh;
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Bheja ja raha hai…";
+
+    fetch(API_BASE_URL + "/api/enterprise/inquiries", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }).then(function(res){
+      return res.json().then(function(data){
+        return { status: res.status, body: data };
+      }).catch(function(){
+        return { status: res.status, body: null };
+      });
+    }).then(function(result){
+      if(result.status === 201 && result.body && result.body.ok === true){
+        var inq = result.body.inquiry || {};
+        form.style.display = "none";
+        successMeta.textContent = "ID: " + (inq.id || "—") + " • Status: " + (inq.status || "NEW");
+        successDate.textContent = inq.created_at ? ("Bheja gaya: " + fmtDate(inq.created_at)) : "";
+        successBox.classList.add("show");
+        showAlert("ok", "Inquiry mil gayi.");
+        successBox.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+      var code = result.body && (result.body.code || result.body.error);
+      if(result.status === 409 || code === "duplicate_inquiry"){
+        showAlert("err", "Ye inquiry already mili hai. Team jald sampark karegi. Dobara bhejne ki zarurat nahi.");
+        return;
+      }
+      if(result.status === 400){
+        var m = result.body && (result.body.message || result.body.error);
+        showAlert("err", m || "Details check karo. Kuch fields sahi nahi hain.");
+        return;
+      }
+      if(result.status >= 500){
+        showAlert("err", "Server busy hai. Thodi der baad try karo.");
+        return;
+      }
+      var fallback = result.body && (result.body.message || result.body.error);
+      showAlert("err", fallback || "Kuch galat ho gaya. Dobara try karo.");
+    }).catch(function(){
+      showAlert("err", "Network error hai. Internet check karke dobara try karo.");
+    }).then(function(){
+      submitBtn.disabled = !consent.checked;
+      submitBtn.textContent = "Bhejo";
+    });
+  });
+
+  // Header menu toggle (same pattern as index page).
+  var navMenuBtn = document.getElementById("navMenuBtn"), siteNav = document.getElementById("siteNav");
+  if(navMenuBtn && siteNav){
+    navMenuBtn.addEventListener("click", function(){
+      var open = siteNav.classList.toggle("open");
+      navMenuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+      navMenuBtn.setAttribute("aria-label", open ? "Menu band karo" : "Menu kholo");
+    });
+    siteNav.addEventListener("click", function(ev){
+      if(ev.target.tagName === "A" && siteNav.classList.contains("open")){
+        siteNav.classList.remove("open");
+        navMenuBtn.setAttribute("aria-expanded", "false");
+      }
+    });
+  }
 })();
 </script>
 </body>

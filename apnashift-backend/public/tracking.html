@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Tracking | ApnaShift</title>
+<meta name="description" content="Apni booking ki gaadi live track karo — driver, status aur last location.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root{
+    --navy:#14213d;
+    --yellow:#fcbf49;
+    --bg:#f4f6fa;
+    --border:#c9d0de;
+    --ink:#20242e;
+    --muted:#5b6070;
+    --red:#c0392b;
+    --green:#1a7a3a;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    line-height:1.6;
+  }
+  :focus-visible{
+    outline:3px solid var(--navy);
+    outline-offset:2px;
+    box-shadow:0 0 0 6px var(--yellow);
+    border-radius:8px;
+  }
+  .site-header{background:var(--navy);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:500}
+  .site-header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px}
+  .site-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.3rem;line-height:1;color:#fff;text-decoration:none}
+  .site-brand small{display:block;font-family:"Noto Sans",system-ui,sans-serif;font-weight:600;font-size:.64rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow)}
+  .site-nav{display:flex;gap:4px;margin-left:8px;align-items:center}
+  .site-nav> a{color:#dbe2f0;text-decoration:none;font-weight:600;font-size:.9rem;padding:8px 10px;border-radius:8px}
+  .site-nav> a:hover{background:#1f2f52;color:#fff}
+  #navMenuBtn{display:none;background:transparent;border:2px solid var(--yellow);border-radius:8px;color:var(--yellow);font:inherit;font-weight:800;padding:6px 12px;cursor:pointer}
+  @media (max-width:760px){#navMenuBtn{display:block;margin-left:auto}.site-nav{display:none;position:absolute;top:100%;left:0;right:0;background:var(--navy);flex-direction:column;align-items:stretch;padding:8px 16px 14px;margin:0}.site-nav.open{display:flex}.site-header-inner{flex-wrap:wrap;position:relative}}
+  main{max-width:960px;margin:0 auto;padding:20px 16px 40px}
+  .card{background:#fff;border:2px solid var(--navy);border-radius:var(--radius);padding:18px;box-shadow:6px 6px 0 var(--yellow);margin-bottom:16px}
+  .card h1,.card h2{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;color:var(--navy);margin:0 0 8px}
+  .card h1{font-size:1.5rem}
+  .card h2{font-size:1.2rem}
+  .sub{margin:0 0 10px;color:var(--muted);font-size:.9rem}
+  .badge{display:inline-block;font-size:.78rem;font-weight:800;padding:3px 12px;border-radius:999px;border:2px solid var(--navy);margin:2px 4px 2px 0}
+  .badge.live{background:#e6f6ea;color:#0d5c26;border-color:var(--green)}
+  .badge.stale{background:#fff3cf;color:#7a5b00;border-color:var(--yellow)}
+  .badge.offline{background:#fdecea;color:#7a1f14;border-color:var(--red)}
+  .badge.ended{background:#eef1f7;color:var(--navy)}
+  .badge.status{background:var(--navy);color:var(--yellow)}
+  .kv{display:grid;gap:6px;font-size:.92rem}
+  .kv div strong{color:var(--navy)}
+  .meta{font-size:.84rem;color:var(--muted)}
+  #map{height:320px;border:2px solid var(--navy);border-radius:12px;background:#eef1f7}
+  @media(min-width:720px){#map{height:420px}.cols{display:grid;grid-template-columns:1.2fr 1fr;gap:16px}}
+  .btn{display:inline-block;font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:.95rem;padding:10px 18px;border-radius:12px;border:2px solid var(--navy);background:var(--yellow);color:var(--navy);text-decoration:none;cursor:pointer}
+  .btn.ghost{background:#fff}
+  .pay-box{background:#fff8e2;border:2px dashed var(--navy);border-radius:10px;padding:12px;margin-top:10px}
+  .pay-box .upi-big{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.35rem;color:var(--navy);word-break:break-all;margin:4px 0 8px}
+  .pay-box .meta{font-size:.84rem;color:var(--muted);margin:8px 0 0}
+  .dispute-box{margin-top:10px;font-size:.88rem}
+  .dispute-box summary{cursor:pointer;font-weight:700;color:var(--navy)}
+  .dispute-box input{width:100%;font:inherit;color:var(--ink);background:#fff;border:2px solid var(--border);border-radius:10px;padding:9px 12px;margin-top:8px}
+  .dispute-box .error-text{color:var(--red);font-size:.82rem;font-weight:600;min-height:1.1em;margin:4px 0 0}
+  .dispute-box .ok-text{color:var(--green);font-size:.84rem;font-weight:600;margin:4px 0 0}
+  .alert{display:none;border-radius:10px;padding:11px 12px;font-size:.9rem;font-weight:600;margin:0 0 14px}
+  .alert.show{display:block}
+  .alert.err{background:#fdecea;color:#7a1f14;border:2px solid var(--red)}
+  .alert.info{background:#fff3cf;color:var(--navy);border:2px solid var(--navy)}
+  .site-footer{background:var(--navy);color:#dbe2f0;padding:22px 16px 30px}
+  .site-foot-inner{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+  .site-foot-links{display:flex;gap:16px;flex-wrap:wrap}
+  .site-foot-links a{color:var(--yellow);font-size:.86rem;font-weight:600;text-decoration:none}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="index.html" aria-label="ApnaShift home">ApnaShift<small>Shifting • Transport</small></a>
+    <nav class="site-nav" id="siteNav" aria-label="Main navigation">
+      <a href="index.html">Home</a>
+      <a href="booking.html">Book</a>
+      <a href="customer-dashboard.html">My Bookings</a>
+      <a href="help.html">Help</a>
+    </nav>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+  </div>
+</header>
+
+<main>
+  <div class="alert" id="pageAlert" role="alert" aria-live="assertive"></div>
+
+  <section class="card" aria-labelledby="trackTitle">
+    <h1 id="trackTitle">Live Tracking</h1>
+    <p class="sub" id="bookLine">Booking load ho rahi hai…</p>
+    <div>
+      <span class="badge status" id="statusBadge">Status: —</span>
+      <span class="badge offline" id="trackBadge">Tracking: —</span>
+    </div>
+    <p class="meta" id="updateLine" aria-live="polite">Last update: —</p>
+  </section>
+
+  <div class="cols">
+    <section class="card" aria-label="Live map">
+      <h2>Gaadi kahan hai</h2>
+      <div id="map" role="img" aria-label="Live vehicle map"></div>
+      <p class="meta" id="mapNote">Driver ki real GPS location — page khula rakhne par live update hogi.</p>
+    </section>
+
+    <section class="card" aria-labelledby="detailTitle">
+      <h2 id="detailTitle">Trip details</h2>
+      <div class="kv" id="detailBox"><p class="meta">Load ho raha hai…</p></div>
+      <p style="margin-top:12px"><a class="btn ghost" href="customer-dashboard.html">← My Bookings</a></p>
+    </section>
+  </div>
+
+  <section class="card" aria-label="Tracking states">
+    <h2>States ka matlab</h2>
+    <p class="meta" style="margin:0">
+      <b>Live</b> = 1 min ke andar location mili.
+      <b>Stale</b> = 1–3 min purani (network slow ho sakta hai).
+      <b>Offline</b> = 3+ min se koi update nahi ya sharing band.
+      <b>Ended</b> = trip delivered/cancelled — tracking yahin rukti hai.
+      ETA nahi dikhate — sirf real location.
+    </p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="site-foot-inner">
+    <div class="site-foot-links">
+      <a href="index.html">Home</a>
+      <a href="help.html">Help</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms &amp; Conditions</a>
+    </div>
+  </div>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function(){
+  "use strict";
+  var API_BASE_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.protocol === "file:") ? "http://localhost:3000" : "https://apnashiftapp-production.up.railway.app";
+  var TOKEN_KEY = "apnashift_user_token";
+  // Thresholds: server is the source of truth (GET /api/geo/config +
+  // tracking.stale_after_ms/offline_after_ms). Hard-coded values are only
+  // the boot fallback before the first snapshot arrives.
+  var STALE_MS = 60000, OFFLINE_MS = 180000;
+  // Map tiles: Geoapify template fetched at runtime from /api/geo/config
+  // (key lives in backend env, never hard-coded here). OSM fallback.
+  var TILE_TEMPLATE = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+  var TILE_ATTRIB = "&copy; OpenStreetMap contributors";
+
+  function getToken(){ try { return localStorage.getItem(TOKEN_KEY); } catch(e){ return null; } }
+  if(!getToken()){ window.location.href = "user-auth.html"; return; }
+
+  var qs = {};
+  try {
+    window.location.search.replace(/^\?/, "").split("&").forEach(function(p){
+      var kv = p.split("="); if(kv[0]) qs[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1] || "");
+    });
+  } catch(e){}
+  var bookingId = qs.booking || "";
+  if(!/^[0-9a-fA-F-]{36}$/.test(bookingId)){
+    showAlert("err", "Booking ID sahi nahi hai. My Bookings se dobara kholo.");
+    document.getElementById("bookLine").textContent = "Booking nahi mili.";
+    return;
+  }
+
+  var alertBox = document.getElementById("pageAlert");
+  var bookLine = document.getElementById("bookLine");
+  var statusBadge = document.getElementById("statusBadge");
+  var trackBadge = document.getElementById("trackBadge");
+  var updateLine = document.getElementById("updateLine");
+  var detailBox = document.getElementById("detailBox");
+  var mapNote = document.getElementById("mapNote");
+
+  var lastPoint = null;      // {lat,lng,accuracy_m,recorded_at}
+  var lastStatus = "";
+  var lastDriver = null;
+  var lastBooking = null;
+  var streamOn = false;
+
+  function showAlert(type, msg){
+    if(!msg){ alertBox.className = "alert"; alertBox.textContent = ""; return; }
+    alertBox.className = "alert show " + (type === "err" ? "err" : "info");
+    alertBox.textContent = msg;
+  }
+  function esc(v){
+    return String(v === undefined || v === null ? "" : v)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+  function fmtTime(iso){
+    if(!iso) return "—";
+    var d = new Date(iso);
+    if(isNaN(d.getTime())) return String(iso);
+    return d.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit", second: "2-digit" });
+  }
+  function ageText(iso){
+    if(!iso) return "";
+    var s = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
+    if(s < 60) return s + " sec pehle";
+    return Math.floor(s / 60) + " min " + (s % 60) + " sec pehle";
+  }
+  function stateOf(){
+    if(lastStatus === "delivered" || lastStatus === "cancelled") return "ended";
+    if(!lastPoint) return "offline";
+    var age = Date.now() - new Date(lastPoint.recorded_at).getTime();
+    if(!(age >= 0)) return "live";
+    if(age <= STALE_MS) return "live";
+    if(age <= OFFLINE_MS) return "stale";
+    return "offline";
+  }
+  var STATE_LABEL = { live: "Live", stale: "Stale", offline: "Offline", ended: "Ended" };
+
+  // ---- Map (Leaflet + Geoapify tiles via /api/geo/config, OSM fallback).
+  // Text fallback if CDN blocked.
+  var map = null, vehicleMarker = null, headingMarker = null, accuracyCircle = null, pickupMarker = null, dropMarker = null, routeLine = null;
+  var routeGeometry = null, routeMeta = null, routeLoadedFor = "";
+  function ensureMap(center){
+    if(map || typeof L === "undefined") return;
+    map = L.map("map").setView(center, 14);
+    L.tileLayer(TILE_TEMPLATE, {
+      maxZoom: 19, attribution: TILE_ATTRIB
+    }).addTo(map);
+  }
+  function renderMap(){
+    if(typeof L === "undefined"){
+      mapNote.textContent = lastPoint
+        ? ("Map load nahi hua (offline?) — last location: " + lastPoint.lat + ", " + lastPoint.lng)
+        : "Map load nahi hua (offline?) — abhi location nahi mili.";
+      return;
+    }
+    if(!lastPoint) return;
+    ensureMap([lastPoint.lat, lastPoint.lng]);
+    if(!map) return;
+    if(!vehicleMarker){
+      vehicleMarker = L.marker([lastPoint.lat, lastPoint.lng]).addTo(map).bindPopup("Driver ki gaadi (live)");
+    } else {
+      vehicleMarker.setLatLng([lastPoint.lat, lastPoint.lng]);
+    }
+    // Heading arrow (only when the device reported a compass heading).
+    var hd = (lastPoint && typeof lastPoint.heading_deg === "number") ? lastPoint.heading_deg : null;
+    if(hd !== null && typeof L !== "undefined" && map){
+      var arrowHtml = '<div style="transform: rotate(' + esc(hd) + 'deg); font-size:26px; line-height:1; text-shadow:0 0 3px #fff;" aria-hidden="true">➤</div>';
+      if(!headingMarker){
+        headingMarker = L.marker([lastPoint.lat, lastPoint.lng], {
+          icon: L.divIcon({ className: "heading-arrow", html: arrowHtml, iconSize: [26, 26], iconAnchor: [13, 13] }),
+          interactive: false, keyboard: false
+        }).addTo(map);
+      } else {
+        headingMarker.setLatLng([lastPoint.lat, lastPoint.lng]);
+        headingMarker.setIcon(L.divIcon({ className: "heading-arrow", html: arrowHtml, iconSize: [26, 26], iconAnchor: [13, 13] }));
+      }
+    } else if(headingMarker && map){
+      try { map.removeLayer(headingMarker); } catch(e){}
+      headingMarker = null;
+    }
+    if(lastPoint.accuracy_m != null){
+      if(!accuracyCircle){
+        accuracyCircle = L.circle([lastPoint.lat, lastPoint.lng], { radius: Number(lastPoint.accuracy_m) || 0 }).addTo(map);
+      } else {
+        accuracyCircle.setLatLng([lastPoint.lat, lastPoint.lng]);
+        accuracyCircle.setRadius(Number(lastPoint.accuracy_m) || 0);
+      }
+    }
+    if(lastBooking){
+      var p = lastBooking.pickup, d = lastBooking.drop;
+      if(p && typeof p.lat === "number" && !pickupMarker){
+        pickupMarker = L.marker([p.lat, p.lng]).addTo(map).bindPopup("Pickup: " + (p.address || ""));
+      }
+      if(d && typeof d.lat === "number" && !dropMarker){
+        dropMarker = L.marker([d.lat, d.lng]).addTo(map).bindPopup("Drop: " + (d.address || ""));
+      }
+      // Route polyline: Geoapify driving geometry when available,
+      // otherwise a straight pickup→drop fallback line.
+      if(!routeLine){
+        var line = null;
+        if(routeGeometry && routeGeometry.length >= 2){
+          line = routeGeometry.map(function(g){ return [g.lat, g.lng]; });
+        } else if(p && d && typeof p.lat === "number" && typeof d.lat === "number"){
+          line = [[p.lat, p.lng], [d.lat, d.lng]];
+        }
+        if(line){
+          routeLine = L.polyline(line, { weight: 4, opacity: 0.8 }).addTo(map);
+        }
+      }
+    }
+    map.panTo([lastPoint.lat, lastPoint.lng], { animate: true });
+  }
+
+  function render(){
+    statusBadge.textContent = "Status: " + (lastStatus || "—");
+    var st = stateOf();
+    trackBadge.textContent = "Tracking: " + STATE_LABEL[st];
+    trackBadge.className = "badge " + st;
+    updateLine.textContent = lastPoint
+      ? ("Last update: " + fmtTime(lastPoint.recorded_at) + " (" + ageText(lastPoint.recorded_at) + ")")
+      : "Last update: — (driver ne abhi location share nahi ki)";
+    bookLine.textContent = "Booking #" + bookingId;
+    var h = "";
+    if(lastDriver){
+      h += "<div><strong>Driver:</strong> " + esc(lastDriver.name || "—") + "</div>";
+      h += "<div><strong>Gaadi:</strong> " + esc(lastDriver.vehicle_type || "—") + " • " + esc(lastDriver.vehicle_number || "—") + "</div>";
+      if(lastDriver.upi_id) h += "<div><strong>Driver UPI:</strong> " + esc(lastDriver.upi_id) + "</div>";
+    } else {
+      h += "<div><strong>Driver:</strong> abhi assign nahi hua</div>";
+    }
+    if(lastBooking){
+      h += "<div><strong>Pickup:</strong> " + esc(lastBooking.pickup && lastBooking.pickup.address) + "</div>";
+      h += "<div><strong>Drop:</strong> " + esc(lastBooking.drop && lastBooking.drop.address) + "</div>";
+      h += "<div><strong>Doori:</strong> " + esc(lastBooking.distance_km) + " km • <strong>Kiraya:</strong> Rs " + esc(lastBooking.price_rs) + "</div>";
+    }
+    h += paymentSectionHtml();
+    if(lastPoint){
+      h += "<div><strong>Live location:</strong> " + esc(lastPoint.lat) + ", " + esc(lastPoint.lng) +
+        (lastPoint.accuracy_m != null ? " (±" + esc(lastPoint.accuracy_m) + " m)" : "") + "</div>";
+      if(lastPoint.speed_mps != null || lastPoint.heading_deg != null){
+        h += "<div><strong>Speed/heading:</strong> " +
+          (lastPoint.speed_mps != null ? esc(lastPoint.speed_mps) + " m/s" : "—") + " • " +
+          (lastPoint.heading_deg != null ? esc(lastPoint.heading_deg) + "°" : "—") + "</div>";
+      }
+    }
+    if(routeMeta && (routeMeta.distance_m != null || routeMeta.duration_s != null)){
+      var km = routeMeta.distance_m != null ? (routeMeta.distance_m / 1000).toFixed(1) + " km" : "—";
+      var mins = routeMeta.duration_s != null ? Math.round(routeMeta.duration_s / 60) + " min" : "—";
+      h += '<div class="meta">Route (Geoapify): ' + esc(km) + ' • ~' + esc(mins) + ' drive</div>';
+    }
+    detailBox.innerHTML = h || '<p class="meta">Load ho raha hai…</p>';
+    renderMap();
+  }
+
+  // Payment section: driver assign hone ke baad. UPI + id mile to bada
+  // UPI ID + Copy button, cash ho to cash message. Niche dispute mini-form.
+  function paymentSectionHtml(){
+    if(!lastDriver || !lastBooking) return "";
+    var html = "";
+    if(lastBooking.payment_method === "upi" && lastDriver.upi_id){
+      var uid = esc(lastDriver.upi_id);
+      html += '<div class="pay-box" aria-label="UPI payment">' +
+        "<div><strong>Driver UPI ID:</strong></div>" +
+        '<div class="upi-big">' + uid + "</div>" +
+        '<button type="button" class="btn ghost" data-copy-upi="' + uid + '">Copy Karein</button>' +
+        '<p class="meta">Payment driver ko seedha is UPI ID par karein, trip complete hote hi</p>' +
+        "</div>";
+    } else if(lastBooking.payment_method === "cash"){
+      html += '<div class="pay-box" aria-label="Cash payment">' +
+        "<p style='margin:0'>Driver ko cash se payment karein trip complete hone par</p>" +
+        "</div>";
+    }
+    if(!lastBooking.disputed){
+      html += '<details class="dispute-box"><summary>Problem hui payment me?</summary>' +
+        '<label for="dreason" style="position:absolute;left:-9999px">Wajah likho</label>' +
+        '<input id="dreason" data-dispute-reason maxlength="500" placeholder="Wajah likho (jaise: zyada kiraya)">' +
+        '<div style="margin-top:8px"><button type="button" class="btn ghost" data-dispute-send>Bhejo</button></div>' +
+        '<p class="error-text" data-dispute-err></p>' +
+        "</details>";
+    }
+    return html;
+  }
+
+  function copyText(text, btn){
+    function done(ok){
+      if(!btn) return;
+      if(!btn.getAttribute("data-label")) btn.setAttribute("data-label", btn.textContent);
+      btn.textContent = ok ? "Copy ho gaya!" : "Copy nahi hua";
+      setTimeout(function(){ btn.textContent = btn.getAttribute("data-label"); }, 1600);
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ done(true); }, function(){ done(false); });
+      return;
+    }
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "absolute";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      done(!!ok);
+    } catch(e){ done(false); }
+  }
+
+  document.addEventListener("click", function(ev){
+    var copyBtn = ev.target.closest ? ev.target.closest("[data-copy-upi]") : null;
+    if(copyBtn){ copyText(copyBtn.getAttribute("data-copy-upi") || "", copyBtn); return; }
+    var sendBtn = ev.target.closest ? ev.target.closest("[data-dispute-send]") : null;
+    if(!sendBtn) return;
+    var input = document.querySelector("[data-dispute-reason]");
+    var errBox = document.querySelector("[data-dispute-err]");
+    var reason = input ? String(input.value || "").trim() : "";
+    if(reason.length < 3){
+      if(errBox){ errBox.className = "error-text"; errBox.textContent = "Wajah kam se kam 3 akshar likho."; }
+      return;
+    }
+    if(errBox) errBox.textContent = "";
+    sendBtn.disabled = true;
+    fetch(API_BASE_URL + "/api/bookings/" + encodeURIComponent(bookingId) + "/flag-dispute", {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ reason: reason })
+    }).then(function(r){
+      return r.json().then(function(b){ return { status: r.status, body: b }; });
+    }).then(function(res){
+      if(res.status === 401){ window.location.href = "user-auth.html"; return; }
+      if(res.status === 200){
+        if(errBox){ errBox.className = "ok-text"; errBox.textContent = "Vivad darj ho gaya — admin review karega."; }
+        if(input) input.value = "";
+        return;
+      }
+      if(errBox){ errBox.className = "error-text"; errBox.textContent = "Vivad darj nahi hua — dobara try karo."; }
+    }).catch(function(){
+      if(errBox){ errBox.className = "error-text"; errBox.textContent = "Internet me dikkat hai."; }
+    }).then(function(){
+      sendBtn.disabled = false;
+    });
+  });
+
+  function applySnapshot(snap){
+    if(!snap) return;
+    lastStatus = snap.booking_status || "";
+    lastDriver = snap.driver || null;
+    if(snap.tracking){
+      if(typeof snap.tracking.stale_after_ms === "number") STALE_MS = snap.tracking.stale_after_ms;
+      if(typeof snap.tracking.offline_after_ms === "number") OFFLINE_MS = snap.tracking.offline_after_ms;
+    }
+    if(snap.points && snap.points.length){
+      lastPoint = snap.points[0];
+    }
+    render();
+  }
+  function applyLocationEvent(msg){
+    if(!msg) return;
+    if(msg.booking_status) lastStatus = msg.booking_status;
+    if(msg.point){
+      lastPoint = msg.point;
+      render();
+    }
+  }
+
+  function authHeaders(){
+    return { "Authorization": "Bearer " + getToken() };
+  }
+
+  // Map config: Geoapify tile template + server thresholds. Key backend env
+  // me rehta hai — yahan hard-code nahi hota. Fail ho to OSM fallback.
+  function loadGeoConfig(){
+    return fetch(API_BASE_URL + "/api/geo/config", { headers: authHeaders() })
+      .then(function(r){ return r.json().then(function(b){ return { status: r.status, body: b }; }); })
+      .then(function(res){
+        if(res.status === 200 && res.body && res.body.ok){
+          if(res.body.tiles && res.body.tiles.template) TILE_TEMPLATE = res.body.tiles.template;
+          if(res.body.tiles && res.body.tiles.attribution) TILE_ATTRIB = res.body.tiles.attribution;
+          if(res.body.thresholds){
+            if(typeof res.body.thresholds.stale_after_ms === "number") STALE_MS = res.body.thresholds.stale_after_ms;
+            if(typeof res.body.thresholds.offline_after_ms === "number") OFFLINE_MS = res.body.thresholds.offline_after_ms;
+          }
+          if(res.body.geoapify && res.body.geoapify.enabled){
+            mapNote.textContent = "Driver ki real GPS location — Geoapify map par live update hogi.";
+          }
+        }
+      })
+      .catch(function(){ /* OSM fallback rehne do */ });
+  }
+
+  // Route overlay: Geoapify driving geometry pickup→drop (one fetch per booking).
+  function loadRoute(){
+    if(!lastBooking || !lastBooking.pickup || !lastBooking.drop) return;
+    var p = lastBooking.pickup, d = lastBooking.drop;
+    if(typeof p.lat !== "number" || typeof d.lat !== "number") return;
+    var key = p.lat + "," + p.lng + "->" + d.lat + "," + d.lng;
+    if(routeLoadedFor === key) return;
+    routeLoadedFor = key;
+    var url = API_BASE_URL + "/api/geo/route?pickup_lat=" + encodeURIComponent(p.lat) +
+      "&pickup_lng=" + encodeURIComponent(p.lng) +
+      "&drop_lat=" + encodeURIComponent(d.lat) + "&drop_lng=" + encodeURIComponent(d.lng);
+    fetch(url, { headers: authHeaders() })
+      .then(function(r){ return r.json().then(function(b){ return { status: r.status, body: b }; }); })
+      .then(function(res){
+        if(res.status === 200 && res.body && res.body.ok && Array.isArray(res.body.geometry)){
+          routeGeometry = res.body.geometry;
+          routeMeta = { distance_m: res.body.distance_m, duration_s: res.body.duration_s };
+          routeLine = null; // dobara banao taaki Geoapify geometry lage
+          render();
+        }
+      })
+      .catch(function(){ /* straight-line fallback rehne do */ });
+  }
+
+  function loadBooking(){
+    return fetch(API_BASE_URL + "/api/bookings/" + encodeURIComponent(bookingId), { headers: authHeaders() })
+      .then(function(r){ return r.json().then(function(b){ return { status: r.status, body: b }; }); })
+      .then(function(res){
+        if(res.status === 401){ window.location.href = "user-auth.html"; throw new Error("unauth"); }
+        if(res.status === 404){ showAlert("err", "Ye booking tumhari nahi hai ya mili nahi."); throw new Error("notfound"); }
+        if(res.status !== 200 || !res.body || !res.body.booking) throw new Error("booking");
+        lastBooking = res.body.booking;
+        lastStatus = lastBooking.status || lastStatus;
+        render();
+      });
+  }
+
+  function pollLocation(){
+    return fetch(API_BASE_URL + "/api/bookings/" + encodeURIComponent(bookingId) + "/location?history=1", { headers: authHeaders() })
+      .then(function(r){ return r.json().then(function(b){ return { status: r.status, body: b }; }); })
+      .then(function(res){
+        if(res.status === 401){ window.location.href = "user-auth.html"; throw new Error("unauth"); }
+        if(res.status === 404){ showAlert("err", "Ye booking tumhari nahi hai ya mili nahi."); return; }
+        if(res.status === 200 && res.body && res.body.ok){
+          applySnapshot(res.body);
+          showAlert(null, "");
+        }
+      })
+      .catch(function(err){
+        if(err && (err.message === "unauth" || err.message === "notfound")) return;
+        // Poll fail chupchaap — stream ya agli poll sambhal legi.
+      });
+  }
+
+  // Live stream via fetch (EventSource headers nahi bhej sakta).
+  function startStream(){
+    if(streamOn) return;
+    streamOn = true;
+    fetch(API_BASE_URL + "/api/bookings/" + encodeURIComponent(bookingId) + "/location/stream", { headers: authHeaders() })
+      .then(function(res){
+        if(res.status === 401){ window.location.href = "user-auth.html"; throw new Error("unauth"); }
+        if(res.status === 404){ showAlert("err", "Ye booking tumhari nahi hai ya mili nahi."); throw new Error("notfound"); }
+        if(!res.ok || !res.body) throw new Error("stream");
+        var reader = res.body.getReader();
+        var decoder = new TextDecoder();
+        var buf = "";
+        function pump(){
+          return reader.read().then(function(chunk){
+            if(chunk.done){ throw new Error("closed"); }
+            buf += decoder.decode(chunk.value, { stream: true });
+            var parts = buf.split("\n\n");
+            buf = parts.pop();
+            parts.forEach(function(block){
+              var ev = null, data = "";
+              block.split("\n").forEach(function(line){
+                if(line.indexOf("event:") === 0) ev = line.slice(6).trim();
+                else if(line.indexOf("data:") === 0) data += line.slice(5).trim();
+              });
+              if(!ev || !data) return;
+              try {
+                var msg = JSON.parse(data);
+                if(ev === "snapshot") applySnapshot(msg);
+                else if(ev === "location") applyLocationEvent(msg);
+              } catch(e){}
+            });
+            return pump();
+          });
+        }
+        return pump();
+      })
+      .catch(function(){
+        // Stream toota — polling fallback lo, 20s baad stream retry.
+        streamOn = false;
+        setTimeout(startStream, 20000);
+      });
+  }
+
+  // Boot: map config + booking + first location, phir stream + polling backup.
+  Promise.resolve()
+    .then(loadGeoConfig)
+    .then(loadBooking)
+    .then(function(){ loadRoute(); })
+    .then(pollLocation)
+    .then(function(){
+      startStream();
+      setInterval(function(){ if(!streamOn) pollLocation(); }, 10000);
+      setInterval(pollLocation, 30000); // status change (delivered) pakadne ke liye
+      setInterval(render, 5000);        // stale badge tick
+    })
+    .catch(function(err){
+      if(err && (err.message === "unauth" || err.message === "notfound")) return;
+      showAlert("err", "Load nahi hua — internet check karke refresh karo.");
+    });
+
+  var navMenuBtn = document.getElementById("navMenuBtn"), siteNav = document.getElementById("siteNav");
+  if(navMenuBtn && siteNav){
+    navMenuBtn.addEventListener("click", function(){
+      var open = siteNav.classList.toggle("open");
+      navMenuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+  }
+})();
+</script>
+</body>
+</html>

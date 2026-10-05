@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Login | ApnaShift</title>
+<meta name="description" content="ApnaShift internal admin login.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#14213d;
+    --yellow:#fcbf49;
+    --bg:#f4f6fa;
+    --border:#c9d0de;
+    --ink:#20242e;
+    --muted:#5b6070;
+    --red:#c0392b;
+    --green:#1a7a3a;
+    --radius:8px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    line-height:1.6;
+  }
+  :focus-visible{
+    outline:3px solid var(--navy);
+    outline-offset:2px;
+    box-shadow:0 0 0 4px var(--yellow);
+    border-radius:6px;
+  }
+  main{
+    max-width:480px;
+    margin:0 auto;
+    padding:32px 16px 40px;
+    min-height:calc(100vh - 200px);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+  .card{
+    background:#fff;
+    border:2px solid var(--navy);
+    border-radius:14px;
+    padding:0 0 24px;
+    box-shadow:6px 6px 0 var(--yellow);
+    overflow:hidden;
+  }
+  .card-head{
+    background:var(--navy);
+    color:#fff;
+    text-align:center;
+    padding:26px 20px 20px;
+    border-bottom:6px solid var(--yellow);
+  }
+  .logo{
+    width:64px;height:64px;
+    margin:0 auto 10px;
+    border-radius:18px;
+    background:var(--yellow);
+    border:3px solid #fff;
+    display:flex;align-items:center;justify-content:center;
+    font-family:"Baloo 2", system-ui, sans-serif;
+    font-weight:800;font-size:1.7rem;color:var(--navy);
+  }
+  .logo small{
+    display:block;
+    font-family:"Noto Sans", system-ui, sans-serif;
+    font-weight:600;font-size:.6rem;letter-spacing:2px;
+    color:var(--yellow);text-transform:uppercase;
+  }
+  .brand-name{
+    font-family:"Baloo 2", system-ui, sans-serif;
+    font-weight:800;font-size:1.5rem;line-height:1.1;color:#fff;
+  }
+  .brand-name small{
+    display:block;
+    font-family:"Noto Sans", system-ui, sans-serif;
+    font-weight:600;font-size:.66rem;letter-spacing:2px;
+    text-transform:uppercase;color:var(--yellow);
+  }
+  .card-body{padding:22px 20px 0}
+  .pw-wrap{position:relative}
+  .pw-wrap input{padding-right:64px}
+  .pw-toggle{
+    position:absolute;right:6px;top:6px;
+    font:inherit;font-size:.8rem;font-weight:700;
+    padding:6px 10px;border-radius:6px;
+    border:1px solid var(--border);background:#fff;color:var(--navy);
+    cursor:pointer;
+  }
+  .forgot-row{text-align:right;margin:2px 0 12px}
+  .forgot-row a{font-size:.86rem;color:var(--navy);font-weight:600}
+  .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(20,33,61,.55);z-index:1000;padding:16px}
+  .modal-backdrop.show{display:flex;align-items:center;justify-content:center}
+  .modal{background:#fff;border:2px solid var(--navy);border-radius:14px;box-shadow:6px 6px 0 var(--yellow);max-width:440px;width:100%;padding:20px 18px}
+  .modal h2{font-family:"Baloo 2", system-ui, sans-serif;color:var(--navy);font-size:1.25rem;margin:0 0 8px}
+  .modal p{font-size:.92rem;margin:0 0 10px}
+  .wa-btn{display:inline-block;font-family:"Baloo 2", system-ui, sans-serif;font-weight:800;font-size:1rem;padding:11px 18px;border-radius:12px;border:2px solid var(--navy);background:#25d366;color:#fff;text-decoration:none;box-shadow:0 4px 0 var(--navy)}
+  .wa-btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--navy)}
+  .modal .ghost-btn{display:inline-block;margin-top:10px;font:inherit;font-weight:700;padding:9px 14px;border-radius:10px;border:2px solid var(--navy);background:#fff;color:var(--navy);cursor:pointer}
+  h1{
+    font-family:"Baloo 2", system-ui, sans-serif;
+    color:var(--navy);
+    font-size:1.4rem;
+    line-height:1.25;
+    margin:0 0 4px;
+  }
+  .sub{
+    margin:0 0 14px;
+    color:var(--muted);
+    font-size:.88rem;
+  }
+  .field{margin-bottom:14px}
+  label{
+    display:block;
+    font-weight:600;
+    font-size:.88rem;
+    color:var(--navy);
+    margin-bottom:6px;
+  }
+  label .req{color:var(--red)}
+  input{
+    width:100%;
+    font:inherit;
+    color:var(--ink);
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:10px 12px;
+  }
+  input:focus{
+    border-color:var(--navy);
+    outline:none;
+  }
+  .error-text{
+    display:none;
+    color:var(--red);
+    font-size:.84rem;
+    font-weight:600;
+    margin:6px 0 0;
+  }
+  .field.invalid input{border-color:var(--red);background:#fff5f3}
+  .field.invalid .error-text{display:block}
+  #formAlert{
+    display:none;
+    border-radius:6px;
+    padding:10px 12px;
+    font-size:.88rem;
+    font-weight:600;
+    margin:0 0 14px;
+  }
+  #formAlert.show{display:block}
+  #formAlert.err{background:#fdecea;color:#7a1f14;border:1px solid var(--red)}
+  #formAlert.ok{background:#e6f6ea;color:#0d5c26;border:1px solid var(--green)}
+  button[type="submit"]{
+    width:100%;
+    font-family:"Baloo 2", system-ui, sans-serif;
+    font-size:1rem;
+    font-weight:800;
+    color:#fff;
+    background:var(--navy);
+    border:1px solid var(--navy);
+    border-radius:6px;
+    padding:11px 14px;
+    cursor:pointer;
+  }
+  button[type="submit"]:hover{background:#1f2f52}
+  button[type="submit"][disabled]{opacity:.65;cursor:wait}
+  .note{
+    margin-top:12px;
+    font-size:.8rem;
+    color:var(--muted);
+    text-align:center;
+  }
+  #success{
+    display:none;
+    margin-top:16px;
+    background:var(--navy);
+    color:#fff;
+    border-radius:var(--radius);
+    padding:22px 18px;
+    text-align:center;
+  }
+  #success.show{display:block}
+  #success h2{
+    font-family:"Baloo 2", system-ui, sans-serif;
+    color:var(--yellow);
+    margin:0 0 6px;
+    font-size:1.3rem;
+  }
+  #success p{margin:6px 0;color:#dbe2f0;font-size:.92rem}
+.site-header{background:var(--navy);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:50}
+.site-header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px}
+.site-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.3rem;line-height:1;color:#fff;text-decoration:none}
+.site-brand small{display:block;font-family:"Noto Sans",system-ui,sans-serif;font-weight:600;font-size:.64rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow)}
+.site-nav{display:flex;gap:4px;margin-left:8px;align-items:center}
+.site-nav> a,.nav-drop summary{color:#dbe2f0;text-decoration:none;font-weight:600;font-size:.9rem;padding:8px 10px;border-radius:8px}
+.site-nav> a:hover,.nav-drop summary:hover{background:#1f2f52;color:#fff}
+.nav-drop{position:relative}
+.nav-drop summary{cursor:pointer;list-style:none}
+.nav-drop summary::-webkit-details-marker{display:none}
+.nav-drop[open] summary{background:#1f2f52;color:#fff}
+.drop-menu{display:flex;flex-direction:column;gap:2px}
+@media(min-width:761px){.drop-menu{position:absolute;top:100%;left:0;background:var(--navy);border:1px solid #2a3d66;border-radius:8px;padding:6px;min-width:180px}.drop-menu a{white-space:nowrap}}
+#navMenuBtn{display:none;background:transparent;border:2px solid var(--yellow);border-radius:8px;color:var(--yellow);font:inherit;font-weight:800;padding:6px 12px;cursor:pointer}
+.site-footer{background:var(--navy);color:#dbe2f0;padding:22px 16px 30px}
+.site-foot-inner{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+.site-foot-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;color:#fff;font-size:1.05rem}
+.site-foot-links{display:flex;gap:16px;flex-wrap:wrap}
+.site-foot-links a{color:var(--yellow);font-size:.86rem;font-weight:600;text-decoration:none}
+.site-foot-links a:hover{text-decoration:underline}
+@media (max-width:760px){#navMenuBtn{display:block;margin-left:auto}.site-nav{display:none;position:absolute;top:100%;left:0;right:0;background:var(--navy);flex-direction:column;align-items:stretch;padding:8px 16px 14px;margin:0;border-top:1px solid #2a3d66}.site-nav.open{display:flex}.site-header-inner{flex-wrap:wrap;position:relative}}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="index.html" aria-label="ApnaShift home">ApnaShift<small>Shifting • Transport</small></a>
+    <nav class="site-nav" id="siteNav" aria-label="Main navigation">
+      <a href="index.html">Home</a>
+      <a href="booking.html">Book</a>
+      <a href="user-auth.html">Login</a>
+      <details class="nav-drop">
+        <summary>Driver</summary>
+        <div class="drop-menu">
+          <a href="driver-register.html">Join as Driver</a>
+          <a href="driver-login.html">Driver Login</a>
+        </div>
+      </details>
+      <a href="enterprise.html">Enterprise</a>
+      <a href="help.html">Help</a>
+    </nav>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+  </div>
+</header>
+
+<main>
+  <section class="card" aria-labelledby="pageTitle">
+    <div class="card-head">
+      <div class="logo" aria-hidden="true">A</div>
+      <div class="brand-name">ApnaShift<small>Admin Panel</small></div>
+    </div>
+    <div class="card-body">
+    <h1 id="pageTitle">Admin Login</h1>
+    <p class="sub">Sirf authorized staff ke liye.</p>
+
+    <div id="formAlert" role="alert" aria-live="assertive"></div>
+
+    <form id="loginForm" novalidate>
+      <div class="field" id="f-phone">
+        <label for="phone">Admin Email / Phone <span class="req" aria-hidden="true">*</span></label>
+        <input type="text" id="phone" name="phone" autocomplete="username" inputmode="text"
+               maxlength="120" placeholder="admin@example.com ya 98765 43210"
+               aria-describedby="phone-err" required>
+        <p class="error-text" id="phone-err"></p>
+      </div>
+
+      <div class="field" id="f-password">
+        <label for="password">Password <span class="req" aria-hidden="true">*</span></label>
+        <div class="pw-wrap">
+          <input type="password" id="password" name="password" autocomplete="current-password"
+                 maxlength="128" placeholder="Admin password"
+                 aria-describedby="password-err" required>
+          <button type="button" class="pw-toggle" id="pwToggle" aria-label="Password dikhao">Show</button>
+        </div>
+        <p class="error-text" id="password-err"></p>
+      </div>
+
+      <div class="forgot-row"><a href="#" id="forgotLink">Forgot Password?</a></div>
+
+      <button type="submit" id="submitBtn">Login as Admin</button>
+    </form>
+    <p class="note">Ye internal tool hai. Credentials kisi se share mat karo.</p>
+    </div>
+  </section>
+
+  <section id="success" aria-live="polite" aria-labelledby="successTitle">
+    <h2 id="successTitle">Login ho gaya</h2>
+    <p id="welcomeText">Namaste, admin!</p>
+    <p>Admin dashboard khul raha hai…</p>
+  </section>
+
+  <div class="modal-backdrop" id="forgotModal" role="dialog" aria-modal="true" aria-labelledby="forgotTitle">
+    <div class="modal">
+      <h2 id="forgotTitle">Password reset</h2>
+      <p>Apna registered phone number WhatsApp par bhejein <strong id="supportNumberText">918757160137</strong>, hum aapka admin password reset kar denge.</p>
+      <a class="wa-btn" id="forgotWaLink" href="#" target="_blank" rel="noopener">WhatsApp par bhejo</a>
+      <br><button type="button" class="ghost-btn" id="forgotClose">Band karo</button>
+    </div>
+  </div>
+<footer class="site-footer">
+  <div class="site-foot-inner">
+    <div class="site-foot-brand">ApnaShift</div>
+    <div class="site-foot-links">
+      <a href="index.html">Home</a>
+      <a href="help.html">Help</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms &amp; Conditions</a>
+    </div>
+  </div>
+</footer>
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  // Backend base URL — Railway production backend.
+  var API_BASE_URL = "https://apnashiftapp-production.up.railway.app";
+  var TOKEN_KEY = "apnashift_admin_token";
+
+  var form = document.getElementById("loginForm");
+  var phoneInput = document.getElementById("phone");
+  var passwordInput = document.getElementById("password");
+  var submitBtn = document.getElementById("submitBtn");
+  var alertBox = document.getElementById("formAlert");
+  var successBox = document.getElementById("success");
+
+  var PHONE_RE = /^[6-9]\d{9}$/;
+  var EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+  // Show Password toggle (professional login must-have).
+  var pwToggle = document.getElementById("pwToggle");
+  pwToggle.addEventListener("click", function(){
+    var show = passwordInput.type === "password";
+    passwordInput.type = show ? "text" : "password";
+    pwToggle.textContent = show ? "Hide" : "Show";
+    pwToggle.setAttribute("aria-label", show ? "Password chhupao" : "Password dikhao");
+  });
+
+  // Forgot Password — support number help.html ke OWNER_WHATSAPP jaisa.
+  var SUPPORT_WHATSAPP = "918757160137";
+  document.getElementById("supportNumberText").textContent = SUPPORT_WHATSAPP;
+  var forgotModal = document.getElementById("forgotModal");
+  function openForgotModal(){
+    var msg = "Namaste! Mera ApnaShift admin password reset kar dijiye." +
+      (phoneInput.value.trim() ? " Mera registered number: " + phoneInput.value.trim() : "");
+    document.getElementById("forgotWaLink").href =
+      "https://wa.me/" + SUPPORT_WHATSAPP + "?text=" + encodeURIComponent(msg);
+    forgotModal.classList.add("show");
+  }
+  function closeForgotModal(){ forgotModal.classList.remove("show"); }
+  document.getElementById("forgotLink").addEventListener("click", function(ev){
+    ev.preventDefault();
+    openForgotModal();
+  });
+  document.getElementById("forgotClose").addEventListener("click", closeForgotModal);
+  forgotModal.addEventListener("click", function(ev){
+    if(ev.target === forgotModal) closeForgotModal();
+  });
+  document.addEventListener("keydown", function(ev){
+    if(ev.key === "Escape" && forgotModal.classList.contains("show")) closeForgotModal();
+  });
+
+  function cleanPhone(raw){
+    var p = String(raw || "").trim().replace(/[\s\-().]/g, "");
+    if(p.indexOf("+91") === 0){
+      p = p.slice(3);
+    } else if(p.length === 12 && p.indexOf("91") === 0){
+      p = p.slice(2);
+    } else if(p.length === 11 && p.charAt(0) === "0"){
+      p = p.slice(1);
+    }
+    return p;
+  }
+
+  function setErr(fieldId, errId, inputEl, msg){
+    var f = document.getElementById(fieldId);
+    var e = document.getElementById(errId);
+    if(msg){
+      f.classList.add("invalid");
+      e.textContent = msg;
+      inputEl.setAttribute("aria-invalid", "true");
+      return false;
+    }
+    f.classList.remove("invalid");
+    e.textContent = "";
+    inputEl.removeAttribute("aria-invalid");
+    return true;
+  }
+
+  function showAlert(type, msg){
+    alertBox.className = "show " + (type === "err" ? "err" : "ok");
+    alertBox.textContent = msg;
+  }
+
+  function hideAlert(){
+    alertBox.className = "";
+    alertBox.textContent = "";
+  }
+
+  [phoneInput, passwordInput].forEach(function(el){
+    el.addEventListener("input", hideAlert);
+  });
+
+  form.addEventListener("submit", function(ev){
+    ev.preventDefault();
+    hideAlert();
+
+    var ok = true;
+    var firstBad = null;
+
+    var rawId = phoneInput.value.trim();
+    var cleaned = cleanPhone(rawId);
+    if(!rawId){
+      setErr("f-phone", "phone-err", phoneInput, "Apna email ya phone number likho.");
+      ok = false; firstBad = firstBad || phoneInput;
+    } else if(rawId.indexOf("@") !== -1){
+      // Backend admin login abhi phone-based hai — email walo ko seedha batao.
+      if(!EMAIL_RE.test(rawId)){
+        setErr("f-phone", "phone-err", phoneInput, "Sahi email likho.");
+        ok = false; firstBad = firstBad || phoneInput;
+      } else {
+        setErr("f-phone", "phone-err", phoneInput, "Email login abhi nahi hai — registered phone number use karo.");
+        ok = false; firstBad = firstBad || phoneInput;
+      }
+    } else if(!PHONE_RE.test(cleaned)){
+      setErr("f-phone", "phone-err", phoneInput, "Sahi 10 digit mobile number likho jo 6-9 se shuru ho.");
+      ok = false; firstBad = firstBad || phoneInput;
+    } else {
+      setErr("f-phone", "phone-err", phoneInput, "");
+    }
+
+    if(!passwordInput.value){
+      setErr("f-password", "password-err", passwordInput, "Password likho.");
+      ok = false; firstBad = firstBad || passwordInput;
+    } else {
+      setErr("f-password", "password-err", passwordInput, "");
+    }
+
+    if(!ok){
+      if(firstBad) firstBad.focus();
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Login ho raha hai…";
+
+    fetch(API_BASE_URL + "/api/admin/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone: cleaned, password: passwordInput.value })
+    }).then(function(res){
+      return res.json().then(function(data){
+        return { status: res.status, body: data };
+      }).catch(function(){
+        return { status: res.status, body: null };
+      });
+    }).then(function(result){
+      if(result.status !== 200 || !result.body || result.body.ok !== true){
+        throw new Error("invalid");
+      }
+      try{
+        localStorage.setItem(TOKEN_KEY, result.body.token);
+      }catch(e){
+        throw new Error("storage");
+      }
+      var user = result.body.user || {};
+      form.style.display = "none";
+      document.querySelector(".note").style.display = "none";
+      document.getElementById("welcomeText").textContent =
+        "Namaste" + (user.name ? ", " + user.name : "") + "!";
+      successBox.classList.add("show");
+      showAlert("ok", "Login ho gaya.");
+      successBox.scrollIntoView({ behavior: "smooth", block: "start" });
+      setTimeout(function(){
+        window.location.href = "admin-dashboard.html";
+      }, 1200);
+    }).catch(function(err){
+      if(err && err.message === "storage"){
+        showAlert("err", "Browser me login save nahi hua. Private mode band karke try karo.");
+      } else {
+        showAlert("err", "Phone ya password galat hai.");
+      }
+    }).then(function(){
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Login";
+    });
+  });
+var navMenuBtn=document.getElementById("navMenuBtn"),siteNav=document.getElementById("siteNav");
+if(navMenuBtn&&siteNav){navMenuBtn.addEventListener("click",function(){var open=siteNav.classList.toggle("open");navMenuBtn.setAttribute("aria-expanded",open?"true":"false");navMenuBtn.setAttribute("aria-label",open?"Menu band karo":"Menu kholo");});siteNav.addEventListener("click",function(ev){if(ev.target.tagName==="A"&&siteNav.classList.contains("open")){siteNav.classList.remove("open");navMenuBtn.setAttribute("aria-expanded","false");}});}
+})();
+</script>
+</body>
+</html>

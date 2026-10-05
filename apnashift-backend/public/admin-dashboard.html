@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard | ApnaShift</title>
+<meta name="description" content="ApnaShift internal admin dashboard — stats, drivers, enterprise aur bookings.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#14213d;
+    --yellow:#fcbf49;
+    --bg:#f4f6fa;
+    --border:#c9d0de;
+    --ink:#20242e;
+    --muted:#5b6070;
+    --red:#c0392b;
+    --green:#1a7a3a;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    line-height:1.6;
+  }
+  :focus-visible{
+    outline:3px solid var(--navy);
+    outline-offset:2px;
+    box-shadow:0 0 0 6px var(--yellow);
+    border-radius:8px;
+  }
+  main{max-width:960px;margin:0 auto;padding:20px 16px 40px}
+  .top-row{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px}
+  h1{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;color:var(--navy);font-size:1.6rem;margin:0}
+  .sub{margin:0;color:var(--muted);font-size:.9rem}
+  .logout-btn{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:.95rem;padding:10px 16px;border-radius:10px;border:2px solid var(--navy);background:#fff;color:var(--navy);cursor:pointer}
+  .logout-btn:hover{background:#fff8e2}
+  .tabs{display:flex;gap:8px;margin:14px 0;flex-wrap:wrap}
+  .tabs button{flex:1;min-width:120px;font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-size:1rem;font-weight:800;padding:10px;border-radius:10px;border:2px solid var(--navy);background:#fff;color:var(--navy);cursor:pointer}
+  .tabs button.active{background:var(--navy);color:var(--yellow)}
+  .panel{display:none}
+  .panel.active{display:block}
+  .card{background:#fff;border:2px solid var(--navy);border-radius:var(--radius);padding:18px;box-shadow:6px 6px 0 var(--yellow);margin-bottom:16px}
+  .card h2{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;color:var(--navy);font-size:1.2rem;margin:0 0 6px}
+  #pageAlert{display:none;border-radius:10px;padding:11px 12px;font-size:.9rem;font-weight:600;margin:0 0 14px}
+  #pageAlert.show{display:block}
+  #pageAlert.err{background:#fdecea;color:#7a1f14;border:2px solid var(--red)}
+  #pageAlert.ok{background:#e6f6ea;color:#0d5c26;border:2px solid var(--green)}
+  #pageAlert.info{background:#fff3cf;color:var(--navy);border:2px solid var(--navy)}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px}
+  .controls .field{margin:0;flex:1;min-width:160px}
+  label{display:block;font-weight:600;font-size:.88rem;color:var(--navy);margin-bottom:6px}
+  select,input[type="search"],input[type="text"]{width:100%;font:inherit;color:var(--ink);background:#fff;border:2px solid var(--border);border-radius:10px;padding:10px 12px}
+  select:focus,input:focus{border-color:var(--navy);outline:none}
+  .btn{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:.92rem;padding:10px 16px;border-radius:10px;border:2px solid var(--navy);cursor:pointer;background:var(--yellow);color:var(--navy);box-shadow:0 3px 0 var(--navy)}
+  .btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--navy)}
+  .btn[disabled]{opacity:.6;cursor:wait;transform:none}
+  .btn.ghost{background:#fff}
+  .btn.small{font-size:.82rem;padding:7px 12px;box-shadow:none}
+  .btn.danger{background:#fdecea;color:#7a1f14}
+  .stats-grid{display:grid;gap:12px;margin-top:10px}
+  @media(min-width:720px){.stats-grid{grid-template-columns:1fr 1fr 1fr}}
+  .stat{background:#f4f6fa;border:2px solid var(--border);border-radius:10px;padding:12px}
+  .stat h3{margin:0 0 6px;font-size:.9rem;color:var(--muted);font-weight:600}
+  .stat .big{font-family:"Baloo 2",system-ui,sans-serif;font-size:1.4rem;font-weight:800;color:var(--navy)}
+  .stat p{margin:4px 0 0;font-size:.86rem;color:var(--muted)}
+  .list{display:grid;gap:10px;margin-top:10px}
+  .row-card{background:#fff;border:2px solid var(--border);border-radius:10px;padding:12px}
+  .row-card.verified{border-color:var(--green)}
+  .row-card.inactive{opacity:.85}
+  .row-card h3{margin:0 0 4px;color:var(--navy);font-size:1rem}
+  .row-card p{margin:4px 0;font-size:.86rem;color:var(--ink)}
+  .row-card .meta{font-size:.82rem;color:var(--muted)}
+  .row-card .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .badge{display:inline-block;font-size:.76rem;font-weight:700;padding:2px 8px;border-radius:99px;border:1px solid var(--border);background:#eef1f7;color:var(--navy);margin-right:6px}
+  .badge.ok{background:#e6f6ea;border-color:var(--green);color:#0d5c26}
+  .badge.warn{background:#fff3cf;border-color:var(--navy)}
+  .badge.bad{background:#fdecea;border-color:var(--red);color:#7a1f14}
+  .loading,.empty{padding:14px;text-align:center;color:var(--muted);font-size:.9rem;background:#fff;border:2px dashed var(--border);border-radius:10px}
+  .site-header{background:var(--navy);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:50}
+  .site-header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px}
+  .site-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.3rem;line-height:1;color:#fff;text-decoration:none}
+  .site-brand small{display:block;font-family:"Noto Sans",system-ui,sans-serif;font-weight:600;font-size:.64rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow)}
+  .site-nav{display:flex;gap:4px;margin-left:8px;align-items:center}
+  .site-nav> a,.nav-drop summary{color:#dbe2f0;text-decoration:none;font-weight:600;font-size:.9rem;padding:8px 10px;border-radius:8px}
+  .site-nav> a:hover,.nav-drop summary:hover{background:#1f2f52;color:#fff}
+  .nav-drop{position:relative}
+  .nav-drop summary{cursor:pointer;list-style:none}
+  .nav-drop summary::-webkit-details-marker{display:none}
+  .nav-drop[open] summary{background:#1f2f52;color:#fff}
+  .drop-menu{display:flex;flex-direction:column;gap:2px}
+  @media(min-width:761px){.drop-menu{position:absolute;top:100%;left:0;background:var(--navy);border:1px solid #2a3d66;border-radius:8px;padding:6px;min-width:180px}.drop-menu a{white-space:nowrap}}
+  #navMenuBtn{display:none;background:transparent;border:2px solid var(--yellow);border-radius:8px;color:var(--yellow);font:inherit;font-weight:800;padding:6px 12px;cursor:pointer}
+  .site-footer{background:var(--navy);color:#dbe2f0;padding:22px 16px 30px}
+  .site-foot-inner{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+  .site-foot-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;color:#fff;font-size:1.05rem}
+  .site-foot-links{display:flex;gap:16px;flex-wrap:wrap}
+  .site-foot-links a{color:var(--yellow);font-size:.86rem;font-weight:600;text-decoration:none}
+  .site-foot-links a:hover{text-decoration:underline}
+  @media (max-width:760px){#navMenuBtn{display:block;margin-left:auto}.site-nav{display:none;position:absolute;top:100%;left:0;right:0;background:var(--navy);flex-direction:column;align-items:stretch;padding:8px 16px 14px;margin:0;border-top:1px solid #2a3d66}.site-nav.open{display:flex}.site-header-inner{flex-wrap:wrap;position:relative}}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="index.html" aria-label="ApnaShift home">ApnaShift<small>Shifting • Transport</small></a>
+    <nav class="site-nav" id="siteNav" aria-label="Main navigation">
+      <a href="index.html">Home</a>
+      <a href="booking.html">Book</a>
+      <a href="user-auth.html">Login</a>
+      <details class="nav-drop">
+        <summary>Driver</summary>
+        <div class="drop-menu">
+          <a href="driver-register.html">Join as Driver</a>
+          <a href="driver-login.html">Driver Login</a>
+        </div>
+      </details>
+      <a href="enterprise.html">Enterprise</a>
+      <a href="help.html">Help</a>
+    </nav>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+  </div>
+</header>
+
+<main>
+  <div class="top-row">
+    <div>
+      <h1>Admin Dashboard</h1>
+      <p class="sub">Sirf authorized staff ke liye. Stats, drivers, enterprise aur bookings yahin se sambhalo.</p>
+    </div>
+    <button class="logout-btn" id="logoutBtn" type="button">Logout</button>
+  </div>
+
+  <div id="pageAlert" role="alert" aria-live="assertive"></div>
+
+  <div class="tabs" role="tablist" aria-label="Admin sections">
+    <button type="button" id="tabOverview" class="active" role="tab" aria-selected="true" aria-controls="panelOverview">Overview</button>
+    <button type="button" id="tabDrivers" role="tab" aria-selected="false" aria-controls="panelDrivers">Drivers</button>
+    <button type="button" id="tabEnterprise" role="tab" aria-selected="false" aria-controls="panelEnterprise">Enterprise</button>
+    <button type="button" id="tabBookings" role="tab" aria-selected="false" aria-controls="panelBookings">Bookings</button>
+    <button type="button" id="tabTracking" role="tab" aria-selected="false" aria-controls="panelTracking">Tracking</button>
+    <button type="button" id="tabMoney" role="tab" aria-selected="false" aria-controls="panelMoney">Settlement</button>
+  </div>
+
+  <section class="card panel active" id="panelOverview" role="tabpanel" aria-labelledby="tabOverview">
+    <h2>Overview</h2>
+    <p class="sub">Aaj, is hafte aur total ka hisaab.</p>
+    <div class="controls">
+      <button class="btn ghost" id="refreshStats" type="button">Refresh</button>
+    </div>
+    <div id="statsBox" aria-live="polite"><p class="loading">Stats load ho raha hai…</p></div>
+  </section>
+
+  <section class="card panel" id="panelDrivers" role="tabpanel" aria-labelledby="tabDrivers">
+    <h2>Drivers</h2>
+    <p class="sub">Status chuno, phir Verify / Reject / Deactivate karo.</p>
+    <div class="controls">
+      <div class="field">
+        <label for="driverStatus">Status</label>
+        <select id="driverStatus">
+          <option value="pending">pending</option>
+          <option value="verified">verified</option>
+          <option value="review">review</option>
+        </select>
+      </div>
+      <button class="btn ghost" id="refreshDrivers" type="button">Load</button>
+    </div>
+    <div class="list" id="driversList" aria-live="polite"><p class="loading">Driver list load karne ke liye Load dabao.</p></div>
+    <h2 style="margin-top:16px">Password reset</h2>
+    <p class="sub">Phone number se user/driver dhoondo, naya password set karo (min 8 akshar).</p>
+    <div class="controls">
+      <div class="field">
+        <label for="resetPhone">Phone number</label>
+        <input type="text" id="resetPhone" inputmode="numeric" maxlength="15" placeholder="98765 43210">
+      </div>
+      <button class="btn ghost" id="resetSearchBtn" type="button">Dhoondo</button>
+    </div>
+    <div class="list" id="resetResults" aria-live="polite"></div>
+  </section>
+
+  <section class="card panel" id="panelEnterprise" role="tabpanel" aria-labelledby="tabEnterprise">
+    <h2>Enterprise inquiries</h2>
+    <p class="sub">Status badlo: CONTACTED / IN_DISCUSSION / CONVERTED / CLOSED.</p>
+    <div class="controls">
+      <div class="field">
+        <label for="inqStatus">Status filter</label>
+        <select id="inqStatus">
+          <option value="">All</option>
+          <option value="NEW">NEW</option>
+          <option value="CONTACTED">CONTACTED</option>
+          <option value="IN_DISCUSSION">IN_DISCUSSION</option>
+          <option value="CONVERTED">CONVERTED</option>
+          <option value="CLOSED">CLOSED</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="inqSearch">Search</label>
+        <input type="search" id="inqSearch" maxlength="80" placeholder="Company ya naam likho">
+      </div>
+      <button class="btn ghost" id="refreshInquiries" type="button">Load</button>
+    </div>
+    <div class="list" id="inquiriesList" aria-live="polite"><p class="loading">Inquiries dekhne ke liye Load dabao.</p></div>
+  </section>
+
+  <section class="card panel" id="panelBookings" role="tabpanel" aria-labelledby="tabBookings">
+    <h2>Bookings</h2>
+    <p class="sub">Status filter ke saath total aur revenue.</p>
+    <div class="controls">
+      <div class="field">
+        <label for="bookingStatus">Status filter</label>
+        <select id="bookingStatus">
+          <option value="">All</option>
+          <option value="pending">pending</option>
+          <option value="assigned">assigned</option>
+          <option value="completed">completed</option>
+          <option value="cancelled">cancelled</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="bookingDisputed">Dispute filter</label>
+        <select id="bookingDisputed">
+          <option value="">All</option>
+          <option value="true">Disputed only</option>
+          <option value="false">Clean only</option>
+        </select>
+      </div>
+      <button class="btn ghost" id="refreshBookings" type="button">Load</button>
+    </div>
+    <div id="bookingsSummary" aria-live="polite"></div>
+    <div class="list" id="bookingsList" aria-live="polite"><p class="loading">Bookings dekhne ke liye Load dabao.</p></div>
+  </section>
+
+  <section class="card panel" id="panelTracking" role="tabpanel" aria-labelledby="tabTracking">
+    <h2>Live tracking</h2>
+    <p class="sub">Active trips (accepted/arrived/in_transit) — driver ki last GPS location aur tracking status. 10 sec me auto-refresh.</p>
+    <div class="controls">
+      <button class="btn ghost" id="refreshTracking" type="button">Load</button>
+    </div>
+    <div id="trackingSummary" aria-live="polite"></div>
+    <div class="list" id="trackingList" aria-live="polite"><p class="loading">Live trips dekhne ke liye Load dabao.</p></div>
+  </section>
+
+  <section class="card panel" id="panelMoney" role="tabpanel" aria-labelledby="tabMoney">
+    <h2>Commission</h2>
+    <p class="sub">Rate sirf aage ki deliveries par lagta hai — purani payments ka snapshot nahi badalta.</p>
+    <div class="controls">
+      <div class="field">
+        <label for="commissionPct">Commission % (0–100)</label>
+        <input type="text" id="commissionPct" inputmode="decimal" maxlength="6" placeholder="15">
+      </div>
+      <button class="btn ghost" id="saveCommission" type="button">Save</button>
+      <button class="btn ghost" id="refreshMoney" type="button">Load</button>
+    </div>
+    <div id="commissionBox" aria-live="polite"><p class="loading">Commission load karne ke liye Load dabao.</p></div>
+
+    <h2 style="margin-top:16px">Driver hisab</h2>
+    <p class="sub">Cash collection, kamai, commission, jama aur baaki — driver chuno to detail + settlement.</p>
+    <div class="list" id="balancesList" aria-live="polite"><p class="loading">Load dabao.</p></div>
+
+    <div id="driverMoneyBox" hidden>
+      <h2 id="driverMoneyTitle" style="margin-top:14px">Driver detail</h2>
+      <div id="driverMoneySummary" aria-live="polite"></div>
+      <h2 style="margin-top:14px">Settlement jama karo</h2>
+      <div class="controls">
+        <div class="field">
+          <label for="settleAmount">Amount (Rs)</label>
+          <input type="text" id="settleAmount" inputmode="decimal" maxlength="12" placeholder="150">
+        </div>
+        <div class="field">
+          <label for="settleMethod">Method</label>
+          <select id="settleMethod">
+            <option value="cash">cash</option>
+            <option value="bank_transfer">bank_transfer</option>
+            <option value="upi">upi</option>
+          </select>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="field">
+          <label for="settleRef">Reference no (bank/upi par zaroori)</label>
+          <input type="text" id="settleRef" maxlength="100" placeholder="UPI-12345">
+        </div>
+        <div class="field">
+          <label for="settleNotes">Notes (optional)</label>
+          <input type="text" id="settleNotes" maxlength="500" placeholder="Office me cash jama">
+        </div>
+      </div>
+      <div class="controls">
+        <button class="btn" id="settleSubmit" type="button">Settlement jama karo</button>
+        <button class="btn ghost" id="driverMoneyBack" type="button">Wapas</button>
+      </div>
+      <h2 style="margin-top:14px">Payments</h2>
+      <div class="list" id="driverPayments" aria-live="polite"></div>
+      <h2 style="margin-top:14px">Settlements</h2>
+      <div class="list" id="driverSettlements" aria-live="polite"></div>
+    </div>
+  </section>
+
+<footer class="site-footer">
+  <div class="site-foot-inner">
+    <div class="site-foot-brand">ApnaShift</div>
+    <div class="site-foot-links">
+      <a href="index.html">Home</a>
+      <a href="help.html">Help</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms &amp; Conditions</a>
+    </div>
+  </div>
+</footer>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var API_BASE_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.protocol === "file:") ? "http://localhost:3000" : "https://apnashiftapp-production.up.railway.app";
+  var TOKEN_KEY = "apnashift_admin_token";
+  var LOGIN_PAGE = "admin-login.html";
+
+  function getToken(){
+    try{ return localStorage.getItem(TOKEN_KEY); }catch(e){ return null; }
+  }
+  function clearAndGoLogin(){
+    try{ localStorage.removeItem(TOKEN_KEY); }catch(e){}
+    window.location.href = LOGIN_PAGE;
+  }
+
+  // Require token before rendering anything useful.
+  var bootToken = getToken();
+  if(!bootToken){
+    window.location.href = LOGIN_PAGE;
+    return;
+  }
+
+  var pageAlert = document.getElementById("pageAlert");
+  function showPageAlert(type, msg){
+    pageAlert.className = "show " + type;
+    pageAlert.textContent = msg;
+  }
+  function hidePageAlert(){
+    pageAlert.className = "";
+    pageAlert.textContent = "";
+  }
+  function esc(s){
+    return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function fmtDate(v){
+    if(!v) return "—";
+    var d = new Date(v);
+    if(isNaN(d.getTime())) return String(v);
+    return d.toLocaleString("en-IN");
+  }
+  function fmtRs(n){
+    if(n == null || n === "") return "—";
+    return "Rs " + Number(n).toLocaleString("en-IN");
+  }
+  function authHeaders(extra){
+    var h = { "Authorization": "Bearer " + getToken() };
+    if(extra){ for(var k in extra){ if(extra.hasOwnProperty(k)) h[k] = extra[k]; } }
+    return h;
+  }
+  function parseRes(res){
+    return res.json().then(function(data){
+      return { status: res.status, body: data };
+    }).catch(function(){
+      return { status: res.status, body: null };
+    });
+  }
+  function checkAuth(result){
+    if(result.status === 401){
+      clearAndGoLogin();
+      return true;
+    }
+    return false;
+  }
+  function networkMsg(){ return "Network error — net check karke dobara try karo."; }
+
+  // Tab switching reuses the login page tab pattern.
+  var tabs = [
+    { btn: "tabOverview", panel: "panelOverview" },
+    { btn: "tabDrivers", panel: "panelDrivers" },
+    { btn: "tabEnterprise", panel: "panelEnterprise" },
+    { btn: "tabBookings", panel: "panelBookings" },
+    { btn: "tabTracking", panel: "panelTracking" },
+    { btn: "tabMoney", panel: "panelMoney" }
+  ];
+  function switchTab(activeId){
+    tabs.forEach(function(t){
+      var b = document.getElementById(t.btn);
+      var p = document.getElementById(t.panel);
+      var on = t.btn === activeId;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-selected", on ? "true" : "false");
+      p.classList.toggle("active", on);
+    });
+    hidePageAlert();
+  }
+  tabs.forEach(function(t){
+    document.getElementById(t.btn).addEventListener("click", function(){ switchTab(t.btn); });
+  });
+
+  document.getElementById("logoutBtn").addEventListener("click", function(){
+    clearAndGoLogin();
+  });
+
+  // Overview stats.
+  var statsBox = document.getElementById("statsBox");
+  var refreshStats = document.getElementById("refreshStats");
+  function statCard(title, d){
+    d = d || {};
+    return '<div class="stat"><h3>' + esc(title) + '</h3>' +
+      '<div class="big">' + esc(d.bookings == null ? "—" : d.bookings) + ' bookings</div>' +
+      '<p>Completed: ' + esc(d.completed == null ? "—" : d.completed) + ' • Cancelled: ' + esc(d.cancelled == null ? "—" : d.cancelled) + '</p>' +
+      '<p>Revenue: ' + esc(fmtRs(d.revenue_rs)) + '</p></div>';
+  }
+  function loadStats(){
+    refreshStats.disabled = true;
+    refreshStats.textContent = "Load ho raha hai…";
+    statsBox.innerHTML = '<p class="loading">Stats load ho raha hai…</p>';
+    fetch(API_BASE_URL + "/api/admin/stats", { method: "GET", headers: authHeaders() })
+      .then(parseRes)
+      .then(function(result){
+        if(checkAuth(result)) return;
+        if(result.status !== 200 || !result.body || result.body.ok !== true){
+          throw new Error(result.body && result.body.error ? String(result.body.error) : "load_failed");
+        }
+        var b = result.body;
+        var html = '<div class="stats-grid">';
+        html += statCard("Aaj", b.today);
+        html += statCard("Is hafte", b.week);
+        html += statCard("Total", b.total);
+        html += '</div>';
+        var verified = b.drivers && b.drivers.verified_active;
+        html += '<p class="meta" style="margin-top:10px;font-size:.88rem;color:var(--muted)">Verified active drivers: <b>' + esc(verified == null ? "—" : verified) + '</b></p>';
+        statsBox.innerHTML = html;
+        hidePageAlert();
+      })
+      .catch(function(err){
+        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : "Stats load nahi hua. Dobara try karo.";
+        statsBox.innerHTML = '<p class="empty">Stats load nahi hua. Refresh dabakar dobara try karo.</p>';
+        showPageAlert("err", msg);
+      })
+      .then(function(){
+        refreshStats.disabled = false;
+        refreshStats.textContent = "Refresh";
+      });
+  }
+  refreshStats.addEventListener("click", loadStats);
+
+  // Drivers list and actions.
+  var driverStatus = document.getElementById("driverStatus");
+  var driversList = document.getElementById("driversList");
+  var refreshDrivers = document.getElementById("refreshDrivers");
+  function driverCard(d){
+    var verifiedBadge = d.is_verified ? '<span class="badge ok">Verified</span>' : '<span class="badge warn">Pending</span>';
+    var activeBadge = d.is_active ? '<span class="badge ok">Active</span>' : '<span class="badge bad">Inactive</span>';
+    var rating = (d.avg_rating != null ? "Rating " + d.avg_rating : "Rating —") + " • Trips " + (d.total_trips != null ? d.total_trips : "—");
+    var html = '<div class="row-card' + (d.is_verified ? " verified" : "") + (d.is_active ? "" : " inactive") + '">';
+    html += '<h3>' + esc(d.name || "Naam nahi") + ' ' + verifiedBadge + ' ' + activeBadge + '</h3>';
+    html += '<p class="meta">Phone: ' + esc(d.phone || "—") + ' • ' + esc(d.city || "") + ' • Ref: ' + esc(d.application_ref || d.id || "—") + '</p>';
+    html += '<p>Gaadi: ' + esc(d.vehicle_type || "—") + ' • ' + esc(d.vehicle_number || "—") + '</p>';
+    html += '<p class="meta">License: ' + esc(d.license_number || "—") + ' • ' + esc(rating) + '</p>';
+    if(d.rejection_reason) html += '<p class="meta">Reject reason: ' + esc(d.rejection_reason) + '</p>';
+    html += '<details><summary style="cursor:pointer;font-weight:700;color:var(--navy)">Poori application dekho (authenticity check)</summary>';
+    html += '<div class="meta" style="display:grid;gap:2px;margin-top:6px">';
+    html += '<span><strong>Email:</strong> ' + esc(d.email || "—") + ' • <strong>DOB:</strong> ' + esc(d.dob || "—") + ' • <strong>Gender:</strong> ' + esc(d.gender || "—") + '</span>';
+    html += '<span><strong>Address:</strong> ' + esc(d.address || "—") + ', ' + esc(d.city || "") + ', ' + esc(d.state || "") + '</span>';
+    html += '<span><strong>Gaadi:</strong> ' + esc(d.vehicle_make || "") + ' ' + esc(d.vehicle_model || "") +
+      (d.vehicle_year != null ? ' (' + esc(d.vehicle_year) + ')' : '') + ' • Capacity: ' + esc(d.capacity_kg != null ? d.capacity_kg + " kg" : "—") +
+      ' • Fuel: ' + esc(d.fuel_type || "—") + ' • ' + esc(d.ownership || "") + '</span>';
+    html += '<span><strong>License:</strong> ' + esc(d.license_number || "—") + ' (' + esc(d.license_type || "—") +
+      ') • Exp: ' + esc(d.license_expiry || "—") + ' • State: ' + esc(d.license_state || "—") + '</span>';
+    html += '<span><strong>RC:</strong> ' + esc(d.rc_number || "—") + ' • Insurance exp: ' + esc(d.insurance_expiry || "—") +
+      ' • Pollution exp: ' + esc(d.pollution_expiry || "—") + ' • Permit: ' + esc(d.permit_number || "—") + '</span>';
+    html += '<span><strong>Service:</strong> ' + esc(d.service_city || "") + ', ' + esc(d.service_state || "") +
+      (d.service_areas ? ' • ' + esc(d.service_areas) : '') +
+      (d.service_radius_km != null ? ' • ' + esc(d.service_radius_km) + ' km' : '') + '</span>';
+    html += '<span><strong>Emergency:</strong> ' + esc(d.emergency_name || "—") +
+      (d.emergency_relation ? ' (' + esc(d.emergency_relation) + ')' : '') + ' • ' + esc(d.emergency_phone || "—") + '</span>';
+    html += '<span><strong>UPI:</strong> ' + esc(d.upi_id || "—") + ' • <strong>Consent:</strong> ' + esc(d.consent_at || "—") + '</span>';
+    html += '</div></details>';
+    html += '<div class="actions">';
+    html += '<button class="btn small" type="button" data-act="verify" data-id="' + esc(d.id) + '">Verify</button>';
+    html += '<button class="btn small ghost" type="button" data-act="reject" data-id="' + esc(d.id) + '">Reject</button>';
+    if(d.is_active) html += '<button class="btn small danger" type="button" data-act="deactivate" data-id="' + esc(d.id) + '">Deactivate</button>';
+    else html += '<button class="btn small" type="button" data-act="reactivate" data-id="' + esc(d.id) + '">Reactivate</button>';
+    html += '</div></div>';
+    return html;
+  }
+  function loadDrivers(){
+    var st = driverStatus.value;
+    refreshDrivers.disabled = true;
+    refreshDrivers.textContent = "Load ho raha hai…";
+    driversList.innerHTML = '<p class="loading">Drivers load ho rahe hain…</p>';
+    fetch(API_BASE_URL + "/api/admin/drivers?status=" + encodeURIComponent(st), { method: "GET", headers: authHeaders() })
+      .then(parseRes)
+      .then(function(result){
+        if(checkAuth(result)) return;
+        if(result.status !== 200 || !result.body || result.body.ok !== true){
+          throw new Error((result.body && result.body.error) || "load_failed");
+        }
+        var arr = result.body.drivers || [];
+        if(!arr.length){
+          driversList.innerHTML = '<p class="empty">Is status me koi driver nahi mila.</p>';
+          return;
+        }
+        driversList.innerHTML = arr.map(driverCard).join("");
+        hidePageAlert();
+      })
+      .catch(function(err){
+        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : "Drivers load nahi hue. Dobara try karo.";
+        driversList.innerHTML = '<p class="empty">Drivers load nahi hue.</p>';
+        showPageAlert("err", msg);
+      })
+      .then(function(){
+        refreshDrivers.disabled = false;
+        refreshDrivers.textContent = "Load";
+      });
+  }
+  refreshDrivers.addEventListener("click", loadDrivers);
+  driverStatus.addEventListener("change", loadDrivers);
+  driversList.addEventListener("click", function(ev){
+    var btn = ev.target.closest ? ev.target.closest("button[data-act]") : null;
+    if(!btn) return;
+    var id = btn.getAttribute("data-id");
+    var act = btn.getAttribute("data-act");
+    if(!id) return;
+    var url = "";
+    var body = {};
+    if(act === "verify") url = API_BASE_URL + "/api/admin/drivers/" + encodeURIComponent(id) + "/verify";
+    else if(act === "reject"){
+      var reason = window.prompt("Reject ka reason likho (driver ko dikhega):", "");
+      if(reason == null) return;
+      reason = String(reason).trim();
+      if(!reason){
+        showPageAlert("err", "Reject ke liye reason zaroori hai.");
+        return;
+      }
+      url = API_BASE_URL + "/api/admin/drivers/" + encodeURIComponent(id) + "/reject";
+      body = { reason: reason };
+    }
+    else if(act === "deactivate") url = API_BASE_URL + "/api/admin/drivers/" + encodeURIComponent(id) + "/deactivate";
+    else if(act === "reactivate") url = API_BASE_URL + "/api/admin/drivers/" + encodeURIComponent(id) + "/reactivate";
+    else return;
+    btn.disabled = true;
+    showPageAlert("info", "Kaam ho raha hai…");
+    fetch(url, { method: "PATCH", headers: authHeaders({ "Content-Type": "application/json" }), body: JSON.stringify(body) })
+      .then(parseRes)
+      .then(function(result){
+        if(checkAuth(result)) return;
+        if(result.status !== 200 || !result.body || result.body.ok !== true){
+          var code = result.body && result.body.error;
+          var m = "Kaam nahi hua. Dobara try karo.";
+          if(code === "already_verified") m = "Driver pehle se verified hai.";
+          else if(code === "not_found") m = "Driver nahi mila. List refresh karo.";
+          else if(code === "validation_failed") m = "Reason sahi likho (kam se kam 3 akshar).";
+          throw new Error(m);
+        }
+        showPageAlert("ok", "Ho gaya!");
+        loadDrivers();
+      })
+      .catch(function(err){
+        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : (err && err.message) || "Kaam nahi hua. Dobara try karo.";
+        showPageAlert("err", msg);
+        btn.disabled = false;
+      });
+  });
+
+  // Password reset: phone se account dhoondo, naya password set karo.
+  var resetPhone = document.getElementById("resetPhone");
+  var resetSearchBtn = document.getElementById("resetSearchBtn");
+  var resetResults = document.getElementById("resetResults");
+  function resetAccountCard(a){
+    var html = '<div class="row-card">';
+    html += '<h3>' + esc(a.name || "Naam nahi") + ' <span class="badge">' + esc(a.kind || "") + '</span></h3>';
+    html += '<p class="meta">Phone: ' + esc(a.phone || "—") + '</p>';
+    html += '<div class="controls"><div class="field">' +
+      '<label for="newpw-' + esc(a.kind) + '-' + esc(a.id) + '">Naya password (min 8)</label>' +
+      '<input type="text" id="newpw-' + esc(a.kind) + '-' + esc(a.id) + '" maxlength="128" autocomplete="off"></div>' +
+      '<button class="btn small" type="button" data-reset-kind="' + esc(a.kind) + '" data-reset-id="' + esc(a.id) + '">Set karo</button></div>';
+    html += '</div>';
+    return html;
+  }
+  resetSearchBtn.addEventListener("click", function(){
+    var phone = resetPhone.value.trim();
+    if(!phone){
+      showPageAlert("err", "Phone number likho.");
+      return;
+    }
+    resetSearchBtn.disabled = true;
+    resetResults.innerHTML = '<p class="loading">Dhoond rahe hain…</p>';
+    fetch(API_BASE_URL + "/api/admin/accounts/lookup?phone=" + encodeURIComponent(phone), { method: "GET", headers: authHeaders() })
+      .then(parseRes)
+      .then(function(result){
+        if(checkAuth(result)) return;
+        if(result.status !== 200 || !result.body || result.body.ok !== true){
+          throw new Error((result.body && result.body.error) || "load_failed");
+        }
+        var arr = result.body.accounts || [];
+        resetResults.innerHTML = arr.length ? arr.map(resetAccountCard).join("") : '<p class="empty">Is number par koi user/driver nahi mila.</p>';
+        hidePageAlert();
+      })
+      .catch(function(err){
+        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : "Search nahi hua. Dobara try karo.";
+        resetResults.innerHTML = '<p class="empty">Search nahi hua.</p>';
+        showPageAlert("err", msg);
+      })
+      .then(function(){
+        resetSearchBtn.disabled = false;
+      });
+  });
+  resetResults.addEventListener("click", function(ev){
+    var btn = ev.target.closest ? ev.target.closest("button[data-reset-id]") : null;
+    if(!btn) return;
+    var kind = btn.getAttribute("data-reset-kind");
+    var id = btn.getAttribute("data-reset-id");
+    if(!kind || !id || (kind !== "user" && kind !== "driver")) return;
+    var inp = document.getElementById("newpw-" + kind + "-" + id);
+    var pw = inp ? inp.value : "";
+    if(!pw || pw.length < 8){
+      showPageAlert("err", "Naya password kam se kam 8 akshar ho.");
+      return;
+    }
+    var path = kind === "user" ? "/api/admin/users/" : "/api/admin/drivers/";
+    btn.disabled = true;
+    showPageAlert("info", "Password badal raha hai…");
+    fetch(API_BASE_URL + path + encodeURIComponent(id) + "/reset-password", {
+      method: "PATCH", headers: authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ new_password: pw })
+    })
+      .then(parseRes)
+      .then(function(result){
+        if(checkAuth(result)) return;
+        if(result.status === 200 && result.body && result.body.ok === true){
+          showPageAlert("ok", "Password badal gaya (" + kind + ").");
+          if(inp) inp.value = "";
+          return;
+        }
+        var code = result.body && result.body.error;
+        if(result.status === 404) showPageAlert("err", "Account nahi mila.");
+        else showPageAlert("err", code === "validation_failed" ? "Password min 8 akshar ho." : "Password nahi badla. Dobara try karo.");
+        btn.disabled = false;
+      })
+      .catch(function(err){
+        showPageAlert("err", (err && err.message === "Failed to fetch") ? networkMsg() : "Password nahi badla. Dobara try karo.");
+        btn.disabled = false;
+      });
+  });
+
+  // Enterprise inquiries.
+  var inqStatus = document.getElementById("inqStatus");
+  var inqSearch = document.getElementById("inqSearch");
+  var inquiriesList = document.getElementById("inquiriesList");
+  var refreshInquiries = document.getElementById("refreshInquiries");
+  var NEXT_STATUS = ["CONTACTED", "IN_DISCUSSION", "CONVERTED", "CLOSED"];
+  function inquiryCard(q){
+    var html = '<div class="row-card">';
+    html += '<h3>' + esc(q.company_name || "Company —") + ' <span class="badge">' + esc(q.status || "NEW") + '</span></h3>';
+    html += '<p>' + esc(q.full_name || "") + ' • ' + esc(q.phone || "—") + ' • ' + esc(q.email || "—") + '</p>';
+    html += '<p class="meta">Type: ' + esc(q.business_type || "—") + ' • Fleet: ' + esc(q.fleet_size == null ? "—" : q.fleet_size) + ' • Cities: ' + esc((q.cities && q.cities.join ? q.cities.join(", ") : q.cities) || "—") + '</p>';
+    html += '<p class="meta">Services: ' + esc((q.services_required && q.services_required.join ? q.services_required.join(", ") : q.services_required) || "—") + '</p>';
+    html += '<p class="meta">Vehicles: ' + esc((q.vehicle_types && q.vehicle_types.join ? q.vehicle_types.join(", ") : q.vehicle_types) || "—") + ' • ' + esc(fmtDate(q.created_at)) + '</p>';
+    html += '<div class="actions">';
+    NEXT_STATUS.forEach(function(s){
+      html += '<button class="btn small ghost" type="button" data-id="' + esc(q.id) + '" data-status="' + esc(s) + '">' + esc(s) + '</button>';
+    });
+    html += '</div></div>';
+    return html;
+  }
+  function loadInquiries(){
+    var qs = [];
+    if(inqStatus.value) qs.push("status=" + encodeURIComponent(inqStatus.value));
+    if(inqSearch.value.trim()) qs.push("search=" + encodeURIComponent(inqSearch.value.trim()));
+    var url = API_BASE_URL + "/api/enterprise/inquiries" + (qs.length ? "?" + qs.join("&") : "");
+    refreshInquiries.disabled = true;
+    refreshInquiries.textContent = "Load ho raha hai…";
+    inquiriesList.innerHTML = '<p class="loading">Inquiries load ho rahi hain…</p>';
+    fetch(url, { method: "GET", headers: authHeaders() })
+      .then(parseRes)
+      .then(function(result){
+        if(checkAuth(result)) return;
+        if(result.status !== 200 || !result.body || result.body.ok !== true){
+          throw new Error((result.body && result.body.error) || "load_failed");
+        }
+        var arr = result.body.inquiries || [];
+        if(!arr.length){
+          inquiriesList.innerHTML = '<p class="empty">Koi inquiry nahi mili.</p>';
+          return;
+        }
+        inquiriesList.innerHTML = arr.map(inquiryCard).join("");
+        hidePageAlert();
+      })
+      .catch(function(err){
+        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : "Inquiries load nahi hui. Dobara try karo.";
+        inquiriesList.innerHTML = '<p class="empty">Inquiries load nahi hui.</p>';
+        showPageAlert("err", msg);
+      })
+      .then(function(){
+        refreshInquiries.disabled = false;
+        refreshInquiries.textContent = "Load";
+      });
+  }
+  refreshInquiries.addEventListener("click", loadInquiries);
+  inquiriesList.addEventListener("click", function(ev){
+    var btn = ev.target.closest ? ev.target.closest("button[data-status]") : null;
+    if(!btn) return;
+    var id = btn.getAttribute("data-id");
+    var st = btn.getAttribute("data-status");
+    if(!id || !st) return;
+    btn.disabled = true;
+    showPageAlert("info", "Status badal raha hai…");
+    fetch(API_BASE_URL + "/api/enterprise/inquiries/" + encodeURIComponent(id) + "/status", {
+      method: "PATCH",
+      headers: authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ status: st })
+    }).then(parseRes).then(function(result){
+      if(checkAuth(result)) return;
+      if(result.status !== 200 || !result.body || result.body.ok !== true){
+        var code = result.body && result.body.error;
+        var m = "Status nahi badla. Dobara try karo.";
+        if(code === "not_found") m = "Inquiry nahi mili. List refresh karo.";
+        else if(code === "validation_failed") m = "Galat status bheja gaya.";
+        throw new Error(m);
+      }
+      showPageAlert("ok", "Status " + st + " ho gaya.");
+      loadInquiries();
+    }).catch(function(err){
+      var msg = (err && err.message === "Failed to fetch") ? networkMsg() : (err && err.message) || "Status nahi badla.";
+      showPageAlert("err", msg);
+      btn.disabled = false;
+    });
+  });
+
+  // Bookings.
+  var bookingStatus = document.getElementById("bookingStatus");
+  var bookingsList = document.getElementById("bookingsList");
+  var bookingsSummary = document.getElementById("bookingsSummary");
+  var refreshBookings = document.getElementById("refreshBookings");
+  function bookingCard(b){
+    var pickup = b.pickup && b.pickup.address ? b.pickup.address : "—";
+    var drop = b.drop && b.drop.address ? b.drop.address : "—";
+    var html = '<div class="row-card">';
+    html += '<h3>#' + esc(b.id || "—") + ' <span class="badge">' + esc(b.status || "—") + '</span>' +
+      (b.disputed ? ' <span class="badge bad">Disputed</span>' : '') + '</h3>';
+    if(b.disputed && b.dispute_reason) html += '<p class="meta">Vivad: ' + esc(b.dispute_reason) + '</p>';
+    html += '<p>' + esc(pickup) + ' → ' + esc(drop) + '</p>';
+    html += '<p class="meta">Gaadi: ' + esc(b.vehicle_type || "—") + ' • Kiraya: ' + esc(fmtRs(b.price_rs)) + '</p>';
+    html += '<p class="meta">Customer: ' + esc(b.user_name || "—") + ' • Driver: ' + esc(b.driver_name || "—") + ' • ' + esc(fmtDate(b.created_at)) + '</p>';
+    if(b.status === "cancelled"){
+      var cr = b.cancellation && b.cancellation.reason;
+      var by = b.cancellation && b.cancellation.cancelled_by;
+      html += '<p class="meta">Cancel: ' + esc(cr || "—") + (by ? ' (by ' + esc(by) + ')' : '') + '</p>';
+    }
+    html += '</div>';
+    return html;
+  }
+  function loadBookings(){
+    var st = bookingStatus.value;
+    var disp = document.getElementById("bookingDisputed").value;
+    var qs = [];
+    if(st) qs.push("status=" + encodeURIComponent(st));
+    if(disp) qs.push("disputed=" + encodeURIComponent(disp));
+    var url = API_BASE_URL + "/api/admin/bookings" + (qs.length ? "?" + qs.join("&") : "");
+    refreshBookings.disabled = true;
+    refreshBookings.textContent = "Load ho raha hai…";
+    bookingsList.innerHTML = '<p class="loading">Bookings load ho rahi hain…</p>';
+    bookingsSummary.innerHTML = "";
+    fetch(url, { method: "GET", headers: authHeaders() })
+      .then(parseRes)
+      .then(function(result){
+        if(checkAuth(result)) return;
+        if(result.status !== 200 || !result.body || result.body.ok !== true){
+          throw new Error((result.body && result.body.error) || "load_failed");
+        }
+        var arr = result.body.bookings || [];
+        var total = result.body.total != null ? result.body.total : arr.length;
+        var rev = result.body.revenue_rs;
+        bookingsSummary.innerHTML = '<p class="meta" style="font-size:.9rem;color:var(--navy);font-weight:700">Total: ' + esc(total) + ' • Revenue: ' + esc(fmtRs(rev)) + '</p>';
+        if(!arr.length){
+          bookingsList.innerHTML = '<p class="empty">Koi booking nahi mili.</p>';
+          return;
+        }
+        bookingsList.innerHTML = arr.map(bookingCard).join("");
+        hidePageAlert();
+      })
+      .catch(function(err){
+        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : "Bookings load nahi hui. Dobara try karo.";
+        bookingsList.innerHTML = '<p class="empty">Bookings load nahi hui.</p>';
+        showPageAlert("err", msg);
+      })
+      .then(function(){
+        refreshBookings.disabled = false;
+        refreshBookings.textContent = "Load";
+      });
+  }
+  refreshBookings.addEventListener("click", loadBookings);
+  bookingStatus.addEventListener("change", loadBookings);
+  document.getElementById("bookingDisputed").addEventListener("change", loadBookings);
+
+  // Live tracking (admin) — active trips + last GPS + state badge.
+  var trackingList = document.getElementById("trackingList");
+  var trackingSummary = document.getElementById("trackingSummary");
+  var refreshTracking = document.getElementById("refreshTracking");
+  var STATE_LABEL = { live: "Live", stale: "Stale", offline: "Offline", ended: "Ended" };
+  function ageText(iso){
+    if(!iso) return "—";
+    var s = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
+    if(s < 60) return s + " sec pehle";
+    return Math.floor(s / 60) + " min " + (s % 60) + " sec pehle";
+  }
+  function trackingCard(a){
+    var t = a.tracking || {};
+    var st = t.state || "offline";
+    var p = a.last_point;
+    var badgeCls = st === "live" ? "ok" : st === "stale" ? "warn" : st === "offline" ? "bad" : "";
+    var html = '<div class="row-card' + (a.driver ? " verified" : "") + '">';
+    html += '<h3>#' + esc(a.booking_id || "—") + ' <span class="badge">' + esc(a.booking_status || "—") + '</span>' +
+      ' <span class="badge ' + badgeCls + '">' + esc(STATE_LABEL[st] || st) + '</span></h3>';
+    html += '<p>' + esc(a.pickup_address || "—") + ' → ' + esc(a.drop_address || "—") + '</p>';
+    html += '<p class="meta">Driver: ' + esc((a.driver && a.driver.name) || "assign nahi") +
+      ' • Gaadi: ' + esc((a.driver && a.driver.vehicle_type) || (a.vehicle_type || "—")) +
+      ' ' + esc((a.driver && a.driver.vehicle_number) || "") + '</p>';
+    html += '<p class="meta">Last location: ' + (p ? esc(p.lat) + ", " + esc(p.lng) + " (" + esc(ageText(p.recorded_at)) + ")" : "abhi nahi mili") +
+      ' • Points: ' + esc(t.points_count == null ? "0" : t.points_count) + '</p>';
+    if(p && (p.speed_mps != null || p.heading_deg != null)){
+      html += '<p class="meta">Speed: ' + esc(p.speed_mps != null ? p.speed_mps + " m/s" : "—") +
+        ' • Heading: ' + esc(p.heading_deg != null ? p.heading_deg + "°" : "—") + '</p>';
+    }
+    html += '</div>';
+    return html;
+  }
+  function loadTracking(silent){
+    if(!silent){
+      refreshTracking.disabled = true;
+      refreshTracking.textContent = "Load ho raha hai…";
+      trackingList.innerHTML = '<p class="loading">Live trips load ho rahi hain…</p>';
+    }
+    fetch(API_BASE_URL + "/api/admin/tracking/active?limit=50", { method: "GET", headers: authHeaders() })
+      .then(parseRes)
+      .then(function(result){
+        if(checkAuth(result)) return;
+        if(result.status !== 200 || !result.body || result.body.ok !== true){
+          throw new Error((result.body && result.body.error) || "load_failed");
+        }
+        var c = result.body.counts || {};
+        trackingSummary.innerHTML = '<p class="meta" style="font-size:.9rem;color:var(--navy);font-weight:700">Active: ' +
+          esc(c.total == null ? "0" : c.total) + ' • Live: ' + esc(c.live == null ? "0" : c.live) +
+          ' • Stale: ' + esc(c.stale == null ? "0" : c.stale) + ' • Offline: ' + esc(c.offline == null ? "0" : c.offline) + '</p>';
+        var arr = result.body.actives || [];
+        trackingList.innerHTML = arr.length ? arr.map(trackingCard).join("") : '<p class="empty">Koi active trip nahi hai.</p>';
+        hidePageAlert();
+      })
+      .catch(function(err){
+        if(silent) return;
+        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : "Tracking load nahi hui. Dobara try karo.";
+        trackingList.innerHTML = '<p class="empty">Tracking load nahi hui.</p>';
+        showPageAlert("err", msg);
+      })
+      .then(function(){
+        refreshTracking.disabled = false;
+        refreshTracking.textContent = "Load";
+      });
+  }
+  refreshTracking.addEventListener("click", function(){ loadTracking(false); });
+  setInterval(function(){
+    var panel = document.getElementById("panelTracking");
+    if(panel && panel.classList.contains("active")) loadTracking(true);
+  }, 10000);
+
+  // Settlement + commission (admin only; all math server-side).
+  var commissionBox = document.getElementById("commissionBox");
+  var commissionPct = document.getElementById("commissionPct");
+  var saveCommission = document.getElementById("saveCommission");
+  var refreshMoney = document.getElementById("refreshMoney");
+  var balancesList = document.getElementById("balancesList");
+  var driverMoneyBox = document.getElementById("driverMoneyBox");
+  var driverMoneyTitle = document.getElementById("driverMoneyTitle");
+  var driverMoneySummary = document.getElementById("driverMoneySummary");
+  var driverPayments = document.getElementById("driverPayments");
+  var driverSettlements = document.getElementById("driverSettlements");
+  var settleAmount = document.getElementById("settleAmount");
+  var settleMethod = document.getElementById("settleMethod");
+  var settleRef = document.getElementById("settleRef");
+  var settleNotes = document.getElementById("settleNotes");
+  var settleSubmit = document.getElementById("settleSubmit");
+  var selectedDriverId = null;
+  var selectedDriverName = "";
+  var balancesCache = [];
+
+  function loadCommission(){
+    commissionBox.innerHTML = '<p class="loading">Commission load ho raha hai…</p>';
+    return fetch(API_BASE_URL + "/api/admin/commission", { method: "GET", headers: authHeaders() })
+      .then(parseRes)
+      .then(function(result){
+        if(checkAuth(result)) return;
+        if(result.status !== 200 || !result.body || result.body.ok !== true) throw new Error("load_failed");
+        var pct = result.body.commission_pct;
+        commissionPct.value = (pct != null ? pct : "");
+        var html = '<p class="meta" style="font-size:.95rem;color:var(--navy);font-weight:700">Chalu rate: ' + esc(pct) + '%</p>';
+        var hist = result.body.history || [];
+        if(hist.length){
+          html += '<p class="meta">Badlav history:</p>';
+          for(var i = 0; i < Math.min(hist.length, 5); i++){
+            html += '<p class="meta">' + esc(fmtDate(hist[i].created_at)) + ' — ' +
+              esc(hist[i].old_pct == null ? "—" : hist[i].old_pct) + '% → ' + esc(hist[i].new_pct) + '%</p>';
+          }
+        }
+        commissionBox.innerHTML = html;
+      })
+      .catch(function(err){
+        commissionBox.innerHTML = '<p class="empty">Commission load nahi hui.</p>';
+        if(err && err.message !== "load_failed") showPageAlert("err", networkMsg());
+      });
+  }
+  saveCommission.addEventListener("click", function(){
+    var v = Number(String(commissionPct.value).trim());
+    if(!isFinite(v) || v < 0 || v > 100){
+      showPageAlert("err", "Commission 0–100 ke beech number ho.");
+      return;
+    }
+    saveCommission.disabled = true;
+    fetch(API_BASE_URL + "/api/admin/commission", {
+      method: "PUT", headers: authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ pct: v })
+    })
+      .then(parseRes)
+      .then(function(result){
+        if(checkAuth(result)) return;
+        if(result.status !== 200 || !result.body || result.body.ok !== true){
+          var code = result.body && result.body.error;
+          showPageAlert("err", code === "validation_failed" ? "Rate 0–100 (2 decimal tak) ho." : "Save nahi hua. Dobara try karo.");
+          return;
+        }
+        showPageAlert("ok", "Commission " + result.body.commission_pct + "% ho gaya — sirf aage ki trips par lagega.");
+        loadCommission();
+      })
+      .catch(function(){ showPageAlert("err", networkMsg()); })
+      .then(function(){ saveCommission.disabled = false; });
+  });
+
+  function balanceCard(b){
+    var html = '<div class="row-card">';
+    html += '<h3>' + esc(b.driver_name || "Naam nahi") + ' <span class="badge ' + (b.outstanding_rs > 0 ? "bad" : "ok") + '">' +
+      (b.outstanding_rs > 0 ? "Baaki Rs " + esc(b.outstanding_rs) : "Clear") + '</span></h3>';
+    html += '<p class="meta">Trips: ' + esc(b.completed_cash_bookings) + ' • Cash: Rs ' + esc(b.cash_collected_rs) + '</p>';
+    html += '<p class="meta">Kamai: Rs ' + esc(b.driver_earning_rs) + ' • Commission: Rs ' + esc(b.commission_rs) +
+      ' • Jama: Rs ' + esc(b.settled_rs) + '</p>';
+    html += '<div class="actions"><button class="btn small" type="button" data-driver="' + esc(b.driver_id) + '" data-name="' + esc(b.driver_name || "") + '">Detail</button></div>';
+    html += '</div>';
+    return html;
+  }
+  function loadBalances(){
+    balancesList.innerHTML = '<p class="loading">Hisab load ho raha hai…</p>';
+    return fetch(API_BASE_URL + "/api/admin/driver-balances?limit=50", { method: "GET", headers: authHeaders() })
+      .then(parseRes)
+      .then(function(result){
+        if(checkAuth(result)) return;
+        if(result.status !== 200 || !result.body || result.body.ok !== true) throw new Error("load_failed");
+        balancesCache = result.body.balances || [];
+        balancesList.innerHTML = balancesCache.length ? balancesCache.map(balanceCard).join("") : '<p class="empty">Abhi koi cash trip poori nahi hui.</p>';
+      })
+      .catch(function(){
+        balancesList.innerHTML = '<p class="empty">Hisab load nahi hua.</p>';
+      });
+  }
+  function loadMoney(){ loadCommission(); loadBalances(); }
+  refreshMoney.addEventListener("click", loadMoney);
+  document.getElementById("tabMoney").addEventListener("click", loadMoney);
+
+  balancesList.addEventListener("click", function(ev){
+    var btn = ev.target.closest ? ev.target.closest("button[data-driver]") : null;
+    if(!btn) return;
+    selectedDriverId = btn.getAttribute("data-driver");
+    selectedDriverName = btn.getAttribute("data-name") || "";
+    driverMoneyTitle.textContent = "Driver: " + (selectedDriverName || selectedDriverId);
+    driverMoneyBox.hidden = false;
+    settleAmount.value = "";
+    settleRef.value = "";
+    settleNotes.value = "";
+    loadDriverMoney();
+    try { driverMoneyBox.scrollIntoView(); } catch(e){}
+  });
+  document.getElementById("driverMoneyBack").addEventListener("click", function(){
+    driverMoneyBox.hidden = true;
+    selectedDriverId = null;
+  });
+
+  function loadDriverMoney(){
+    if(!selectedDriverId) return;
+    var found = null;
+    for(var i = 0; i < balancesCache.length; i++){
+      if(balancesCache[i].driver_id === selectedDriverId) found = balancesCache[i];
+    }
+    driverMoneySummary.innerHTML = found
+      ? '<p class="meta" style="font-size:.92rem;color:var(--navy);font-weight:700">Baaki: Rs ' + esc(found.outstanding_rs) +
+        ' • Cash: Rs ' + esc(found.cash_collected_rs) + ' • Commission: Rs ' + esc(found.commission_rs) +
+        ' • Jama: Rs ' + esc(found.settled_rs) + '</p>'
+      : '<p class="meta">Summary load ho raha hai…</p>';
+    driverPayments.innerHTML = '<p class="loading">Payments load ho rahi hain…</p>';
+    driverSettlements.innerHTML = '<p class="loading">Settlements load ho rahe hain…</p>';
+    fetch(API_BASE_URL + "/api/admin/ledger?driver_id=" + encodeURIComponent(selectedDriverId) + "&limit=20", { method: "GET", headers: authHeaders() })
+      .then(parseRes)
+      .then(function(result){
+        if(checkAuth(result)) return;
+        var arr = (result.body && result.body.payments) || [];
+        driverPayments.innerHTML = arr.length ? arr.map(function(p){
+          return '<div class="row-card"><h3>#' + esc(p.booking_id) + ' <span class="badge">' + esc(p.settlement_status || "") + '</span></h3>' +
+            '<p class="meta">Cash: Rs ' + esc(p.gross_rs) + ' • Commission: Rs ' + esc(p.platform_commission_rs) + ' (' + esc(p.commission_pct) + '%)' +
+            ' • Jama: Rs ' + esc(p.settled_rs) + ' • ' + esc(fmtDate(p.collected_at)) + '</p></div>';
+        }).join("") : '<p class="empty">Koi payment nahi.</p>';
+      })
+      .catch(function(){ driverPayments.innerHTML = '<p class="empty">Payments load nahi huin.</p>'; });
+    fetch(API_BASE_URL + "/api/admin/settlements?driver_id=" + encodeURIComponent(selectedDriverId) + "&limit=20", { method: "GET", headers: authHeaders() })
+      .then(parseRes)
+      .then(function(result){
+        if(checkAuth(result)) return;
+        var arr = (result.body && result.body.settlements) || [];
+        driverSettlements.innerHTML = arr.length ? arr.map(function(s){
+          return '<div class="row-card"><h3>Rs ' + esc(s.amount_rs) + ' <span class="badge ok">' + esc(s.method || "") + '</span></h3>' +
+            '<p class="meta">Ref: ' + esc(s.reference_no || "—") + ' • ' + esc(s.notes || "") + ' • ' + esc(fmtDate(s.settled_at)) + '</p></div>';
+        }).join("") : '<p class="empty">Koi settlement nahi.</p>';
+      })
+      .catch(function(){ driverSettlements.innerHTML = '<p class="empty">Settlements load nahi hue.</p>'; });
+  }
+
+  settleSubmit.addEventListener("click", function(){
+    if(!selectedDriverId){ showPageAlert("err", "Pehle driver chuno."); return; }
+    var amt = Number(String(settleAmount.value).trim());
+    if(!isFinite(amt) || amt <= 0){ showPageAlert("err", "Amount 0 se zyada number ho."); return; }
+    var body = { driver_id: selectedDriverId, amount_rs: amt, method: settleMethod.value };
+    if(String(settleRef.value).trim()) body.reference_no = String(settleRef.value).trim();
+    if(String(settleNotes.value).trim()) body.notes = String(settleNotes.value).trim();
+    settleSubmit.disabled = true;
+    fetch(API_BASE_URL + "/api/admin/settlements", {
+      method: "POST", headers: authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify(body)
+    })
+      .then(parseRes)
+      .then(function(result){
+        if(checkAuth(result)) return;
+        if(result.status === 201){
+          showPageAlert("ok", "Settlement jama ho gaya. Baaki: Rs " + ((result.body && result.body.outstanding_rs) || 0));
+          loadBalances();
+          loadDriverMoney();
+          return;
+        }
+        var code = result.body && result.body.error;
+        if(code === "settlement_exceeds_outstanding") showPageAlert("err", "Baaki se zyada amount nahi jama ho sakti.");
+        else if(code === "duplicate_settlement") showPageAlert("err", "Ye reference pehle use ho chuka hai.");
+        else if(result.status === 400) showPageAlert("err", "Details sahi likho (amount>0, bank/upi par reference zaroori).");
+        else if(result.status === 404) showPageAlert("err", "Driver nahi mila.");
+        else showPageAlert("err", "Settlement nahi hua. Dobara try karo.");
+      })
+      .catch(function(){ showPageAlert("err", networkMsg()); })
+      .then(function(){ settleSubmit.disabled = false; });
+  });
+
+  var navMenuBtn=document.getElementById("navMenuBtn"),siteNav=document.getElementById("siteNav");
+  if(navMenuBtn&&siteNav){navMenuBtn.addEventListener("click",function(){var open=siteNav.classList.toggle("open");navMenuBtn.setAttribute("aria-expanded",open?"true":"false");navMenuBtn.setAttribute("aria-label",open?"Menu band karo":"Menu kholo");});siteNav.addEventListener("click",function(ev){if(ev.target.tagName==="A"&&siteNav.classList.contains("open")){siteNav.classList.remove("open");navMenuBtn.setAttribute("aria-expanded","false");}});}
+
+  loadStats();
+})();
+</script>
+</body>
+</html>
