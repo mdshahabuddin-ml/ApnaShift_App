@@ -4,6 +4,7 @@
 import { query, pool } from '../db.js';
 import { toPaise, paiseToRs, pctToBps, splitFare } from './money.js';
 import { logAuditTx } from './audit.js';
+import { recomputePeriodsForPayments } from './settlements.js';
 
 export const DEFAULT_COMMISSION_PCT = 15.0;
 
@@ -128,8 +129,9 @@ export async function insertPaymentTx(client, { bookingId, userId, driverId, gro
   const grossPaise = toPaise(grossRs);
   const { commissionPaise, earningPaise } = splitFare(grossPaise, pctToBps(pct));
   // Cash/UPI: customer pays the driver directly. Online (future): pending
-  // until the gateway confirms.
-  const status = paymentMethod === 'online' ? 'pending' : 'collected';
+  // until the gateway confirms. COD (cash) stays 'pending' until the driver
+  // explicitly confirms receipt (never auto-confirmed) — see confirmCashTx.
+  const status = paymentMethod === 'cash' || paymentMethod === 'online' ? 'pending' : 'collected';
   const inserted = await client.query(
     `INSERT INTO payments
        (booking_id, user_id, driver_id, gross_amount, payment_method, payment_status,
@@ -202,11 +204,19 @@ export async function driverBalance(runner, driverId) {
 // also the duplicate-submit guard: a replayed full settlement finds 0 owed).
 export async function createSettlementTx(client, { driverId, amountPaise, method, referenceNo, notes, settledAt, adminId }) {
   // Serialize concurrent settlements for this driver on the owed rows.
+  // Payments locked inside a finalized (PAID/DISPUTED) week are skipped —
+  // finalized numbers never move silently (409 surfaces at the caller when
+  // nothing moveable remains).
   const owed = await client.query(
     `SELECT p.id, p.platform_commission,
             COALESCE((SELECT SUM(a.commission_delta_paise) FROM payment_adjustments a WHERE a.payment_id = p.id), 0) AS adj_c,
             p.settled_amount
-      FROM payments p WHERE p.driver_id = $1
+       FROM payments p WHERE p.driver_id = $1
+         AND NOT EXISTS (
+           SELECT 1 FROM settlement_period_items i
+            JOIN settlement_periods sp ON sp.id = i.period_id
+           WHERE i.payment_id = p.id AND sp.status IN ('PAID', 'DISPUTED')
+         )
       ORDER BY p.collected_at ASC, p.id ASC
       FOR UPDATE`,
     [driverId],
@@ -253,6 +263,7 @@ export async function createSettlementTx(client, { driverId, amountPaise, method
   }
   // FIFO: oldest owed payment first.
   let left = amountPaise;
+  const touched = [];
   for (const t of targets) {
     if (left <= 0) break;
     const take = Math.min(t.owedPaise, left);
@@ -262,8 +273,11 @@ export async function createSettlementTx(client, { driverId, amountPaise, method
       `UPDATE payments SET settled_amount = $1, settlement_status = $2 WHERE id = $3`,
       [paiseToRs(next), status, t.id],
     );
+    touched.push(t.id);
     left -= take;
   }
+  // Keep weekly periods in sync when the global flow touches their payments.
+  await recomputePeriodsForPayments(client, touched);
   await logAuditTx(client, adminId, 'settlement.create', 'settlement', inserted.rows[0].id, {
     driver_id: driverId,
     amount_rs: paiseToRs(amountPaise),

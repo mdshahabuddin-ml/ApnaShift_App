@@ -38,6 +38,7 @@ import {
   parseQuery,
 } from '../validation/admin.js';
 import { pool } from '../db.js';
+import { applyAdjustmentToPeriods } from '../services/settlements.js';
 import { logAuditSafe, logAuditTx } from '../services/audit.js';
 import { validateIdParam } from '../utils/validate.js';
 import { toPublicBooking } from './bookings.js';
@@ -1002,22 +1003,29 @@ adminRoutes.post('/settlements', async (req, res, next) => {
 // POST /api/admin/adjustments — append-only correction (admin only).
 // Never edits payments rows; outstanding math picks the deltas up.
 adminRoutes.post('/adjustments', async (req, res, next) => {
+  const client = await pool.connect();
   try {
     const { payment_id, commission_delta_paise, earning_delta_paise, reason } = parsePaymentBody(
       adjustmentCreateSchema,
       req.body,
     );
-    const payment = await query('SELECT id FROM payments WHERE id = $1', [payment_id]);
+    await client.query('BEGIN');
+    const payment = await client.query('SELECT id FROM payments WHERE id = $1', [payment_id]);
     if (payment.rowCount === 0) {
+      await client.query('ROLLBACK');
       return res.status(404).json({ ok: false, error: 'not_found' });
     }
-    const inserted = await query(
+    // Frozen weeks (PAID/DISPUTED settlement period) reject corrections —
+    // finalized numbers never move silently (409, audit me kuch nahi).
+    await applyAdjustmentToPeriods(client, payment_id, commission_delta_paise, earning_delta_paise);
+    const inserted = await client.query(
       `INSERT INTO payment_adjustments
          (payment_id, commission_delta_paise, earning_delta_paise, reason, admin_id)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING id, payment_id, commission_delta_paise, earning_delta_paise, reason, admin_id, created_at`,
       [payment_id, commission_delta_paise, earning_delta_paise, reason, req.user.id],
     );
+    await client.query('COMMIT');
     await logAuditSafe(req.user.id, 'payment.adjust', 'payment', payment_id, {
       commission_delta_paise,
       earning_delta_paise,
@@ -1025,7 +1033,14 @@ adminRoutes.post('/adjustments', async (req, res, next) => {
     });
     res.status(201).json({ ok: true, adjustment: inserted.rows[0] });
   } catch (err) {
+    try {
+      await client.query('ROLLBACK');
+    } catch {
+      // ignore — original error propagates.
+    }
     next(err);
+  } finally {
+    client.release();
   }
 });
 

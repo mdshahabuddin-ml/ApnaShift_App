@@ -515,3 +515,57 @@ CREATE INDEX IF NOT EXISTS idx_password_reset_otps_phone_created
   ON password_reset_otps (phone, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_password_reset_otps_expires
   ON password_reset_otps (expires_at);
+
+-- 017: COD confirm + weekly settlement periods (Mon–Sun IST).
+-- payments.cash_confirmed_at set ONLY by driver confirm (cash + pending).
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS cash_confirmed_at TIMESTAMPTZ;
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'payments_cash_confirm_ck') THEN
+    ALTER TABLE payments ADD CONSTRAINT payments_cash_confirm_ck CHECK (
+      cash_confirmed_at IS NULL OR payment_method = 'cash'
+    );
+  END IF;
+END
+$$;
+
+CREATE TABLE IF NOT EXISTS settlement_periods (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  driver_id UUID NOT NULL REFERENCES drivers (id) ON DELETE RESTRICT,
+  week_start DATE NOT NULL,
+  week_end DATE NOT NULL,
+  gross_paise BIGINT NOT NULL CHECK (gross_paise >= 0),
+  commission_paise BIGINT NOT NULL CHECK (commission_paise >= 0),
+  earning_paise BIGINT NOT NULL CHECK (earning_paise >= 0),
+  settled_paise BIGINT NOT NULL DEFAULT 0 CHECK (settled_paise >= 0),
+  status TEXT NOT NULL DEFAULT 'DUE'
+    CHECK (status IN ('DUE', 'PARTIALLY_PAID', 'PAID', 'DISPUTED')),
+  dispute_reason TEXT CHECK (dispute_reason IS NULL OR char_length(dispute_reason) BETWEEN 3 AND 500),
+  created_by UUID REFERENCES admins (id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT settlement_periods_week_ck CHECK (
+    week_end = week_start + 6
+    AND EXTRACT(ISODOW FROM week_start) = 1
+  ),
+  CONSTRAINT settlement_periods_settled_ck CHECK (settled_paise <= gross_paise),
+  CONSTRAINT settlement_periods_unique_ck UNIQUE (driver_id, week_start)
+);
+CREATE INDEX IF NOT EXISTS idx_settlement_periods_driver_week
+  ON settlement_periods (driver_id, week_start DESC);
+CREATE INDEX IF NOT EXISTS idx_settlement_periods_status
+  ON settlement_periods (status, week_end DESC);
+
+CREATE TABLE IF NOT EXISTS settlement_period_items (
+  period_id UUID NOT NULL REFERENCES settlement_periods (id) ON DELETE CASCADE,
+  payment_id UUID NOT NULL REFERENCES payments (id) ON DELETE RESTRICT,
+  PRIMARY KEY (period_id, payment_id)
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_settlement_period_items_payment
+  ON settlement_period_items (payment_id);
+CREATE INDEX IF NOT EXISTS idx_settlement_period_items_period
+  ON settlement_period_items (period_id);
+
+ALTER TABLE settlements ADD COLUMN IF NOT EXISTS settlement_period_id UUID
+  REFERENCES settlement_periods (id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_settlements_period
+  ON settlements (settlement_period_id);

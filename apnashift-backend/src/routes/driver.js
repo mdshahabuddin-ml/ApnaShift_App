@@ -248,8 +248,9 @@ driverRoutes.patch('/bookings/:id/status', validateIdParam, async (req, res, nex
     await client.query('COMMIT');
 
     if (payment) {
-      // Best-effort: delivery succeeds even if audit fails.
-      await logAuditSafe(null, 'payment.collected', 'payment', payment.id, {
+      // Best-effort: delivery succeeds even if audit fails. COD stays
+      // 'pending' until the driver confirms — never logged as collected here.
+      await logAuditSafe(null, payment.payment_status === 'collected' ? 'payment.collected' : 'payment.created', 'payment', payment.id, {
         booking_id: payment.booking_id,
         gross_rs: Number(payment.gross_amount),
       });

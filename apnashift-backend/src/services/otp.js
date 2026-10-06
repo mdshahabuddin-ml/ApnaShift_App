@@ -38,16 +38,31 @@ export function timingSafeEqualHex(a, b) {
   return crypto.timingSafeEqual(ba, bb);
 }
 
-// Zero-cost sender: provider laga ho to usse bhejo, nahi to console log.
-// MSG91/Twilio jaise provider ke liye env me rakho:
-//   OTP_SMS_URL=https://... (POST { to, text })
-//   OTP_SMS_KEY=...
-// Abhi koi provider nahi hai -> Rs 0 kharch, dev me console + test me debug_otp.
+// Sender: provider laga ho to usse bhejo, nahi to console log (Rs 0).
+//   (a) MSG91 Flow API (recommended): OTP hum generate karte hain, MSG91
+//       sirf DLT-approved template me SMS pahunchata hai. Verify logic
+//       hamare paas rehta hai (MSG91 ka verify use nahi hota).
+//       Env: OTP_SMS_PROVIDER=msg91 + OTP_MSG91_AUTHKEY + OTP_MSG91_FLOW_ID
+//       + OTP_MSG91_SENDER (+ OTP_MSG91_OTP_VAR, default "OTP").
+//       Flow panel me template me OTP variable + valid DLT zaroori hai,
+//       warna MSG91 reject karega (paise tabhi kat-te hain jab SMS jaye).
+//   (b) Generic webhook: OTP_SMS_URL=https://... (POST { to, text })
+//       + OTP_SMS_KEY=... (Authorization: Bearer).
+// Koi provider nahi hai -> Rs 0 kharch, dev me console + test me debug_otp.
 export async function sendOtp(phone, otp, fetchFn = fetch) {
+  const provider = (process.env.OTP_SMS_PROVIDER ?? '').trim().toLowerCase();
+  if (provider === 'msg91') {
+    const viaMsg91 = await sendViaMsg91(phone, otp, fetchFn);
+    if (viaMsg91.delivered) return viaMsg91;
+    // Fail ho to console fallback (OTP invalid nahi hota, retry ho sakta hai).
+    logConsoleFallback(phone, otp);
+    return { delivered: false, channel: 'console' };
+  }
   const url = process.env.OTP_SMS_URL ?? '';
   if (url) {
     try {
       const key = process.env.OTP_SMS_KEY ?? '';
+      const signal = typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout(8000) : undefined;
       await fetchFn(url, {
         method: 'POST',
         headers: {
@@ -55,6 +70,7 @@ export async function sendOtp(phone, otp, fetchFn = fetch) {
           ...(key ? { Authorization: `Bearer ${key}` } : {}),
         },
         body: JSON.stringify({ to: phone, text: `ApnaShift OTP: ${otp}. 10 min me use karo. Kisi se share mat karo.` }),
+        ...(signal ? { signal } : {}),
       });
       return { delivered: true, channel: 'sms' };
     } catch (err) {
@@ -63,14 +79,71 @@ export async function sendOtp(phone, otp, fetchFn = fetch) {
       console.error('[otp] sms provider fail:', err?.message ?? err);
     }
   }
-  // Dev / zero-cost path — OTP value sirf server console me (prod log
-  // me PII mask karo, dev me testing ke liye chahiye).
+  // Dev / zero-cost path — OTP value sirf NON-PROD console me (prod log
+  // me sirf last-4 digits, PII kabhi nahi).
+  logConsoleFallback(phone, otp);
+  return { delivered: false, channel: 'console' };
+}
+
+function logConsoleFallback(phone, otp) {
   if (config.env !== 'production') {
     console.log(`[otp] dev OTP for ${phone}: ${otp} (SMS provider nahi laga — Rs 0)`);
   } else {
     console.log(`[otp] OTP generated for ending ${String(phone).slice(-4)}`);
   }
-  return { delivered: false, channel: 'console' };
+}
+
+// MSG91 Flow API v5: POST https://api.msg91.com/api/v5/flow/
+// { flow_id, sender, mobiles: "91XXXXXXXXXX", [otpVar]: otp }.
+// Mobile hamesha country code samet (91 + 10-digit normalized phone).
+async function sendViaMsg91(phone, otp, fetchFn) {
+  const authkey = process.env.OTP_MSG91_AUTHKEY ?? '';
+  const flowId = process.env.OTP_MSG91_FLOW_ID ?? '';
+  const sender = process.env.OTP_MSG91_SENDER ?? '';
+  const otpVar = process.env.OTP_MSG91_OTP_VAR ?? 'OTP';
+  if (!authkey || !flowId || !sender) {
+    // Adhuri config par SMS bhejne ki koshish bhi mat karo (paise/rate-limit
+    // bachao) — seedha console fallback. Key kabhi log mat karo.
+    console.error('[otp] msg91 config adhuri hai (AUTHKEY/FLOW_ID/SENDER chahiye).');
+    return { delivered: false, channel: 'console' };
+  }
+  try {
+    const signal = typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout(8000) : undefined;
+    const res = await fetchFn('https://api.msg91.com/api/v5/flow/', {
+      method: 'POST',
+      headers: {
+        authkey,
+        'Content-Type': 'application/json',
+        accept: 'application/json',
+      },
+      body: JSON.stringify({
+        flow_id: flowId,
+        sender,
+        mobiles: `91${phone}`,
+        [otpVar]: String(otp),
+      }),
+      ...(signal ? { signal } : {}),
+    });
+    if (!res.ok) {
+      console.error(`[otp] msg91 HTTP ${res.status} — SMS nahi gaya.`);
+      return { delivered: false, channel: 'msg91-sms' };
+    }
+    let type = '';
+    try {
+      const data = await res.json();
+      type = data?.type ?? '';
+    } catch {
+      // Body parse na ho par HTTP OK ho to request accept mani jati hai.
+    }
+    if (type && type !== 'success') {
+      console.error(`[otp] msg91 reject (type=${type}) — template/DLT check karo.`);
+      return { delivered: false, channel: 'msg91-sms' };
+    }
+    return { delivered: true, channel: 'msg91-sms' };
+  } catch (err) {
+    console.error('[otp] msg91 fail:', err?.message ?? err);
+    return { delivered: false, channel: 'msg91-sms' };
+  }
 }
 
 // Test/dev me frontend bina SMS ke OTP dekh sake — sirf tab jab

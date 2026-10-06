@@ -943,3 +943,109 @@ paths:
       responses:
         '201': { description: Created }
         '404': { description: not_found }
+        '409': { description: settlement_finalized (payment in PAID/DISPUTED week) }
+  /api/driver/payments/{id}/confirm-cash:
+    post:
+      summary: Driver confirms COD cash received (driver, own pending cash only)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK (payment collected) }
+        '404': { description: not_found (missing/foreign/undelivered) }
+        '409': { description: already_confirmed / not_cash / invalid_payment_state }
+  /api/driver/settlement-periods:
+    get:
+      summary: Own weekly settlements (driver)
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [DUE, PARTIALLY_PAID, PAID, OVERDUE, DISPUTED] } }
+        - { name: week_start, in: query, schema: { type: string, example: '2026-09-28' } }
+      responses:
+        '200': { description: OK }
+  /api/driver/settlement-periods/{id}:
+    get:
+      summary: Own week detail + items (driver)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+        '404': { description: not_found }
+  /api/admin/settlement-periods/generate:
+    post:
+      summary: Generate weekly settlement(s), idempotent (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                driver_id: { type: string, format: uuid }
+                week_start: { type: string, example: '2026-09-28' }
+      responses:
+        '200': { description: OK (created + skipped) }
+        '400': { description: invalid_week }
+        '404': { description: unknown_driver }
+  /api/admin/settlement-periods:
+    get:
+      summary: List weekly settlements (admin, filters + OVERDUE derived)
+      parameters:
+        - { name: driver_id, in: query, schema: { type: string, format: uuid } }
+        - { name: status, in: query, schema: { type: string, enum: [DUE, PARTIALLY_PAID, PAID, OVERDUE, DISPUTED] } }
+        - { name: week_start, in: query, schema: { type: string, example: '2026-09-28' } }
+      responses:
+        '200': { description: OK }
+  /api/admin/settlement-periods/{id}:
+    get:
+      summary: Week detail + per-method split (admin)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+        '404': { description: not_found }
+  /api/admin/settlement-periods/{id}/payments:
+    post:
+      summary: Pay down one week, FIFO inside the week (admin)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount_rs, method]
+              properties:
+                amount_rs: { type: number, exclusiveMinimum: 0, example: 150 }
+                method: { type: string, enum: [cash, bank_transfer, upi] }
+                reference_no: { type: string }
+                notes: { type: string }
+      responses:
+        '201': { description: Created (+ period + outstanding_rs) }
+        '400': { description: validation_failed }
+        '404': { description: not_found }
+        '409': { description: settlement_finalized / settlement_disputed / settlement_exceeds_outstanding / duplicate_settlement }
+  /api/admin/settlement-periods/{id}/dispute:
+    patch:
+      summary: Freeze a week as disputed (admin, PAID stays final)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason: { type: string }
+      responses:
+        '200': { description: OK }
+        '404': { description: not_found }
+        '409': { description: settlement_finalized / already_disputed }
+  /api/admin/settlement-periods/{id}/resolve:
+    patch:
+      summary: Unfreeze a disputed week (admin)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+        '404': { description: not_found }
+        '409': { description: not_disputed }

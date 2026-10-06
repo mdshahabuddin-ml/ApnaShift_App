@@ -78,7 +78,7 @@
   @media(min-width:640px){.settle-form{grid-template-columns:1fr 1fr 1fr auto;align-items:end}}
   .settle-form .field{margin:0}
   label{display:block;font-weight:600;font-size:.82rem;color:var(--navy);margin-bottom:4px}
-  select,input[type="text"],input[type="number"]{width:100%;font:inherit;color:var(--ink);background:#fff;border:2px solid var(--border);border-radius:10px;padding:9px 10px}
+  select,input[type="text"],input[type="number"],input[type="date"]{width:100%;font:inherit;color:var(--ink);background:#fff;border:2px solid var(--border);border-radius:10px;padding:9px 10px}
   select:focus,input:focus{border-color:var(--navy);outline:none}
   .loading,.empty{padding:14px;text-align:center;color:var(--muted);font-size:.9rem;background:#fff;border:2px dashed var(--border);border-radius:10px}
   .site-footer{background:var(--navy);color:#dbe2f0;padding:22px 16px 30px}
@@ -129,6 +129,18 @@
     <div class="list" id="driversList" aria-live="polite"><p class="loading">List load ho rahi hai…</p></div>
   </section>
 
+  <section class="card" aria-labelledby="weekTitle">
+    <h2 id="weekTitle">Weekly settlements (Mon–Sun)</h2>
+    <p class="sub">Ek driver + ek hafta = ek settlement. Generate dobara dabane par double nahi banta. PAID final hai (badalta nahi), DISPUTED pehle resolve karo.</p>
+    <div class="controls">
+      <div><label for="weekInp">Week (Monday)</label><input type="date" id="weekInp"></div>
+      <div><label for="weekStatusSel">Status</label><select id="weekStatusSel"><option value="">sab</option><option value="DUE">DUE</option><option value="PARTIALLY_PAID">PARTIALLY_PAID</option><option value="PAID">PAID</option><option value="OVERDUE">OVERDUE</option><option value="DISPUTED">DISPUTED</option></select></div>
+      <div><label>&nbsp;</label><button class="btn ghost" id="weekGenBtn" type="button">Generate week</button></div>
+      <div><label>&nbsp;</label><button class="btn ghost" id="weekLoadBtn" type="button">Load</button></div>
+    </div>
+    <div class="list" id="weekList" aria-live="polite"><p class="loading">Week chuno aur Load dabao.</p></div>
+  </section>
+
 <footer class="site-footer">
   <div class="site-foot-inner">
     <div class="site-foot-brand">ApnaShift</div>
@@ -145,7 +157,10 @@
 <script>
 (function(){
   "use strict";
-  var API_BASE_URL = "https://apnashiftapp-production.up.railway.app";
+  // Backend base URL with local development fallback (same on all pages —
+  // localhost pages talk to localhost API, production pages to production,
+  // so login tokens always match the API that issued them).
+  var API_BASE_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.protocol === "file:") ? "http://localhost:3000" : "https://apnashiftapp-production.up.railway.app";
   var TOKEN_KEY = "apnashift_admin_token";
   var LOGIN_PAGE = "admin-login.html";
 
@@ -304,6 +319,189 @@
   });
 
   document.getElementById("logoutBtn").addEventListener("click", clearAndGoLogin);
+
+  // ---------- Weekly settlements (Mon–Sun, ek driver ek hafta ek row) ----------
+  var weekInp = document.getElementById("weekInp");
+  var weekStatusSel = document.getElementById("weekStatusSel");
+  var weekGenBtn = document.getElementById("weekGenBtn");
+  var weekLoadBtn = document.getElementById("weekLoadBtn");
+  var weekList = document.getElementById("weekList");
+
+  function mondayOf(d){
+    var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    var diff = (x.getDay() + 6) % 7;
+    x.setDate(x.getDate() - diff);
+    return x;
+  }
+  function isoDay(d){
+    return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
+  }
+  if(weekInp && !weekInp.value) weekInp.value = isoDay(mondayOf(new Date()));
+
+  function statusBadge(st){
+    if(st === "PAID") return '<span class="badge ok">PAID</span>';
+    if(st === "OVERDUE" || st === "DISPUTED") return '<span class="badge bad">' + esc(st) + '</span>';
+    return '<span class="badge">' + esc(st) + '</span>';
+  }
+  function periodCard(p){
+    var due = Math.max(0, Math.round(((Number(p.commission_rs) || 0) - (Number(p.settled_rs) || 0)) * 100) / 100);
+    var html = '<div class="row-card' + (due > 0 ? " dues" : " clear") + '">';
+    html += '<h3>' + esc(p.driver_name || p.driver_id) + ' ' + statusBadge(p.effective_status || p.status) + '</h3>';
+    html += '<p class="meta">Week: ' + esc(p.week_start) + ' → ' + esc(p.week_end) + '</p>';
+    html += '<p class="meta">Fare: Rs ' + esc(p.gross_rs) + ' • Commission: Rs ' + esc(p.commission_rs) +
+      ' • Jama: Rs ' + esc(p.settled_rs) + ' • Baaki: Rs ' + esc(due) + '</p>';
+    if(p.status === "DISPUTED" && p.dispute_reason){
+      html += '<p class="meta">Vivad: ' + esc(p.dispute_reason) + '</p>';
+    }
+    if(p.status !== "PAID" && p.status !== "DISPUTED"){
+      html += '<div class="settle-form">';
+      html += '<div class="field"><label for="wpamt-' + esc(p.id) + '">Amount (Rs)</label>' +
+        '<input type="number" id="wpamt-' + esc(p.id) + '" min="0" step="any" placeholder="' + esc(due) + '"></div>';
+      html += '<div class="field"><label for="wpmth-' + esc(p.id) + '">Method</label>' +
+        '<select id="wpmth-' + esc(p.id) + '"><option value="cash">cash</option>' +
+        '<option value="bank_transfer">bank_transfer</option><option value="upi">upi</option></select></div>';
+      html += '<div class="field"><label for="wpref-' + esc(p.id) + '">Reference (bank/upi)</label>' +
+        '<input type="text" id="wpref-' + esc(p.id) + '" maxlength="100" placeholder="UPI-12345"></div>';
+      html += '<div class="field"><label>&nbsp;</label>' +
+        '<button class="btn small" type="button" data-week-pay="' + esc(p.id) + '">Jama karo</button></div>';
+      html += '</div>';
+      html += '<div style="margin-top:8px"><button class="btn small ghost" type="button" data-week-dispute="' + esc(p.id) + '">Vivad lagao</button></div>';
+    }
+    if(p.status === "DISPUTED"){
+      html += '<div style="margin-top:8px"><button class="btn small" type="button" data-week-resolve="' + esc(p.id) + '">Vivad suljhao</button></div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function loadPeriods(){
+    var qs = "?limit=20";
+    if(weekInp && weekInp.value) qs += "&week_start=" + encodeURIComponent(weekInp.value);
+    if(weekStatusSel && weekStatusSel.value) qs += "&status=" + encodeURIComponent(weekStatusSel.value);
+    weekLoadBtn.disabled = true;
+    weekList.innerHTML = '<p class="loading">List load ho rahi hai…</p>';
+    fetch(API_BASE_URL + "/api/admin/settlement-periods" + qs, { method: "GET", headers: authHeaders() })
+      .then(parseRes)
+      .then(function(result){
+        if(checkAuth(result)) return;
+        if(result.status !== 200 || !result.body || result.body.ok !== true) throw new Error("load_failed");
+        var arr = result.body.periods || [];
+        weekList.innerHTML = arr.length ? arr.map(periodCard).join("") : '<p class="empty">Is week me koi settlement nahi.</p>';
+        hideAlert();
+      })
+      .catch(function(err){
+        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : "List load nahi hui. Dobara try karo.";
+        weekList.innerHTML = '<p class="empty">List load nahi hui.</p>';
+        showAlert("err", msg);
+      })
+      .then(function(){ weekLoadBtn.disabled = false; });
+  }
+  weekLoadBtn.addEventListener("click", loadPeriods);
+
+  weekGenBtn.addEventListener("click", function(){
+    var body = {};
+    if(weekInp && weekInp.value) body.week_start = weekInp.value;
+    weekGenBtn.disabled = true;
+    showAlert("info", "Week generate ho raha hai…");
+    fetch(API_BASE_URL + "/api/admin/settlement-periods/generate", {
+      method: "POST", headers: authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify(body)
+    })
+      .then(parseRes)
+      .then(function(result){
+        if(checkAuth(result)) return;
+        if(result.status === 200 && result.body && result.body.ok === true){
+          showAlert("ok", "Bane: " + (result.body.created || []).length + ", chhode: " + (result.body.skipped || []).length + ".");
+          loadPeriods();
+          return;
+        }
+        if(result.status === 400) showAlert("err", "Week Monday (YYYY-MM-DD) ho.");
+        else showAlert("err", "Generate nahi hua. Dobara try karo.");
+      })
+      .catch(function(err){
+        showAlert("err", (err && err.message === "Failed to fetch") ? networkMsg() : "Generate nahi hua. Dobara try karo.");
+      })
+      .then(function(){ weekGenBtn.disabled = false; });
+  });
+
+  weekList.addEventListener("click", function(ev){
+    var payBtn = ev.target.closest ? ev.target.closest("button[data-week-pay]") : null;
+    var disBtn = ev.target.closest ? ev.target.closest("button[data-week-dispute]") : null;
+    var resBtn = ev.target.closest ? ev.target.closest("button[data-week-resolve]") : null;
+    if(payBtn){
+      var id = payBtn.getAttribute("data-week-pay");
+      var amtEl = document.getElementById("wpamt-" + id);
+      var mthEl = document.getElementById("wpmth-" + id);
+      var refEl = document.getElementById("wpref-" + id);
+      var amt = amtEl ? Number(String(amtEl.value).trim()) : NaN;
+      if(!isFinite(amt) || amt <= 0){ showAlert("err", "Amount 0 se zyada number ho."); return; }
+      var body = { amount_rs: amt, method: mthEl ? mthEl.value : "cash" };
+      var ref = refEl ? String(refEl.value).trim() : "";
+      if(ref) body.reference_no = ref;
+      payBtn.disabled = true;
+      showAlert("info", "Jama ho raha hai…");
+      fetch(API_BASE_URL + "/api/admin/settlement-periods/" + encodeURIComponent(id) + "/payments", {
+        method: "POST", headers: authHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify(body)
+      })
+        .then(parseRes)
+        .then(function(result){
+          if(checkAuth(result)) return;
+          if(result.status === 201){
+            showAlert("ok", "Jama ho gaya. Baaki: Rs " + ((result.body && result.body.outstanding_rs) || 0));
+            loadPeriods();
+            loadBalances();
+            return;
+          }
+          var code = result.body && result.body.error;
+          if(code === "settlement_finalized") showAlert("err", "Ye settlement final hai — badal nahi sakta.");
+          else if(code === "settlement_disputed") showAlert("err", "Pehle vivad suljhao.");
+          else if(code === "settlement_exceeds_outstanding") showAlert("err", "Baaki se zyada amount nahi.");
+          else if(code === "duplicate_settlement") showAlert("err", "Ye reference pehle use ho chuka hai.");
+          else if(result.status === 400) showAlert("err", "Details sahi likho (amount>0, bank/upi par reference zaroori).");
+          else showAlert("err", "Jama nahi hua. Dobara try karo.");
+          payBtn.disabled = false;
+        })
+        .catch(function(){ showAlert("err", networkMsg()); payBtn.disabled = false; });
+      return;
+    }
+    if(disBtn){
+      var did = disBtn.getAttribute("data-week-dispute");
+      var reason = null;
+      try { reason = window.prompt("Vivad ki wajah likho (kam se kam 3 akshar):"); } catch(e){}
+      if(!reason || reason.trim().length < 3){ showAlert("err", "Wajah kam se kam 3 akshar likho."); return; }
+      disBtn.disabled = true;
+      fetch(API_BASE_URL + "/api/admin/settlement-periods/" + encodeURIComponent(did) + "/dispute", {
+        method: "PATCH", headers: authHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ reason: reason.trim() })
+      })
+        .then(parseRes)
+        .then(function(result){
+          if(checkAuth(result)) return;
+          if(result.status === 200){ showAlert("ok", "Vivad lag gaya."); loadPeriods(); return; }
+          showAlert("err", "Vivad nahi laga. Dobara try karo.");
+          disBtn.disabled = false;
+        })
+        .catch(function(){ showAlert("err", networkMsg()); disBtn.disabled = false; });
+      return;
+    }
+    if(resBtn){
+      var rid = resBtn.getAttribute("data-week-resolve");
+      resBtn.disabled = true;
+      fetch(API_BASE_URL + "/api/admin/settlement-periods/" + encodeURIComponent(rid) + "/resolve", {
+        method: "PATCH", headers: authHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({})
+      })
+        .then(parseRes)
+        .then(function(result){
+          if(checkAuth(result)) return;
+          if(result.status === 200){ showAlert("ok", "Vivad sulajh gaya."); loadPeriods(); return; }
+          showAlert("err", "Suljha nahi. Dobara try karo.");
+          resBtn.disabled = false;
+        })
+        .catch(function(){ showAlert("err", networkMsg()); resBtn.disabled = false; });
+    }
+  });
 
   var navMenuBtn = document.getElementById("navMenuBtn"), siteNav = document.getElementById("siteNav");
   if(navMenuBtn && siteNav){
