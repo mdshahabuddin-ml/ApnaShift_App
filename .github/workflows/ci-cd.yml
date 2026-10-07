@@ -1,0 +1,311 @@
+# ApnaShift CI/CD — GitHub push -> CI -> staging -> production.
+#
+# Flow: push -> lint -> tests (Postgres service) -> docker build ->
+#   staging: migrate (additive only) -> deploy -> /health + /ready ->
+#   smoke FULL -> production: migrate -> deploy -> /health + /ready ->
+#   smoke HEALTH-ONLY -> done. Production kabhi bina staging-green ke nahi.
+#
+# Secrets (repo Settings -> Secrets -> Actions; kabhi code me nahi):
+#   RAILWAY_TOKEN               Railway account token (CLI deploy ke liye)
+#   RAILWAY_PROJECT_ID          Railway project id
+#   RAILWAY_STAGING_SERVICE_ID  staging backend service id
+#   RAILWAY_PRODUCTION_SERVICE_ID production backend service id
+#   STAGING_DATABASE_URL        staging Postgres URL (sirf migrate + admin:create)
+#   PRODUCTION_DATABASE_URL     production Postgres URL (sirf migrate)
+#   STAGING_BASE_URL            https://<staging-service>.up.railway.app
+#   PRODUCTION_BASE_URL         https://apnashiftapp-production.up.railway.app
+#
+# Railway variables (Railway dashboard -> service -> Variables; staging aur
+# production me ALAG-ALAG values): DATABASE_URL (postgres plugin), JWT_SECRET,
+# JWT_EXPIRES_IN, GEOAPIFY_API_KEY, NODE_ENV=production, TRUST_PROXY=1,
+# BCRYPT_ROUNDS=12. WHATSAPP_* abhi khaali rehte hain (mock/none default).
+
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      deploy_target:
+        description: 'Manual run: staging tak ya production tak'
+        required: true
+        default: 'staging'
+        type: choice
+        options: ['staging', 'production']
+
+concurrency:
+  group: cicd-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: apnashift-backend
+
+jobs:
+  # ---- 1. Lint/validate ----
+  lint:
+    name: 'CI FAIL? -> lint'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: apnashift-backend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: ESLint
+        run: |
+          npm run lint || {
+            echo '::error::CI FAIL (lint): `npm run lint` fail hua. Local me `npm run lint` chalakar fix karo, phir push karo. Production deploy RUKA rahega.'
+            exit 1
+          }
+
+  # ---- 2. Automated tests (real Postgres service) ----
+  test:
+    name: 'CI FAIL? -> tests'
+    runs-on: ubuntu-latest
+    needs: [lint]
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: apnashift
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: apnashift_test
+        ports: ['5433:5432']
+        options: >-
+          --health-cmd="pg_isready -U apnashift"
+          --health-interval=5s --health-timeout=5s --health-retries=10
+    env:
+      TEST_DATABASE_URL: postgres://apnashift:ci-only-password@localhost:5433/apnashift_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: apnashift-backend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: Migrate test DB (additive only, same script as staging/prod)
+        run: |
+          DATABASE_URL="$TEST_DATABASE_URL" npm run db:migrate || {
+            echo '::error::CI FAIL (migrate): test DB migrate fail — migration SQL me syntax/constraint dikkat hai. Koi destructive statement (DROP/TRUNCATE) nahi honi chahiye.'
+            exit 1
+          }
+      - name: Vitest suite
+        run: |
+          npx vitest run --exclude tests/mssql.test.js || {
+            echo '::error::CI FAIL (tests): vitest suite fail hui. Kaunsi file fail hui, log me dekho, local me `TEST_DATABASE_URL=... npx vitest run <file>` se reproduce karo. Production deploy RUKA rahega.'
+            echo 'NOTE: tests/mssql.test.js excluded hai — usko real SQL Server chahiye jo GH runners par nahi hota (known env gap, app code se unrelated).'
+            exit 1
+          }
+
+  # ---- 3. Build frontend/backend + Docker image ----
+  build:
+    name: 'CI FAIL? -> build'
+    runs-on: ubuntu-latest
+    needs: [test]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify frontend mirror in sync (backend/public)
+        run: |
+          mismatch=0
+          for f in ../apnashift-frontend/*.html ../apnashift-frontend/*.js; do
+            base=$(basename "$f")
+            if [ -f "public/$base" ] && ! cmp -s "$f" "public/$base"; then
+              echo "::error::CI FAIL (build): public/$base mirror out of sync hai — frontend/$base copy karo."
+              mismatch=1
+            fi
+          done
+          [ "$mismatch" = 0 ] || exit 1
+      - name: Docker build (push nahi — sirf verify ki image banti hai)
+        run: |
+          docker build -t apnashift-backend:ci . || {
+            echo '::error::CI FAIL (build): `docker build` fail hua. Dockerfile ya copied paths check karo.'
+            exit 1
+          }
+
+  # ---- 4. Deploy to Railway staging ----
+  deploy-staging:
+    name: Deploy staging
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.event_name == 'push' || github.event.inputs.deploy_target == 'staging' || github.event.inputs.deploy_target == 'production'
+    environment: staging
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: apnashift-backend/package-lock.json
+      - run: npm ci --no-audit --no-fund --omit=dev
+      - name: Fail-safe guard (secrets present?)
+        run: |
+          for v in RAILWAY_TOKEN RAILWAY_PROJECT_ID RAILWAY_STAGING_SERVICE_ID STAGING_DATABASE_URL STAGING_BASE_URL; do
+            [ -n "${!v}" ] || { echo "::error::DEPLOY RUKA (staging): secret/variable $v set nahi hai. README ka 'GitHub Secrets' section dekho."; exit 1; }
+          done
+        env:
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+          RAILWAY_STAGING_SERVICE_ID: ${{ secrets.RAILWAY_STAGING_SERVICE_ID }}
+          STAGING_DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          STAGING_BASE_URL: ${{ secrets.STAGING_BASE_URL }}
+      - name: Migrate staging DB (additive only — kabhi destructive nahi)
+        run: |
+          DATABASE_URL="${{ secrets.STAGING_DATABASE_URL }}" npm run db:migrate || {
+            echo '::error::DEPLOY RUKA (staging migrate): staging DB migrate fail. Production ko kuch nahi hua. Migration SQL haath se staging par check karo.'
+            exit 1
+          }
+      - name: Deploy to Railway staging service
+        run: |
+          npm i -g @railway/cli
+          railway up --service "${{ secrets.RAILWAY_STAGING_SERVICE_ID }}" --environment staging || {
+            echo '::error::DEPLOY RUKA (staging): `railway up` fail. Railway dashboard me service id/environment naam verify karo.'
+            exit 1
+          }
+        env:
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+
+  # ---- 5. Staging health + readiness ----
+  verify-staging:
+    name: Staging health/ready
+    runs-on: ubuntu-latest
+    needs: [deploy-staging]
+    steps:
+      - name: Wait + check /api/health and /api/ready
+        run: |
+          base="${{ secrets.STAGING_BASE_URL }}"
+          ok=0
+          for i in $(seq 1 30); do
+            h=$(curl -s -o /dev/null -w '%{http_code}' "$base/api/health" || true)
+            r=$(curl -s "$base/api/ready" || true)
+            if [ "$h" = 200 ] && echo "$r" | grep -q '"db":"up"'; then ok=1; break; fi
+            sleep 10
+          done
+          [ "$ok" = 1 ] || {
+            echo "::error::DEPLOY RUKA (staging health): 5 min me /api/health + /api/ready green nahi hue. Staging logs dekho; production deploy NAHI hoga."
+            exit 1
+          }
+          echo 'Staging health + ready GREEN.'
+
+  # ---- 6. Critical smoke tests on staging ----
+  smoke-staging:
+    name: Staging smoke (full E2E)
+    runs-on: ubuntu-latest
+    needs: [verify-staging]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: apnashift-backend/package-lock.json
+      - run: npm ci --no-audit --no-fund --omit=dev
+      - name: Create staging admin (unique phone per run) + run FULL smoke
+        run: |
+          suffix=$(date +%s | tail -c 9)
+          export SMOKE_ADMIN_PHONE="70${suffix}"
+          export SMOKE_ADMIN_PASSWORD="Staging-${{ github.run_id }}-Admin!"
+          export DATABASE_URL="${{ secrets.STAGING_DATABASE_URL }}"
+          node scripts/create-admin.js "SmokeAdmin" "$SMOKE_ADMIN_PHONE" "$SMOKE_ADMIN_PASSWORD" || {
+            echo '::error::SMOKE RUKA: staging admin create fail hua (DATABASE_URL/DB check karo).'
+            exit 1
+          }
+          SMOKE_BASE_URL="${{ secrets.STAGING_BASE_URL }}" SMOKE_MODE=full node scripts/smoke.js || {
+            echo '::error::SMOKE FAIL (staging): upar SMOKE FAIL line dekho — kaunsa gate toota (auth/booking/accept/GPS/tracking/enterprise). Fix karke dobara push karo. Production deploy NAHI hoga.'
+            exit 1
+          }
+
+  # ---- 7. Deploy to production (ONLY after staging green) ----
+  deploy-production:
+    name: Deploy production
+    runs-on: ubuntu-latest
+    needs: [smoke-staging]
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event.inputs.deploy_target == 'production')
+    environment: production
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: apnashift-backend/package-lock.json
+      - run: npm ci --no-audit --no-fund --omit=dev
+      - name: Fail-safe guard (secrets present?)
+        run: |
+          for v in RAILWAY_TOKEN RAILWAY_PROJECT_ID RAILWAY_PRODUCTION_SERVICE_ID PRODUCTION_DATABASE_URL PRODUCTION_BASE_URL; do
+            [ -n "${!v}" ] || { echo "::error::DEPLOY RUKA (production): secret/variable $v set nahi hai. Staging GREEN tha, par production ko haath nahi lagaya."; exit 1; }
+          done
+        env:
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+          RAILWAY_PRODUCTION_SERVICE_ID: ${{ secrets.RAILWAY_PRODUCTION_SERVICE_ID }}
+          PRODUCTION_DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+          PRODUCTION_BASE_URL: ${{ secrets.PRODUCTION_BASE_URL }}
+      - name: Migrate production DB (additive only — no DROP/TRUNCATE ever)
+        run: |
+          DATABASE_URL="${{ secrets.PRODUCTION_DATABASE_URL }}" npm run db:migrate || {
+            echo '::error::DEPLOY RUKA (production migrate): prod DB migrate fail. Staging/deploy ko kuch nahi hua. Pehle staging par verify karo, phir manual retry.'
+            exit 1
+          }
+      - name: Deploy to Railway production service
+        run: |
+          npm i -g @railway/cli
+          railway up --service "${{ secrets.RAILWAY_PRODUCTION_SERVICE_ID }}" --environment production || {
+            echo '::error::DEPLOY RUKA (production): `railway up` fail. Railway dashboard check karo; staging abhi bhi purana stable chal raha hai.'
+            exit 1
+          }
+        env:
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+
+  # ---- 8. Production health verification (read-only, no test data) ----
+  verify-production:
+    name: Production health verify
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: /health + /ready, then smoke HEALTH-ONLY mode
+        run: |
+          base="${{ secrets.PRODUCTION_BASE_URL }}"
+          ok=0
+          for i in $(seq 1 30); do
+            h=$(curl -s -o /dev/null -w '%{http_code}' "$base/api/health" || true)
+            r=$(curl -s "$base/api/ready" || true)
+            if [ "$h" = 200 ] && echo "$r" | grep -q '"db":"up"'; then ok=1; break; fi
+            sleep 10
+          done
+          [ "$ok" = 1 ] || {
+            echo '::error::PROD VERIFY FAIL: production health/ready green nahi hue. ROLLBACK karo (neeche rollback job dekho) — Railway dashboard me pichla deployment Redeploy karo.'
+            exit 1
+          }
+          SMOKE_BASE_URL="$base" SMOKE_MODE=health node scripts/smoke.js || {
+            echo '::error::PROD VERIFY FAIL: smoke health-mode fail. ROLLBACK karo — Railway dashboard me pichla deployment Redeploy karo.'
+            exit 1
+          }
+          echo 'Production health GREEN.'
+
+  # ---- 9. Fail-safe: rollback instructions on ANY failure ----
+  rollback-note:
+    name: Rollback instructions
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, verify-staging, smoke-staging, deploy-production, verify-production]
+    if: failure()
+    steps:
+      - run: |
+          echo '::warning::PIPELINE FAIL — production me toota build NAHI gaya (gates ne roka) ya prod verify fail hua.'
+          echo 'ROLLBACK (manual, 2 min):'
+          echo '  1. Railway dashboard -> service (staging/production) -> Deployments -> pichla GREEN deployment -> Redeploy.'
+          echo '  2. DB rollback ki zaroorat NAHI: saari migrations additive hain (IF NOT EXISTS / ADD COLUMN IF EXISTS) — purana code naye columns ko ignore karta hai.'
+          echo '  3. Agar production verify fail hua ho to turant Redeploy karo, phir logs me SMOKE FAIL / health error dekho.'
+          echo '  4. Fix karke main par push karo — pipeline phir staging se shuru hogi.'

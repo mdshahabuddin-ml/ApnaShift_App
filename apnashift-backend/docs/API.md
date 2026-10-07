@@ -248,6 +248,31 @@ proximity bias `lat/lng`). Sirf `{ formatted, lat, lng }` milta hai.
 Driving route pickup→drop: `{ distance_m, duration_s, geometry: [{lat,lng}]
 (max 200 points) }`. Tracking map polyline isi se banta hai.
 
+## WhatsApp booking (Meta credentials NOT required)
+
+Dialog state machine `wa_conversations` me rehta hai (restart-safe):
+`START → PICKUP → DROP → VEHICLE → DATE_TIME → PAYMENT → CONFIRMATION →
+BOOKING_CREATED`. Booking wahi `createBookingRow` core mint karta hai
+(`booking_source: 'WHATSAPP'`), driver/admin ko wahi SSE events jaate hain,
+`booking.created` audit lagta hai. Sirf registered number booking bana sakta
+hai; repeat CONFIRM se doosri booking nahi banti (state-consumed pattern).
+Provider adapter: `WHATSAPP_PROVIDER` khaali ho to local/test me `mock`
+(outbox memory me, tests padhte hain), production me `none` (outbound drop +
+log, dialog kaam karta rehta hai). Real Meta Cloud API ke liye
+`WHATSAPP_PROVIDER=meta` + token/phone wiring future step hai — webhook shape
+(`{ from, text }`) tab bhi nahi badlega.
+
+### GET /api/whatsapp/webhook (public)
+Meta verify handshake: `?hub.mode=subscribe&hub.verify_token=&hub.challenge=`.
+`WHATSAPP_VERIFY_TOKEN` set nahi hai to hamesha `403` (by design).
+
+### POST /api/whatsapp/webhook (public, rate-limited, no JWT)
+Body `{ from, text }` (text max 2000). Galat body → `400 validation_failed`
+(bina state chhue). Sahi input par hamesha `200`: `{ ok, reply }`, dialog
+poora hote hi `{ ok, booking, reply }` (booking me `booking_source:
+'WHATSAPP'`). Admin dashboard bookings list me WhatsApp orders par `WhatsApp`
+badge dikhta hai.
+
 ## Cash payments, commission & settlements
 
 Paise integer me ginte hain (float kabhi nahi) — half-up rounding, har transaction

@@ -1,0 +1,14 @@
+# Keep secrets, dev-only files and history out of the Docker image.
+node_modules/
+npm-debug.log
+.env
+.env.*
+!.env.example
+coverage/
+.git/
+.gitignore
+tests/
+vitest.config.js
+eslint.config.js
+*.log
+.DS_Store

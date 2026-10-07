@@ -21,4 +21,11 @@ export default [
       globals: { ...globals.node },
     },
   },
+  {
+    // Served browser bundle (mirror of frontend/notify.js) — window is correct here.
+    files: ['public/notify.js'],
+    languageOptions: {
+      globals: { ...globals.node, ...globals.browser },
+    },
+  },
 ];

@@ -15,6 +15,7 @@ import { driverRoutes as driverBookingRoutes } from './routes/driver.js';
 import { driversPublicRoutes } from './routes/driversPublic.js';
 import { enterpriseRoutes } from './routes/enterprise.js';
 import { geoRoutes } from './routes/geo.js';
+import { whatsappRoutes } from './routes/whatsapp.js';
 import { driverSettlementRoutes, adminSettlementRoutes } from './routes/settlements.js';
 import { mssqlRoutes } from './routes/mssql.js';
 
@@ -97,6 +98,8 @@ export function createApp() {
   // Geoapify proxy (maps config + geocode autocomplete + routing).
   // Auth-gated server-side so the provider key/quota stays protected.
   app.use('/api/geo', geoRoutes);
+  // WhatsApp webhook (public — Meta calls it; no JWT by design).
+  app.use('/api/whatsapp', whatsappRoutes);
   // MS SQL Server verification (read-only; PostgreSQL flows untouched).
   app.use('/api/mssql', mssqlRoutes);
 

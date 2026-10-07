@@ -6,7 +6,7 @@ import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { query, pool } from '../db.js';
 import { config } from '../config.js';
-import { VEHICLE_TO_DB, VEHICLE_TO_API } from '../validation/auth.js';
+import { VEHICLE_TO_API } from '../validation/auth.js';
 import {
   estimateSchema,
   bookingCreateSchema,
@@ -24,11 +24,15 @@ import {
   staleAfterMs,
   offlineAfterMs,
   subscribe,
+  publishNewBooking,
+  publishAdminBooking,
   toPublicPoint,
 } from '../services/tracking.js';
-import { attachPayments, getCommissionPct } from '../services/payments.js';
+import { attachPayments } from '../services/payments.js';
+import { ratesFor, createBookingRow } from '../services/bookings.js';
 import { buildEstimate } from '../services/pricing.js';
 import { parseIdempotencyKey, hashBookingRequest } from '../services/idempotency.js';
+import { logAuditSafe } from '../services/audit.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { validateIdParam } from '../utils/validate.js';
 import { writeLimiter } from '../middleware/writeLimiter.js';
@@ -78,6 +82,7 @@ export function toPublicBooking(row) {
           }
         : null,
     payment_method: row.payment_method ?? 'upi',
+    booking_source: row.booking_source ?? 'WEB',
     // Creation-time commission snapshot (rate lock; null = pre-014 row).
     commission_percent: row.commission_percent === null || row.commission_percent === undefined
       ? null
@@ -90,25 +95,7 @@ export function toPublicBooking(row) {
   };
 }
 
-async function ratesFor(vehicleType) {
-  const found = await query(
-    'SELECT base_rs, per_km_rs, helper_rs FROM pricing_rules WHERE vehicle_type = $1',
-    [VEHICLE_TO_DB[vehicleType]],
-  );
-  if (found.rowCount === 0) {
-    const err = new Error('unknown_vehicle');
-    err.status = 400;
-    throw err;
-  }
-  const rule = found.rows[0];
-  return {
-    [vehicleType]: {
-      baseRs: Number(rule.base_rs),
-      perKmRs: Number(rule.per_km_rs),
-      helperRs: Number(rule.helper_rs),
-    },
-  };
-}
+// (ratesFor lives in services/bookings.js — shared with the WhatsApp flow.)
 
 // POST /api/bookings/estimate-price (public)
 bookingsRoutes.post('/estimate-price', estimateLimiter, async (req, res, next) => {
@@ -128,6 +115,39 @@ bookingsRoutes.post('/estimate-price', estimateLimiter, async (req, res, next) =
   }
 });
 
+// NEW_BOOKING event payload — required fields only, built from the public
+// booking shape. No phones/names/tokens/hashes ever enter the event.
+export function newBookingEvent(row) {
+  const b = toPublicBooking(row);
+  return {
+    booking_id: b.id,
+    vehicle_type: b.vehicle_type,
+    pickup: b.pickup,
+    drop: b.drop,
+    fare_rs: b.price_rs,
+    payment_method: b.payment_method,
+    status: b.status,
+  };
+}
+
+// Admin event payload — admin-safe fields only (name/addresses/fare,
+// never phone/hash). Same content as the admin bookings list shows.
+export async function adminBookingEvent(row) {
+  const u = await query('SELECT name FROM users WHERE id = $1', [row.user_id]);
+  const b = toPublicBooking(row);
+  return {
+    booking_id: b.id,
+    customer_name: u.rowCount > 0 ? u.rows[0].name : null,
+    pickup: b.pickup,
+    drop: b.drop,
+    vehicle_type: b.vehicle_type,
+    fare_rs: b.price_rs,
+    payment_method: b.payment_method,
+    status: b.status,
+    created_at: b.created_at,
+  };
+}
+
 // POST /api/bookings (user) — server computes price, not the client.
 // Optional Idempotency-Key: first success replays (201 -> 200, same booking).
 // Same key + different payload returns 422 idempotency_conflict. Per-user scope.
@@ -142,54 +162,33 @@ bookingsRoutes.post('/', requireAuth, requireRole('user'), writeLimiter, async (
     }
     const idempotencyKey = parseIdempotencyKey(req);
 
-    const estimate = await buildEstimate({
-      pickup: { lat: pickup.lat, lng: pickup.lng },
-      drop: { lat: drop.lat, lng: drop.lng },
+    // Creation itself lives in services/bookings.js (shared with the
+    // WhatsApp flow). Estimate + snapshot + INSERT move together.
+    const coreArgs = {
+      userId: req.user.id,
       vehicleType: vehicle_type,
+      pickup,
+      drop,
       helperNeeded: helper_needed,
-      rates: await ratesFor(vehicle_type),
-    });
-
-    // CORE RULE: commission snapshot creation-time pricing_rules se —
-    // baad me rate badle to purani bookings unaffected. Price ki tarah
-    // ye bhi server likhta hai (driver input ka koi rasta nahi).
-    const rateRow = await query(
-      'SELECT commission_percent FROM pricing_rules WHERE vehicle_type = $1',
-      [VEHICLE_TO_DB[vehicle_type]],
-    );
-    const snapshotPct =
-      rateRow.rowCount > 0 && rateRow.rows[0].commission_percent !== null
-        ? Number(rateRow.rows[0].commission_percent)
-        : await getCommissionPct();
-
-    const bookingParams = [
-      req.user.id,
-      VEHICLE_TO_DB[vehicle_type],
-      pickup.address,
-      pickup.lat,
-      pickup.lng,
-      drop.address,
-      drop.lat,
-      drop.lng,
-      estimate.distance_km,
-      helper_needed,
-      item_description,
-      scheduled_time ? new Date(scheduled_time) : null,
-      estimate.total,
-      payment_method,
-      snapshotPct,
-    ];
-    const insertSql = `INSERT INTO bookings
-        (user_id, vehicle_type, pickup_address, pickup_lat, pickup_lng,
-         drop_address, drop_lat, drop_lng, distance_km, helper,
-         item_description, scheduled_at, price_rs, status, payment_method,
-         commission_percent)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'pending', $14, $15)
-        RETURNING ${BOOKING_COLS}`;
+      itemDescription: item_description,
+      scheduledAt: scheduled_time,
+      paymentMethod: payment_method,
+      source: 'WEB',
+    };
 
     // Without key: direct insert (legacy flow).
     if (!idempotencyKey) {
-      const inserted = await query(insertSql, bookingParams);
+      const inserted = { rows: [await createBookingRow(query, coreArgs)] };
+      // Genuinely new booking -> notify subscribed drivers (replays never emit).
+      publishNewBooking(inserted.rows[0].vehicle_type, newBookingEvent(inserted.rows[0]));
+      publishAdminBooking('new_booking', await adminBookingEvent(inserted.rows[0]));
+      // Auditable dispatch trail (one row per real booking, never on replay).
+      // admin_id stays NULL (creator is a customer, not staff) — user goes in details.
+      await logAuditSafe(null, 'booking.created', 'booking', inserted.rows[0].id, {
+        user_id: req.user.id,
+        vehicle_type,
+        price_rs: inserted.rows[0].price_rs,
+      });
       return res.status(201).json({ ok: true, booking: toPublicBooking(inserted.rows[0]) });
     }
 
@@ -224,7 +223,7 @@ bookingsRoutes.post('/', requireAuth, requireRole('user'), writeLimiter, async (
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
-      const inserted = await client.query(insertSql, bookingParams);
+      const inserted = { rows: [await createBookingRow(client.query.bind(client), coreArgs)] };
       try {
         await client.query(
           'INSERT INTO idempotency_keys (user_id, key, booking_id, request_hash) VALUES ($1, $2, $3, $4)',
@@ -250,6 +249,16 @@ bookingsRoutes.post('/', requireAuth, requireRole('user'), writeLimiter, async (
         throw keyErr;
       }
       await client.query('COMMIT');
+      // Genuinely new booking -> notify subscribed drivers (replays never emit).
+      publishNewBooking(inserted.rows[0].vehicle_type, newBookingEvent(inserted.rows[0]));
+      publishAdminBooking('new_booking', await adminBookingEvent(inserted.rows[0]));
+      // Auditable dispatch trail (one row per real booking, never on replay).
+      // admin_id stays NULL (creator is a customer, not staff) — user goes in details.
+      await logAuditSafe(null, 'booking.created', 'booking', inserted.rows[0].id, {
+        user_id: req.user.id,
+        vehicle_type,
+        price_rs: inserted.rows[0].price_rs,
+      });
       return res.status(201).json({ ok: true, booking: toPublicBooking(inserted.rows[0]) });
     } catch (err) {
       try {
@@ -379,6 +388,11 @@ bookingsRoutes.patch('/:id/cancel', requireAuth, requireRole('user'), validateId
       // Race: driver advanced accepted->arrived in between.
       return res.status(409).json({ ok: false, error: 'invalid_transition' });
     }
+    publishAdminBooking('booking_status', {
+      booking_id: updated.rows[0].id,
+      status: 'cancelled',
+      driver_id: updated.rows[0].driver_id,
+    });
     res.json({ ok: true, booking: toPublicBooking(updated.rows[0]) });
   } catch (err) {
     next(err);

@@ -569,3 +569,39 @@ ALTER TABLE settlements ADD COLUMN IF NOT EXISTS settlement_period_id UUID
   REFERENCES settlement_periods (id) ON DELETE SET NULL;
 CREATE INDEX IF NOT EXISTS idx_settlements_period
   ON settlements (settlement_period_id);
+
+-- 019: WhatsApp booking foundation (additive; existing rows default WEB).
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS booking_source TEXT NOT NULL DEFAULT 'WEB';
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'bookings_source_ck') THEN
+    ALTER TABLE bookings ADD CONSTRAINT bookings_source_ck CHECK (
+      booking_source IN ('WEB', 'WHATSAPP', 'ADMIN', 'MOBILE')
+    );
+  END IF;
+END
+$$;
+CREATE INDEX IF NOT EXISTS idx_bookings_source_created
+  ON bookings (booking_source, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS wa_conversations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  phone VARCHAR(15) NOT NULL UNIQUE CHECK (phone ~ '^[6-9][0-9]{9}$'),
+  state TEXT NOT NULL DEFAULT 'START',
+  data JSONB NOT NULL DEFAULT '{}',
+  booking_id UUID REFERENCES bookings (id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_wa_conversations_updated
+  ON wa_conversations (updated_at DESC);
+
+-- 018: driver decline records (append-only; bookings rows never touched).
+CREATE TABLE IF NOT EXISTS driver_declines (
+  driver_id UUID NOT NULL REFERENCES drivers (id) ON DELETE CASCADE,
+  booking_id UUID NOT NULL REFERENCES bookings (id) ON DELETE RESTRICT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (driver_id, booking_id)
+);
+CREATE INDEX IF NOT EXISTS idx_driver_declines_booking
+  ON driver_declines (booking_id, created_at DESC);

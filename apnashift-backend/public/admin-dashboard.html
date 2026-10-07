@@ -85,16 +85,16 @@
   .badge.bad{background:#fdecea;border-color:var(--red);color:#7a1f14}
   .loading,.empty{padding:14px;text-align:center;color:var(--muted);font-size:.9rem;background:#fff;border:2px dashed var(--border);border-radius:10px}
   .site-header{background:var(--navy);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:50}
-  .site-header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px}
+  .site-header-inner{max-width:1140px;margin:0 auto;display:flex;align-items:center;gap:14px}
   .site-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.3rem;line-height:1;color:#fff;text-decoration:none}
   .site-brand small{display:block;font-family:"Noto Sans",system-ui,sans-serif;font-weight:600;font-size:.64rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow)}
-  .site-nav{display:flex;gap:4px;margin-left:8px;align-items:center}
-  .site-nav> a,.nav-drop summary{color:#dbe2f0;text-decoration:none;font-weight:600;font-size:.9rem;padding:8px 10px;border-radius:8px}
-  .site-nav> a:hover,.nav-drop summary:hover{background:#1f2f52;color:#fff}
+  .site-nav{display:flex;gap:10px;margin-left:12px;align-items:center;flex-wrap:wrap}
+  .site-nav> a,.nav-drop summary{color:#fff;text-decoration:none;font-weight:800;font-size:1rem;padding:12px 18px;border-radius:12px;background:rgba(255,255,255,.07);border:2px solid var(--yellow);min-height:50px;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+  .site-nav> a:hover,.nav-drop summary:hover{background:var(--yellow);color:var(--navy);border-color:var(--navy)}
   .nav-drop{position:relative}
   .nav-drop summary{cursor:pointer;list-style:none}
   .nav-drop summary::-webkit-details-marker{display:none}
-  .nav-drop[open] summary{background:#1f2f52;color:#fff}
+  .nav-drop[open] summary{background:var(--yellow);color:var(--navy);border-color:var(--navy)}
   .drop-menu{display:flex;flex-direction:column;gap:2px}
   @media(min-width:761px){.drop-menu{position:absolute;top:100%;left:0;background:var(--navy);border:1px solid #2a3d66;border-radius:8px;padding:6px;min-width:180px}.drop-menu a{white-space:nowrap}}
   #navMenuBtn{display:none;background:transparent;border:2px solid var(--yellow);border-radius:8px;color:var(--yellow);font:inherit;font-weight:800;padding:6px 12px;cursor:pointer}
@@ -211,8 +211,9 @@
   </section>
 
   <section class="card panel" id="panelBookings" role="tabpanel" aria-labelledby="tabBookings">
-    <h2>Bookings</h2>
+    <h2>Bookings <span class="badge" id="pendingBadge" title="Pending orders right now">New: —</span></h2>
     <p class="sub">Totals and revenue with status filters.</p>
+    <div class="list" id="orderAlerts" aria-live="polite"></div>
     <div class="controls">
       <div class="field">
         <label for="bookingStatus">Status filter</label>
@@ -233,6 +234,8 @@
         </select>
       </div>
       <button class="btn ghost" id="refreshBookings" type="button">Load</button>
+      <button class="btn ghost" id="orderNotifyToggle" type="button">🔔 Alerts: Off</button>
+      <button class="btn ghost" id="orderSoundToggle" type="button">🔊 Sound: Off</button>
     </div>
     <div id="bookingsSummary" aria-live="polite"></div>
     <div class="list" id="bookingsList" aria-live="polite"><p class="loading">Press Load to view bookings.</p></div>
@@ -317,6 +320,7 @@
 </footer>
 </main>
 
+<script src="notify.js"></script>
 <script>
 (function(){
   "use strict";
@@ -748,7 +752,9 @@
     var drop = b.drop && b.drop.address ? b.drop.address : "—";
     var html = '<div class="row-card">';
     html += '<h3>#' + esc(b.id || "—") + ' <span class="badge">' + esc(b.status || "—") + '</span>' +
-      (b.disputed ? ' <span class="badge bad">Disputed</span>' : '') + '</h3>';
+      (b.disputed ? ' <span class="badge bad">Disputed</span>' : '') +
+      (b.booking_source === "WHATSAPP" ? ' <span class="badge">WhatsApp</span>' :
+        (b.booking_source && b.booking_source !== "WEB" ? ' <span class="badge">' + esc(b.booking_source) + '</span>' : '')) + '</h3>';
     if(b.disputed && b.dispute_reason) html += '<p class="meta">Dispute: ' + esc(b.dispute_reason) + '</p>';
     html += '<p>' + esc(pickup) + ' → ' + esc(drop) + '</p>';
     html += '<p class="meta">Vehicle: ' + esc(b.vehicle_type || "—") + ' • Fare: ' + esc(fmtRs(b.price_rs)) + '</p>';
@@ -803,6 +809,181 @@
   refreshBookings.addEventListener("click", loadBookings);
   bookingStatus.addEventListener("change", loadBookings);
   document.getElementById("bookingDisputed").addEventListener("change", loadBookings);
+
+  // Live new-order alerts (admin bookings SSE — same fetch pattern as the
+  // tracking stream, since EventSource cannot send auth headers). The list
+  // itself still loads on demand; alerts + badge update live.
+  var orderAlerts = document.getElementById("orderAlerts");
+  var pendingBadge = document.getElementById("pendingBadge");
+  var orderStreamOn = false;
+  var STAGE_LABEL = {
+    pending: "NEW BOOKING", accepted: "DRIVER ASSIGNED", arrived: "DRIVER ARRIVING",
+    in_transit: "IN PROGRESS", delivered: "COMPLETED", cancelled: "CANCELLED"
+  };
+  function orderTime(iso){
+    if(!iso) return "—";
+    var d = new Date(iso);
+    if(isNaN(d.getTime())) return String(iso);
+    return d.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+  }
+  function orderCard(p){
+    var id = esc(p.booking_id);
+    var h = '<div class="row-card" data-order="' + id + '">';
+    h += '<h3>🔔 New Booking <span class="badge warn" data-order-stage="' + id + '">' + esc(STAGE_LABEL[p.status] || p.status || "—") + '</span></h3>';
+    h += '<p class="meta">Booking ID: ' + id + '</p>';
+    h += '<p><strong>Customer:</strong> ' + esc(p.customer_name || "—") + '</p>';
+    h += '<p class="meta">Pickup: ' + esc((p.pickup && p.pickup.address) || "—") +
+      ' → Drop: ' + esc((p.drop && p.drop.address) || "—") + '</p>';
+    h += '<p class="meta">Vehicle: ' + esc(p.vehicle_type || "—") +
+      ' • Fare: ' + esc(fmtRs(p.fare_rs)) +
+      ' • Payment: ' + esc(p.payment_method || "—") + '</p>';
+    h += '<p class="meta" data-order-driver="' + id + '">Driver: ' + esc(p.driver_id || "not assigned yet") + '</p>';
+    h += '<p class="meta">Created: ' + esc(orderTime(p.created_at)) + '</p>';
+    h += '<p><a class="btn ghost" href="admin-bookings.html">View Booking</a></p>';
+    h += '</div>';
+    return h;
+  }
+  function refreshPendingBadge(){
+    if(!pendingBadge) return;
+    fetch(API_BASE_URL + "/api/admin/bookings?status=pending&limit=1", { method: "GET", headers: authHeaders() })
+      .then(parseRes)
+      .then(function(result){
+        if(checkAuth(result)) return;
+        if(result.status === 200 && result.body && result.body.ok === true){
+          pendingBadge.textContent = "New: " + (result.body.total || 0);
+        }
+      })
+      .catch(function(){ /* badge keeps last value on failure */ });
+  }
+  function applyStatusEvent(msg){
+    if(!msg || !msg.booking_id) return;
+    var stageEl = orderAlerts ? orderAlerts.querySelector('[data-order-stage="' + msg.booking_id + '"]') : null;
+    var driverEl = orderAlerts ? orderAlerts.querySelector('[data-order-driver="' + msg.booking_id + '"]') : null;
+    if(stageEl) stageEl.textContent = STAGE_LABEL[msg.status] || msg.status || "—";
+    if(driverEl && msg.driver_id) driverEl.textContent = "Driver: " + msg.driver_id;
+    refreshPendingBadge();
+  }
+  function startOrderStream(){
+    if(orderStreamOn) return;
+    orderStreamOn = true;
+    fetch(API_BASE_URL + "/api/admin/bookings/stream", { headers: authHeaders() })
+      .then(function(res){
+        if(res.status === 401){ checkAuth({ status: 401 }); throw new Error("unauth"); }
+        if(!res.ok || !res.body) throw new Error("stream");
+        var reader = res.body.getReader();
+        var decoder = new TextDecoder();
+        var buf = "";
+        function pump(){
+          return reader.read().then(function(chunk){
+            if(chunk.done){ throw new Error("closed"); }
+            buf += decoder.decode(chunk.value, { stream: true });
+            var parts = buf.split("\n\n");
+            buf = parts.pop();
+            parts.forEach(function(block){
+              var ev = null, data = "";
+              block.split("\n").forEach(function(line){
+                if(line.indexOf("event:") === 0) ev = line.slice(6).trim();
+                else if(line.indexOf("data:") === 0) data += line.slice(5).trim();
+              });
+              if(!ev || !data) return;
+              try {
+                var msg = JSON.parse(data);
+              if(ev === "new_booking"){
+                if(orderAlerts){
+                  var tmp = document.createElement("div");
+                  tmp.innerHTML = orderCard(msg);
+                  var card = tmp.firstChild;
+                  if(card){
+                    orderAlerts.insertBefore(card, orderAlerts.firstChild);
+                    while(orderAlerts.children.length > 10){ orderAlerts.removeChild(orderAlerts.lastChild); }
+                  }
+                }
+                announceOrder(msg);
+                refreshPendingBadge();
+              } else if(ev === "booking_status"){
+                  applyStatusEvent(msg);
+                }
+              } catch(e){}
+            });
+            return pump();
+          });
+        }
+        return pump();
+      })
+      .catch(function(){
+        // Stream broke — retry in 20s, badge keeps last value meanwhile.
+        orderStreamOn = false;
+        setTimeout(startOrderStream, 20000);
+      });
+  }
+  document.getElementById("tabBookings").addEventListener("click", function(){
+    refreshPendingBadge();
+    startOrderStream();
+  });
+
+  // ---- Order alert preferences (browser notification + sound) ----
+  // Stream + badge + list keep working with everything off — these only
+  // add the optional chime/popup on top, never replace the dashboard.
+  var orderNotifyToggle = document.getElementById("orderNotifyToggle");
+  var orderSoundToggle = document.getElementById("orderSoundToggle");
+  var orderPrefs = { alerts: false, sound: false };
+  function orderNotifyApi(){ try { return window.BookingNotify || null; } catch(e){ return null; } }
+  function paintOrderToggles(){
+    if(orderNotifyToggle) orderNotifyToggle.textContent = "🔔 Alerts: " + (orderPrefs.alerts ? "On" : "Off");
+    if(orderSoundToggle) orderSoundToggle.textContent = "🔊 Sound: " + (orderPrefs.sound ? "On" : "Off");
+  }
+  (function initOrderPrefs(){
+    var api = orderNotifyApi();
+    if(api){ try { orderPrefs = api.loadPrefs() || orderPrefs; } catch(e){} }
+    if(orderPrefs.alerts && api){
+      try { if(api.permission() !== "granted") orderPrefs.alerts = false; } catch(e){ orderPrefs.alerts = false; }
+    }
+    paintOrderToggles();
+  })();
+  if(orderNotifyToggle) orderNotifyToggle.addEventListener("click", function(){
+    var api = orderNotifyApi();
+    if(!api){ showPageAlert("err", "Notifications are not supported in this browser."); return; }
+    if(orderPrefs.alerts){
+      orderPrefs.alerts = false;
+      try { api.savePrefs(orderPrefs); } catch(e){}
+      paintOrderToggles();
+      return;
+    }
+    var selfBtn = this;
+    selfBtn.disabled = true;
+    api.ensurePermission().then(function(p){
+      if(p === "granted"){
+        orderPrefs.alerts = true;
+        try { api.savePrefs(orderPrefs); } catch(e){}
+      } else {
+        showPageAlert("err", "Browser notifications are blocked. Please allow them in browser settings to get alerts.");
+      }
+      paintOrderToggles();
+      selfBtn.disabled = false;
+    });
+  });
+  if(orderSoundToggle) orderSoundToggle.addEventListener("click", function(){
+    orderPrefs.sound = !orderPrefs.sound;
+    var api = orderNotifyApi();
+    if(api){ try { api.savePrefs(orderPrefs); } catch(e){} }
+    if(orderPrefs.sound && api){ try { api.beep(); } catch(e){} }
+    paintOrderToggles();
+  });
+  function announceOrder(msg){
+    var api = orderNotifyApi();
+    if(orderPrefs.alerts && api){
+      var who = msg.customer_name ? String(msg.customer_name) : "";
+      try {
+        api.notify({
+          title: "New booking",
+          body: who + (who ? " • " : "") + (msg.vehicle_type || "") +
+            (msg.fare_rs != null ? " • Rs " + msg.fare_rs : ""),
+          tag: "admin-booking-" + msg.booking_id
+        });
+      } catch(e){}
+    }
+    if(orderPrefs.sound && api){ try { api.beep(); } catch(e){} }
+  }
 
   // Live tracking (admin) — active trips + last GPS + state badge.
   var trackingList = document.getElementById("trackingList");

@@ -6,7 +6,7 @@ import { query } from '../db.js';
 import { signToken } from '../utils/jwt.js';
 import { adminLoginSchema, parseBody, VEHICLE_TO_DB, VEHICLE_TO_API } from '../validation/auth.js';
 import { trackingActivesQuerySchema, parseQuery as parseTrackingQuery } from '../validation/tracking.js';
-import { trackingState } from '../services/tracking.js';
+import { trackingState, publishAdminBooking, subscribeAdminBookings } from '../services/tracking.js';
 import {
   attachPayments,
   getCommissionPct,
@@ -334,6 +334,38 @@ adminRoutes.patch('/drivers/:id/reset-password', validateIdParam, async (req, re
 });
 
 // GET /api/admin/bookings (filters: status, date range, city, disputed) + totals
+// GET /api/admin/bookings/stream (admin) — live new_booking + booking_status
+// feed for the dashboard. Same SSE pattern as the customer GPS stream.
+// Polling /api/admin/bookings remains the fallback.
+adminRoutes.get('/bookings/stream', async (req, res, next) => {
+  try {
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+      'X-Accel-Buffering': 'no',
+    });
+    res.write(`event: ready\ndata: ${JSON.stringify({ role: 'admin' })}\n\n`);
+
+    const leave = subscribeAdminBookings(res);
+    const heartbeat = setInterval(() => {
+      try {
+        res.write(': ping\n\n');
+      } catch {
+        // closed below.
+      }
+    }, 25000);
+    heartbeat.unref?.();
+
+    req.on('close', () => {
+      clearInterval(heartbeat);
+      leave();
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 adminRoutes.get('/bookings', async (req, res, next) => {
   try {
     const { status, from, to, city, disputed, page, limit } = parseQuery(adminBookingsQuerySchema, req.query);
@@ -444,6 +476,11 @@ adminRoutes.patch('/bookings/:id/assign', validateIdParam, async (req, res, next
     }
     // Best-effort: assign succeeds even if audit fails.
     await logAuditSafe(req.user.id, 'booking.assign', 'booking', req.params.id, { driver_id });
+    publishAdminBooking('booking_status', {
+      booking_id: req.params.id,
+      status: 'accepted',
+      driver_id,
+    });
     res.json({ ok: true, booking: toPublicBooking(updated.rows[0]) });
   } catch (err) {
     next(err);

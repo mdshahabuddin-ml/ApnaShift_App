@@ -19,3 +19,17 @@ describe('unknown route', () => {
     expect(res.body.ok).toBe(false);
   });
 });
+
+// Readiness + DB connectivity (CI deploy gate bhi yahi check karta hai).
+// DB ke bina skip — baaki suites ki tarah TEST_DATABASE_URL aane par chalta hai.
+const HAS_DB = !!process.env.TEST_DATABASE_URL;
+const describeDb = HAS_DB ? describe : describe.skip;
+
+describeDb('GET /api/ready', () => {
+  it('200 + db:up deta hai jab database reachable ho', async () => {
+    const res = await request(app).get('/api/ready');
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+    expect(res.body.db).toBe('up');
+  });
+});

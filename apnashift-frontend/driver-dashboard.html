@@ -37,16 +37,16 @@
   }
   /* Header (same as index) */
   .site-header{background:var(--navy);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:50}
-  .site-header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px}
+  .site-header-inner{max-width:1140px;margin:0 auto;display:flex;align-items:center;gap:14px}
   .site-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.3rem;line-height:1;color:#fff;text-decoration:none}
   .site-brand small{display:block;font-family:"Noto Sans",system-ui,sans-serif;font-weight:600;font-size:.64rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow)}
-  .site-nav{display:flex;gap:4px;margin-left:8px;align-items:center}
-  .site-nav> a,.nav-drop summary{color:#dbe2f0;text-decoration:none;font-weight:600;font-size:.9rem;padding:8px 10px;border-radius:8px}
-  .site-nav> a:hover,.nav-drop summary:hover{background:#1f2f52;color:#fff}
+  .site-nav{display:flex;gap:10px;margin-left:12px;align-items:center;flex-wrap:wrap}
+  .site-nav> a,.nav-drop summary{color:#fff;text-decoration:none;font-weight:800;font-size:1rem;padding:12px 18px;border-radius:12px;background:rgba(255,255,255,.07);border:2px solid var(--yellow);min-height:50px;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+  .site-nav> a:hover,.nav-drop summary:hover{background:var(--yellow);color:var(--navy);border-color:var(--navy)}
   .nav-drop{position:relative}
   .nav-drop summary{cursor:pointer;list-style:none}
   .nav-drop summary::-webkit-details-marker{display:none}
-  .nav-drop[open] summary{background:#1f2f52;color:#fff}
+  .nav-drop[open] summary{background:var(--yellow);color:var(--navy);border-color:var(--navy)}
   .drop-menu{display:flex;flex-direction:column;gap:2px}
   @media(min-width:761px){.drop-menu{position:absolute;top:100%;left:0;background:var(--navy);border:1px solid #2a3d66;border-radius:8px;padding:6px;min-width:180px}.drop-menu a{white-space:nowrap}}
   #navMenuBtn{display:none;background:transparent;border:2px solid var(--yellow);border-radius:8px;color:var(--yellow);font:inherit;font-weight:800;padding:6px 12px;cursor:pointer}
@@ -145,8 +145,12 @@
   </section>
 
   <section class="card" aria-labelledby="availTitle">
-    <h2 id="availTitle">Available bookings</h2>
+    <h2 id="availTitle">Available bookings <span class="pill" id="newBadge" hidden>New: 0</span></h2>
     <p class="sub">New trips — accept quickly if you like one.</p>
+    <div class="row-btns">
+      <button type="button" class="btn ghost small" id="notifyToggle">🔔 Alerts: Off</button>
+      <button type="button" class="btn ghost small" id="soundToggle">🔊 Sound: Off</button>
+    </div>
     <div id="availList" aria-live="polite"><p class="loading">Loading bookings…</p></div>
   </section>
 
@@ -199,6 +203,7 @@
 </footer>
 </main>
 
+<script src="notify.js"></script>
 <script>
 (function(){
   "use strict";
@@ -509,11 +514,13 @@
         var list = r.body.bookings || [];
         if(!list.length){
           availList.innerHTML = '<div class="empty">No new bookings right now. Please refresh and check again.</div>';
+          newCount = 0; paintBadge();
           return;
         }
         var html = "";
         for(var i = 0; i < list.length; i++){ html += bookingCard(list[i], true, false); }
         availList.innerHTML = html;
+        newCount = 0; paintBadge();
       })
       .catch(function(){
         availList.innerHTML = '<div class="empty">Network error. Please check your internet.</div>';
@@ -744,6 +751,10 @@
   }
 
   // ---- Live location sharing (real GPS only, active trips only) ----
+  // Auto-start: jab driver dashboard khole aur koi active trip ho, to
+  // permission milte hi watchPosition apne aap chalu ho jata hai — alag se
+  // "Share location" dabane ki zaroorat nahi. Manual "Stop sharing" ka
+  // faisla hamesha jeetta hai (us trip ko dobara auto-start nahi karte).
   var SHAREABLE = { accepted: 1, arrived: 1, in_transit: 1 };
   var shareIds = {};
   var shareWatchId = null;
@@ -752,6 +763,9 @@
   var shareList = document.getElementById("shareList");
   var shareStatus = document.getElementById("shareStatus");
   var SHARE_GAP_MS = 5000;
+  var manualStopped = {};
+  var autoShareBlocked = false; // permission denied / error — is page-load me dobara prompt nahi
+  var autoSharePending = false;
 
   function shareCount(){
     var n = 0;
@@ -770,6 +784,9 @@
     for(var k in shareIds){
       if(shareIds.hasOwnProperty(k) && shareIds[k] && !alive[k]){ delete shareIds[k]; delete shareLastSent[k]; }
     }
+    for(var ms in manualStopped){
+      if(manualStopped.hasOwnProperty(ms) && !alive[ms]){ delete manualStopped[ms]; }
+    }
     if(!active.length){
       shareList.innerHTML = '<div class="empty">No active trip — sharing appears here after you accept one.</div>';
     } else {
@@ -785,6 +802,48 @@
       shareList.innerHTML = html;
     }
     updateShareStatus();
+    maybeAutoShare(active);
+  }
+  // Auto-start sharing for active trips the driver did not stop manually.
+  // Permission prompt ek baar lagta hai (browser yaad rakhta hai); deny par
+  // is page-load me dobara prompt nahi karte — manual button tab bhi kaam karta hai.
+  function maybeAutoShare(active){
+    if(autoShareBlocked || autoSharePending) return;
+    if(!("geolocation" in navigator)){
+      updateShareStatus("Location is not supported on this device/browser.");
+      autoShareBlocked = true;
+      return;
+    }
+    var need = [];
+    for(var i = 0; i < (active || []).length; i++){
+      var id = active[i].id;
+      if(!shareIds[id] && !manualStopped[id]) need.push(id);
+    }
+    if(!need.length) return;
+    autoSharePending = true;
+    try {
+      navigator.geolocation.getCurrentPosition(function(){
+        autoSharePending = false;
+        for(var j = 0; j < need.length; j++){
+          if(!manualStopped[need[j]]) shareIds[need[j]] = 1;
+        }
+        startWatch();
+        renderShare(shareLastList);
+        updateShareStatus("Location sharing auto-started — GPS is sent every ~5 sec. Keep this page open.");
+      }, function(err){
+        autoSharePending = false;
+        autoShareBlocked = true;
+        var msg = "Location permission is off — please allow it, then press Share location.";
+        if(err && err.code === 1) msg = "Location permission denied — please allow it in browser settings, then press Share location.";
+        else if(err && err.code === 2) msg = "GPS position unavailable — try in an open area, then press Share location.";
+        else if(err && err.code === 3) msg = "GPS timeout — press Share location to retry.";
+        updateShareStatus(msg);
+      }, { enableHighAccuracy: true, maximumAge: 60000, timeout: 15000 });
+    } catch(e){
+      autoSharePending = false;
+      autoShareBlocked = true;
+      updateShareStatus("Location is not supported on this device/browser.");
+    }
   }
   function updateShareStatus(msg){
     var n = shareCount();
@@ -850,9 +909,12 @@
   function setSharing(id, on){
     if(on){
       if(!("geolocation" in navigator)){ updateShareStatus("Location is not supported on this device/browser."); renderShare(shareLastList); return; }
+      delete manualStopped[id];
+      autoShareBlocked = false; // driver ne khud ON kiya — auto-share wapas allowed
       shareIds[id] = 1;
       startWatch();
     } else {
+      manualStopped[id] = 1; // manual stop jeetega — is trip ko auto-start nahi karenge
       delete shareIds[id];
       delete shareLastSent[id];
       if(shareCount() === 0) stopSharing();
@@ -904,6 +966,130 @@
 
   refreshBtn.addEventListener("click", loadAll);
 
+  // Browser band/kisi tab se wapas aane par pending orders turant dikhao.
+  // List hamesha DB se aati hai (poll model — WebSocket ki zaroorat nahi),
+  // isliye chhoote hue orders apne aap mil jate hain, double nahi.
+  document.addEventListener("visibilitychange", function(){
+    if(document.visibilityState === "visible" && getToken()){
+      loadAvailable();
+    }
+  });
+
+  // ---- Live new-order alerts (driver bookings SSE) ----
+  // Polling (Refresh/loadAvailable) stays the source of truth; the stream
+  // only adds instant badge + optional browser notification/sound.
+  var newBadge = document.getElementById("newBadge");
+  var notifyToggle = document.getElementById("notifyToggle");
+  var soundToggle = document.getElementById("soundToggle");
+  var notifyPrefs = { alerts: false, sound: false };
+  var newCount = 0;
+  var driverStreamOn = false;
+  function notifyApi(){ try { return window.BookingNotify || null; } catch(e){ return null; } }
+  function paintToggles(){
+    if(notifyToggle) notifyToggle.textContent = "🔔 Alerts: " + (notifyPrefs.alerts ? "On" : "Off");
+    if(soundToggle) soundToggle.textContent = "🔊 Sound: " + (notifyPrefs.sound ? "On" : "Off");
+  }
+  function paintBadge(){
+    if(!newBadge) return;
+    if(newCount > 0){ newBadge.hidden = false; newBadge.textContent = "New: " + newCount; }
+    else { newBadge.hidden = true; }
+  }
+  (function initNotify(){
+    var api = notifyApi();
+    if(api){ try { notifyPrefs = api.loadPrefs() || notifyPrefs; } catch(e){} }
+    if(notifyPrefs.alerts && api){
+      try { if(api.permission() !== "granted") notifyPrefs.alerts = false; } catch(e){ notifyPrefs.alerts = false; }
+    }
+    paintToggles();
+    paintBadge();
+  })();
+  if(notifyToggle) notifyToggle.addEventListener("click", function(){
+    var api = notifyApi();
+    if(!api){ alert("Notifications are not supported in this browser."); return; }
+    if(notifyPrefs.alerts){
+      notifyPrefs.alerts = false;
+      try { api.savePrefs(notifyPrefs); } catch(e){}
+      paintToggles();
+      return;
+    }
+    var selfBtn = this;
+    selfBtn.disabled = true;
+    api.ensurePermission().then(function(p){
+      if(p === "granted"){
+        notifyPrefs.alerts = true;
+        try { api.savePrefs(notifyPrefs); } catch(e){}
+      } else {
+        alert("Browser notifications are blocked. Please allow them in browser settings to get alerts.");
+      }
+      paintToggles();
+      selfBtn.disabled = false;
+    });
+  });
+  if(soundToggle) soundToggle.addEventListener("click", function(){
+    notifyPrefs.sound = !notifyPrefs.sound;
+    var api = notifyApi();
+    if(api){ try { api.savePrefs(notifyPrefs); } catch(e){} }
+    if(notifyPrefs.sound && api){ try { api.beep(); } catch(e){} }
+    paintToggles();
+  });
+  function handleNewBookingEvent(msg){
+    if(!msg || !msg.booking_id) return;
+    newCount += 1;
+    paintBadge();
+    var api = notifyApi();
+    if(notifyPrefs.alerts && api){
+      var where = (msg.pickup && msg.pickup.address) ? String(msg.pickup.address).slice(0, 60) : "";
+      try {
+        api.notify({
+          title: "New booking",
+          body: (msg.vehicle_type || "") + (msg.fare_rs != null ? " • Rs " + msg.fare_rs : "") + (where ? " • " + where : ""),
+          tag: "booking-" + msg.booking_id
+        });
+      } catch(e){}
+    }
+    if(notifyPrefs.sound && api){ try { api.beep(); } catch(e){} }
+    loadAvailable();
+  }
+  function startDriverStream(){
+    if(driverStreamOn) return;
+    driverStreamOn = true;
+    fetch(API_BASE_URL + "/api/driver/bookings/stream", { headers: { "Authorization": "Bearer " + getToken() } })
+      .then(function(res){
+        if(res.status === 401){ clearAndRedirect(); throw new Error("unauth"); }
+        if(res.status === 403){ driverStreamOn = false; return null; }
+        if(!res.ok || !res.body) throw new Error("stream");
+        var reader = res.body.getReader();
+        var decoder = new TextDecoder();
+        var buf = "";
+        function pump(){
+          return reader.read().then(function(chunk){
+            if(chunk.done){ throw new Error("closed"); }
+            buf += decoder.decode(chunk.value, { stream: true });
+            var parts = buf.split("\n\n");
+            buf = parts.pop();
+            parts.forEach(function(block){
+              var ev = null, data = "";
+              block.split("\n").forEach(function(line){
+                if(line.indexOf("event:") === 0) ev = line.slice(6).trim();
+                else if(line.indexOf("data:") === 0) data += line.slice(5).trim();
+              });
+              if(!ev || !data) return;
+              if(ev !== "new_booking") return;
+              try { handleNewBookingEvent(JSON.parse(data)); } catch(e){}
+            });
+            return pump();
+          });
+        }
+        return pump();
+      })
+      .catch(function(err){
+        if(err && err.message === "unauth") return;
+        // Stream broke — polling still works; retry in 20s.
+        driverStreamOn = false;
+        setTimeout(startDriverStream, 20000);
+      });
+  }
+
   logoutBtn.addEventListener("click", function(){
     try { localStorage.removeItem(TOKEN_KEY); } catch(e){}
     window.location.href = "driver-login.html";
@@ -926,6 +1112,7 @@
   }
 
   loadAll();
+  startDriverStream();
 })();
 </script>
 </body>

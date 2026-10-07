@@ -37,16 +37,16 @@
   }
   /* Header (same as index) */
   .site-header{background:var(--navy);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:50}
-  .site-header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px}
+  .site-header-inner{max-width:1140px;margin:0 auto;display:flex;align-items:center;gap:14px}
   .site-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.3rem;line-height:1;color:#fff;text-decoration:none}
   .site-brand small{display:block;font-family:"Noto Sans",system-ui,sans-serif;font-weight:600;font-size:.64rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow)}
-  .site-nav{display:flex;gap:4px;margin-left:8px;align-items:center}
-  .site-nav> a,.nav-drop summary{color:#dbe2f0;text-decoration:none;font-weight:600;font-size:.9rem;padding:8px 10px;border-radius:8px}
-  .site-nav> a:hover,.nav-drop summary:hover{background:#1f2f52;color:#fff}
+  .site-nav{display:flex;gap:10px;margin-left:12px;align-items:center;flex-wrap:wrap}
+  .site-nav> a,.nav-drop summary{color:#fff;text-decoration:none;font-weight:800;font-size:1rem;padding:12px 18px;border-radius:12px;background:rgba(255,255,255,.07);border:2px solid var(--yellow);min-height:50px;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+  .site-nav> a:hover,.nav-drop summary:hover{background:var(--yellow);color:var(--navy);border-color:var(--navy)}
   .nav-drop{position:relative}
   .nav-drop summary{cursor:pointer;list-style:none}
   .nav-drop summary::-webkit-details-marker{display:none}
-  .nav-drop[open] summary{background:#1f2f52;color:#fff}
+  .nav-drop[open] summary{background:var(--yellow);color:var(--navy);border-color:var(--navy)}
   .drop-menu{display:flex;flex-direction:column;gap:2px}
   @media(min-width:761px){.drop-menu{position:absolute;top:100%;left:0;background:var(--navy);border:1px solid #2a3d66;border-radius:8px;padding:6px;min-width:180px}.drop-menu a{white-space:nowrap}}
   #navMenuBtn{display:none;background:transparent;border:2px solid var(--yellow);border-radius:8px;color:var(--yellow);font:inherit;font-weight:800;padding:6px 12px;cursor:pointer}
@@ -225,11 +225,11 @@
         </div>
         <div class="field">
           <label for="operating_state">State</label>
-          <input type="text" id="operating_state" name="operating_state" maxlength="100" placeholder="Delhi">
+          <input type="text" id="operating_state" name="operating_state" maxlength="80" placeholder="Delhi">
         </div>
         <div class="field">
           <label for="locations_count">Number of locations</label>
-          <input type="number" id="locations_count" name="locations_count" min="1" max="10000" step="1">
+          <input type="number" id="locations_count" name="locations_count" min="1" max="100000" step="1">
         </div>
       </fieldset>
 
@@ -328,6 +328,7 @@
     <p>Our team will contact you shortly.</p>
     <div class="id-box" id="successMeta">—</div>
     <p id="successDate"></p>
+    <p id="waRow" style="display:none"><a id="waOpenLink" href="#" target="_blank" rel="noopener">Open WhatsApp chat</a></p>
   </section>
 
 <footer class="site-footer">
@@ -348,6 +349,9 @@
   "use strict";
   // Base URL: local backend for dev, Railway for production.
   var API_BASE_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.protocol === "file:") ? "http://localhost:3000" : "https://apnashiftapp-production.up.railway.app";
+  // Single source for the ApnaShift WhatsApp number (country code, no +).
+  // Used ONLY here via the builder below — never duplicated in this file.
+  var SUPPORT_WHATSAPP = "918757160137";
 
   var form = document.getElementById("inqForm");
   var submitBtn = document.getElementById("submitBtn");
@@ -416,6 +420,74 @@
     if(el){ el.addEventListener("input", function(){ showAlert(null, ""); }); }
   });
 
+  // Backend 400 details are safe ({field, message}, no secrets) but not
+  // user-facing English — map the field to a clear message here and
+  // highlight boxes that exist (full_name/email/phone/company_name).
+  var FIELD_LABELS = {
+    full_name: "full name", email: "email", phone: "phone number",
+    company_name: "company name", website: "website", designation: "designation",
+    business_type: "business type", company_size: "company size", cities: "cities",
+    operating_state: "state", locations_count: "number of locations",
+    services_required: "services", vehicle_types: "vehicle types",
+    fleet_size: "fleet size", monthly_trips: "monthly trips", start_date: "start date",
+    service_frequency: "service frequency", budget_range: "budget range",
+    requirements: "requirements", consent: "consent"
+  };
+  var FIELD_BOXES = {
+    full_name: ["f-full_name", "e-full_name"],
+    email: ["f-email", "e-email"],
+    phone: ["f-phone", "e-phone"],
+    company_name: ["f-company_name", "e-company_name"]
+  };
+  function friendlyFieldError(body){
+    var det = body && body.details && body.details[0];
+    if(!det || !det.field || !FIELD_LABELS[det.field]){
+      return null;
+    }
+    var box = FIELD_BOXES[det.field];
+    if(box){ setErr(box[0], box[1], "Please check this field."); }
+    var extra = (body.details.length > 1) ? (" (+" + (body.details.length - 1) + " more)") : "";
+    return "Please check the " + FIELD_LABELS[det.field] + " field" + extra + ".";
+  }
+
+  // WhatsApp handoff AFTER successful submit only. Builds a wa.me link
+  // with a pre-filled professional summary — never auto-sends. Message
+  // carries only public inquiry data (id/company/contact/phone/status/date);
+  // no passwords, tokens, keys, or auth data ever enter it. If the popup is
+  // blocked, the fallback link below still lets the user open the chat —
+  // the inquiry stays submitted either way.
+  function buildWaMessage(inq, form){
+    var lines = [
+      "New ApnaShift Enterprise Inquiry",
+      "Inquiry ID: " + (inq.id || "—"),
+      "Company: " + (form.company || "—"),
+      "Contact: " + (form.name || "—"),
+      "Phone: " + (form.phone || "—"),
+      "Status: " + (inq.status || "NEW"),
+      "Submitted: " + (form.date || "—"),
+      "",
+      "Please review this enterprise inquiry."
+    ];
+    return lines.join("\n");
+  }
+  function openWhatsAppForInquiry(inq, form){
+    var url = null;
+    try {
+      url = "https://wa.me/" + SUPPORT_WHATSAPP + "?text=" + encodeURIComponent(buildWaMessage(inq, form));
+    } catch(e){ url = null; }
+    var row = document.getElementById("waRow");
+    var link = document.getElementById("waOpenLink");
+    if(link && url){
+      link.href = url;
+      if(row) row.style.display = "";
+    }
+    if(!url) return false;
+    try {
+      var w = window.open(url, "_blank", "noopener");
+      return !!w;
+    } catch(e){ return false; }
+  }
+
   form.addEventListener("submit", function(ev){
     ev.preventDefault();
     showAlert(null, "");
@@ -458,6 +530,44 @@
     if(!consent.checked){
       showAlert("err", "Consent is required to proceed.");
       ok = false;
+    }
+
+    // Mirror backend rules for optional fields (backend stays the source of
+    // truth; this only gives instant English feedback before submit).
+    function checkOptional(id, label, min, max){
+      var el = document.getElementById(id);
+      var v = el ? String(el.value || "").trim() : "";
+      if(v === "") return true;
+      if(v.length < min || v.length > max){
+        showAlert("err", "Please enter " + label + " between " + min + " and " + max + " characters (or leave it blank).");
+        ok = false; firstBad = firstBad || el;
+        return false;
+      }
+      return true;
+    }
+    checkOptional("designation", "designation", 2, 100);
+    checkOptional("cities", "cities", 2, 300);
+    checkOptional("operating_state", "state", 2, 80);
+
+    // Website: backend needs a dot in the host (auto-prepends https://).
+    // Dot-less text would 400 there — stop here with a clear message.
+    var websiteEl = document.getElementById("website");
+    var websiteRaw = websiteEl ? String(websiteEl.value || "").trim() : "";
+    if(websiteRaw !== ""){
+      var withProto = /^https?:\/\//i.test(websiteRaw) ? websiteRaw : ("https://" + websiteRaw);
+      if(!/^https?:\/\/[^/\s]+\.[^/\s]+/.test(withProto)){
+        showAlert("err", "Please enter a valid website URL (e.g., https://example.com) or leave it blank.");
+        ok = false; firstBad = firstBad || websiteEl;
+      }
+    }
+
+    var locRaw0 = document.getElementById("locations_count").value.trim();
+    if(locRaw0 !== ""){
+      var n0 = Number(locRaw0);
+      if(!isFinite(n0) || Math.floor(n0) !== n0 || n0 < 1 || n0 > 100000){
+        showAlert("err", "Please enter locations as a whole number between 1 and 100000 (or leave it blank).");
+        ok = false; firstBad = firstBad || document.getElementById("locations_count");
+      }
     }
 
     if(!ok){ if(firstBad) firstBad.focus(); return; }
@@ -520,6 +630,13 @@
         successBox.classList.add("show");
         showAlert("ok", "Inquiry received.");
         successBox.scrollIntoView({ behavior: "smooth", block: "start" });
+        // WhatsApp handoff only on success — inquiry is already saved.
+        openWhatsAppForInquiry(inq, {
+          name: fullName,
+          phone: cleaned,
+          company: company,
+          date: inq.created_at ? fmtDate(inq.created_at) : ""
+        });
         return;
       }
       var code = result.body && (result.body.code || result.body.error);
@@ -528,8 +645,7 @@
         return;
       }
       if(result.status === 400){
-        var m = result.body && (result.body.message || result.body.error);
-        showAlert("err", m || "Please check your details. Some fields are invalid.");
+        showAlert("err", friendlyFieldError(result.body) || "Please check your details. Some fields are invalid.");
         return;
       }
       if(result.status >= 500){

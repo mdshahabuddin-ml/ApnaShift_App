@@ -24,6 +24,8 @@ import {
   isTrackingActiveStatus,
   checkThrottle,
   publish,
+  publishAdminBooking,
+  subscribeNewBookings,
   toPublicPoint,
 } from '../services/tracking.js';
 import { validateIdParam } from '../utils/validate.js';
@@ -119,25 +121,69 @@ function dueLimitPaise() {
   return Number.isFinite(n) && n >= 0 ? Math.round(n * 100) : 150000;
 }
 
+// GET /api/driver/bookings/stream (driver, verified) — live NEW_BOOKING
+// feed for the driver's own vehicle type. Polling /bookings/available
+// remains the fallback (same pattern as customer GPS stream + poll).
+driverRoutes.get('/bookings/stream', async (req, res, next) => {
+  try {
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+      'X-Accel-Buffering': 'no',
+    });
+    res.write(
+      `event: ready\ndata: ${JSON.stringify({ vehicle_type: req.driver.vehicle_type })}\n\n`,
+    );
+
+    const leave = subscribeNewBookings(req.driver.vehicle_type, res);
+    const heartbeat = setInterval(() => {
+      try {
+        res.write(': ping\n\n');
+      } catch {
+        // closed below.
+      }
+    }, 25000);
+    heartbeat.unref?.();
+
+    req.on('close', () => {
+      clearInterval(heartbeat);
+      leave();
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // GET /api/driver/bookings/available (pending + own vehicle type, oldest first)
 driverRoutes.get('/bookings/available', async (req, res, next) => {
   try {
     const { page, limit } = parseQuery(paginationSchema, req.query);
     const offset = (page - 1) * limit;
 
-    const [rows, count] = await Promise.all([
-      query(
-        `SELECT ${BOOKING_COLS} FROM bookings
-         WHERE status = 'pending' AND vehicle_type = $1
-         ORDER BY created_at ASC LIMIT $2 OFFSET $3`,
-        [req.driver.vehicle_type, limit, offset],
-      ),
-      query(
-        `SELECT COUNT(*) AS total FROM bookings
-         WHERE status = 'pending' AND vehicle_type = $1`,
-        [req.driver.vehicle_type],
-      ),
-    ]);
+  // Declined trips stay hidden only for the decliner (NOT EXISTS keeps
+  // every column unambiguous and the booking pending for everyone else).
+  const [rows, count] = await Promise.all([
+    query(
+      `SELECT ${BOOKING_COLS} FROM bookings
+        WHERE status = 'pending' AND vehicle_type = $1
+          AND NOT EXISTS (
+            SELECT 1 FROM driver_declines dd
+            WHERE dd.booking_id = bookings.id AND dd.driver_id = $2
+          )
+        ORDER BY created_at ASC LIMIT $3 OFFSET $4`,
+      [req.driver.vehicle_type, req.user.id, limit, offset],
+    ),
+    query(
+      `SELECT COUNT(*) AS total FROM bookings
+        WHERE status = 'pending' AND vehicle_type = $1
+          AND NOT EXISTS (
+            SELECT 1 FROM driver_declines dd
+            WHERE dd.booking_id = bookings.id AND dd.driver_id = $2
+          )`,
+      [req.driver.vehicle_type, req.user.id],
+    ),
+  ]);
     // Pending trips have no payment yet — server-computed estimate
     // (fare + method + commission + earning). Frontend never calculates.
     const bookings = await attachPayments(rows.rows.map(toPublicBooking), 'driver');
@@ -176,6 +222,11 @@ driverRoutes.patch('/bookings/:id/accept', validateIdParam, async (req, res, nex
       [req.user.id, req.params.id, req.driver.vehicle_type],
     );
     if (accepted.rowCount > 0) {
+      publishAdminBooking('booking_status', {
+        booking_id: req.params.id,
+        status: 'accepted',
+        driver_id: req.user.id,
+      });
       return res.json({ ok: true, booking: toPublicBooking(accepted.rows[0]) });
     }
 
@@ -187,6 +238,43 @@ driverRoutes.patch('/bookings/:id/accept', validateIdParam, async (req, res, nex
     }
     // Booking exists but is not pending — someone else won (or it was cancelled).
     return res.status(409).json({ ok: false, error: 'already_accepted' });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/driver/bookings/:id/decline — pass on an offered trip.
+// Decline NEVER assigns: no driver_id write, no status flip, no deletes —
+// the booking stays pending and available to every other driver; it only
+// disappears from THIS driver's available list. Repeat decline -> 409
+// already_declined. Accepting later still works (decline is not a ban).
+driverRoutes.post('/bookings/:id/decline', validateIdParam, async (req, res, next) => {
+  try {
+    const found = await query(
+      'SELECT id, status, vehicle_type FROM bookings WHERE id = $1',
+      [req.params.id],
+    );
+    if (found.rowCount === 0 || found.rows[0].vehicle_type !== req.driver.vehicle_type) {
+      return res.status(404).json({ ok: false, error: 'not_found' });
+    }
+    if (found.rows[0].status !== 'pending') {
+      return res.status(409).json({ ok: false, error: 'already_accepted' });
+    }
+    try {
+      await query('INSERT INTO driver_declines (driver_id, booking_id) VALUES ($1, $2)', [
+        req.user.id,
+        req.params.id,
+      ]);
+    } catch (err) {
+      // Same driver + same booking twice (e.g. double-tap).
+      if (err.code === '23505') {
+        const dup = new Error('already_declined');
+        dup.status = 409;
+        throw dup;
+      }
+      throw err;
+    }
+    res.json({ ok: true, declined: true, booking_id: req.params.id });
   } catch (err) {
     next(err);
   }
@@ -246,6 +334,12 @@ driverRoutes.patch('/bookings/:id/status', validateIdParam, async (req, res, nex
       });
     }
     await client.query('COMMIT');
+
+    publishAdminBooking('booking_status', {
+      booking_id: updated.rows[0].id,
+      status: updated.rows[0].status,
+      driver_id: updated.rows[0].driver_id,
+    });
 
     if (payment) {
       // Best-effort: delivery succeeds even if audit fails. COD stays

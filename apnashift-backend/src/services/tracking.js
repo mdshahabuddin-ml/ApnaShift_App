@@ -136,6 +136,77 @@ export function publish(bookingId, payload) {
   return delivered;
 }
 
+// ---- New-booking fan-out (one channel per vehicle type) ----
+// Same in-memory SSE pattern as GPS above, separate key space so the two
+// streams never interfere. Channel key is the DB vehicle form
+// ('Mini Truck') — exactly what requireVerifiedDriver puts on req.driver,
+// so no conversion is needed on either side. Payloads must stay public:
+// ids, addresses, coords, fare, method, status — never phones/names/hashes.
+const bookingSubscribers = new Map(); // vehicleType -> Set<http.ServerResponse>
+
+export function subscribeNewBookings(vehicleType, res) {
+  let set = bookingSubscribers.get(vehicleType);
+  if (!set) {
+    set = new Set();
+    bookingSubscribers.set(vehicleType, set);
+  }
+  set.add(res);
+  return () => unsubscribeNewBookings(vehicleType, res);
+}
+
+export function unsubscribeNewBookings(vehicleType, res) {
+  const set = bookingSubscribers.get(vehicleType);
+  if (!set) return;
+  set.delete(res);
+  if (set.size === 0) bookingSubscribers.delete(vehicleType);
+}
+
+export function publishNewBooking(vehicleType, event) {
+  const set = bookingSubscribers.get(vehicleType);
+  if (!set || set.size === 0) return 0;
+  const data = `event: new_booking\ndata: ${JSON.stringify(event)}\n\n`;
+  let delivered = 0;
+  for (const res of [...set]) {
+    try {
+      res.write(data);
+      delivered += 1;
+    } catch {
+      unsubscribeNewBookings(vehicleType, res);
+    }
+  }
+  return delivered;
+}
+
+// ---- Admin bookings fan-out (one global channel) ----
+// Same SSE pattern, separate key space. Admins see every new booking +
+// status change; drivers/customers keep their own scoped channels.
+// Payloads are admin-safe (names/addresses/fare, never phones/secrets).
+const adminBookingSubscribers = new Set(); // Set<http.ServerResponse>
+
+export function subscribeAdminBookings(res) {
+  adminBookingSubscribers.add(res);
+  return () => unsubscribeAdminBookings(res);
+}
+
+export function unsubscribeAdminBookings(res) {
+  adminBookingSubscribers.delete(res);
+}
+
+export function publishAdminBooking(eventName, event) {
+  if (adminBookingSubscribers.size === 0) return 0;
+  const data = `event: ${eventName}\ndata: ${JSON.stringify(event)}\n\n`;
+  let delivered = 0;
+  for (const res of [...adminBookingSubscribers]) {
+    try {
+      res.write(data);
+      delivered += 1;
+    } catch {
+      unsubscribeAdminBookings(res);
+    }
+  }
+  return delivered;
+}
+
 // Public point shape for API responses (numbers as numbers).
 export function toPublicPoint(row) {
   return {

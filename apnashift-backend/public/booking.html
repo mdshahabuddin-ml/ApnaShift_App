@@ -193,16 +193,16 @@
   .loc-status{font-size:.84rem;color:var(--muted);margin:6px 0 0}
   .loc-status b{color:var(--navy)}
   .site-header{background:var(--navy);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:50}
-  .site-header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px}
+  .site-header-inner{max-width:1140px;margin:0 auto;display:flex;align-items:center;gap:14px}
   .site-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.3rem;line-height:1;color:#fff;text-decoration:none}
   .site-brand small{display:block;font-family:"Noto Sans",system-ui,sans-serif;font-weight:600;font-size:.64rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow)}
-  .site-nav{display:flex;gap:4px;margin-left:8px;align-items:center}
-  .site-nav> a,.nav-drop summary{color:#dbe2f0;text-decoration:none;font-weight:600;font-size:.9rem;padding:8px 10px;border-radius:8px}
-  .site-nav> a:hover,.nav-drop summary:hover{background:#1f2f52;color:#fff}
+  .site-nav{display:flex;gap:10px;margin-left:12px;align-items:center;flex-wrap:wrap}
+  .site-nav> a,.nav-drop summary{color:#fff;text-decoration:none;font-weight:800;font-size:1rem;padding:12px 18px;border-radius:12px;background:rgba(255,255,255,.07);border:2px solid var(--yellow);min-height:50px;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+  .site-nav> a:hover,.nav-drop summary:hover{background:var(--yellow);color:var(--navy);border-color:var(--navy)}
   .nav-drop{position:relative}
   .nav-drop summary{cursor:pointer;list-style:none}
   .nav-drop summary::-webkit-details-marker{display:none}
-  .nav-drop[open] summary{background:#1f2f52;color:#fff}
+  .nav-drop[open] summary{background:var(--yellow);color:var(--navy);border-color:var(--navy)}
   .drop-menu{display:flex;flex-direction:column;gap:2px}
   @media(min-width:761px){.drop-menu{position:absolute;top:100%;left:0;background:var(--navy);border:1px solid #2a3d66;border-radius:8px;padding:6px;min-width:180px}.drop-menu a{white-space:nowrap}}
   #navMenuBtn{display:none;background:transparent;border:2px solid var(--yellow);border-radius:8px;color:var(--yellow);font:inherit;font-weight:800;padding:6px 12px;cursor:pointer}

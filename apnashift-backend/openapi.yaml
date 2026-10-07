@@ -796,6 +796,31 @@ paths:
       responses:
         '200': { description: OK (distance_m, duration_s, geometry[].lat/lng) }
         '503': { description: geoapify_unavailable (key missing) }
+  /api/whatsapp/webhook:
+    get:
+      summary: Meta verify handshake (403 until WHATSAPP_VERIFY_TOKEN is set)
+      parameters:
+        - { name: hub.mode, in: query, schema: { type: string } }
+        - { name: hub.verify_token, in: query, schema: { type: string } }
+        - { name: hub.challenge, in: query, schema: { type: string } }
+      responses:
+        '200': { description: OK (challenge text when token matches) }
+        '403': { description: forbidden }
+    post:
+      summary: WhatsApp booking dialog + notify (public, rate-limited, no JWT)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [from, text]
+              properties:
+                from: { type: string, example: '919876543210' }
+                text: { type: string, maxLength: 2000, example: HI }
+      responses:
+        '200': { description: OK (reply always; booking when dialog completes with booking_source WHATSAPP) }
+        '400': { description: validation_failed }
   /api/driver/ledger:
     get:
       summary: Own money summary + payments + settlements (driver)
