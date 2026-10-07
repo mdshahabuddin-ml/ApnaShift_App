@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Payment Status | ApnaShift Admin</title>
-<meta name="description" content="ApnaShift admin — driver commission due aur settlement.">
+<meta name="description" content="ApnaShift admin — driver commission dues and settlements.">
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -100,7 +100,7 @@
       <a href="payment-status.html">Payments</a>
       <a href="help.html">Help</a>
     </nav>
-    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">☰</button>
   </div>
 </header>
 
@@ -108,7 +108,7 @@
   <div class="top-row">
     <div>
       <h1>Payment Status</h1>
-      <p class="sub">Driver commission due dekho aur settlement jama karo. Sab hisab server par hota hai.</p>
+      <p class="sub">View driver commission dues and record settlements. All calculations happen on the server.</p>
     </div>
     <button class="logout-btn" id="logoutBtn" type="button">Logout</button>
   </div>
@@ -116,29 +116,29 @@
   <div id="pageAlert" role="alert" aria-live="assertive"></div>
 
   <section class="card" aria-labelledby="sumTitle">
-    <h2 id="sumTitle">Kul baaki</h2>
+    <h2 id="sumTitle">Total outstanding</h2>
     <div class="controls">
       <button class="btn ghost" id="refreshBtn" type="button">Refresh</button>
     </div>
-    <div id="summaryBox" aria-live="polite"><p class="loading">Load ho raha hai…</p></div>
+    <div id="summaryBox" aria-live="polite"><p class="loading">Loading…</p></div>
   </section>
 
   <section class="card" aria-labelledby="listTitle">
-    <h2 id="listTitle">Driver commission due</h2>
-    <p class="sub">Sabse zyada baaki wala sabse upar.</p>
-    <div class="list" id="driversList" aria-live="polite"><p class="loading">List load ho rahi hai…</p></div>
+    <h2 id="listTitle">Driver commission dues</h2>
+    <p class="sub">Highest outstanding balance first.</p>
+    <div class="list" id="driversList" aria-live="polite"><p class="loading">Loading list…</p></div>
   </section>
 
   <section class="card" aria-labelledby="weekTitle">
     <h2 id="weekTitle">Weekly settlements (Mon–Sun)</h2>
-    <p class="sub">Ek driver + ek hafta = ek settlement. Generate dobara dabane par double nahi banta. PAID final hai (badalta nahi), DISPUTED pehle resolve karo.</p>
+    <p class="sub">One driver + one week = one settlement. Pressing Generate again will not create duplicates. PAID is final (cannot be changed); resolve DISPUTED first.</p>
     <div class="controls">
       <div><label for="weekInp">Week (Monday)</label><input type="date" id="weekInp"></div>
-      <div><label for="weekStatusSel">Status</label><select id="weekStatusSel"><option value="">sab</option><option value="DUE">DUE</option><option value="PARTIALLY_PAID">PARTIALLY_PAID</option><option value="PAID">PAID</option><option value="OVERDUE">OVERDUE</option><option value="DISPUTED">DISPUTED</option></select></div>
+      <div><label for="weekStatusSel">Status</label><select id="weekStatusSel"><option value="">All</option><option value="DUE">DUE</option><option value="PARTIALLY_PAID">PARTIALLY_PAID</option><option value="PAID">PAID</option><option value="OVERDUE">OVERDUE</option><option value="DISPUTED">DISPUTED</option></select></div>
       <div><label>&nbsp;</label><button class="btn ghost" id="weekGenBtn" type="button">Generate week</button></div>
       <div><label>&nbsp;</label><button class="btn ghost" id="weekLoadBtn" type="button">Load</button></div>
     </div>
-    <div class="list" id="weekList" aria-live="polite"><p class="loading">Week chuno aur Load dabao.</p></div>
+    <div class="list" id="weekList" aria-live="polite"><p class="loading">Select a week and press Load.</p></div>
   </section>
 
 <footer class="site-footer">
@@ -212,17 +212,17 @@
     }
     return false;
   }
-  function networkMsg(){ return "Network error — net check karke dobara try karo."; }
+  function networkMsg(){ return "Network error — check your connection and try again."; }
 
   function driverCard(b){
     var dueBadge = b.outstanding_rs > 0
-      ? '<span class="badge bad">Baaki Rs ' + esc(b.outstanding_rs) + '</span>'
+      ? '<span class="badge bad">Outstanding Rs ' + esc(b.outstanding_rs) + '</span>'
       : '<span class="badge ok">Clear</span>';
     var html = '<div class="row-card ' + (b.outstanding_rs > 0 ? "dues" : "clear") + '">';
-    html += '<h3>' + esc(b.driver_name || "Naam nahi") + ' ' + dueBadge + '</h3>';
+    html += '<h3>' + esc(b.driver_name || "No name") + ' ' + dueBadge + '</h3>';
     html += '<p class="meta">Trips: ' + esc(b.completed_cash_bookings) + ' • Cash: Rs ' + esc(b.cash_collected_rs) +
-      ' • Kamai: Rs ' + esc(b.driver_earning_rs) + '</p>';
-    html += '<p class="meta">Commission: Rs ' + esc(b.commission_rs) + ' • Jama: Rs ' + esc(b.settled_rs) + '</p>';
+      ' • Earnings: Rs ' + esc(b.driver_earning_rs) + '</p>';
+    html += '<p class="meta">Commission: Rs ' + esc(b.commission_rs) + ' • Settled: Rs ' + esc(b.settled_rs) + '</p>';
     html += '<div class="settle-form">';
     html += '<div class="field"><label for="amt-' + esc(b.driver_id) + '">Amount (Rs)</label>' +
       '<input type="number" id="amt-' + esc(b.driver_id) + '" min="0" step="any" placeholder="150"></div>';
@@ -232,16 +232,16 @@
     html += '<div class="field"><label for="ref-' + esc(b.driver_id) + '">Reference (bank/upi)</label>' +
       '<input type="text" id="ref-' + esc(b.driver_id) + '" maxlength="100" placeholder="UPI-12345"></div>';
     html += '<div class="field"><label>&nbsp;</label>' +
-      '<button class="btn small" type="button" data-settle="' + esc(b.driver_id) + '">Settle Karein</button></div>';
+      '<button class="btn small" type="button" data-settle="' + esc(b.driver_id) + '">Settle</button></div>';
     html += '</div></div>';
     return html;
   }
 
   function loadBalances(){
     refreshBtn.disabled = true;
-    refreshBtn.textContent = "Load ho raha hai…";
-    driversList.innerHTML = '<p class="loading">List load ho rahi hai…</p>';
-    summaryBox.innerHTML = '<p class="loading">Load ho raha hai…</p>';
+    refreshBtn.textContent = "Loading…";
+    driversList.innerHTML = '<p class="loading">Loading list…</p>';
+    summaryBox.innerHTML = '<p class="loading">Loading…</p>';
     fetch(API_BASE_URL + "/api/admin/driver-balances?limit=100", { method: "GET", headers: authHeaders() })
       .then(parseRes)
       .then(function(result){
@@ -255,14 +255,14 @@
           totalDue += Number(arr[i].outstanding_rs) || 0;
           totalTrips += Number(arr[i].completed_cash_bookings) || 0;
         }
-        summaryBox.innerHTML = '<p class="meta" style="font-size:.95rem;color:var(--navy);font-weight:700">Kul baaki: Rs ' +
+        summaryBox.innerHTML = '<p class="meta" style="font-size:.95rem;color:var(--navy);font-weight:700">Total outstanding: Rs ' +
           esc(Math.round(totalDue * 100) / 100) + ' • Drivers: ' + esc(arr.length) + ' • Trips: ' + esc(totalTrips) + '</p>';
-        driversList.innerHTML = arr.length ? arr.map(driverCard).join("") : '<p class="empty">Koi cash trip poori nahi hui.</p>';
+        driversList.innerHTML = arr.length ? arr.map(driverCard).join("") : '<p class="empty">No completed cash trips.</p>';
         hideAlert();
       })
       .catch(function(err){
-        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : "List load nahi hui. Dobara try karo.";
-        driversList.innerHTML = '<p class="empty">List load nahi hui.</p>';
+        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : "Could not load the list. Please try again.";
+        driversList.innerHTML = '<p class="empty">Could not load the list.</p>';
         summaryBox.innerHTML = '<p class="empty">—</p>';
         showAlert("err", msg);
       })
@@ -283,14 +283,14 @@
     var refEl = document.getElementById("ref-" + id);
     var amt = amtEl ? Number(String(amtEl.value).trim()) : NaN;
     if(!isFinite(amt) || amt <= 0){
-      showAlert("err", "Amount 0 se zyada number ho.");
+      showAlert("err", "Amount must be a number greater than 0.");
       return;
     }
     var body = { driver_id: id, amount_rs: amt, method: mthEl ? mthEl.value : "cash" };
     var ref = refEl ? String(refEl.value).trim() : "";
     if(ref) body.reference_no = ref;
     btn.disabled = true;
-    showAlert("info", "Settlement jama ho raha hai…");
+    showAlert("info", "Recording settlement…");
     fetch(API_BASE_URL + "/api/admin/settlements", {
       method: "POST", headers: authHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(body)
@@ -299,21 +299,21 @@
       .then(function(result){
         if(checkAuth(result)) return;
         if(result.status === 201){
-          showAlert("ok", "Settlement jama ho gaya. Baaki: Rs " + ((result.body && result.body.outstanding_rs) || 0));
+          showAlert("ok", "Settlement recorded. Outstanding: Rs " + ((result.body && result.body.outstanding_rs) || 0));
           loadBalances();
           return;
         }
         var code = result.body && result.body.error;
-        if(code === "settlement_exceeds_outstanding") showAlert("err", "Baaki se zyada amount nahi jama ho sakti.");
-        else if(code === "duplicate_settlement") showAlert("err", "Ye reference pehle use ho chuka hai.");
-        else if(result.status === 400) showAlert("err", "Details sahi likho (amount>0, bank/upi par reference zaroori).");
-        else if(result.status === 404) showAlert("err", "Driver nahi mila.");
-        else if(result.status === 403) showAlert("err", "Ye action allowed nahi hai — dobara login karo.");
-        else showAlert("err", "Settlement nahi hua. Dobara try karo.");
+        if(code === "settlement_exceeds_outstanding") showAlert("err", "Amount cannot exceed the outstanding balance.");
+        else if(code === "duplicate_settlement") showAlert("err", "This reference has already been used.");
+        else if(result.status === 400) showAlert("err", "Please enter valid details (amount > 0, reference required for bank/upi).");
+        else if(result.status === 404) showAlert("err", "Driver not found.");
+        else if(result.status === 403) showAlert("err", "This action is not allowed — please log in again.");
+        else showAlert("err", "Settlement failed. Please try again.");
         btn.disabled = false;
       })
       .catch(function(err){
-        showAlert("err", (err && err.message === "Failed to fetch") ? networkMsg() : "Settlement nahi hua. Dobara try karo.");
+        showAlert("err", (err && err.message === "Failed to fetch") ? networkMsg() : "Settlement failed. Please try again.");
         btn.disabled = false;
       });
   });
@@ -349,9 +349,9 @@
     html += '<h3>' + esc(p.driver_name || p.driver_id) + ' ' + statusBadge(p.effective_status || p.status) + '</h3>';
     html += '<p class="meta">Week: ' + esc(p.week_start) + ' → ' + esc(p.week_end) + '</p>';
     html += '<p class="meta">Fare: Rs ' + esc(p.gross_rs) + ' • Commission: Rs ' + esc(p.commission_rs) +
-      ' • Jama: Rs ' + esc(p.settled_rs) + ' • Baaki: Rs ' + esc(due) + '</p>';
+      ' • Settled: Rs ' + esc(p.settled_rs) + ' • Outstanding: Rs ' + esc(due) + '</p>';
     if(p.status === "DISPUTED" && p.dispute_reason){
-      html += '<p class="meta">Vivad: ' + esc(p.dispute_reason) + '</p>';
+      html += '<p class="meta">Dispute: ' + esc(p.dispute_reason) + '</p>';
     }
     if(p.status !== "PAID" && p.status !== "DISPUTED"){
       html += '<div class="settle-form">';
@@ -363,12 +363,12 @@
       html += '<div class="field"><label for="wpref-' + esc(p.id) + '">Reference (bank/upi)</label>' +
         '<input type="text" id="wpref-' + esc(p.id) + '" maxlength="100" placeholder="UPI-12345"></div>';
       html += '<div class="field"><label>&nbsp;</label>' +
-        '<button class="btn small" type="button" data-week-pay="' + esc(p.id) + '">Jama karo</button></div>';
+        '<button class="btn small" type="button" data-week-pay="' + esc(p.id) + '">Record Payment</button></div>';
       html += '</div>';
-      html += '<div style="margin-top:8px"><button class="btn small ghost" type="button" data-week-dispute="' + esc(p.id) + '">Vivad lagao</button></div>';
+      html += '<div style="margin-top:8px"><button class="btn small ghost" type="button" data-week-dispute="' + esc(p.id) + '">Flag Dispute</button></div>';
     }
     if(p.status === "DISPUTED"){
-      html += '<div style="margin-top:8px"><button class="btn small" type="button" data-week-resolve="' + esc(p.id) + '">Vivad suljhao</button></div>';
+      html += '<div style="margin-top:8px"><button class="btn small" type="button" data-week-resolve="' + esc(p.id) + '">Resolve Dispute</button></div>';
     }
     html += '</div>';
     return html;
@@ -379,19 +379,19 @@
     if(weekInp && weekInp.value) qs += "&week_start=" + encodeURIComponent(weekInp.value);
     if(weekStatusSel && weekStatusSel.value) qs += "&status=" + encodeURIComponent(weekStatusSel.value);
     weekLoadBtn.disabled = true;
-    weekList.innerHTML = '<p class="loading">List load ho rahi hai…</p>';
+    weekList.innerHTML = '<p class="loading">Loading list…</p>';
     fetch(API_BASE_URL + "/api/admin/settlement-periods" + qs, { method: "GET", headers: authHeaders() })
       .then(parseRes)
       .then(function(result){
         if(checkAuth(result)) return;
         if(result.status !== 200 || !result.body || result.body.ok !== true) throw new Error("load_failed");
         var arr = result.body.periods || [];
-        weekList.innerHTML = arr.length ? arr.map(periodCard).join("") : '<p class="empty">Is week me koi settlement nahi.</p>';
+        weekList.innerHTML = arr.length ? arr.map(periodCard).join("") : '<p class="empty">No settlements for this week.</p>';
         hideAlert();
       })
       .catch(function(err){
-        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : "List load nahi hui. Dobara try karo.";
-        weekList.innerHTML = '<p class="empty">List load nahi hui.</p>';
+        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : "Could not load the list. Please try again.";
+        weekList.innerHTML = '<p class="empty">Could not load the list.</p>';
         showAlert("err", msg);
       })
       .then(function(){ weekLoadBtn.disabled = false; });
@@ -402,7 +402,7 @@
     var body = {};
     if(weekInp && weekInp.value) body.week_start = weekInp.value;
     weekGenBtn.disabled = true;
-    showAlert("info", "Week generate ho raha hai…");
+    showAlert("info", "Generating week…");
     fetch(API_BASE_URL + "/api/admin/settlement-periods/generate", {
       method: "POST", headers: authHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(body)
@@ -411,15 +411,15 @@
       .then(function(result){
         if(checkAuth(result)) return;
         if(result.status === 200 && result.body && result.body.ok === true){
-          showAlert("ok", "Bane: " + (result.body.created || []).length + ", chhode: " + (result.body.skipped || []).length + ".");
+          showAlert("ok", "Created: " + (result.body.created || []).length + ", skipped: " + (result.body.skipped || []).length + ".");
           loadPeriods();
           return;
         }
-        if(result.status === 400) showAlert("err", "Week Monday (YYYY-MM-DD) ho.");
-        else showAlert("err", "Generate nahi hua. Dobara try karo.");
+        if(result.status === 400) showAlert("err", "Week must be a Monday (YYYY-MM-DD).");
+        else showAlert("err", "Could not generate. Please try again.");
       })
       .catch(function(err){
-        showAlert("err", (err && err.message === "Failed to fetch") ? networkMsg() : "Generate nahi hua. Dobara try karo.");
+        showAlert("err", (err && err.message === "Failed to fetch") ? networkMsg() : "Could not generate. Please try again.");
       })
       .then(function(){ weekGenBtn.disabled = false; });
   });
@@ -434,12 +434,12 @@
       var mthEl = document.getElementById("wpmth-" + id);
       var refEl = document.getElementById("wpref-" + id);
       var amt = amtEl ? Number(String(amtEl.value).trim()) : NaN;
-      if(!isFinite(amt) || amt <= 0){ showAlert("err", "Amount 0 se zyada number ho."); return; }
+      if(!isFinite(amt) || amt <= 0){ showAlert("err", "Amount must be a number greater than 0."); return; }
       var body = { amount_rs: amt, method: mthEl ? mthEl.value : "cash" };
       var ref = refEl ? String(refEl.value).trim() : "";
       if(ref) body.reference_no = ref;
       payBtn.disabled = true;
-      showAlert("info", "Jama ho raha hai…");
+      showAlert("info", "Recording…");
       fetch(API_BASE_URL + "/api/admin/settlement-periods/" + encodeURIComponent(id) + "/payments", {
         method: "POST", headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(body)
@@ -448,18 +448,18 @@
         .then(function(result){
           if(checkAuth(result)) return;
           if(result.status === 201){
-            showAlert("ok", "Jama ho gaya. Baaki: Rs " + ((result.body && result.body.outstanding_rs) || 0));
+            showAlert("ok", "Recorded. Outstanding: Rs " + ((result.body && result.body.outstanding_rs) || 0));
             loadPeriods();
             loadBalances();
             return;
           }
           var code = result.body && result.body.error;
-          if(code === "settlement_finalized") showAlert("err", "Ye settlement final hai — badal nahi sakta.");
-          else if(code === "settlement_disputed") showAlert("err", "Pehle vivad suljhao.");
-          else if(code === "settlement_exceeds_outstanding") showAlert("err", "Baaki se zyada amount nahi.");
-          else if(code === "duplicate_settlement") showAlert("err", "Ye reference pehle use ho chuka hai.");
-          else if(result.status === 400) showAlert("err", "Details sahi likho (amount>0, bank/upi par reference zaroori).");
-          else showAlert("err", "Jama nahi hua. Dobara try karo.");
+          if(code === "settlement_finalized") showAlert("err", "This settlement is final — it cannot be changed.");
+          else if(code === "settlement_disputed") showAlert("err", "Please resolve the dispute first.");
+          else if(code === "settlement_exceeds_outstanding") showAlert("err", "Amount cannot exceed the outstanding balance.");
+          else if(code === "duplicate_settlement") showAlert("err", "This reference has already been used.");
+          else if(result.status === 400) showAlert("err", "Please enter valid details (amount > 0, reference required for bank/upi).");
+          else showAlert("err", "Could not record. Please try again.");
           payBtn.disabled = false;
         })
         .catch(function(){ showAlert("err", networkMsg()); payBtn.disabled = false; });
@@ -468,8 +468,8 @@
     if(disBtn){
       var did = disBtn.getAttribute("data-week-dispute");
       var reason = null;
-      try { reason = window.prompt("Vivad ki wajah likho (kam se kam 3 akshar):"); } catch(e){}
-      if(!reason || reason.trim().length < 3){ showAlert("err", "Wajah kam se kam 3 akshar likho."); return; }
+      try { reason = window.prompt("Enter the dispute reason (at least 3 characters):"); } catch(e){}
+      if(!reason || reason.trim().length < 3){ showAlert("err", "Please enter a reason with at least 3 characters."); return; }
       disBtn.disabled = true;
       fetch(API_BASE_URL + "/api/admin/settlement-periods/" + encodeURIComponent(did) + "/dispute", {
         method: "PATCH", headers: authHeaders({ "Content-Type": "application/json" }),
@@ -478,8 +478,8 @@
         .then(parseRes)
         .then(function(result){
           if(checkAuth(result)) return;
-          if(result.status === 200){ showAlert("ok", "Vivad lag gaya."); loadPeriods(); return; }
-          showAlert("err", "Vivad nahi laga. Dobara try karo.");
+          if(result.status === 200){ showAlert("ok", "Dispute flagged."); loadPeriods(); return; }
+          showAlert("err", "Could not flag dispute. Please try again.");
           disBtn.disabled = false;
         })
         .catch(function(){ showAlert("err", networkMsg()); disBtn.disabled = false; });
@@ -495,8 +495,8 @@
         .then(parseRes)
         .then(function(result){
           if(checkAuth(result)) return;
-          if(result.status === 200){ showAlert("ok", "Vivad sulajh gaya."); loadPeriods(); return; }
-          showAlert("err", "Suljha nahi. Dobara try karo.");
+          if(result.status === 200){ showAlert("ok", "Dispute resolved."); loadPeriods(); return; }
+          showAlert("err", "Could not resolve. Please try again.");
           resBtn.disabled = false;
         })
         .catch(function(){ showAlert("err", networkMsg()); resBtn.disabled = false; });

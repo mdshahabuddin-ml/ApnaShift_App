@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Live Tracking | ApnaShift</title>
-<meta name="description" content="Apni booking ki gaadi live track karo — driver, status aur last location.">
+<meta name="description" content="Track your booking vehicle live — driver, status and last location.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
@@ -93,7 +93,7 @@
       <a href="customer-dashboard.html">My Bookings</a>
       <a href="help.html">Help</a>
     </nav>
-    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">☰</button>
   </div>
 </header>
 
@@ -102,7 +102,7 @@
 
   <section class="card" aria-labelledby="trackTitle">
     <h1 id="trackTitle">Live Tracking</h1>
-    <p class="sub" id="bookLine">Booking load ho rahi hai…</p>
+    <p class="sub" id="bookLine">Loading booking…</p>
     <div>
       <span class="badge status" id="statusBadge">Status: —</span>
       <span class="badge offline" id="trackBadge">Tracking: —</span>
@@ -112,26 +112,26 @@
 
   <div class="cols">
     <section class="card" aria-label="Live map">
-      <h2>Gaadi kahan hai</h2>
+      <h2>Vehicle Location</h2>
       <div id="map" role="img" aria-label="Live vehicle map"></div>
-      <p class="meta" id="mapNote">Driver ki real GPS location — page khula rakhne par live update hogi.</p>
+      <p class="meta" id="mapNote">Driver's real GPS location — keep this page open for live updates.</p>
     </section>
 
     <section class="card" aria-labelledby="detailTitle">
       <h2 id="detailTitle">Trip details</h2>
-      <div class="kv" id="detailBox"><p class="meta">Load ho raha hai…</p></div>
+      <div class="kv" id="detailBox"><p class="meta">Loading…</p></div>
       <p style="margin-top:12px"><a class="btn ghost" href="customer-dashboard.html">← My Bookings</a></p>
     </section>
   </div>
 
   <section class="card" aria-label="Tracking states">
-    <h2>States ka matlab</h2>
+    <h2>What the states mean</h2>
     <p class="meta" style="margin:0">
-      <b>Live</b> = 1 min ke andar location mili.
-      <b>Stale</b> = 1–3 min purani (network slow ho sakta hai).
-      <b>Offline</b> = 3+ min se koi update nahi ya sharing band.
-      <b>Ended</b> = trip delivered/cancelled — tracking yahin rukti hai.
-      ETA nahi dikhate — sirf real location.
+      <b>Live</b> = location received within the last 1 minute.
+      <b>Stale</b> = 1–3 minutes old (network may be slow).
+      <b>Offline</b> = no update for 3+ minutes or sharing stopped.
+      <b>Ended</b> = trip delivered/cancelled — tracking stops here.
+      We do not show ETA — only the real location.
     </p>
   </section>
 </main>
@@ -173,8 +173,8 @@
   } catch(e){}
   var bookingId = qs.booking || "";
   if(!/^[0-9a-fA-F-]{36}$/.test(bookingId)){
-    showAlert("err", "Booking ID sahi nahi hai. My Bookings se dobara kholo.");
-    document.getElementById("bookLine").textContent = "Booking nahi mili.";
+    showAlert("err", "Invalid booking ID. Please reopen it from My Bookings.");
+    document.getElementById("bookLine").textContent = "Booking not found.";
     return;
   }
 
@@ -211,8 +211,8 @@
   function ageText(iso){
     if(!iso) return "";
     var s = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
-    if(s < 60) return s + " sec pehle";
-    return Math.floor(s / 60) + " min " + (s % 60) + " sec pehle";
+    if(s < 60) return s + " sec ago";
+    return Math.floor(s / 60) + " min " + (s % 60) + " sec ago";
   }
   function stateOf(){
     if(lastStatus === "delivered" || lastStatus === "cancelled") return "ended";
@@ -224,6 +224,10 @@
     return "offline";
   }
   var STATE_LABEL = { live: "Live", stale: "Stale", offline: "Offline", ended: "Ended" };
+  var STATUS_LABEL = {
+    pending: "PENDING", accepted: "CONFIRMED", arrived: "DRIVER ARRIVING",
+    in_transit: "IN TRANSIT", delivered: "DELIVERED", cancelled: "CANCELLED"
+  };
 
   // ---- Map (Leaflet + Geoapify tiles via /api/geo/config, OSM fallback).
   // Text fallback if CDN blocked.
@@ -239,15 +243,15 @@
   function renderMap(){
     if(typeof L === "undefined"){
       mapNote.textContent = lastPoint
-        ? ("Map load nahi hua (offline?) — last location: " + lastPoint.lat + ", " + lastPoint.lng)
-        : "Map load nahi hua (offline?) — abhi location nahi mili.";
+        ? ("Map could not be loaded (offline?) — last location: " + lastPoint.lat + ", " + lastPoint.lng)
+        : "Map could not be loaded (offline?) — no location received yet.";
       return;
     }
     if(!lastPoint) return;
     ensureMap([lastPoint.lat, lastPoint.lng]);
     if(!map) return;
     if(!vehicleMarker){
-      vehicleMarker = L.marker([lastPoint.lat, lastPoint.lng]).addTo(map).bindPopup("Driver ki gaadi (live)");
+      vehicleMarker = L.marker([lastPoint.lat, lastPoint.lng]).addTo(map).bindPopup("Driver vehicle (live)");
     } else {
       vehicleMarker.setLatLng([lastPoint.lat, lastPoint.lng]);
     }
@@ -302,26 +306,26 @@
   }
 
   function render(){
-    statusBadge.textContent = "Status: " + (lastStatus || "—");
+    statusBadge.textContent = "Status: " + (STATUS_LABEL[lastStatus] || lastStatus || "—");
     var st = stateOf();
     trackBadge.textContent = "Tracking: " + STATE_LABEL[st];
     trackBadge.className = "badge " + st;
     updateLine.textContent = lastPoint
       ? ("Last update: " + fmtTime(lastPoint.recorded_at) + " (" + ageText(lastPoint.recorded_at) + ")")
-      : "Last update: — (driver ne abhi location share nahi ki)";
+      : "Last update: — (driver has not shared location yet)";
     bookLine.textContent = "Booking #" + bookingId;
     var h = "";
     if(lastDriver){
       h += "<div><strong>Driver:</strong> " + esc(lastDriver.name || "—") + "</div>";
-      h += "<div><strong>Gaadi:</strong> " + esc(lastDriver.vehicle_type || "—") + " • " + esc(lastDriver.vehicle_number || "—") + "</div>";
+      h += "<div><strong>Vehicle:</strong> " + esc(lastDriver.vehicle_type || "—") + " • " + esc(lastDriver.vehicle_number || "—") + "</div>";
       if(lastDriver.upi_id) h += "<div><strong>Driver UPI:</strong> " + esc(lastDriver.upi_id) + "</div>";
     } else {
-      h += "<div><strong>Driver:</strong> abhi assign nahi hua</div>";
+      h += "<div><strong>Driver:</strong> Not assigned yet</div>";
     }
     if(lastBooking){
       h += "<div><strong>Pickup:</strong> " + esc(lastBooking.pickup && lastBooking.pickup.address) + "</div>";
       h += "<div><strong>Drop:</strong> " + esc(lastBooking.drop && lastBooking.drop.address) + "</div>";
-      h += "<div><strong>Doori:</strong> " + esc(lastBooking.distance_km) + " km • <strong>Kiraya:</strong> Rs " + esc(lastBooking.price_rs) + "</div>";
+      h += "<div><strong>Distance:</strong> " + esc(lastBooking.distance_km) + " km • <strong>Fare:</strong> Rs " + esc(lastBooking.price_rs) + "</div>";
     }
     h += paymentSectionHtml();
     if(lastPoint){
@@ -338,7 +342,7 @@
       var mins = routeMeta.duration_s != null ? Math.round(routeMeta.duration_s / 60) + " min" : "—";
       h += '<div class="meta">Route (Geoapify): ' + esc(km) + ' • ~' + esc(mins) + ' drive</div>';
     }
-    detailBox.innerHTML = h || '<p class="meta">Load ho raha hai…</p>';
+    detailBox.innerHTML = h || '<p class="meta">Loading…</p>';
     renderMap();
   }
 
@@ -352,19 +356,19 @@
       html += '<div class="pay-box" aria-label="UPI payment">' +
         "<div><strong>Driver UPI ID:</strong></div>" +
         '<div class="upi-big">' + uid + "</div>" +
-        '<button type="button" class="btn ghost" data-copy-upi="' + uid + '">Copy Karein</button>' +
-        '<p class="meta">Payment driver ko seedha is UPI ID par karein, trip complete hote hi</p>' +
+        '<button type="button" class="btn ghost" data-copy-upi="' + uid + '">Copy</button>' +
+        '<p class="meta">Pay the driver directly to this UPI ID once the trip is complete</p>' +
         "</div>";
     } else if(lastBooking.payment_method === "cash"){
       html += '<div class="pay-box" aria-label="Cash payment">' +
-        "<p style='margin:0'>Driver ko cash se payment karein trip complete hone par</p>" +
+        "<p style='margin:0'>Please pay the driver in cash when the trip is complete</p>" +
         "</div>";
     }
     if(!lastBooking.disputed){
-      html += '<details class="dispute-box"><summary>Problem hui payment me?</summary>' +
-        '<label for="dreason" style="position:absolute;left:-9999px">Wajah likho</label>' +
-        '<input id="dreason" data-dispute-reason maxlength="500" placeholder="Wajah likho (jaise: zyada kiraya)">' +
-        '<div style="margin-top:8px"><button type="button" class="btn ghost" data-dispute-send>Bhejo</button></div>' +
+      html += '<details class="dispute-box"><summary>Faced a payment issue?</summary>' +
+        '<label for="dreason" style="position:absolute;left:-9999px">Describe the issue</label>' +
+        '<input id="dreason" data-dispute-reason maxlength="500" placeholder="Describe the issue (e.g., incorrect fare)">' +
+        '<div style="margin-top:8px"><button type="button" class="btn ghost" data-dispute-send>Send</button></div>' +
         '<p class="error-text" data-dispute-err></p>' +
         "</details>";
     }
@@ -375,7 +379,7 @@
     function done(ok){
       if(!btn) return;
       if(!btn.getAttribute("data-label")) btn.setAttribute("data-label", btn.textContent);
-      btn.textContent = ok ? "Copy ho gaya!" : "Copy nahi hua";
+      btn.textContent = ok ? "Copied!" : "Copy failed";
       setTimeout(function(){ btn.textContent = btn.getAttribute("data-label"); }, 1600);
     }
     if(navigator.clipboard && navigator.clipboard.writeText){
@@ -405,7 +409,7 @@
     var errBox = document.querySelector("[data-dispute-err]");
     var reason = input ? String(input.value || "").trim() : "";
     if(reason.length < 3){
-      if(errBox){ errBox.className = "error-text"; errBox.textContent = "Wajah kam se kam 3 akshar likho."; }
+      if(errBox){ errBox.className = "error-text"; errBox.textContent = "Please describe the issue in at least 3 characters."; }
       return;
     }
     if(errBox) errBox.textContent = "";
@@ -419,13 +423,13 @@
     }).then(function(res){
       if(res.status === 401){ window.location.href = "user-auth.html"; return; }
       if(res.status === 200){
-        if(errBox){ errBox.className = "ok-text"; errBox.textContent = "Vivad darj ho gaya — admin review karega."; }
+        if(errBox){ errBox.className = "ok-text"; errBox.textContent = "Dispute recorded — an admin will review it."; }
         if(input) input.value = "";
         return;
       }
-      if(errBox){ errBox.className = "error-text"; errBox.textContent = "Vivad darj nahi hua — dobara try karo."; }
+      if(errBox){ errBox.className = "error-text"; errBox.textContent = "Could not record dispute — please try again."; }
     }).catch(function(){
-      if(errBox){ errBox.className = "error-text"; errBox.textContent = "Internet me dikkat hai."; }
+      if(errBox){ errBox.className = "error-text"; errBox.textContent = "Connection issue. Please check your internet."; }
     }).then(function(){
       sendBtn.disabled = false;
     });
@@ -471,7 +475,7 @@
             if(typeof res.body.thresholds.offline_after_ms === "number") OFFLINE_MS = res.body.thresholds.offline_after_ms;
           }
           if(res.body.geoapify && res.body.geoapify.enabled){
-            mapNote.textContent = "Driver ki real GPS location — Geoapify map par live update hogi.";
+            mapNote.textContent = "Driver's real GPS location — will update live on the Geoapify map.";
           }
         }
       })
@@ -507,7 +511,7 @@
       .then(function(r){ return r.json().then(function(b){ return { status: r.status, body: b }; }); })
       .then(function(res){
         if(res.status === 401){ window.location.href = "user-auth.html"; throw new Error("unauth"); }
-        if(res.status === 404){ showAlert("err", "Ye booking tumhari nahi hai ya mili nahi."); throw new Error("notfound"); }
+        if(res.status === 404){ showAlert("err", "This booking was not found or does not belong to you."); throw new Error("notfound"); }
         if(res.status !== 200 || !res.body || !res.body.booking) throw new Error("booking");
         lastBooking = res.body.booking;
         lastStatus = lastBooking.status || lastStatus;
@@ -520,7 +524,7 @@
       .then(function(r){ return r.json().then(function(b){ return { status: r.status, body: b }; }); })
       .then(function(res){
         if(res.status === 401){ window.location.href = "user-auth.html"; throw new Error("unauth"); }
-        if(res.status === 404){ showAlert("err", "Ye booking tumhari nahi hai ya mili nahi."); return; }
+        if(res.status === 404){ showAlert("err", "This booking was not found or does not belong to you."); return; }
         if(res.status === 200 && res.body && res.body.ok){
           applySnapshot(res.body);
           showAlert(null, "");
@@ -539,7 +543,7 @@
     fetch(API_BASE_URL + "/api/bookings/" + encodeURIComponent(bookingId) + "/location/stream", { headers: authHeaders() })
       .then(function(res){
         if(res.status === 401){ window.location.href = "user-auth.html"; throw new Error("unauth"); }
-        if(res.status === 404){ showAlert("err", "Ye booking tumhari nahi hai ya mili nahi."); throw new Error("notfound"); }
+        if(res.status === 404){ showAlert("err", "This booking was not found or does not belong to you."); throw new Error("notfound"); }
         if(!res.ok || !res.body) throw new Error("stream");
         var reader = res.body.getReader();
         var decoder = new TextDecoder();
@@ -589,7 +593,7 @@
     })
     .catch(function(err){
       if(err && (err.message === "unauth" || err.message === "notfound")) return;
-      showAlert("err", "Load nahi hua — internet check karke refresh karo.");
+      showAlert("err", "Could not load. Please check your internet connection and refresh.");
     });
 
   var navMenuBtn = document.getElementById("navMenuBtn"), siteNav = document.getElementById("siteNav");

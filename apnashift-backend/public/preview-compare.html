@@ -128,7 +128,7 @@
       <a href="enterprise.html">Enterprise</a>
       <a href="help.html">Help</a>
     </nav>
-    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">☰</button>
   </div>
 </header>
 
@@ -186,7 +186,7 @@
   leftUrl.addEventListener("keydown", function(e){ if(e.key === "Enter") load(); });
   rightUrl.addEventListener("keydown", function(e){ if(e.key === "Enter") load(); });
 var navMenuBtn=document.getElementById("navMenuBtn"),siteNav=document.getElementById("siteNav");
-if(navMenuBtn&&siteNav){navMenuBtn.addEventListener("click",function(){var open=siteNav.classList.toggle("open");navMenuBtn.setAttribute("aria-expanded",open?"true":"false");navMenuBtn.setAttribute("aria-label",open?"Menu band karo":"Menu kholo");});siteNav.addEventListener("click",function(ev){if(ev.target.tagName==="A"&&siteNav.classList.contains("open")){siteNav.classList.remove("open");navMenuBtn.setAttribute("aria-expanded","false");}});}
+if(navMenuBtn&&siteNav){navMenuBtn.addEventListener("click",function(){var open=siteNav.classList.toggle("open");navMenuBtn.setAttribute("aria-expanded",open?"true":"false");navMenuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");});siteNav.addEventListener("click",function(ev){if(ev.target.tagName==="A"&&siteNav.classList.contains("open")){siteNav.classList.remove("open");navMenuBtn.setAttribute("aria-expanded","false");}});}
 })();
 </script>
 </body>

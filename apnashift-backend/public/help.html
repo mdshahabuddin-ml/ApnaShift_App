@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Help &amp; Support | ApnaShift</title>
-<meta name="description" content="ApnaShift help — booking, cancel, payment aur complaint se jude sawal-jawab aur contact form.">
+<meta name="description" content="ApnaShift help — answers about booking, cancellation, payments, and complaints, plus a contact form.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
@@ -210,46 +210,46 @@
       <a href="enterprise.html">Enterprise</a>
       <a href="help.html">Help</a>
     </nav>
-    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">☰</button>
   </div>
 </header>
 
 <main>
   <section class="card" aria-labelledby="faqTitle">
     <h1 id="faqTitle">Help &amp; Support</h1>
-    <p class="sub">Aksar puche jaane wale sawal — jawab ke liye tap karo.</p>
+    <p class="sub">Frequently asked questions — tap an answer to expand it.</p>
 
     <details>
-      <summary>Booking kaise karein?</summary>
-      <p class="answer">ApnaShift par account banao, pickup aur drop location dalo, gaadi chuno aur booking confirm karo. Driver assign hote hi tumhein update mil jayega.</p>
+      <summary>How do I create a booking?</summary>
+      <p class="answer">Create an ApnaShift account, enter your pickup and drop locations, choose a vehicle, and confirm your booking. You will receive an update as soon as a driver is assigned.</p>
     </details>
     <details>
-      <summary>Driver available nahi hai to kya karein?</summary>
-      <p class="answer">Thodi der rukkar dobara try karo — demand zyada hone par driver milne me time lag sakta hai. Gaadi type badalkar bhi dekh sakte ho.</p>
+      <summary>What should I do if no driver is available?</summary>
+      <p class="answer">Please wait a short while and try again — it may take longer to find a driver during periods of high demand. You can also try a different vehicle type.</p>
     </details>
     <details>
-      <summary>Cancel kaise karein?</summary>
-      <p class="answer">Booking confirm hone se pehle kabhi bhi free me cancel kar sakte ho. Testing phase me confirm booking cancel par bhi koi charge nahi lagta.</p>
+      <summary>How do I cancel a booking?</summary>
+      <p class="answer">You can cancel free of charge at any time before your booking is confirmed. During the testing phase, cancelling a confirmed booking is also free of charge.</p>
     </details>
     <details>
-      <summary>Payment kaise hota hai?</summary>
-      <p class="answer">Payment directly driver ko karo — cash ya UPI se. Abhi ApnaShift me in-app payment nahi hai.</p>
+      <summary>How do payments work?</summary>
+      <p class="answer">Please pay the driver directly — by cash or UPI. ApnaShift does not currently offer in-app payments.</p>
     </details>
     <details>
-      <summary>Complaint kaise karein?</summary>
-      <p class="answer">Neeche wala form bharo — WhatsApp par tumhari shikayat hum tak pahunch jayegi. Booking ID likhna mat bhoolo taaki hum jaldi madad kar saken.</p>
+      <summary>How do I raise a complaint?</summary>
+      <p class="answer">Complete the form below — your complaint will reach us via WhatsApp. Please include your booking ID so we can help you quickly.</p>
     </details>
   </section>
 
   <section class="card" aria-labelledby="formTitle">
-    <h2 id="formTitle">Humse contact karo</h2>
-    <p class="sub">Form bharo — WhatsApp khulega, bas Send dabana hai.</p>
+    <h2 id="formTitle">Contact us</h2>
+    <p class="sub">Complete the form — WhatsApp will open, then simply press Send.</p>
 
     <div id="formAlert" role="alert" aria-live="assertive"></div>
 
     <form id="helpForm" novalidate>
       <div class="field" id="f-name">
-        <label for="name">Naam <span class="req" aria-hidden="true">*</span></label>
+        <label for="name">Name <span class="req" aria-hidden="true">*</span></label>
         <input type="text" id="name" name="name" autocomplete="name"
                maxlength="80" placeholder="Example: Rahul Sharma"
                aria-describedby="name-err" required>
@@ -261,30 +261,30 @@
         <input type="tel" id="phone" name="phone" autocomplete="tel" inputmode="numeric"
                maxlength="15" placeholder="98765 43210"
                aria-describedby="phone-hint phone-err" required>
-        <p class="hint" id="phone-hint">10 digit ka Indian mobile. +91 ya space chalega.</p>
+        <p class="hint" id="phone-hint">Enter a 10-digit Indian mobile number. +91 prefix or spaces are accepted.</p>
         <p class="error-text" id="phone-err"></p>
       </div>
 
       <div class="field" id="f-type">
         <label for="issueType">Issue type <span class="req" aria-hidden="true">*</span></label>
         <select id="issueType" aria-describedby="type-err" required>
-          <option value="">— Chuno —</option>
+          <option value="">— Select —</option>
           <option value="Booking issue">Booking issue</option>
           <option value="Driver issue">Driver issue</option>
           <option value="Payment issue">Payment issue</option>
-          <option value="Aur kuch">Aur kuch</option>
+          <option value="Something else">Something else</option>
         </select>
         <p class="error-text" id="type-err"></p>
       </div>
 
       <div class="field" id="f-desc">
-        <label for="desc">Apni baat likho <span class="req" aria-hidden="true">*</span></label>
-        <textarea id="desc" maxlength="500" placeholder="Example: Meri booking ID ... hai, driver abhi tak nahi aaya."
+        <label for="desc">Describe your issue <span class="req" aria-hidden="true">*</span></label>
+        <textarea id="desc" maxlength="500" placeholder="Example: My booking ID is ..., and the driver has not arrived yet."
                   aria-describedby="desc-err" required></textarea>
         <p class="error-text" id="desc-err"></p>
       </div>
 
-      <button type="submit" id="submitBtn">WhatsApp par bhejo</button>
+      <button type="submit" id="submitBtn">Send via WhatsApp</button>
     </form>
   </section>
 
@@ -369,7 +369,7 @@
 
     var name = nameInput.value.trim();
     if(name.length < 2){
-      setErr("f-name", "name-err", nameInput, "Apna naam likho (kam se kam 2 akshar).");
+      setErr("f-name", "name-err", nameInput, "Please enter your name (at least 2 characters).");
       ok = false; firstBad = firstBad || nameInput;
     } else {
       setErr("f-name", "name-err", nameInput, "");
@@ -377,17 +377,17 @@
 
     var cleaned = cleanPhone(phoneInput.value);
     if(!phoneInput.value.trim()){
-      setErr("f-phone", "phone-err", phoneInput, "Apna phone number likho. Example: 98765 43210");
+      setErr("f-phone", "phone-err", phoneInput, "Please enter your phone number. Example: 98765 43210");
       ok = false; firstBad = firstBad || phoneInput;
     } else if(!PHONE_RE.test(cleaned)){
-      setErr("f-phone", "phone-err", phoneInput, "Sahi 10 digit mobile number likho jo 6-9 se shuru ho.");
+      setErr("f-phone", "phone-err", phoneInput, "Please enter a valid 10-digit mobile number starting with 6-9.");
       ok = false; firstBad = firstBad || phoneInput;
     } else {
       setErr("f-phone", "phone-err", phoneInput, "");
     }
 
     if(!typeInput.value){
-      setErr("f-type", "type-err", typeInput, "Issue type chuno.");
+      setErr("f-type", "type-err", typeInput, "Please select an issue type.");
       ok = false; firstBad = firstBad || typeInput;
     } else {
       setErr("f-type", "type-err", typeInput, "");
@@ -395,7 +395,7 @@
 
     var desc = descInput.value.trim();
     if(desc.length < 5){
-      setErr("f-desc", "desc-err", descInput, "Thoda detail me likho (kam se kam 5 akshar).");
+      setErr("f-desc", "desc-err", descInput, "Please provide a little more detail (at least 5 characters).");
       ok = false; firstBad = firstBad || descInput;
     } else {
       setErr("f-desc", "desc-err", descInput, "");
@@ -407,18 +407,18 @@
     }
 
     var message =
-      "Namaste ApnaShift! Mujhe madad chahiye.\n" +
-      "Naam: " + name + "\n" +
+      "Hello ApnaShift! I need help.\n" +
+      "Name: " + name + "\n" +
       "Phone: " + cleaned + "\n" +
       "Issue: " + typeInput.value + "\n" +
       "Details: " + desc;
 
     var url = "https://wa.me/" + OWNER_WHATSAPP + "?text=" + encodeURIComponent(message);
     window.open(url, "_blank", "noopener");
-    showAlert("ok", "WhatsApp khul raha hai — wahan Send dabao.");
+    showAlert("ok", "WhatsApp is opening — please press Send there.");
   });
 var navMenuBtn=document.getElementById("navMenuBtn"),siteNav=document.getElementById("siteNav");
-if(navMenuBtn&&siteNav){navMenuBtn.addEventListener("click",function(){var open=siteNav.classList.toggle("open");navMenuBtn.setAttribute("aria-expanded",open?"true":"false");navMenuBtn.setAttribute("aria-label",open?"Menu band karo":"Menu kholo");});siteNav.addEventListener("click",function(ev){if(ev.target.tagName==="A"&&siteNav.classList.contains("open")){siteNav.classList.remove("open");navMenuBtn.setAttribute("aria-expanded","false");}});}
+if(navMenuBtn&&siteNav){navMenuBtn.addEventListener("click",function(){var open=siteNav.classList.toggle("open");navMenuBtn.setAttribute("aria-expanded",open?"true":"false");navMenuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");});siteNav.addEventListener("click",function(ev){if(ev.target.tagName==="A"&&siteNav.classList.contains("open")){siteNav.classList.remove("open");navMenuBtn.setAttribute("aria-expanded","false");}});}
 })();
 </script>
 </body>

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Booking Karo | ApnaShift</title>
-<meta name="description" content="ApnaShift par gaadi book karo — live kiraya dekho, booking pakki karo.">
+<title>Create Booking | ApnaShift</title>
+<meta name="description" content="Book a vehicle on ApnaShift — view live fares and confirm your booking.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
@@ -92,13 +92,13 @@
       <a href="customer-dashboard.html">My Bookings</a>
       <a href="help.html">Help</a>
     </nav>
-    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">☰</button>
   </div>
 </header>
 
 <main>
-  <h1>Gaadi Book Karo</h1>
-  <p class="sub">Address likho, live kiraya dekho, phir booking pakki karo.</p>
+  <h1>Book a Vehicle</h1>
+  <p class="sub">Enter addresses, view the live fare, then confirm your booking.</p>
 
   <div id="pageAlert" role="alert" aria-live="assertive"></div>
 
@@ -135,29 +135,29 @@
       </div>
     </div>
     <div class="field" id="f-vehicle">
-      <label for="vehicle">Gaadi chuno</label>
+      <label for="vehicle">Select vehicle</label>
       <select id="vehicle">
-        <option value="pickup">Pickup — chhota samaan</option>
-        <option value="mini_truck">Mini Truck — ghar ka samaan</option>
-        <option value="mini_tractor">Mini Tractor — bhari samaan</option>
+        <option value="pickup">Pickup — Small goods</option>
+        <option value="mini_truck">Mini Truck — Household goods</option>
+        <option value="mini_tractor">Mini Tractor — Heavy goods</option>
       </select>
       <p class="error-text" id="vehicle-err"></p>
     </div>
     <div class="controls">
-      <button type="button" class="btn ghost" id="estimateBtn">Live Price Dekho</button>
+      <button type="button" class="btn ghost" id="estimateBtn">Check Live Price</button>
     </div>
     <div class="fare" id="fareCard" aria-live="polite">
       <table>
         <tbody>
-          <tr><td>Doori</td><td id="fareDist">–</td></tr>
-          <tr><td>Kul kiraya</td><td id="fareTotal">–</td></tr>
+          <tr><td>Distance</td><td id="fareDist">–</td></tr>
+          <tr><td>Total fare</td><td id="fareTotal">–</td></tr>
         </tbody>
       </table>
     </div>
     <div class="controls">
-      <button type="button" class="btn" id="bookBtn">Book Karein</button>
+      <button type="button" class="btn" id="bookBtn">Confirm Booking</button>
     </div>
-    <p class="hint">Payment method default UPI hai (booking ke baad badal nahi sakte).</p>
+    <p class="hint">Default payment method is UPI (cannot be changed after booking).</p>
   </section>
 
 <footer class="site-footer">
@@ -237,18 +237,18 @@
     hideAlert();
     var ok = true;
     var pa = pickupAddr.value.trim(), da = dropAddr.value.trim();
-    if(pa.length < 3){ setErr("f-pickup", "pickupAddr-err", true, "Pickup address kam se kam 3 akshar."); ok = false; }
+    if(pa.length < 3){ setErr("f-pickup", "pickupAddr-err", true, "Pickup address must be at least 3 characters."); ok = false; }
     else setErr("f-pickup", "pickupAddr-err", false);
-    if(da.length < 3){ setErr("f-drop", "dropAddr-err", true, "Drop address kam se kam 3 akshar."); ok = false; }
+    if(da.length < 3){ setErr("f-drop", "dropAddr-err", true, "Drop address must be at least 3 characters."); ok = false; }
     else setErr("f-drop", "dropAddr-err", false);
     var pLat = num(pickupLat, -90, 90), pLng = num(pickupLng, -180, 180);
     var dLat = num(dropLat, -90, 90), dLng = num(dropLng, -180, 180);
     if(pLat === null || pLng === null || dLat === null || dLng === null){
-      showAlert("err", "Lat/lng sahi likho (map se copy karke).");
+      showAlert("err", "Please enter valid latitude/longitude (copy from the map).");
       ok = false;
     }
     if(!vehicle.value){
-      setErr("f-vehicle", "vehicle-err", true, "Gaadi chuno.");
+      setErr("f-vehicle", "vehicle-err", true, "Please select a vehicle.");
       ok = false;
     } else setErr("f-vehicle", "vehicle-err", false);
     if(!ok) return null;
@@ -264,7 +264,7 @@
     var clean = cleanForm();
     if(!clean) return;
     estimateBtn.disabled = true;
-    estimateBtn.textContent = "Kiraya nikal raha hai…";
+    estimateBtn.textContent = "Calculating fare…";
     fareCard.classList.remove("show");
     fetch(API_BASE_URL + "/api/bookings/estimate-price", {
       method: "POST",
@@ -279,7 +279,7 @@
       if(result.status === 401){ window.location.href = "user-auth.html"; return; }
       if(result.status !== 200 || !result.body || result.body.ok !== true){
         var detail = result.body && result.body.details && result.body.details[0] && result.body.details[0].message;
-        showAlert("err", detail || "Kiraya nahi nikal paya — dobara try karo.");
+        showAlert("err", detail || "Could not calculate fare — please try again.");
         return;
       }
       document.getElementById("fareDist").textContent =
@@ -287,12 +287,12 @@
       document.getElementById("fareTotal").textContent =
         (result.body.total !== undefined ? "Rs " + result.body.total : "–");
       fareCard.classList.add("show");
-      showAlert("ok", "Live kiraya aa gaya — pasand aaye to Book Karein dabao.");
+      showAlert("ok", "Live fare is ready — press Confirm Booking to proceed.");
     }).catch(function(){
-      showAlert("err", "Internet me dikkat hai — connection check karke try karo.");
+      showAlert("err", "Connection issue — please check your internet and try again.");
     }).then(function(){
       estimateBtn.disabled = false;
-      estimateBtn.textContent = "Live Price Dekho";
+      estimateBtn.textContent = "Check Live Price";
     });
   });
 
@@ -301,7 +301,7 @@
     var clean = cleanForm();
     if(!clean) return;
     bookBtn.disabled = true;
-    bookBtn.textContent = "Booking ho rahi hai…";
+    bookBtn.textContent = "Creating booking…";
     fetch(API_BASE_URL + "/api/bookings", {
       method: "POST",
       headers: authHeaders(),
@@ -311,18 +311,18 @@
       if(result.status !== 201 || !result.body || result.body.ok !== true || !result.body.booking || !result.body.booking.id){
         var detail = result.body && result.body.details && result.body.details[0] && result.body.details[0].message;
         var code = result.body && result.body.error;
-        if(code === "distance_too_far") showAlert("err", "Ye doori service se bahar hai.");
-        else if(code === "unsupported_payment_method") showAlert("err", "Ye payment method abhi nahi chalti.");
-        else showAlert("err", detail || "Booking nahi hui — dobara try karo.");
+        if(code === "distance_too_far") showAlert("err", "This distance is outside the service area.");
+        else if(code === "unsupported_payment_method") showAlert("err", "This payment method is not currently supported.");
+        else showAlert("err", detail || "Booking failed — please try again.");
         bookBtn.disabled = false;
-        bookBtn.textContent = "Book Karein";
+        bookBtn.textContent = "Confirm Booking";
         return;
       }
       window.location.href = "booking-detail.html?id=" + encodeURIComponent(result.body.booking.id);
     }).catch(function(){
-      showAlert("err", "Internet me dikkat hai — connection check karke try karo.");
+      showAlert("err", "Connection issue — please check your internet and try again.");
       bookBtn.disabled = false;
-      bookBtn.textContent = "Book Karein";
+      bookBtn.textContent = "Confirm Booking";
     });
   });
 

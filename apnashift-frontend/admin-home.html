@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Home | ApnaShift</title>
-<meta name="description" content="ApnaShift admin overview — stats aur tools.">
+<meta name="description" content="ApnaShift admin overview — stats and tools.">
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -87,7 +87,7 @@
 
   <section class="card" aria-labelledby="statsTitle">
     <h1 id="statsTitle">Admin Overview</h1>
-    <p class="sub" id="welcomeLine">Load ho raha hai…</p>
+    <p class="sub" id="welcomeLine">Loading…</p>
     <div class="stat-grid">
       <div class="stat" aria-live="polite">
         <div class="num" id="statPending">—</div>
@@ -95,7 +95,7 @@
       </div>
       <div class="stat" aria-live="polite">
         <div class="num" id="statToday">—</div>
-        <div class="lbl">Aaj ki bookings</div>
+        <div class="lbl">Today's bookings</div>
       </div>
       <div class="stat" aria-live="polite">
         <div class="num" id="statDue">—</div>
@@ -111,14 +111,14 @@
 
   <section class="card" aria-labelledby="navTitle">
     <h2 id="navTitle">Tools</h2>
-    <p class="sub">Kaam chuno — har card apne page par le jayega.</p>
+    <p class="sub">Choose a task — each card opens its page.</p>
     <div class="nav-grid">
-      <a class="nav-card" href="admin-drivers.html"><b>Drivers</b><span>Verification, list aur driver actions</span></a>
-      <a class="nav-card" href="admin-bookings.html"><b>Bookings</b><span>Bookings dekho, assign aur manage karo</span></a>
-      <a class="nav-card" href="admin-pricing.html"><b>Pricing</b><span>Rates dekho aur badlo</span></a>
-      <a class="nav-card" href="payment-status.html"><b>Payments</b><span>Payment status aur settlements</span></a>
+      <a class="nav-card" href="admin-drivers.html"><b>Drivers</b><span>Verification, list, and driver actions</span></a>
+      <a class="nav-card" href="admin-bookings.html"><b>Bookings</b><span>View, assign, and manage bookings</span></a>
+      <a class="nav-card" href="admin-pricing.html"><b>Pricing</b><span>View and update rates</span></a>
+      <a class="nav-card" href="payment-status.html"><b>Payments</b><span>Payment status and settlements</span></a>
     </div>
-    <p class="tools-link">Advanced tools (password reset, enterprise) → <a href="admin-dashboard.html">full dashboard kholo</a></p>
+    <p class="tools-link">Advanced tools (password reset, enterprise) → <a href="admin-dashboard.html">open the full dashboard</a></p>
   </section>
 </main>
 
@@ -184,7 +184,7 @@
     return "Rs " + Number(n).toLocaleString("en-IN");
   }
 
-  // 1. Pending driver verifications — sirf count chahiye (limit=1, total padho).
+  // 1. Pending driver verifications — count only (limit=1, read total).
   function loadPending(){
     return apiGet("/api/admin/drivers?status=pending&limit=1").then(function(result){
       if(checkAuth(result)) throw new Error("unauth");
@@ -193,7 +193,7 @@
     });
   }
 
-  // 2. Aaj ki bookings — aaj 00:00 se abhi tak (local day, ISO range).
+  // 2. Today's bookings — from 00:00 today until now (local day, ISO range).
   function loadToday(){
     var start = new Date();
     start.setHours(0, 0, 0, 0);
@@ -206,8 +206,8 @@
     });
   }
 
-  // 3. Total commission due — /api/admin/driver-balances se har page ka
-  // outstanding_rs jodkar (backend me commission-summary endpoint nahi hai).
+  // 3. Total commission due — sums outstanding_rs across all pages of
+  // /api/admin/driver-balances (no commission-summary endpoint on backend).
   function loadDue(){
     var page = 1, perPage = 100, sum = 0;
     function onePage(){
@@ -227,7 +227,7 @@
     return onePage();
   }
 
-  // 4. Disputed bookings — sirf count (limit=1, total padho).
+  // 4. Disputed bookings — count only (limit=1, read total).
   function loadDisputed(){
     return apiGet("/api/admin/bookings?disputed=true&limit=1").then(function(result){
       if(checkAuth(result)) throw new Error("unauth");
@@ -239,17 +239,17 @@
   function loadAll(){
     showAlert(null, "");
     refreshBtn.disabled = true;
-    refreshBtn.textContent = "Load ho raha hai…";
-    welcomeLine.textContent = "Stats load ho rahe hain…";
+    refreshBtn.textContent = "Loading…";
+    welcomeLine.textContent = "Loading stats…";
     return Promise.allSettled([loadPending(), loadToday(), loadDue(), loadDisputed()]).then(function(outcomes){
       var failed = outcomes.filter(function(o){ return o.status === "rejected"; });
       var unauth = failed.some(function(o){ return o.reason && o.reason.message === "unauth"; });
-      if(unauth) return; // redirect ho gaya
+      if(unauth) return; // redirected already
       if(failed.length){
-        showAlert("err", "Kuch stats load nahi hue — Refresh dabao ya internet check karo.");
+        showAlert("err", "Some stats could not load — press Refresh or check your internet.");
       }
       var d = new Date();
-      welcomeLine.textContent = "Namaste, admin! Update: " +
+      welcomeLine.textContent = "Hello, admin! Updated: " +
         d.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
     }).then(function(){
       refreshBtn.disabled = false;

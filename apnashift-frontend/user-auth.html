@@ -283,7 +283,7 @@
         </div>
         <button type="submit" id="loginBtn">Login</button>
       </form>
-      <p class="forgotline"><a href="#" id="forgotLink">Password bhool gaye?</a></p>
+      <p class="forgotline"><a href="#" id="forgotLink">Forgot password?</a></p>
       <p class="switchline">New here? <button type="button" id="goRegister">Create an account</button></p>
     </div>
 
@@ -332,22 +332,22 @@
   <div class="modal-backdrop" id="forgotModal" role="dialog" aria-modal="true" aria-labelledby="forgotTitle">
     <div class="modal">
       <h2 id="forgotTitle">Password reset (OTP — FREE)</h2>
-      <p class="hint">Registered mobile par 6-digit OTP ayega (10 min valid). OTP banana FREE hai — SMS provider lagne tak dev me OTP console/test me milta hai.</p>
+      <p class="hint">A 6-digit OTP will be sent to your registered mobile number (valid for 10 minutes). Generating an OTP is free — until the SMS provider is connected, the OTP is shown in the console/test response in development.</p>
       <div id="otpStep1">
         <label for="otpPhone">Registered mobile number</label>
         <input type="tel" id="otpPhone" inputmode="numeric" maxlength="15" placeholder="98765 43210">
-        <div style="margin-top:8px"><button type="button" class="ghost-btn" id="otpSendBtn">OTP bhejo</button></div>
+        <div style="margin-top:8px"><button type="button" class="ghost-btn" id="otpSendBtn">Send OTP</button></div>
       </div>
       <div id="otpStep2" style="display:none;margin-top:10px">
         <label for="otpCode">6-digit OTP</label>
         <input type="text" id="otpCode" inputmode="numeric" maxlength="6" placeholder="123456">
-        <label for="otpNewPass" style="margin-top:8px">Naya password (min 8)</label>
-        <input type="password" id="otpNewPass" maxlength="128" placeholder="Naya password">
-        <div style="margin-top:8px"><button type="button" class="ghost-btn" id="otpResetBtn">Password badlo</button></div>
+        <label for="otpNewPass" style="margin-top:8px">New password (min. 8 characters)</label>
+        <input type="password" id="otpNewPass" maxlength="128" placeholder="New password">
+        <div style="margin-top:8px"><button type="button" class="ghost-btn" id="otpResetBtn">Reset password</button></div>
       </div>
       <p class="error-text" id="otpMsg" aria-live="polite"></p>
-      <p class="hint">OTP na aaye? WhatsApp par bhejein <strong id="supportNumberText">918757160137</strong> — <a id="forgotWaLink" href="#" target="_blank" rel="noopener">WhatsApp par bhejo</a></p>
-      <br><button type="button" class="ghost-btn" id="forgotClose">Band karo</button>
+      <p class="hint">Didn't receive the OTP? Message us on WhatsApp <strong id="supportNumberText">918757160137</strong> — <a id="forgotWaLink" href="#" target="_blank" rel="noopener">Message on WhatsApp</a></p>
+      <br><button type="button" class="ghost-btn" id="forgotClose">Close</button>
     </div>
   </div>
 <footer class="site-footer">
@@ -511,7 +511,7 @@
   }
 
   // Self-service OTP reset (zero-cost: generate FREE, dev me console/debug_otp).
-  // Support number help.html ke OWNER_WHATSAPP jaisa (country code samet, bina +).
+  // Support number matches OWNER_WHATSAPP in help.html (with country code, no +).
   var SUPPORT_WHATSAPP = "918757160137";
   document.getElementById("supportNumberText").textContent = SUPPORT_WHATSAPP;
   var forgotModal = document.getElementById("forgotModal");
@@ -528,8 +528,8 @@
     otpMsg.textContent = msg || "";
   }
   function openForgotModal(phone){
-    var msg = "Namaste! Mera ApnaShift password reset kar dijiye." +
-      (phone ? " Mera registered mobile number: " + phone : " Mera registered mobile number: ");
+    var msg = "Hello! Please help me reset my ApnaShift password." +
+      (phone ? " My registered mobile number: " + phone : " My registered mobile number: ");
     document.getElementById("forgotWaLink").href =
       "https://wa.me/" + SUPPORT_WHATSAPP + "?text=" + encodeURIComponent(msg);
     try { if(phone && otpPhone && !otpPhone.value) otpPhone.value = phone; } catch(e){}
@@ -553,36 +553,36 @@
   function cleanOtpPhone(v){ return cleanPhone(v); }
   otpSendBtn.addEventListener("click", function(){
     var p = cleanOtpPhone(otpPhone.value);
-    if(!PHONE_RE.test(p)){ otpSay("Sahi 10-digit mobile likho.", true); return; }
-    otpSay("OTP bheja ja raha hai…", false);
+    if(!PHONE_RE.test(p)){ otpSay("Enter a valid 10-digit mobile number.", true); return; }
+    otpSay("Sending OTP…", false);
     otpSendBtn.disabled = true;
     postJSON("/api/auth/forgot-password", { phone: p }).then(function(r){
-      if(r.status === 429){ otpSay("Bahut koshish — 15 min baad try karo.", true); return; }
-      if(!r.body || r.body.ok !== true){ otpSay("OTP nahi bheja — dobara try karo.", true); return; }
+      if(r.status === 429){ otpSay("Too many attempts — please try again after 15 minutes.", true); return; }
+      if(!r.body || r.body.ok !== true){ otpSay("The OTP could not be sent — please try again.", true); return; }
       otpStep2.style.display = "block";
-      otpSay(r.body.debug_otp ? ("Dev OTP (FREE, SMS nahi laga): " + r.body.debug_otp) : "OTP bhej diya — 10 min me use karo. Na aaye to WhatsApp karo.", false);
-    }).catch(function(){ otpSay("Internet dikkat — dobara try karo.", true); })
+      otpSay(r.body.debug_otp ? ("Development OTP (free, no SMS sent): " + r.body.debug_otp) : "OTP has been sent — please use it within 10 minutes. If you don't receive it, contact us on WhatsApp.", false);
+    }).catch(function(){ otpSay("Network error — please check your connection and try again.", true); })
     .then(function(){ otpSendBtn.disabled = false; });
   });
   otpResetBtn.addEventListener("click", function(){
     var p = cleanOtpPhone(otpPhone.value);
     var code = String((otpCode.value || "").trim());
     var np = String(otpNewPass.value || "");
-    if(!PHONE_RE.test(p)){ otpSay("Sahi mobile likho.", true); return; }
-    if(!/^\d{6}$/.test(code)){ otpSay("6-digit OTP likho.", true); return; }
-    if(np.length < 8){ otpSay("Naya password min 8 akshar.", true); return; }
-    otpSay("Password badla ja raha hai…", false);
+    if(!PHONE_RE.test(p)){ otpSay("Enter a valid mobile number.", true); return; }
+    if(!/^\d{6}$/.test(code)){ otpSay("Enter the 6-digit OTP.", true); return; }
+    if(np.length < 8){ otpSay("New password must be at least 8 characters.", true); return; }
+    otpSay("Resetting password…", false);
     otpResetBtn.disabled = true;
     postJSON("/api/auth/reset-password", { phone: p, otp: code, new_password: np }).then(function(r){
       if(r.status === 200 && r.body && r.body.ok === true){
-        otpSay("Password badal gaya — ab login karo.", false);
+        otpSay("Your password has been reset — please log in.", false);
         try { lphone.value = otpPhone.value; } catch(e){}
         setTimeout(closeForgotModal, 1500);
         return;
       }
-      if(r.status === 429){ otpSay("Bahut koshish — 15 min baad try karo.", true); return; }
-      otpSay("OTP galat ya expire — naya OTP mangao.", true);
-    }).catch(function(){ otpSay("Internet dikkat — dobara try karo.", true); })
+      if(r.status === 429){ otpSay("Too many attempts — please try again after 15 minutes.", true); return; }
+      otpSay("Incorrect or expired OTP — please request a new OTP.", true);
+    }).catch(function(){ otpSay("Network error — please check your connection and try again.", true); })
     .then(function(){ otpResetBtn.disabled = false; });
   });
 

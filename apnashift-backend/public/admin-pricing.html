@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pricing | ApnaShift Admin</title>
-<meta name="description" content="ApnaShift admin — pricing rates dekho aur badlo.">
+<meta name="description" content="ApnaShift admin — view and update pricing rates.">
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -85,14 +85,14 @@
 
   <section class="card" aria-labelledby="pageTitle">
     <h1 id="pageTitle">Pricing</h1>
-    <p class="sub">Rates sirf nayi bookings par lagte hain — purani bookings ka snapshot nahi badalta.</p>
-    <p><button class="btn ghost" id="loadBtn" type="button">Rates load karo</button></p>
-    <div class="table-wrap" id="ratesWrap" aria-live="polite"><p class="loading">Load dabao.</p></div>
+    <p class="sub">Rates apply only to new bookings — snapshots of old bookings never change.</p>
+    <p><button class="btn ghost" id="loadBtn" type="button">Load rates</button></p>
+    <div class="table-wrap" id="ratesWrap" aria-live="polite"><p class="loading">Press Load.</p></div>
 
-    <h2>Rate badlo</h2>
+    <h2>Update rate</h2>
     <div class="form-grid">
       <div class="field">
-        <label for="vehicleSel">Gaadi</label>
+        <label for="vehicleSel">Vehicle</label>
         <select id="vehicleSel">
           <option value="pickup">pickup</option>
           <option value="mini_truck">mini_truck</option>
@@ -100,27 +100,27 @@
         </select>
       </div>
       <div class="field">
-        <label for="baseInp">Base Rs (khali = no change)</label>
+        <label for="baseInp">Base Rs (blank = no change)</label>
         <input type="number" id="baseInp" min="0" placeholder="350">
       </div>
       <div class="field">
-        <label for="kmInp">Per km Rs (khali = no change)</label>
+        <label for="kmInp">Per km Rs (blank = no change)</label>
         <input type="number" id="kmInp" min="0" step="0.5" placeholder="17.5">
       </div>
       <div class="field">
-        <label for="helperInp">Helper Rs (khali = no change)</label>
+        <label for="helperInp">Helper Rs (blank = no change)</label>
         <input type="number" id="helperInp" min="0" placeholder="200">
       </div>
       <div class="field">
-        <label for="commInp">Commission % (khali = no change)</label>
+        <label for="commInp">Commission % (blank = no change)</label>
         <input type="number" id="commInp" min="0" max="100" step="0.5" placeholder="15">
       </div>
     </div>
     <p style="margin-top:10px"><button class="btn" id="saveBtn" type="button">Save rate</button></p>
 
     <h2>History</h2>
-    <p><button class="btn ghost" id="histBtn" type="button">History load karo</button></p>
-    <div class="table-wrap" id="histWrap" aria-live="polite"><p class="loading">Load dabao.</p></div>
+    <p><button class="btn ghost" id="histBtn" type="button">Load history</button></p>
+    <div class="table-wrap" id="histWrap" aria-live="polite"><p class="loading">Press Load.</p></div>
 
     <p class="back"><a href="admin-home.html">← Admin Home</a> • <a href="admin-dashboard.html">Full dashboard</a></p>
   </section>
@@ -191,15 +191,15 @@
   function loadRates(){
     showAlert(null, "");
     loadBtn.disabled = true;
-    ratesWrap.innerHTML = '<p class="loading">Load ho raha hai…</p>';
+    ratesWrap.innerHTML = '<p class="loading">Loading…</p>';
     fetch(API_BASE_URL + "/api/admin/pricing-rules", { headers: authHeaders() })
       .then(readBody)
       .then(function(result){
         if(checkAuth(result)) return;
         if(result.status !== 200 || !result.body || result.body.ok !== true) throw new Error("load_failed");
         var rules = Array.isArray(result.body.rules) ? result.body.rules : [];
-        if(!rules.length){ ratesWrap.innerHTML = '<p class="empty">Koi rate nahi mila.</p>'; return; }
-        var h = "<table><tr><th>Gaadi</th><th>Base</th><th>Per km</th><th>Helper</th><th>Comm. %</th><th>Updated</th></tr>";
+        if(!rules.length){ ratesWrap.innerHTML = '<p class="empty">No rates found.</p>'; return; }
+        var h = "<table><tr><th>Vehicle</th><th>Base</th><th>Per km</th><th>Helper</th><th>Comm. %</th><th>Updated</th></tr>";
         for(var i = 0; i < rules.length; i++){
           var r = rules[i];
           h += "<tr><td>" + esc(r.vehicle_type) + "</td><td>" + esc(r.base_rs) +
@@ -209,8 +209,8 @@
         ratesWrap.innerHTML = h + "</table>";
       })
       .catch(function(){
-        ratesWrap.innerHTML = '<p class="empty">Load nahi hua — dobara try karo.</p>';
-        showAlert("err", "Rates load nahi hue.");
+        ratesWrap.innerHTML = '<p class="empty">Could not load — please try again.</p>';
+        showAlert("err", "Could not load rates.");
       })
       .then(function(){ loadBtn.disabled = false; });
   }
@@ -226,13 +226,13 @@
     var body = { vehicle_type: vehicleSel.value };
     var b = numOrUndef(baseInp), k = numOrUndef(kmInp), hp = numOrUndef(helperInp), c = numOrUndef(commInp);
     if(b === undefined && k === undefined && hp === undefined && c === undefined){
-      showAlert("err", "Kam se kam ek field bharo.");
+      showAlert("err", "Fill at least one field.");
       return;
     }
-    if(b !== undefined){ if(!(b >= 0)){ showAlert("err", "Base Rs 0 ya zyada ho."); return; } body.base_rs = b; }
-    if(k !== undefined){ if(!(k >= 0)){ showAlert("err", "Per km Rs 0 ya zyada ho."); return; } body.per_km_rs = k; }
-    if(hp !== undefined){ if(!(hp >= 0)){ showAlert("err", "Helper Rs 0 ya zyada ho."); return; } body.helper_rs = hp; }
-    if(c !== undefined){ if(!(c >= 0 && c <= 100)){ showAlert("err", "Commission 0–100 ke beech ho."); return; } body.commission_pct = c; }
+    if(b !== undefined){ if(!(b >= 0)){ showAlert("err", "Base Rs must be 0 or more."); return; } body.base_rs = b; }
+    if(k !== undefined){ if(!(k >= 0)){ showAlert("err", "Per km Rs must be 0 or more."); return; } body.per_km_rs = k; }
+    if(hp !== undefined){ if(!(hp >= 0)){ showAlert("err", "Helper Rs must be 0 or more."); return; } body.helper_rs = hp; }
+    if(c !== undefined){ if(!(c >= 0 && c <= 100)){ showAlert("err", "Commission must be between 0 and 100."); return; } body.commission_pct = c; }
     showAlert(null, "");
     saveBtn.disabled = true;
     fetch(API_BASE_URL + "/api/admin/pricing-rules", {
@@ -242,30 +242,30 @@
     }).then(readBody).then(function(result){
       if(checkAuth(result)) return;
       if(result.status === 200 && result.body && result.body.ok === true){
-        showAlert("ok", "Rate save ho gaya (history #" + result.body.history_id + ").");
+        showAlert("ok", "Rate saved (history #" + result.body.history_id + ").");
         baseInp.value = ""; kmInp.value = ""; helperInp.value = ""; commInp.value = "";
         loadRates();
         return;
       }
-      if(result.status === 400) showAlert("err", "Details galat hain — values check karo.");
-      else showAlert("err", "Save nahi hua — dobara try karo.");
+      if(result.status === 400) showAlert("err", "Invalid details — please check the values.");
+      else showAlert("err", "Could not save — please try again.");
     }).catch(function(){
-      showAlert("err", "Internet me dikkat hai.");
+      showAlert("err", "Internet issue.");
     }).then(function(){ saveBtn.disabled = false; });
   }
 
   function loadHistory(){
     showAlert(null, "");
     histBtn.disabled = true;
-    histWrap.innerHTML = '<p class="loading">Load ho raha hai…</p>';
+    histWrap.innerHTML = '<p class="loading">Loading…</p>';
     fetch(API_BASE_URL + "/api/admin/pricing-rules/history?limit=20", { headers: authHeaders() })
       .then(readBody)
       .then(function(result){
         if(checkAuth(result)) return;
         if(result.status !== 200 || !result.body || result.body.ok !== true) throw new Error("load_failed");
         var arr = Array.isArray(result.body.history) ? result.body.history : [];
-        if(!arr.length){ histWrap.innerHTML = '<p class="empty">History khaali hai.</p>'; return; }
-        var h = "<table><tr><th>ID</th><th>Gaadi</th><th>Badlav</th><th>Kab</th></tr>";
+        if(!arr.length){ histWrap.innerHTML = '<p class="empty">History is empty.</p>'; return; }
+        var h = "<table><tr><th>ID</th><th>Vehicle</th><th>Change</th><th>When</th></tr>";
         for(var i = 0; i < arr.length; i++){
           var x = arr[i];
           h += "<tr><td>" + esc(x.id) + "</td><td>" + esc(x.vehicle_type) +
@@ -275,8 +275,8 @@
         histWrap.innerHTML = h + "</table>";
       })
       .catch(function(){
-        histWrap.innerHTML = '<p class="empty">Load nahi hua — dobara try karo.</p>';
-        showAlert("err", "History load nahi hui.");
+        histWrap.innerHTML = '<p class="empty">Could not load — please try again.</p>';
+        showAlert("err", "Could not load history.");
       })
       .then(function(){ histBtn.disabled = false; });
   }

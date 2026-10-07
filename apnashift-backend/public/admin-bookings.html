@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bookings | ApnaShift Admin</title>
-<meta name="description" content="ApnaShift admin — bookings dekho, filter karo aur driver assign karo.">
+<meta name="description" content="ApnaShift admin — view bookings, apply filters, and assign drivers.">
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -101,7 +101,7 @@
       <a href="admin-dashboard.html">Dashboard</a>
       <a href="help.html">Help</a>
     </nav>
-    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">☰</button>
   </div>
 </header>
 
@@ -109,7 +109,7 @@
   <div class="top-row">
     <div>
       <h1>Bookings</h1>
-      <p class="sub">Filter karo, driver assign karo. Disputed wali laal me dikhegi.</p>
+      <p class="sub">Filter bookings and assign drivers. Disputed bookings are highlighted in red.</p>
     </div>
     <button class="logout-btn" id="logoutBtn" type="button">Logout</button>
   </div>
@@ -142,11 +142,11 @@
       <button class="btn ghost" id="filterBtn" type="button">Load</button>
     </div>
     <div id="summaryBox" aria-live="polite"></div>
-    <div class="list" id="bookingsList" aria-live="polite"><p class="loading">Load dabao.</p></div>
+    <div class="list" id="bookingsList" aria-live="polite"><p class="loading">Press Load to view bookings.</p></div>
     <div class="pager">
-      <button class="btn ghost small" id="prevBtn" type="button">← Pehle</button>
+      <button class="btn ghost small" id="prevBtn" type="button">← Previous</button>
       <span id="pageInfo">Page 1</span>
-      <button class="btn ghost small" id="nextBtn" type="button">Agla →</button>
+      <button class="btn ghost small" id="nextBtn" type="button">Next →</button>
     </div>
   </section>
 
@@ -230,7 +230,7 @@
     }
     return false;
   }
-  function networkMsg(){ return "Network error — net check karke dobara try karo."; }
+  function networkMsg(){ return "Network error — please check your connection and try again."; }
   function fmtDate(v){
     if(!v) return "—";
     var d = new Date(v);
@@ -255,14 +255,14 @@
     html += '<h3>#' + esc(b.id || "—") + ' <span class="badge">' + esc(b.status || "—") + '</span>' +
       (disp ? ' <span class="badge bad">Disputed</span>' : '') + '</h3>';
     html += '<p>' + esc(addrText(b.pickup)) + ' → ' + esc(addrText(b.drop)) + '</p>';
-    html += '<p class="meta">Customer: ' + esc(b.user_name || "—") + ' • Driver: ' + esc(b.driver_name || (b.driver_id ? "assign hai" : "nahi")) + '</p>';
-    html += '<p class="meta">Kiraya: Rs ' + esc(b.price_rs) + ' • Payment: ' + esc(b.payment_method || "—") + ' • ' + esc(fmtDate(b.created_at)) + '</p>';
-    if(disp && b.dispute_reason) html += '<p class="meta">Vivad: ' + esc(b.dispute_reason) + '</p>';
+    html += '<p class="meta">Customer: ' + esc(b.user_name || "—") + ' • Driver: ' + esc(b.driver_name || (b.driver_id ? "assigned" : "not assigned")) + '</p>';
+    html += '<p class="meta">Fare: Rs ' + esc(b.price_rs) + ' • Payment: ' + esc(b.payment_method || "—") + ' • ' + esc(fmtDate(b.created_at)) + '</p>';
+    if(disp && b.dispute_reason) html += '<p class="meta">Dispute: ' + esc(b.dispute_reason) + '</p>';
     if(b.status === "pending"){
       html += '<div class="assign-row"><div class="field">' +
-        '<label for="drv-' + esc(b.id) + '">Driver chuno</label>' +
+        '<label for="drv-' + esc(b.id) + '">Select a driver</label>' +
         '<select id="drv-' + esc(b.id) + '" data-drivers-for="' + esc(b.id) + '">' +
-        '<option value="">— Load ho raha hai… —</option></select></div>' +
+        '<option value="">— Loading… —</option></select></div>' +
         '<button class="btn small" type="button" data-assign="' + esc(b.id) + '">Assign Driver</button></div>';
     }
     html += '</div>';
@@ -274,9 +274,9 @@
     if(!sels.length) return;
     function fill(list){
       for(var i = 0; i < sels.length; i++){
-        var opts = '<option value="">— Driver chuno —</option>';
+        var opts = '<option value="">— Select a driver —</option>';
         for(var j = 0; j < list.length; j++){
-          opts += '<option value="' + esc(list[j].id) + '">' + esc(list[j].name || "Naam nahi") +
+          opts += '<option value="' + esc(list[j].id) + '">' + esc(list[j].name || "No name") +
             ' (' + esc(list[j].vehicle_type || "") + ')</option>';
         }
         sels[i].innerHTML = opts;
@@ -295,20 +295,20 @@
       })
       .catch(function(){
         for(var i = 0; i < sels.length; i++){
-          sels[i].innerHTML = '<option value="">Driver list nahi mili</option>';
+          sels[i].innerHTML = '<option value="">Driver list unavailable</option>';
         }
       });
   }
 
   function loadBookings(){
     filterBtn.disabled = true;
-    bookingsList.innerHTML = '<p class="loading">Bookings load ho rahi hain…</p>';
+    bookingsList.innerHTML = '<p class="loading">Loading bookings…</p>';
     summaryBox.innerHTML = "";
     var qs = ["page=" + page, "limit=" + PAGE_LIMIT];
     if(statusFilter.value) qs.push("status=" + encodeURIComponent(statusFilter.value));
     var from = toISO(fromDate.value, false), to = toISO(toDate.value, true);
-    if(fromDate.value && !from){ showAlert("err", "From date sahi likho."); filterBtn.disabled = false; return; }
-    if(toDate.value && !to){ showAlert("err", "To date sahi likho."); filterBtn.disabled = false; return; }
+    if(fromDate.value && !from){ showAlert("err", "Please enter a valid from date."); filterBtn.disabled = false; return; }
+    if(toDate.value && !to){ showAlert("err", "Please enter a valid to date."); filterBtn.disabled = false; return; }
     if(from) qs.push("from=" + encodeURIComponent(from));
     if(to) qs.push("to=" + encodeURIComponent(to));
     fetch(API_BASE_URL + "/api/admin/bookings?" + qs.join("&"), { method: "GET", headers: authHeaders() })
@@ -326,7 +326,7 @@
         prevBtn.disabled = page <= 1;
         nextBtn.disabled = (page * PAGE_LIMIT) >= total;
         if(!arr.length){
-          bookingsList.innerHTML = '<p class="empty">Koi booking nahi mili.</p>';
+          bookingsList.innerHTML = '<p class="empty">No bookings found.</p>';
           return;
         }
         bookingsList.innerHTML = arr.map(bookingCard).join("");
@@ -334,8 +334,8 @@
         hideAlert();
       })
       .catch(function(err){
-        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : "Bookings load nahi huin. Dobara try karo.";
-        bookingsList.innerHTML = '<p class="empty">Bookings load nahi huin.</p>';
+        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : "Bookings could not be loaded. Please try again.";
+        bookingsList.innerHTML = '<p class="empty">Bookings could not be loaded.</p>';
         showAlert("err", msg);
       })
       .then(function(){
@@ -354,11 +354,11 @@
     var sel = document.getElementById("drv-" + id);
     var driverId = sel ? sel.value : "";
     if(!id || !driverId){
-      showAlert("err", "Pehle driver chuno.");
+      showAlert("err", "Please select a driver first.");
       return;
     }
     btn.disabled = true;
-    showAlert("info", "Driver assign ho raha hai…");
+    showAlert("info", "Assigning driver…");
     fetch(API_BASE_URL + "/api/admin/bookings/" + encodeURIComponent(id) + "/assign", {
       method: "PATCH", headers: authHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({ driver_id: driverId })
@@ -367,21 +367,21 @@
       .then(function(result){
         if(checkAuth(result)) return;
         if(result.status === 200){
-          showAlert("ok", "Driver assign ho gaya.");
+          showAlert("ok", "Driver assigned successfully.");
           loadBookings();
           return;
         }
         var code = result.body && result.body.error;
-        if(code === "invalid_transition") showAlert("err", "Ye booking ab pending nahi hai — list refresh ho rahi hai.");
-        else if(code === "driver_unavailable") showAlert("err", "Driver verified/active nahi hai.");
-        else if(code === "vehicle_mismatch") showAlert("err", "Driver ki gaadi match nahi karti.");
-        else if(result.status === 404) showAlert("err", "Booking ya driver nahi mila.");
-        else showAlert("err", "Assign nahi hua. Dobara try karo.");
+        if(code === "invalid_transition") showAlert("err", "This booking is no longer pending — refreshing the list.");
+        else if(code === "driver_unavailable") showAlert("err", "The driver is not verified/active.");
+        else if(code === "vehicle_mismatch") showAlert("err", "The driver's vehicle does not match.");
+        else if(result.status === 404) showAlert("err", "Booking or driver not found.");
+        else showAlert("err", "Assignment failed. Please try again.");
         btn.disabled = false;
         if(result.status === 409 || result.status === 404) loadBookings();
       })
       .catch(function(err){
-        showAlert("err", (err && err.message === "Failed to fetch") ? networkMsg() : "Assign nahi hua. Dobara try karo.");
+        showAlert("err", (err && err.message === "Failed to fetch") ? networkMsg() : "Assignment failed. Please try again.");
         btn.disabled = false;
       });
   });

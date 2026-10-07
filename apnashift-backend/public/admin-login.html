@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -239,7 +239,7 @@
       <a href="enterprise.html">Enterprise</a>
       <a href="help.html">Help</a>
     </nav>
-    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">☰</button>
   </div>
 </header>
 
@@ -251,7 +251,7 @@
     </div>
     <div class="card-body">
     <h1 id="pageTitle">Admin Login</h1>
-    <p class="sub">Sirf authorized staff ke liye.</p>
+    <p class="sub">For authorized staff only.</p>
 
     <div id="formAlert" role="alert" aria-live="assertive"></div>
 
@@ -259,7 +259,7 @@
       <div class="field" id="f-phone">
         <label for="phone">Admin Email / Phone <span class="req" aria-hidden="true">*</span></label>
         <input type="text" id="phone" name="phone" autocomplete="username" inputmode="text"
-               maxlength="120" placeholder="admin@example.com ya 98765 43210"
+               maxlength="120" placeholder="admin@example.com or 98765 43210"
                aria-describedby="phone-err" required>
         <p class="error-text" id="phone-err"></p>
       </div>
@@ -270,7 +270,7 @@
           <input type="password" id="password" name="password" autocomplete="current-password"
                  maxlength="128" placeholder="Admin password"
                  aria-describedby="password-err" required>
-          <button type="button" class="pw-toggle" id="pwToggle" aria-label="Password dikhao">Show</button>
+          <button type="button" class="pw-toggle" id="pwToggle" aria-label="Show password">Show</button>
         </div>
         <p class="error-text" id="password-err"></p>
       </div>
@@ -279,22 +279,22 @@
 
       <button type="submit" id="submitBtn">Login as Admin</button>
     </form>
-    <p class="note">Ye internal tool hai. Credentials kisi se share mat karo.</p>
+    <p class="note">This is an internal tool. Do not share your credentials with anyone.</p>
     </div>
   </section>
 
   <section id="success" aria-live="polite" aria-labelledby="successTitle">
-    <h2 id="successTitle">Login ho gaya</h2>
-    <p id="welcomeText">Namaste, admin!</p>
-    <p>Admin dashboard khul raha hai…</p>
+    <h2 id="successTitle">Login successful</h2>
+    <p id="welcomeText">Welcome, admin!</p>
+    <p>Opening the admin dashboard…</p>
   </section>
 
   <div class="modal-backdrop" id="forgotModal" role="dialog" aria-modal="true" aria-labelledby="forgotTitle">
     <div class="modal">
       <h2 id="forgotTitle">Password reset</h2>
-      <p>Apna registered phone number WhatsApp par bhejein <strong id="supportNumberText">918757160137</strong>, hum aapka admin password reset kar denge.</p>
-      <a class="wa-btn" id="forgotWaLink" href="#" target="_blank" rel="noopener">WhatsApp par bhejo</a>
-      <br><button type="button" class="ghost-btn" id="forgotClose">Band karo</button>
+      <p>Send your registered phone number via WhatsApp to <strong id="supportNumberText">918757160137</strong>, and we will reset your admin password.</p>
+      <a class="wa-btn" id="forgotWaLink" href="#" target="_blank" rel="noopener">Send via WhatsApp</a>
+      <br><button type="button" class="ghost-btn" id="forgotClose">Close</button>
     </div>
   </div>
 <footer class="site-footer">
@@ -337,7 +337,7 @@
     var show = passwordInput.type === "password";
     passwordInput.type = show ? "text" : "password";
     pwToggle.textContent = show ? "Hide" : "Show";
-    pwToggle.setAttribute("aria-label", show ? "Password chhupao" : "Password dikhao");
+    pwToggle.setAttribute("aria-label", show ? "Hide password" : "Show password");
   });
 
   // Forgot Password — support number help.html ke OWNER_WHATSAPP jaisa.
@@ -345,8 +345,8 @@
   document.getElementById("supportNumberText").textContent = SUPPORT_WHATSAPP;
   var forgotModal = document.getElementById("forgotModal");
   function openForgotModal(){
-    var msg = "Namaste! Mera ApnaShift admin password reset kar dijiye." +
-      (phoneInput.value.trim() ? " Mera registered number: " + phoneInput.value.trim() : "");
+    var msg = "Hello! Please reset my ApnaShift admin password." +
+      (phoneInput.value.trim() ? " My registered number: " + phoneInput.value.trim() : "");
     document.getElementById("forgotWaLink").href =
       "https://wa.me/" + SUPPORT_WHATSAPP + "?text=" + encodeURIComponent(msg);
     forgotModal.classList.add("show");
@@ -415,26 +415,26 @@
     var rawId = phoneInput.value.trim();
     var cleaned = cleanPhone(rawId);
     if(!rawId){
-      setErr("f-phone", "phone-err", phoneInput, "Apna email ya phone number likho.");
+      setErr("f-phone", "phone-err", phoneInput, "Please enter your email or phone number.");
       ok = false; firstBad = firstBad || phoneInput;
     } else if(rawId.indexOf("@") !== -1){
-      // Backend admin login abhi phone-based hai — email walo ko seedha batao.
+      // Backend admin login is phone-based for now — tell email users directly.
       if(!EMAIL_RE.test(rawId)){
-        setErr("f-phone", "phone-err", phoneInput, "Sahi email likho.");
+        setErr("f-phone", "phone-err", phoneInput, "Please enter a valid email address.");
         ok = false; firstBad = firstBad || phoneInput;
       } else {
-        setErr("f-phone", "phone-err", phoneInput, "Email login abhi nahi hai — registered phone number use karo.");
+        setErr("f-phone", "phone-err", phoneInput, "Email login is not currently supported — please use your registered phone number.");
         ok = false; firstBad = firstBad || phoneInput;
       }
     } else if(!PHONE_RE.test(cleaned)){
-      setErr("f-phone", "phone-err", phoneInput, "Sahi 10 digit mobile number likho jo 6-9 se shuru ho.");
+      setErr("f-phone", "phone-err", phoneInput, "Please enter a valid 10-digit mobile number starting with 6-9.");
       ok = false; firstBad = firstBad || phoneInput;
     } else {
       setErr("f-phone", "phone-err", phoneInput, "");
     }
 
     if(!passwordInput.value){
-      setErr("f-password", "password-err", passwordInput, "Password likho.");
+      setErr("f-password", "password-err", passwordInput, "Please enter your password.");
       ok = false; firstBad = firstBad || passwordInput;
     } else {
       setErr("f-password", "password-err", passwordInput, "");
@@ -446,7 +446,7 @@
     }
 
     submitBtn.disabled = true;
-    submitBtn.textContent = "Login ho raha hai…";
+    submitBtn.textContent = "Logging in…";
 
     fetch(API_BASE_URL + "/api/admin/login", {
       method: "POST",
@@ -471,18 +471,18 @@
       form.style.display = "none";
       document.querySelector(".note").style.display = "none";
       document.getElementById("welcomeText").textContent =
-        "Namaste" + (user.name ? ", " + user.name : "") + "!";
+        "Welcome" + (user.name ? ", " + user.name : "") + "!";
       successBox.classList.add("show");
-      showAlert("ok", "Login ho gaya.");
+      showAlert("ok", "Login successful.");
       successBox.scrollIntoView({ behavior: "smooth", block: "start" });
       setTimeout(function(){
         window.location.href = "admin-dashboard.html";
       }, 1200);
     }).catch(function(err){
       if(err && err.message === "storage"){
-        showAlert("err", "Browser me login save nahi hua. Private mode band karke try karo.");
+        showAlert("err", "Your login could not be saved in this browser. Please disable private mode and try again.");
       } else {
-        showAlert("err", "Phone ya password galat hai.");
+        showAlert("err", "Incorrect phone number or password.");
       }
     }).then(function(){
       submitBtn.disabled = false;
@@ -490,7 +490,7 @@
     });
   });
 var navMenuBtn=document.getElementById("navMenuBtn"),siteNav=document.getElementById("siteNav");
-if(navMenuBtn&&siteNav){navMenuBtn.addEventListener("click",function(){var open=siteNav.classList.toggle("open");navMenuBtn.setAttribute("aria-expanded",open?"true":"false");navMenuBtn.setAttribute("aria-label",open?"Menu band karo":"Menu kholo");});siteNav.addEventListener("click",function(ev){if(ev.target.tagName==="A"&&siteNav.classList.contains("open")){siteNav.classList.remove("open");navMenuBtn.setAttribute("aria-expanded","false");}});}
+if(navMenuBtn&&siteNav){navMenuBtn.addEventListener("click",function(){var open=siteNav.classList.toggle("open");navMenuBtn.setAttribute("aria-expanded",open?"true":"false");navMenuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");});siteNav.addEventListener("click",function(ev){if(ev.target.tagName==="A"&&siteNav.classList.contains("open")){siteNav.classList.remove("open");navMenuBtn.setAttribute("aria-expanded","false");}});}
 })();
 </script>
 </body>

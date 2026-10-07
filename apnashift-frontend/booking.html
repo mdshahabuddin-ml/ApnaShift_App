@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vehicle Book Karo | ApnaShift</title>
-<meta name="description" content="ApnaShift par vehicle book karo — pickup aur drop details bharkar sahi kiraya pao.">
+<title>Book a Vehicle | ApnaShift</title>
+<meta name="description" content="Book a vehicle on ApnaShift — enter pickup and drop details to get the correct fare.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
   :root{
     --navy:#14213d;
@@ -182,6 +183,15 @@
   #successCard p{margin:6px 0;color:#dbe2f0;overflow-wrap:anywhere}
   #successCard a{color:var(--yellow);font-weight:600}
   .backlink{display:inline-block;margin-top:14px;color:var(--navy);font-weight:600;font-size:.9rem}
+  .map-backdrop{display:none;position:fixed;inset:0;background:rgba(20,33,61,.55);z-index:1000;padding:16px}
+  .map-backdrop.show{display:flex;align-items:center;justify-content:center}
+  .map-modal{background:#fff;border:2px solid var(--navy);border-radius:14px;box-shadow:6px 6px 0 var(--yellow);max-width:560px;width:100%;padding:16px}
+  .map-modal h2{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;color:var(--navy);font-size:1.2rem;margin:0 0 8px}
+  #pickMap{height:min(60vh,420px);min-height:260px;border:2px solid var(--navy);border-radius:10px;background:#eef1f7;z-index:0}
+  .map-modal{max-height:92vh;overflow:auto}
+  @media(max-width:480px){.map-backdrop{padding:8px}.map-modal{padding:12px}}
+  .loc-status{font-size:.84rem;color:var(--muted);margin:6px 0 0}
+  .loc-status b{color:var(--navy)}
   .site-header{background:var(--navy);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:50}
   .site-header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px}
   .site-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.3rem;line-height:1;color:#fff;text-decoration:none}
@@ -222,14 +232,14 @@
       </details>
       <a href="help.html">Help</a>
     </nav>
-    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">☰</button>
   </div>
 </header>
 
 <main>
   <section class="card" aria-labelledby="pageTitle">
-    <h1 id="pageTitle">Vehicle Book Karo</h1>
-    <p class="sub">Pickup aur drop ki details bharo, pehle sahi kiraya dekho, phir booking pakki karo.</p>
+    <h1 id="pageTitle">Book a Vehicle</h1>
+    <p class="sub">Enter pickup and drop-off details, check the correct fare first, then confirm your booking.</p>
 
     <div class="alert" id="formAlert" role="alert" aria-live="assertive"></div>
 
@@ -240,18 +250,16 @@
         <datalist id="pickupSuggest"></datalist>
         <p class="error-text" id="pickupAddr-err"></p>
       </div>
-      <div class="row2">
-        <div class="field" id="f-pickupLat">
-          <label for="pickupLat">Pickup latitude <span class="req" aria-hidden="true">*</span></label>
-          <input type="number" id="pickupLat" name="pickup-lat" step="any" min="-90" max="90" value="22.7196" aria-describedby="pickupLat-hint pickupLat-err" required>
-          <p class="hint" id="pickupLat-hint">Indore ke aas-paas: 22.7196, 75.8577</p>
-          <p class="error-text" id="pickupLat-err"></p>
+      <input type="hidden" id="pickupLat" name="pickup-lat" value="">
+      <input type="hidden" id="pickupLng" name="pickup-lng" value="">
+      <div class="field" id="f-pickupLat">
+        <label>📍 Pickup location <span class="req" aria-hidden="true">*</span></label>
+        <p class="loc-status" id="pickupLocStatus">No location chosen yet — pick an address suggestion above or choose on the map.</p>
+        <div class="btnrow">
+          <button type="button" class="btn ghost" id="pickupMapBtn">Choose on map</button>
         </div>
-        <div class="field" id="f-pickupLng">
-          <label for="pickupLng">Pickup longitude <span class="req" aria-hidden="true">*</span></label>
-          <input type="number" id="pickupLng" name="pickup-lng" step="any" min="-180" max="180" value="75.8577" aria-describedby="pickupLng-err" required>
-          <p class="error-text" id="pickupLng-err"></p>
-        </div>
+        <p class="error-text" id="pickupLat-err"></p>
+        <p class="error-text" id="pickupLng-err"></p>
       </div>
 
       <div class="field" id="f-dropAddr">
@@ -260,98 +268,109 @@
         <datalist id="dropSuggest"></datalist>
         <p class="error-text" id="dropAddr-err"></p>
       </div>
-      <div class="row2">
-        <div class="field" id="f-dropLat">
-          <label for="dropLat">Drop latitude <span class="req" aria-hidden="true">*</span></label>
-          <input type="number" id="dropLat" name="drop-lat" step="any" min="-90" max="90" value="22.7200" aria-describedby="dropLat-err" required>
-          <p class="error-text" id="dropLat-err"></p>
+      <input type="hidden" id="dropLat" name="drop-lat" value="">
+      <input type="hidden" id="dropLng" name="drop-lng" value="">
+      <div class="field" id="f-dropLat">
+        <label>📍 Drop-off location <span class="req" aria-hidden="true">*</span></label>
+        <p class="loc-status" id="dropLocStatus">No location chosen yet — pick an address suggestion above or choose on the map.</p>
+        <div class="btnrow">
+          <button type="button" class="btn ghost" id="dropMapBtn">Choose on map</button>
         </div>
-        <div class="field" id="f-dropLng">
-          <label for="dropLng">Drop longitude <span class="req" aria-hidden="true">*</span></label>
-          <input type="number" id="dropLng" name="drop-lng" step="any" min="-180" max="180" value="75.8600" aria-describedby="dropLng-err" required>
-          <p class="error-text" id="dropLng-err"></p>
-        </div>
+        <p class="error-text" id="dropLat-err"></p>
+        <p class="error-text" id="dropLng-err"></p>
       </div>
 
       <div class="row2">
         <div class="field" id="f-schedDate">
-          <label for="schedDate">Tareekh (optional)</label>
+          <label for="schedDate">Date (optional)</label>
           <input type="date" id="schedDate" name="scheduled-date" aria-describedby="schedDate-hint schedDate-err">
-          <p class="hint" id="schedDate-hint">Khali chhoda to abhi ki booking hogi.</p>
+          <p class="hint" id="schedDate-hint">Leave blank to book for now.</p>
           <p class="error-text" id="schedDate-err"></p>
         </div>
         <div class="field" id="f-schedTime">
-          <label for="schedTime">Samay (optional)</label>
+          <label for="schedTime">Time (optional)</label>
           <input type="time" id="schedTime" name="scheduled-time" aria-describedby="schedTime-err">
           <p class="error-text" id="schedTime-err"></p>
         </div>
       </div>
 
       <div class="field" id="f-vehicle">
-        <label for="vehicle">Gaadi chuno <span class="req" aria-hidden="true">*</span></label>
+        <label for="vehicle">Select vehicle <span class="req" aria-hidden="true">*</span></label>
         <select id="vehicle" name="vehicle-type" aria-describedby="vehicle-err" required>
-          <option value="pickup">Pickup — chhota samaan</option>
-          <option value="mini_truck">Mini Truck — ghar ka samaan</option>
-          <option value="mini_tractor">Mini Tractor — bhari samaan</option>
+          <option value="pickup">Pickup — small items</option>
+          <option value="mini_truck">Mini Truck — household items</option>
+          <option value="mini_tractor">Mini Tractor — heavy items</option>
         </select>
         <p class="error-text" id="vehicle-err"></p>
       </div>
 
       <fieldset class="field" id="f-payMethod">
-        <legend>Payment kaise karoge? <span class="req" aria-hidden="true">*</span></legend>
+        <legend>How will you pay? <span class="req" aria-hidden="true">*</span></legend>
         <label class="checkline" for="payUpi">
           <input type="radio" id="payUpi" name="payment-method" value="upi" checked>
-          <span>Online (UPI) se <strong>(default, recommended)</strong> — driver ke UPI ID par</span>
+          <span>Online (UPI) (default, recommended) — pay to the driver's UPI ID</span>
         </label>
         <label class="checkline" for="payCash">
           <input type="radio" id="payCash" name="payment-method" value="cash">
-          <span>Cash on Delivery (COD) se — poora kiraya driver ko haath me (driver confirm karega)</span>
+          <span>Cash on Delivery (COD) — pay the full fare to the driver (driver will confirm)</span>
         </label>
         <p class="error-text" id="payMethod-err"></p>
       </fieldset>
 
       <label class="checkline" for="helper">
         <input type="checkbox" id="helper" name="helper-needed">
-        <span>Mujhe helper chahiye (samaan uthane ke liye madad)</span>
+        <span>I need a helper (help with lifting/loading the items)</span>
       </label>
 
       <div class="field" id="f-itemDesc">
-        <label for="itemDesc">Samaan ki details (optional)</label>
-        <textarea id="itemDesc" name="item-description" maxlength="500" placeholder="Example: 1 double bed, 4 dabbe, 1 fridge" aria-describedby="itemDesc-hint itemDesc-err"></textarea>
-        <p class="hint" id="itemDesc-hint">Driver ko andaza lag jayega kitna samaan hai.</p>
+        <label for="itemDesc">Item details (optional)</label>
+        <textarea id="itemDesc" name="item-description" maxlength="500" placeholder="Example: 1 double bed, 4 boxes, 1 fridge" aria-describedby="itemDesc-hint itemDesc-err"></textarea>
+        <p class="hint" id="itemDesc-hint">This helps the driver estimate the amount of luggage/items.</p>
         <p class="error-text" id="itemDesc-err"></p>
       </div>
 
       <div class="btnrow">
-        <button type="button" class="btn ghost" id="estimateBtn">Get Estimate — Kiraya Dekho</button>
+        <button type="button" class="btn ghost" id="estimateBtn">Get Estimate — See Fare</button>
       </div>
     </form>
 
     <section class="fare" id="fareCard" aria-live="polite" aria-labelledby="fareTitle">
-      <h2 id="fareTitle">Kiraye ka hisaab</h2>
+      <h2 id="fareTitle">Fare breakdown</h2>
       <table>
         <tbody>
-          <tr><td>Doori</td><td id="fareDist">–</td></tr>
-          <tr><td>Base kiraya</td><td id="fareBase">–</td></tr>
-          <tr><td>Doori ka kiraya</td><td id="fareDistFare">–</td></tr>
+          <tr><td>Distance</td><td id="fareDist">–</td></tr>
+          <tr><td>Base fare</td><td id="fareBase">–</td></tr>
+          <tr><td>Distance fare</td><td id="fareDistFare">–</td></tr>
           <tr><td>Helper charge</td><td id="fareHelper">–</td></tr>
-          <tr class="total"><td>Kul kiraya</td><td id="fareTotal">–</td></tr>
-          <tr><td>Andaza range</td><td id="fareRange">–</td></tr>
+          <tr class="total"><td>Total fare</td><td id="fareTotal">–</td></tr>
+          <tr><td>Estimated range</td><td id="fareRange">–</td></tr>
         </tbody>
       </table>
       <div class="btnrow" style="margin-top:12px">
-        <button type="button" class="btn" id="confirmBtn">Confirm Booking — Pakki Karo</button>
+        <button type="button" class="btn" id="confirmBtn">Confirm Booking</button>
       </div>
     </section>
 
     <section id="successCard" aria-live="polite" aria-labelledby="successTitle">
-      <h2 id="successTitle">Booking pakki ho gayi!</h2>
-      <p id="successText">Booking ID mil gayi hai.</p>
-      <p><a href="customer-dashboard.html">Meri bookings dekho — Dashboard kholo</a></p>
+      <h2 id="successTitle">Booking confirmed!</h2>
+      <p id="successText">Booking ID received.</p>
+      <p><a href="customer-dashboard.html">View my bookings — Open Dashboard</a></p>
     </section>
 
-    <a class="backlink" href="customer-dashboard.html">← Dashboard par wapas jao</a>
+    <a class="backlink" href="customer-dashboard.html">← Back to Dashboard</a>
   </section>
+
+  <div class="map-backdrop" id="mapModal" role="dialog" aria-modal="true" aria-labelledby="mapTitle">
+    <div class="map-modal">
+      <h2 id="mapTitle">Choose location</h2>
+      <div id="pickMap" role="img" aria-label="Map to choose pickup or drop location"></div>
+      <p class="loc-status" id="mapPickStatus">Drag the map to move • use +/− or pinch to zoom • tap to drop the pin.</p>
+      <div class="btnrow">
+        <button type="button" class="btn" id="mapConfirmBtn">Use this location</button>
+        <button type="button" class="btn ghost" id="mapCloseBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
 </main>
 
 <footer class="site-footer">
@@ -366,6 +385,7 @@
   </div>
 </footer>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 (function(){
   "use strict";
@@ -423,6 +443,271 @@
     };
   }
 
+  // ---- Map picker (Geoapify tiles via /api/geo/config, OSM fallback) ----
+  // Lat/lng live in hidden inputs (same IDs/names the backend expects).
+  // Address suggestions (Geoapify proxy) + map pin only FILL them —
+  // range validation below is untouched.
+  var TILE_TEMPLATE = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+  var TILE_ATTRIB = "&copy; OpenStreetMap contributors";
+  // Authorized India fallback center (Jaipur) — used ONLY when no saved
+  // pin, no geocode hit and no device location exist. Never 0,0 / ocean.
+  var JAIPUR = [26.9124, 75.7873];
+
+  fetch(API_BASE_URL + "/api/geo/config", { headers: { "Authorization": "Bearer " + getToken() } })
+    .then(function(r){ return r.json().catch(function(){ return null; }); })
+    .then(function(b){
+      if(b && b.ok && b.tiles && b.tiles.template) TILE_TEMPLATE = b.tiles.template;
+      if(b && b.ok && b.tiles && b.tiles.attribution) TILE_ATTRIB = b.tiles.attribution;
+      // Config map khulne ke baad aaye to bani hui layer upgrade karo.
+      try {
+        if(pickTiles && TILE_TEMPLATE.indexOf("geoapify") !== -1){
+          pickTiles.setUrl(TILE_TEMPLATE);
+          if(mapPickStatus && mapModal && mapModal.classList.contains("show") &&
+             mapPickStatus.textContent.indexOf("failed") !== -1){
+            var c = pickMap ? pickMap.getCenter() : null;
+            if(c) mapPickStatus.textContent = "Picked: " + c.lat.toFixed(5) + ", " + c.lng.toFixed(5);
+          }
+        }
+      } catch(e){}
+      // Public map key travels inside the tile template (standard pattern,
+      // referrer-restricted in the Geoapify dashboard). Reuse it for direct
+      // forward-geocoding — no new key, no new service.
+      try {
+        var m = String(TILE_TEMPLATE || "").match(/[?&]apiKey=([^&]+)/);
+        if(m && m[1]) GEOAPIFY_KEY = decodeURIComponent(m[1]);
+      } catch(e){}
+    }).catch(function(){ /* OSM fallback rehne do */ });
+
+  // Blank string Number("") me 0 ban jata hai (isFinite pass!) — isliye
+  // khali field ko hamesha null mano, warna khali pin 0,0 (ocean) padhi jati hai.
+  function numOrNull(el){
+    var s = el ? String(el.value ?? "").trim() : "";
+    if(s === "") return null;
+    var n = Number(s);
+    return isFinite(n) ? n : null;
+  }
+  function locValues(latId, lngId){
+    var lat = numOrNull(document.getElementById(latId));
+    var lng = numOrNull(document.getElementById(lngId));
+    if(lat === null || lng === null) return null;
+    return { lat: lat, lng: lng };
+  }
+  function locText(v){
+    return v ? ("Location set: " + v.lat.toFixed(5) + ", " + v.lng.toFixed(5)) : null;
+  }
+  function refreshLocStatus(){
+    var p = locValues("pickupLat", "pickupLng");
+    var d = locValues("dropLat", "dropLng");
+    var pEl = document.getElementById("pickupLocStatus");
+    var dEl = document.getElementById("dropLocStatus");
+    var none = "No location chosen yet — pick an address suggestion above or choose on the map.";
+    if(pEl) pEl.textContent = locText(p) || none;
+    if(dEl) dEl.textContent = locText(d) || none;
+  }
+  function setLoc(latId, lngId, lat, lng){
+    var la = document.getElementById(latId), ln = document.getElementById(lngId);
+    if(la) la.value = lat;
+    if(ln) ln.value = lng;
+    refreshLocStatus();
+  }
+
+  var pickMap = null, pickMarker = null, pickTiles = null, pickTarget = null, pickPoint = null;
+  var mapModal = document.getElementById("mapModal");
+  var mapTitle = document.getElementById("mapTitle");
+  var mapPickStatus = document.getElementById("mapPickStatus");
+
+  function ensureMap(center, zoom){
+    if(pickMap || typeof L === "undefined") return;
+    pickMap = L.map("pickMap", {
+      center: center,
+      zoom: zoom || 13,
+      dragging: true,
+      touchZoom: true,
+      scrollWheelZoom: true,
+      doubleClickZoom: true,
+      zoomControl: true,
+      tap: true
+    });
+    pickTiles = L.tileLayer(TILE_TEMPLATE, { maxZoom: 19, attribution: TILE_ATTRIB });
+    pickTiles.on("tileerror", function(){
+      if(mapPickStatus && mapModal && mapModal.classList.contains("show")){
+        mapPickStatus.textContent = "Map tiles failed to load — check internet and retry.";
+      }
+    });
+    pickTiles.addTo(pickMap);
+    pickMarker = L.marker(center, { draggable: true }).addTo(pickMap);
+    // Pan/zoom moves the map under the pin: keep the marker glued to the
+    // center so it stays visible and always reflects the chosen point.
+    pickMap.on("moveend", function(){
+      var c = pickMap.getCenter();
+      if(pickMarker) pickMarker.setLatLng(c);
+      showPicked(c);
+    });
+    pickMarker.on("dragend", function(){
+      showPicked(pickMarker.getLatLng());
+    });
+    // Tap/click drops the pin exactly where the customer pointed.
+    pickMap.on("click", function(ev){
+      if(pickMarker) pickMarker.setLatLng(ev.latlng);
+      showPicked(ev.latlng);
+    });
+  }
+  function showPicked(ll){
+    pickPoint = { lat: ll.lat, lng: ll.lng };
+    if(mapPickStatus) mapPickStatus.textContent = "Picked: " + ll.lat.toFixed(5) + ", " + ll.lng.toFixed(5);
+  }
+  // Sensible default: if the address box has text but no coords yet,
+  // resolve it through Geoapify FORWARD GEOCODING (/v1/geocode/search)
+  // FIRST and open the map at the returned coordinates. The request uses
+  // the existing public map key (from the tile template — same key, no new
+  // service) with filter=countrycode:in. Only the FIRST result with
+  // numeric lat/lon AND country_code === "in" is used; anything else means
+  // "not found" — the map never opens at an unrelated place and there are
+  // no hardcoded fallback coordinates anywhere in this flow.
+  // TEMP DEBUG (console only, never the request URL/key): enteredAddress,
+  // response, formatted, lat, lon, country_code.
+  var GEO_DEBUG = true;
+  var GEOAPIFY_KEY = null;
+  function indiaQuery(q){
+    return String(q || "").trim();
+  }
+  function geocodeAddress(which){
+    var addrEl = document.getElementById(which === "pickup" ? "pickupAddr" : "dropAddr");
+    var enteredAddress = addrEl ? String(addrEl.value || "").trim() : "";
+    if(GEO_DEBUG){ try { console.log("[geo] enteredAddress:", enteredAddress); } catch(e){} }
+    if(enteredAddress.length < 3 || !GEOAPIFY_KEY) return Promise.resolve(null);
+    // NOTE: request URL holds the key — it is NEVER logged.
+    var url = "https://api.geoapify.com/v1/geocode/search?text=" + encodeURIComponent(indiaQuery(enteredAddress)) +
+      "&filter=countrycode:in&limit=5&format=json&apiKey=" + encodeURIComponent(GEOAPIFY_KEY);
+    return fetch(url)
+    .then(function(r){ return r.json().catch(function(){ return null; }); })
+    .then(function(data){
+      if(GEO_DEBUG){ try { console.log("[geo] response:", JSON.stringify(data).slice(0, 800)); } catch(e){} }
+      var arr = (data && Array.isArray(data.results)) ? data.results : [];
+      for(var i = 0; i < arr.length; i++){
+        var r = arr[i] || {};
+        var okNumbers = (typeof r.lat === "number") && (typeof r.lon === "number");
+        if(!okNumbers || r.lat < -90 || r.lat > 90 || r.lon < -180 || r.lon > 180) continue;
+        if(r.country_code !== "in") continue;
+        if(GEO_DEBUG){
+          try {
+            console.log("[geo] formatted:", r.formatted);
+            console.log("[geo] lat:", r.lat, "lon:", r.lon, "country_code:", r.country_code);
+          } catch(e){}
+        }
+        // Leaflet wants (latitude, longitude) — Geoapify gives lat + lon.
+        // Map lon -> lng explicitly; never swap.
+        return { lat: r.lat, lng: r.lon };
+      }
+      return null;
+    }).catch(function(){ return null; });
+  }
+  function setLocStatus(which, msg){
+    var el = document.getElementById(which === "pickup" ? "pickupLocStatus" : "dropLocStatus");
+    if(el) el.textContent = msg;
+  }
+  function openMap(which){
+    if(typeof L === "undefined"){
+      showAlert("err", "Map could not load — pick an address suggestion instead.");
+      return;
+    }
+    pickTarget = which;
+    var cur = which === "pickup" ? locValues("pickupLat", "pickupLng") : locValues("dropLat", "dropLng");
+    if(cur){
+      // Saved coords (picked suggestion / earlier pin) — open right there.
+      openMapAt(which, cur);
+      return;
+    }
+    // No saved coords: pehle typed address geocode karo, phir device
+    // location, phir authorized India default (Jaipur). Kabhi 0,0 / ocean /
+    // random jagah nahi.
+    setLocStatus(which, "Locating…");
+    geocodeAddress(which).then(function(found){
+      if(found) return { at: found, zoom: 16, silent: true };
+      return locateMe().then(function(here){
+        if(here) return { at: here, zoom: 14, silent: true };
+        return { at: { lat: JAIPUR[0], lng: JAIPUR[1] }, zoom: 12, silent: false };
+      });
+    }).then(function(res){
+      if(!res){
+        showAlert("err", "Location not found. Please check the address.");
+        setLocStatus(which, "Location not found. Please check the address.");
+        pickTarget = null;
+        return;
+      }
+      if(!res.silent){
+        showAlert("err", "Location not found. Showing Jaipur — drag the pin to your location.");
+        setLocStatus(which, "Location not found. Showing Jaipur — drag the pin to your location.");
+      } else {
+        hideAlert();
+      }
+      if(GEO_DEBUG){ try { console.log("[geo] map opening at:", res.at.lat, res.at.lng, "zoom:", res.zoom); } catch(e){} }
+      openMapAt(which, res.at, res.zoom);
+    }).catch(function(){
+      showAlert("err", "Location not found. Please check the address.");
+      setLocStatus(which, "Location not found. Please check the address.");
+      pickTarget = null;
+    });
+  }
+  function openMapAt(which, coords, zoom){
+    pickPoint = { lat: coords.lat, lng: coords.lng };
+    var center = [coords.lat, coords.lng];
+    var openZoom = zoom || null;
+    if(mapTitle) mapTitle.textContent = which === "pickup" ? "Choose pickup location" : "Choose drop-off location";
+    if(mapPickStatus) mapPickStatus.textContent = "Picked: " + pickPoint.lat.toFixed(5) + ", " + pickPoint.lng.toFixed(5);
+    if(mapModal) mapModal.classList.add("show");
+    ensureMap(center, openZoom);
+    if(pickMap){
+      // Hidden modal me size 0 hota hai — paint ke baad do baar fix karo
+      // taaki tiles grey na rahen.
+      var fixView = function(){
+        try { pickMap.invalidateSize(true); } catch(e){}
+        try { pickMap.setView(center, openZoom || pickMap.getZoom() || 13); } catch(e2){}
+        if(pickMarker){ try { pickMarker.setLatLng(center); } catch(e3){} }
+      };
+      if(typeof requestAnimationFrame === "function"){
+        requestAnimationFrame(function(){ fixView(); setTimeout(fixView, 200); });
+      } else {
+        setTimeout(fixView, 60);
+        setTimeout(fixView, 300);
+      }
+    }
+  }
+  // Koi saved/geocoded point nahi: device ki current location (permission
+  // par). Koi hardcoded city/world default nahi hai.
+  function locateMe(){
+    return new Promise(function(resolve){
+      try {
+        if(!("geolocation" in navigator)){ resolve(null); return; }
+        navigator.geolocation.getCurrentPosition(function(pos){
+          var lat = pos && pos.coords ? pos.coords.latitude : NaN;
+          var lng = pos && pos.coords ? pos.coords.longitude : NaN;
+          if(!isFinite(lat) || !isFinite(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180){ resolve(null); return; }
+          resolve({ lat: lat, lng: lng });
+        }, function(){ resolve(null); }, { enableHighAccuracy: true, maximumAge: 60000, timeout: 8000 });
+      } catch(e){ resolve(null); }
+    });
+  }
+  function closeMap(){ if(mapModal) mapModal.classList.remove("show"); pickTarget = null; }
+  var pickupMapBtn = document.getElementById("pickupMapBtn");
+  var dropMapBtn = document.getElementById("dropMapBtn");
+  if(pickupMapBtn) pickupMapBtn.addEventListener("click", function(){ openMap("pickup"); });
+  if(dropMapBtn) dropMapBtn.addEventListener("click", function(){ openMap("drop"); });
+  var mapCloseBtn = document.getElementById("mapCloseBtn");
+  if(mapCloseBtn) mapCloseBtn.addEventListener("click", closeMap);
+  if(mapModal) mapModal.addEventListener("click", function(ev){ if(ev.target === mapModal) closeMap(); });
+  document.addEventListener("keydown", function(ev){
+    if(ev.key === "Escape" && mapModal && mapModal.classList.contains("show")) closeMap();
+  });
+  var mapConfirmBtn = document.getElementById("mapConfirmBtn");
+  if(mapConfirmBtn) mapConfirmBtn.addEventListener("click", function(){
+    if(!pickTarget || !pickPoint) return;
+    if(pickTarget === "pickup") setLoc("pickupLat", "pickupLng", pickPoint.lat, pickPoint.lng);
+    else setLoc("dropLat", "dropLng", pickPoint.lat, pickPoint.lng);
+    hideAlert();
+    closeMap();
+  });
+
   // Geoapify address autocomplete (server-side proxy /api/geo/autocomplete —
   // key backend env me rehta hai). Suggestion chunne par lat/lng auto-bharte hain.
   function attachAutocomplete(addrId, latId, lngId, listId){
@@ -432,18 +717,36 @@
     var list = document.getElementById(listId);
     if(!addr || !latEl || !lngEl || !list) return;
     var timer = null, cache = {};
+    // Trips local hote hain — dusre chhor ki pin set ho to autocomplete uske
+    // paas bias karo (existing lat/lng proxy params, koi backend change nahi).
+    var otherLatId = (addrId === "pickupAddr") ? "dropLat" : "pickupLat";
+    var otherLngId = (addrId === "pickupAddr") ? "dropLng" : "pickupLng";
+    function biasQs(){
+      var la = numOrNull(document.getElementById(otherLatId));
+      var ln = numOrNull(document.getElementById(otherLngId));
+      if(la === null || ln === null || la < -90 || la > 90 || ln < -180 || ln > 180){
+        return "";
+      }
+      return "&lat=" + encodeURIComponent(la) + "&lng=" + encodeURIComponent(ln);
+    }
     addr.addEventListener("input", function(){
       var q = String(addr.value || "").trim();
+      // Haath se badla address purani pin ko stale kar deta hai — saaf karo.
+      // (Suggestion chunne par neeche change-handler coords dobara bharta hai.)
+      latEl.value = "";
+      lngEl.value = "";
+      refreshLocStatus();
       if(q.length < 3){ list.innerHTML = ""; return; }
       if(timer) clearTimeout(timer);
       timer = setTimeout(function(){
-        if(cache[q]){ renderS(cache[q]); return; }
-        fetch(API_BASE_URL + "/api/geo/autocomplete?text=" + encodeURIComponent(q) + "&limit=5", {
+        var bq = biasQs();
+        if(cache[q + bq]){ renderS(cache[q + bq]); return; }
+        fetch(API_BASE_URL + "/api/geo/autocomplete?text=" + encodeURIComponent(q) + "&limit=5" + bq, {
           headers: { "Authorization": "Bearer " + getToken() }
         }).then(function(r){ return r.json().catch(function(){ return null; }); })
         .then(function(b){
           var arr = (b && b.ok && Array.isArray(b.results)) ? b.results : [];
-          cache[q] = arr;
+          cache[q + bq] = arr;
           renderS(arr);
         }).catch(function(){ /* suggestion fail chupchaap — manual lat/lng chalta hai */ });
       }, 400);
@@ -458,7 +761,8 @@
         list.appendChild(o);
       }
     }
-    // Poora suggestion text match ho to coords bhar do.
+    // Poora suggestion text match ho to coords bhar do — aur khula map
+    // turant usi exact point par le jao (zoom 16, area-level detail).
     addr.addEventListener("change", function(){
       var opts = list.querySelectorAll ? list.querySelectorAll("option") : [];
       for(var i = 0; i < opts.length; i++){
@@ -468,6 +772,24 @@
           if(isFinite(la) && isFinite(ln)){ latEl.value = la; lngEl.value = ln; }
           break;
         }
+      }
+      refreshLocStatus();
+      var picked = locValues(latId, lngId);
+      if(GEO_DEBUG){
+        try {
+          console.log("[geo] suggestion selected:", addr.value,
+            "captured lat:", picked ? picked.lat : null,
+            "lng:", picked ? picked.lng : null);
+        } catch(e){}
+      }
+      if(picked && pickMap && mapModal && mapModal.classList.contains("show") && typeof L !== "undefined"){
+        try {
+          var ll = L.latLng(picked.lat, picked.lng);
+          pickMap.setView(ll, 16);
+          if(pickMarker) pickMarker.setLatLng(ll);
+          showPicked(ll);
+          if(GEO_DEBUG){ try { console.log("[geo] map.setView passed:", picked.lat, picked.lng, "zoom: 16"); } catch(e2){} }
+        } catch(e3){}
       }
     });
   }
@@ -516,41 +838,41 @@
     var itemDesc = document.getElementById("itemDesc");
 
     if(!pickupAddr.value.trim()){
-      setErr("f-pickupAddr", "pickupAddr-err", pickupAddr, "Pickup ka poora address likho.");
+      setErr("f-pickupAddr", "pickupAddr-err", pickupAddr, "Enter the complete pickup address.");
       bad(pickupAddr);
     } else { setErr("f-pickupAddr", "pickupAddr-err", pickupAddr, ""); }
 
     var pLat = parseNum(pickupLatEl.value);
     if(!validLat(pLat)){
-      setErr("f-pickupLat", "pickupLat-err", pickupLatEl, "-90 se 90 ke beech sahi latitude likho.");
+      setErr("f-pickupLat", "pickupLat-err", pickupLatEl, "Pick an address suggestion or choose the pickup location on the map.");
       bad(pickupLatEl);
     } else { setErr("f-pickupLat", "pickupLat-err", pickupLatEl, ""); }
 
     var pLng = parseNum(pickupLngEl.value);
     if(!validLng(pLng)){
-      setErr("f-pickupLng", "pickupLng-err", pickupLngEl, "-180 se 180 ke beech sahi longitude likho.");
+      setErr("f-pickupLat", "pickupLng-err", pickupLngEl, "Pick an address suggestion or choose the pickup location on the map.");
       bad(pickupLngEl);
-    } else { setErr("f-pickupLng", "pickupLng-err", pickupLngEl, ""); }
+    } else { setErr("f-pickupLat", "pickupLng-err", pickupLngEl, ""); }
 
     if(!dropAddr.value.trim()){
-      setErr("f-dropAddr", "dropAddr-err", dropAddr, "Drop ka poora address likho.");
+      setErr("f-dropAddr", "dropAddr-err", dropAddr, "Enter the complete drop-off address.");
       bad(dropAddr);
     } else { setErr("f-dropAddr", "dropAddr-err", dropAddr, ""); }
 
     var dLat = parseNum(dropLatEl.value);
     if(!validLat(dLat)){
-      setErr("f-dropLat", "dropLat-err", dropLatEl, "-90 se 90 ke beech sahi latitude likho.");
+      setErr("f-dropLat", "dropLat-err", dropLatEl, "Pick an address suggestion or choose the drop-off location on the map.");
       bad(dropLatEl);
     } else { setErr("f-dropLat", "dropLat-err", dropLatEl, ""); }
 
     var dLng = parseNum(dropLngEl.value);
     if(!validLng(dLng)){
-      setErr("f-dropLng", "dropLng-err", dropLngEl, "-180 se 180 ke beech sahi longitude likho.");
+      setErr("f-dropLat", "dropLng-err", dropLngEl, "Pick an address suggestion or choose the drop-off location on the map.");
       bad(dropLngEl);
-    } else { setErr("f-dropLng", "dropLng-err", dropLngEl, ""); }
+    } else { setErr("f-dropLat", "dropLng-err", dropLngEl, ""); }
 
     if(VEHICLES.indexOf(vehicle.value) === -1){
-      setErr("f-vehicle", "vehicle-err", vehicle, "List me se gaadi chuno.");
+      setErr("f-vehicle", "vehicle-err", vehicle, "Choose a vehicle from the list.");
       bad(vehicle);
     } else { setErr("f-vehicle", "vehicle-err", vehicle, ""); }
 
@@ -559,17 +881,17 @@
     var hasDate = !!schedDate.value;
     var hasTime = !!schedTime.value;
     if(hasDate !== hasTime){
-      var msg = "Tareekh aur samay dono bharo, ya dono khali chhodo.";
+      var msg = "Enter both date and time, or leave both blank.";
       setErr("f-schedDate", "schedDate-err", schedDate, hasDate ? "" : msg);
       setErr("f-schedTime", "schedTime-err", schedTime, hasTime ? "" : msg);
       bad(hasDate ? schedTime : schedDate);
     } else if(hasDate && hasTime){
       var dt = new Date(schedDate.value + "T" + schedTime.value + ":00");
       if(isNaN(dt.getTime())){
-        setErr("f-schedTime", "schedTime-err", schedTime, "Sahi tareekh aur samay chuno.");
+        setErr("f-schedTime", "schedTime-err", schedTime, "Choose a valid date and time.");
         bad(schedTime);
       } else if(dt.getTime() <= Date.now()){
-        setErr("f-schedTime", "schedTime-err", schedTime, "Aane wala samay chuno — beeta hua samay nahi chalega.");
+        setErr("f-schedTime", "schedTime-err", schedTime, "Choose a future time — past time is not allowed.");
         bad(schedTime);
       } else {
         setErr("f-schedDate", "schedDate-err", schedDate, "");
@@ -583,7 +905,7 @@
 
     var desc = itemDesc.value.trim();
     if(desc.length > 500){
-      setErr("f-itemDesc", "itemDesc-err", itemDesc, "500 akshar se kam likho.");
+      setErr("f-itemDesc", "itemDesc-err", itemDesc, "Write less than 500 characters.");
       bad(itemDesc);
     } else { setErr("f-itemDesc", "itemDesc-err", itemDesc, ""); }
 
@@ -610,7 +932,7 @@
     var code = body.error;
     if(result.status === 400){
       var detail = body.details && body.details[0] && body.details[0].message;
-      showAlert("err", detail || "Details me kuch galat hai — form check karke dobara try karo.");
+      showAlert("err", detail || "Something is wrong in the details — check the form and try again.");
       return;
     }
     if(result.status === 401){
@@ -618,19 +940,19 @@
       return;
     }
     if(result.status === 409 || code === "distance_too_far"){
-      showAlert("err", "Ye doori hamari service se bahar hai — paas ka address try karo.");
+      showAlert("err", "This distance is outside our service area — try a nearby address.");
       return;
     }
     if(result.status === 422){
-      showAlert("err", "Details sahi nahi lag rahi — form check karke dobara try karo.");
+      showAlert("err", "The details don't look right — check the form and try again.");
       return;
     }
     if(result.status === 429){
-      showAlert("err", "Bahut koshish ho gayi — thodi der rukkar ek baar try karo.");
+      showAlert("err", "Too many attempts — wait a while and try once.");
       return;
     }
     if(result.status >= 500){
-      showAlert("err", "Server me dikkat hai — thodi der baad dobara try karo.");
+      showAlert("err", "Server issue — please try again later.");
       return;
     }
     showAlert("err", fallbackMsg);
@@ -647,7 +969,7 @@
     if(!clean) return;
     hideAlert();
     fareCard.classList.remove("show");
-    setLoading(estimateBtn, true, "Kiraya nikal raha hai…", "Get Estimate — Kiraya Dekho");
+    setLoading(estimateBtn, true, "Getting estimate…", "Get Estimate — See Fare");
 
     fetch(API_BASE_URL + "/api/bookings/estimate-price", {
       method: "POST",
@@ -660,7 +982,7 @@
       })
     }).then(readBody).then(function(result){
       if(result.status !== 200 || !result.body){
-        handleApiError(result, "Kiraya nahi nikal paya — dobara try karo.");
+        handleApiError(result, "Could not get estimate — please try again.");
         return;
       }
       var d = result.body;
@@ -675,12 +997,12 @@
       }
       document.getElementById("fareRange").textContent = range;
       fareCard.classList.add("show");
-      showAlert("ok", "Kiraya taiyaar hai — pasand aaye to booking pakki karo.");
+      showAlert("ok", "Estimate is ready — confirm your booking if you like it.");
       confirmBtn.focus();
     }).catch(function(){
-      showAlert("err", "Internet me dikkat hai — connection check karke dobara try karo.");
+      showAlert("err", "Internet issue — check your connection and try again.");
     }).then(function(){
-      setLoading(estimateBtn, false, "", "Get Estimate — Kiraya Dekho");
+      setLoading(estimateBtn, false, "", "Get Estimate — See Fare");
     });
   });
 
@@ -689,7 +1011,7 @@
     var clean = validateForm();
     if(!clean) return;
     hideAlert();
-    setLoading(confirmBtn, true, "Booking pakki ho rahi hai…", "Confirm Booking — Pakki Karo");
+    setLoading(confirmBtn, true, "Confirming booking…", "Confirm Booking");
 
     var payload = {
       pickup: clean.pickup,
@@ -707,26 +1029,30 @@
       body: JSON.stringify(payload)
     }).then(readBody).then(function(result){
       if(result.status !== 201 || !result.body || result.body.ok !== true || !result.body.booking){
-        handleApiError(result, "Booking pakki nahi hui — details check karke dobara try karo.");
+        handleApiError(result, "Could not confirm booking — check the details and try again.");
         return;
       }
       var b = result.body.booking;
       document.getElementById("successText").textContent =
-        "Booking ID: " + b.id + (b.price_rs !== undefined ? " — Kul kiraya Rs " + b.price_rs : "");
+        "Booking ID: " + b.id + (b.price_rs !== undefined ? " — Total fare Rs " + b.price_rs : "");
       successCard.classList.add("show");
-      showAlert("ok", "Booking pakki ho gayi! Driver milte hi khabar milegi.");
+      showAlert("ok", "Booking confirmed! Taking you to your booking details…");
       successCard.scrollIntoView({ behavior: "smooth", block: "start" });
+      // Confirmation page shows fare, driver, payment + live tracking link.
+      window.setTimeout(function(){
+        window.location.href = "booking-detail.html?id=" + encodeURIComponent(b.id);
+      }, 1500);
     }).catch(function(){
-      showAlert("err", "Internet me dikkat hai — connection check karke dobara try karo.");
+      showAlert("err", "Internet issue — check your connection and try again.");
     }).then(function(){
-      setLoading(confirmBtn, false, "", "Confirm Booking — Pakki Karo");
+      setLoading(confirmBtn, false, "", "Confirm Booking");
     });
   });
 
   document.getElementById("bookingForm").addEventListener("input", hideAlert);
 
   var navMenuBtn=document.getElementById("navMenuBtn"),siteNav=document.getElementById("siteNav");
-  if(navMenuBtn&&siteNav){navMenuBtn.addEventListener("click",function(){var open=siteNav.classList.toggle("open");navMenuBtn.setAttribute("aria-expanded",open?"true":"false");navMenuBtn.setAttribute("aria-label",open?"Menu band karo":"Menu kholo");});siteNav.addEventListener("click",function(ev){if(ev.target.tagName==="A"&&siteNav.classList.contains("open")){siteNav.classList.remove("open");navMenuBtn.setAttribute("aria-expanded","false");}});}
+  if(navMenuBtn&&siteNav){navMenuBtn.addEventListener("click",function(){var open=siteNav.classList.toggle("open");navMenuBtn.setAttribute("aria-expanded",open?"true":"false");navMenuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");});siteNav.addEventListener("click",function(ev){if(ev.target.tagName==="A"&&siteNav.classList.contains("open")){siteNav.classList.remove("open");navMenuBtn.setAttribute("aria-expanded","false");}});}
 })();
 </script>
 </body>

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Booking Detail | ApnaShift</title>
-<meta name="description" content="Apni booking ka kiraya, commission hisab aur driver payment details dekho.">
+<meta name="description" content="View your booking fare, commission breakdown and driver payment details.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
@@ -94,29 +94,29 @@
       <a href="customer-dashboard.html">My Bookings</a>
       <a href="help.html">Help</a>
     </nav>
-    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">☰</button>
   </div>
 </header>
 
 <main>
   <h1>Booking Detail</h1>
-  <p class="sub" id="bookLine">Booking load ho rahi hai…</p>
+  <p class="sub" id="bookLine">Loading booking…</p>
 
   <div id="pageAlert" role="alert" aria-live="assertive"></div>
 
   <section class="card" aria-labelledby="tripTitle">
     <h2 id="tripTitle">Trip <span class="badge pending" id="statusBadge">—</span></h2>
-    <div class="kv" id="tripBox"><p class="loading">Load ho raha hai…</p></div>
+    <div class="kv" id="tripBox"><p class="loading">Loading…</p></div>
   </section>
 
   <section class="card" aria-labelledby="moneyTitle">
-    <h2 id="moneyTitle">Kiraya breakup</h2>
-    <div id="moneyBox" aria-live="polite"><p class="loading">Load ho raha hai…</p></div>
+    <h2 id="moneyTitle">Fare breakup</h2>
+    <div id="moneyBox" aria-live="polite"><p class="loading">Loading…</p></div>
   </section>
 
   <section class="card" aria-labelledby="payTitle">
     <h2 id="payTitle">Payment</h2>
-    <div id="payBox" aria-live="polite"><p class="loading">Load ho raha hai…</p></div>
+    <div id="payBox" aria-live="polite"><p class="loading">Loading…</p></div>
   </section>
 
   <section class="card" id="rateSection" aria-labelledby="rateTitle" hidden>
@@ -126,7 +126,7 @@
 
   <section class="card" aria-labelledby="testTitle">
     <h2 id="testTitle">Test: delivery</h2>
-    <p class="sub">Test button — assigned driver ke login se trip delivered mark karta hai (commission backend me banega).</p>
+    <p class="sub">Test button — marks the trip as delivered using the assigned driver login (commission is created in the backend).</p>
     <div class="controls">
       <button type="button" class="btn ghost small" id="deliverBtn">Mark Delivered</button>
       <a class="btn ghost small" href="customer-dashboard.html">← My Bookings</a>
@@ -157,8 +157,8 @@
   var USER_TOKEN_KEY = "apnashift_user_token";
   var DRIVER_TOKEN_KEY = "apnashift_driver_token";
   var STATUS_LABEL = {
-    pending: "Pending", accepted: "Confirmed", arrived: "Arriving",
-    in_transit: "In Progress", delivered: "Completed", cancelled: "Cancelled"
+    pending: "PENDING", accepted: "CONFIRMED", arrived: "DRIVER ARRIVING",
+    in_transit: "IN TRANSIT", delivered: "DELIVERED", cancelled: "CANCELLED"
   };
 
   function getUserToken(){
@@ -180,8 +180,8 @@
   } catch(e){}
   var bookingId = qs.id || "";
   if(!/^[0-9a-fA-F-]{36}$/.test(bookingId)){
-    showAlert("err", "Booking ID sahi nahi hai (?id= lagakar kholo).");
-    document.getElementById("bookLine").textContent = "Booking nahi mili.";
+    showAlert("err", "Invalid booking ID. Please open this page with ?id= in the URL.");
+    document.getElementById("bookLine").textContent = "Booking not found.";
     return;
   }
 
@@ -242,6 +242,21 @@
     return { total: total, commission: commP / 100, driver: (grossP - commP) / 100 };
   }
 
+  function paymentLabel(m){
+    if(m === "upi") return "UPI (Online)";
+    if(m === "online") return "Online";
+    if(m === "cash") return "Cash on Delivery (COD)";
+    return m || "–";
+  }
+
+  // Live tracking link (cancelled trips have nothing to track).
+  // tracking.html itself explains pending/offline states professionally.
+  function trackLinkHtml(b){
+    if(!b || !b.id || b.status === "cancelled") return "";
+    return '<p style="margin-top:10px"><a class="btn ghost small" href="tracking.html?booking=' +
+      esc(b.id) + '">Track Driver — Live Tracking</a></p>';
+  }
+
   function render(){
     if(!booking) return;
     bookLine.textContent = "Booking #" + booking.id;
@@ -251,18 +266,20 @@
     tripBox.innerHTML =
       "<div><strong>Pickup:</strong> " + esc(addrText(booking.pickup)) + "</div>" +
       "<div><strong>Drop:</strong> " + esc(addrText(booking.drop)) + "</div>" +
-      "<div><strong>Gaadi:</strong> " + esc(booking.vehicle_type || "–") + "</div>" +
-      "<div><strong>Driver:</strong> " + esc(booking.driver && booking.driver.name ? booking.driver.name : (booking.driver_id ? "Assign ho gaya" : "Abhi assign nahi hua")) + "</div>";
+      "<div><strong>Vehicle:</strong> " + esc(booking.vehicle_type || "–") + "</div>" +
+      "<div><strong>Driver:</strong> " + esc(booking.driver && booking.driver.name ? booking.driver.name : (booking.driver_id ? "Driver Assigned" : "Not assigned yet")) + "</div>" +
+      "<div><strong>Payment:</strong> " + esc(paymentLabel(booking.payment_method)) + "</div>" +
+      trackLinkHtml(booking);
 
     var s = splitMoney(booking.price_rs, booking.commission_percent);
     var m = '<div class="money">';
     m += '<div>Total price: <span class="big">' + esc(money(booking.price_rs)) + "</span></div>";
     if(s && s.commission !== null){
       m += "<div>Commission (" + esc(booking.commission_percent) + "%): " + esc(money(s.commission)) + "</div>";
-      m += "<div>Driver ka hissa: <strong>" + esc(money(s.driver)) + "</strong></div>";
-      m += '<p class="meta" style="margin:6px 0 0">Commission booking banne waqt lock hua tha (snapshot).</p>';
+      m += "<div>Driver share: <strong>" + esc(money(s.driver)) + "</strong></div>";
+      m += '<p class="meta" style="margin:6px 0 0">Commission was locked when the booking was created (snapshot).</p>';
     } else {
-      m += '<p class="meta" style="margin:6px 0 0">Commission rate is booking par set nahi hai.</p>';
+      m += '<p class="meta" style="margin:6px 0 0">No commission rate is set for this booking.</p>';
     }
     m += "</div>";
     moneyBox.innerHTML = m;
@@ -271,19 +288,19 @@
     var p = "";
     if(d && d.id && booking.payment_method === "upi" && d.upi_id){
       p += '<div class="pay-box" aria-label="UPI payment">' +
-        "<div><strong>Isi UPI par pay karein:</strong></div>" +
+        "<div><strong>Pay to this UPI ID:</strong></div>" +
         '<div class="upi-big">' + esc(d.upi_id) + "</div>" +
-        '<button type="button" class="btn ghost small" data-copy-upi="' + esc(d.upi_id) + '">Copy Karein</button>' +
-        '<p class="meta">Payment driver ko seedha is UPI ID par karein, trip complete hote hi</p>' +
+        '<button type="button" class="btn ghost small" data-copy-upi="' + esc(d.upi_id) + '">Copy</button>' +
+        '<p class="meta">Pay the driver directly to this UPI ID once the trip is complete</p>' +
         "</div>";
     } else if(booking.payment_method === "cash"){
       p += '<div class="pay-box" aria-label="Cash payment">' +
-        "<p style='margin:0'><strong>Cash se pay karein</strong> — driver ko trip complete hone par</p>" +
+        "<p style='margin:0'><strong>Pay by cash</strong> — to the driver when the trip is complete</p>" +
         "</div>";
     } else if(d && d.id){
-      p += '<p class="meta">Driver assign ho gaya hai. Payment trip complete hone par.</p>';
+      p += '<p class="meta">Driver assigned. Payment is due when the trip is complete.</p>';
     } else {
-      p += '<p class="meta">Driver assign hote hi yahan payment details aayengi.</p>';
+      p += '<p class="meta">Payment details will appear here once a driver is assigned.</p>';
     }
     payBox.innerHTML = p;
   }
@@ -293,7 +310,7 @@
       .then(readBody)
       .then(function(result){
         if(result.status === 401){ window.location.href = "user-auth.html"; throw new Error("unauth"); }
-        if(result.status === 404){ showAlert("err", "Ye booking tumhari nahi hai ya mili nahi."); throw new Error("notfound"); }
+        if(result.status === 404){ showAlert("err", "This booking was not found or does not belong to you."); throw new Error("notfound"); }
         if(result.status !== 200 || !result.body || !result.body.booking) throw new Error("load");
         booking = result.body.booking;
         render();
@@ -302,7 +319,7 @@
       })
       .catch(function(err){
         if(err && (err.message === "unauth" || err.message === "notfound")) return;
-        showAlert("err", "Load nahi hua — internet check karke refresh karo.");
+        showAlert("err", "Could not load. Please check your internet connection and refresh.");
       });
   }
 
@@ -323,11 +340,11 @@
         rateSection.hidden = false;
         if(result.status === 200 && result.body && result.body.rating){
           var r = result.body.rating;
-          rateBox.innerHTML = '<p class="meta">Aap ' + esc(starStr(r.stars)) + ' de chuke hain' +
+          rateBox.innerHTML = '<p class="meta">You have already rated ' + esc(starStr(r.stars)) +
             (r.comment ? " — “" + esc(r.comment) + "”" : "") + ".</p>";
         } else {
           rateBox.innerHTML = '<div class="controls"><a class="btn" href="rate-trip.html?id=' +
-            encodeURIComponent(bookingId) + '">Rating Dein</a></div>';
+            encodeURIComponent(bookingId) + '">Rate Trip</a></div>';
         }
       })
       .catch(function(){
@@ -339,7 +356,7 @@
     function done(ok){
       if(!btn) return;
       if(!btn.getAttribute("data-label")) btn.setAttribute("data-label", btn.textContent);
-      btn.textContent = ok ? "Copy ho gaya!" : "Copy nahi hua";
+      btn.textContent = ok ? "Copied!" : "Copy failed";
       setTimeout(function(){ btn.textContent = btn.getAttribute("data-label"); }, 1600);
     }
     if(navigator.clipboard && navigator.clipboard.writeText){
@@ -371,27 +388,27 @@
   deliverBtn.addEventListener("click", function(){
     testStatus.textContent = "";
     if(!booking){
-      testStatus.textContent = "Pehle booking load hone do.";
+      testStatus.textContent = "Please wait for the booking to load.";
       return;
     }
     if(!getDriverToken()){
-      testStatus.textContent = "Driver login chahiye (driver-login.html) — wahi driver jo assign hai.";
+      testStatus.textContent = "Driver login required (driver-login.html) — please sign in as the assigned driver.";
       return;
     }
     if(booking.status === "delivered"){
-      testStatus.textContent = "Trip pehle se delivered hai.";
+      testStatus.textContent = "Trip is already delivered.";
       return;
     }
     if(booking.status === "cancelled" || booking.status === "pending"){
-      testStatus.textContent = "Ye status deliver nahi ho sakta (pending/cancelled).";
+      testStatus.textContent = "This status cannot be marked delivered (pending/cancelled).";
       return;
     }
     deliverBtn.disabled = true;
-    testStatus.textContent = "Status badal raha hai…";
+    testStatus.textContent = "Updating status…";
     function step(status){
       var next = NEXT_AFTER[status];
       if(!next){
-        testStatus.textContent = "Ho gaya — page refresh karke dekho.";
+        testStatus.textContent = "Done — refresh the page to view.";
         deliverBtn.disabled = false;
         load();
         return;
@@ -402,24 +419,24 @@
         body: JSON.stringify({ status: next })
       }).then(readBody).then(function(result){
         if(result.status === 401){
-          testStatus.textContent = "Driver session khatam — dobara driver login karo.";
+          testStatus.textContent = "Driver session expired — please log in as the driver again.";
           deliverBtn.disabled = false;
           return;
         }
         if(result.status === 403){
-          testStatus.textContent = "Ye driver is trip ka nahi hai (ya verify nahi). Assigned driver se login karo.";
+          testStatus.textContent = "This driver is not assigned to this trip (or not verified). Please log in as the assigned driver.";
           deliverBtn.disabled = false;
           return;
         }
         if(result.status !== 200){
-          testStatus.textContent = "Step " + next + " nahi hua (" + ((result.body && result.body.error) || result.status) + ").";
+          testStatus.textContent = "Step " + next + " failed (" + ((result.body && result.body.error) || result.status) + ").";
           deliverBtn.disabled = false;
           return;
         }
         booking.status = next;
         step(next);
       }).catch(function(){
-        testStatus.textContent = "Network error — dobara try karo.";
+        testStatus.textContent = "Network error — please try again.";
         deliverBtn.disabled = false;
       });
     }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -213,7 +213,7 @@
       <a href="enterprise.html">Enterprise</a>
       <a href="help.html">Help</a>
     </nav>
-    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">☰</button>
   </div>
 </header>
 
@@ -241,11 +241,11 @@
         <div class="field" data-f="city"><label for="f-city">City <span class="req">*</span></label>
           <input id="f-city" maxlength="120" placeholder="Example: Indore"><p class="error-text"></p></div>
         <div class="field" data-f="password"><label for="f-pass">Password <span class="req">*</span></label>
-          <input id="f-pass" type="password" autocomplete="new-password" placeholder="Min 8 akshar"><p class="error-text"></p></div>
+          <input id="f-pass" type="password" autocomplete="new-password" placeholder="Min. 8 characters"><p class="error-text"></p></div>
       </div>
-      <div class="field" data-f="upi"><label for="f-upi">UPI ID (abhi ya baad me daal sakte hain)</label>
+      <div class="field" data-f="upi"><label for="f-upi">UPI ID (you can add this now or later)</label>
         <input id="f-upi" maxlength="321" autocomplete="off" placeholder="yourname@upi"><p class="error-text"></p></div>
-      <p class="hint">Password login ke liye chahiye — min 8 akshar rakho. UPI ID baad me dashboard se bhi jod sakte ho.</p>
+      <p class="hint">A password is required for login — use at least 8 characters. You can also add your UPI ID later from the dashboard.</p>
     </div>
 
     <!-- STEP 2 -->
@@ -276,7 +276,7 @@
       <div class="row c2">
         <div class="field" data-f="dlexp"><label for="f-dlexp">License Expiry Date <span class="req">*</span></label>
           <input id="f-dlexp" type="date"><p class="error-text"></p>
-          <p class="hint">Expired license par application reject ho jayegi.</p></div>
+          <p class="hint">Applications with an expired license will be rejected.</p></div>
         <div class="field" data-f="scity"><label for="f-scity">Operating City <span class="req">*</span></label>
           <input id="f-scity" maxlength="120" placeholder="Example: Indore"><p class="error-text"></p></div>
       </div>
@@ -285,7 +285,7 @@
     <!-- STEP 4 -->
     <div class="step" data-step="4">
       <div class="sec-title">Step 4 — Documents</div>
-      <p class="sec-sub">Photo upload abhi supported nahi hai — number aur expiry likho, owner baad me documents maangega.</p>
+      <p class="sec-sub">Photo upload is not supported yet — enter the number and expiry date; the owner will request documents later.</p>
       <div class="row c2">
         <div class="field" data-f="rc"><label for="f-rc">Vehicle RC Number</label>
           <input id="f-rc" maxlength="30" placeholder="RC number"><p class="error-text"></p></div>
@@ -297,12 +297,12 @@
     <!-- STEP 5 -->
     <div class="step" data-step="5">
       <div class="sec-title">Step 5 — Review &amp; Submit</div>
-      <p class="sec-sub">Sab check karo, phir consent karke Submit dabao.</p>
+      <p class="sec-sub">Review everything, then give consent and press Submit.</p>
       <div id="reviewBox"></div>
       <label class="consentline"><input type="checkbox" id="c1">
-        <span>Maine sahi details bhari hain. <span class="req">*</span></span></label>
+        <span>I have entered the correct details. <span class="req">*</span></span></label>
       <label class="consentline"><input type="checkbox" id="c2">
-        <span>Main <a href="terms.html">Terms</a> &amp; <a href="privacy.html">Privacy Policy</a> se sehmat hoon. <span class="req">*</span></span></label>
+        <span>I agree to the <a href="terms.html">Terms</a> &amp; <a href="privacy.html">Privacy Policy</a>. <span class="req">*</span></span></label>
     </div>
 
     <div class="nav-row">
@@ -317,7 +317,7 @@
     <h2 id="successTitle">Application Submitted Successfully</h2>
     <div><span class="appid" id="appId">—</span></div>
     <p>Status: <b id="appStatus">PENDING_REVIEW</b> • Date: <b id="appDate">—</b></p>
-    <p><b>Next steps:</b> Owner tumhari details verify karega (1–2 din). Approve hote hi <a href="driver-login.html">Driver Login</a> karke booking accept kar sakoge.</p>
+    <p><b>Next steps:</b> The owner will verify your details (1–2 days). Once approved, you can <a href="driver-login.html">log in as a driver</a> and accept bookings.</p>
   </section>
 </main>
 
@@ -393,48 +393,48 @@
     function bad(key, msg){ if(setErr(key, msg) === false){ ok = false; first = first || document.querySelector('.field[data-f="' + key + '"] input,.field[data-f="' + key + '"] select'); } }
     function good(key){ setErr(key, ""); }
     if(n === 1){
-      if(val("name").length < 2) bad("name", "Poora naam likho (min 2 akshar)."); else good("name");
+      if(val("name").length < 2) bad("name", "Enter your full name (at least 2 characters)."); else good("name");
       var ph = cleanPhone(val("phone"));
-      if(!val("phone")) bad("phone", "Mobile number likho."); else if(!PHONE_RE.test(ph)) bad("phone", "10 digit Indian mobile (6-9 se shuru)."); else good("phone");
+      if(!val("phone")) bad("phone", "Enter your mobile number."); else if(!PHONE_RE.test(ph)) bad("phone", "Enter a valid 10-digit Indian mobile number starting with 6-9."); else good("phone");
       var em = val("email");
-      if(!em) bad("email", "Email likho."); else if(em.length > 120 || !EMAIL_RE.test(em)) bad("email", "Sahi email likho."); else good("email");
-      if(val("city").length < 2) bad("city", "Sheher likho."); else good("city");
-      if(val("password").length < 8) bad("password", "Password min 8 akshar."); else good("password");
+      if(!em) bad("email", "Enter your email address."); else if(em.length > 120 || !EMAIL_RE.test(em)) bad("email", "Enter a valid email address."); else good("email");
+      if(val("city").length < 2) bad("city", "Enter your city."); else good("city");
+      if(val("password").length < 8) bad("password", "Password must be at least 8 characters."); else good("password");
       var upi = val("upi");
-      if(upi && !/^[\w.-]{2,256}@[a-zA-Z]{2,64}$/.test(upi)) bad("upi", "UPI ID naam@bank jaisi ho."); else good("upi");
+      if(upi && !/^[\w.-]{2,256}@[a-zA-Z]{2,64}$/.test(upi)) bad("upi", "UPI ID should look like name@bank."); else good("upi");
     }
     if(n === 2){
-      if(!val("vtype")) bad("vtype", "Gaadi chuno."); else good("vtype");
+      if(!val("vtype")) bad("vtype", "Select a vehicle."); else good("vtype");
       var vn = val("vnum").toUpperCase();
-      if(!vn) bad("vnum", "Gaadi number likho."); else if(vn.length < 4 || vn.length > 20 || !/^[A-Z0-9 ]+$/.test(vn)) bad("vnum", "4-20 akshar, A-Z/0-9/space."); else good("vnum");
+      if(!vn) bad("vnum", "Enter the vehicle number."); else if(vn.length < 4 || vn.length > 20 || !/^[A-Z0-9 ]+$/.test(vn)) bad("vnum", "4–20 characters, A–Z/0–9/spaces only."); else good("vnum");
       var vm = val("vmodel");
-      if(vm && (vm.length < 2 || vm.length > 40)) bad("vmodel", "Model 2-40 akshar."); else good("vmodel");
+      if(vm && (vm.length < 2 || vm.length > 40)) bad("vmodel", "Model must be 2–40 characters."); else good("vmodel");
       var vy = val("vyear");
-      if(vy && (!/^\d+$/.test(vy) || +vy < 1990 || +vy > 2100)) bad("vyear", "Year 1990-2100."); else good("vyear");
+      if(vy && (!/^\d+$/.test(vy) || +vy < 1990 || +vy > 2100)) bad("vyear", "Year must be between 1990 and 2100."); else good("vyear");
       var vc = val("vcap");
-      if(vc && (!/^\d+$/.test(vc) || +vc < 0 || +vc > 50000)) bad("vcap", "Capacity 0-50000 kg."); else good("vcap");
+      if(vc && (!/^\d+$/.test(vc) || +vc < 0 || +vc > 50000)) bad("vcap", "Capacity must be 0–50000 kg."); else good("vcap");
     }
     if(n === 3){
       var dl = val("dlnum").toUpperCase();
-      if(!dl) bad("dlnum", "License number likho."); else if(!/^[A-Z0-9 ]{5,25}$/.test(dl)) bad("dlnum", "5-25 akshar (A-Z, 0-9, space)."); else good("dlnum");
+      if(!dl) bad("dlnum", "Enter your license number."); else if(!/^[A-Z0-9 ]{5,25}$/.test(dl)) bad("dlnum", "5–25 characters (A–Z, 0–9, spaces)."); else good("dlnum");
       var de = val("dlexp");
-      if(!de) bad("dlexp", "Expiry date chuno.");
-      else if(!validDate(de)) bad("dlexp", "Sahi date chuno.");
+      if(!de) bad("dlexp", "Select the expiry date.");
+      else if(!validDate(de)) bad("dlexp", "Select a valid date.");
       else {
         var t = new Date(de + "T00:00:00"), now = new Date(); now.setHours(0, 0, 0, 0);
-        if(t <= now) bad("dlexp", "Expired license nahi chalega — future date chuno."); else good("dlexp");
+        if(t <= now) bad("dlexp", "An expired license is not accepted — select a future date."); else good("dlexp");
       }
-      if(val("scity").length < 2) bad("scity", "Operating city likho."); else good("scity");
+      if(val("scity").length < 2) bad("scity", "Enter your operating city."); else good("scity");
     }
     if(n === 4){
       var rc = val("rc");
-      if(rc && (rc.length < 2 || rc.length > 30)) bad("rc", "RC 2-30 akshar."); else good("rc");
+      if(rc && (rc.length < 2 || rc.length > 30)) bad("rc", "RC number must be 2–30 characters."); else good("rc");
       var ins = val("ins");
-      if(ins && !validDate(ins)) bad("ins", "Sahi date chuno (YYYY-MM-DD)."); else good("ins");
+      if(ins && !validDate(ins)) bad("ins", "Select a valid date (YYYY-MM-DD)."); else good("ins");
     }
     if(!ok){
       if(first && first.focus) first.focus();
-      showAlert("err", "Kuch khaane sudharne hain — laal line padho.");
+      showAlert("err", "Please correct the highlighted fields — see the messages in red.");
     }
     return ok;
   }
@@ -461,8 +461,8 @@
   function row(k, v){ if(v === undefined || v === null || v === "") return ""; return "<tr><th>" + esc(k) + "</th><td>" + esc(v) + "</td></tr>"; }
   function buildReview(){
     var vt = $("f-vtype"), h = "<table class='review-table'>";
-    h += row("Naam", val("name")) + row("Mobile", "+91 " + cleanPhone(val("phone"))) + row("Email", val("email")) + row("City", val("city")) + row("UPI ID", val("upi"));
-    h += row("Gaadi", vt.options[vt.selectedIndex].text + " • " + val("vnum").toUpperCase());
+    h += row("Name", val("name")) + row("Mobile", "+91 " + cleanPhone(val("phone"))) + row("Email", val("email")) + row("City", val("city")) + row("UPI ID", val("upi"));
+    h += row("Vehicle", vt.options[vt.selectedIndex].text + " • " + val("vnum").toUpperCase());
     h += row("Model/Year", [val("vmodel"), val("vyear")].filter(Boolean).join(" ") + (val("vcap") ? " • " + val("vcap") + " kg" : ""));
     h += row("License", val("dlnum").toUpperCase() + " • exp " + val("dlexp")) + row("Operating City", val("scity"));
     h += row("RC / Insurance", [val("rc"), val("ins")].filter(Boolean).join(" / "));
@@ -470,19 +470,19 @@
   }
 
   var ERR_MSG = {
-    phone_taken: "Ye mobile number pehle se registered hai. Driver Login try karo.",
-    driver_already_registered: "Ye email pehle se registered hai. Driver Login try karo.",
-    license_already_registered: "Ye license number pehle se registered hai.",
-    vehicle_already_registered: "Ye gaadi number pehle se registered hai.",
-    validation_failed: "Kuch details galat hain — laal line check karo.",
-    too_many_attempts: "Bahut koshish ho gayi — 15 minute rukkar try karo."
+    phone_taken: "This mobile number is already registered. Please try Driver Login.",
+    driver_already_registered: "This email is already registered. Please try Driver Login.",
+    license_already_registered: "This license number is already registered.",
+    vehicle_already_registered: "This vehicle number is already registered.",
+    validation_failed: "Some details are incorrect — please check the highlighted fields.",
+    too_many_attempts: "Too many attempts — please wait 15 minutes and try again."
   };
 
   $("submitBtn").addEventListener("click", function(){
     hideAlert();
-    if(!$("c1").checked || !$("c2").checked){ showAlert("err", "Submit ke liye dono consent par tick zaroori hai."); return; }
+    if(!$("c1").checked || !$("c2").checked){ showAlert("err", "Please tick both consent checkboxes to submit."); return; }
     var btn = $("submitBtn");
-    btn.disabled = true; btn.textContent = "Bhej rahe hain…";
+    btn.disabled = true; btn.textContent = "Submitting…";
     var payload = {
       name: val("name"), phone: cleanPhone(val("phone")), email: val("email").toLowerCase(),
       city: val("city"), password: val("password"),
@@ -505,7 +505,7 @@
     }).then(function(result){
       if(![200, 201].includes(result.status) || !result.body || result.body.ok !== true){
         var code = result.body && result.body.error;
-        var msg = ERR_MSG[code] || "Kuch gadbad ho gayi. Net check karke dobara try karo.";
+        var msg = ERR_MSG[code] || "Something went wrong. Please check your connection and try again.";
         if(result.body && result.body.details && result.body.details[0]) msg += " (" + result.body.details[0].message + ")";
         throw new Error(msg);
       }
@@ -515,10 +515,10 @@
       $("appStatus").textContent = result.body.application.status;
       $("appDate").textContent = new Date(result.body.application.registered_at).toLocaleString("en-IN");
       $("success").classList.add("show");
-      showAlert("ok", "Application submit ho gayi.");
+      showAlert("ok", "Application submitted successfully.");
       window.scrollTo({ top: 0, behavior: "smooth" });
     }).catch(function(e){
-      showAlert("err", e.message === "Failed to fetch" ? "Network error — net check karke try karo." : e.message);
+      showAlert("err", e.message === "Failed to fetch" ? "Network error — please check your connection and try again." : e.message);
     }).then(function(){ btn.disabled = false; btn.textContent = "Submit Application"; gate(); });
     function gate(){ btn.disabled = !($("c1").checked && $("c2").checked); }
   });

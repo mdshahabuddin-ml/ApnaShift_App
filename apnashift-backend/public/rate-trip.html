@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rating Dein | ApnaShift</title>
-<meta name="description" content="Apni poori hui trip ko star rating do.">
+<title>Rate Trip | ApnaShift</title>
+<meta name="description" content="Rate your completed trip with stars.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
@@ -92,34 +92,34 @@
       <a href="customer-dashboard.html">My Bookings</a>
       <a href="help.html">Help</a>
     </nav>
-    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">☰</button>
   </div>
 </header>
 
 <main>
   <h1>Trip Rating</h1>
-  <p class="sub" id="bookLine">Booking load ho rahi hai…</p>
+  <p class="sub" id="bookLine">Loading booking…</p>
 
   <div id="pageAlert" role="alert" aria-live="assertive"></div>
 
   <section class="card" id="rateCard" aria-labelledby="rateTitle" hidden>
-    <h2 id="rateTitle">Kitne star doge?</h2>
+    <h2 id="rateTitle">How many stars would you give?</h2>
     <div class="kv" id="tripInfo"></div>
-    <div class="stars" id="starsBox" role="radiogroup" aria-label="1 se 5 star chuno"></div>
+    <div class="stars" id="starsBox" role="radiogroup" aria-label="Choose 1 to 5 stars"></div>
     <label for="commentBox">Comment (optional)</label>
-    <textarea id="commentBox" maxlength="500" placeholder="Example: Driver samay par aaya, samaan ache se rakha"></textarea>
+    <textarea id="commentBox" maxlength="500" placeholder="Example: Driver arrived on time and handled goods carefully"></textarea>
     <p class="error-text" id="rateErr"></p>
     <div class="controls">
-      <button type="button" class="btn" id="submitBtn">Submit Karein</button>
-      <a class="btn ghost" id="backLink" href="customer-dashboard.html">Wapas</a>
+      <button type="button" class="btn" id="submitBtn">Submit</button>
+      <a class="btn ghost" id="backLink" href="customer-dashboard.html">Back</a>
     </div>
   </section>
 
   <section class="card" id="doneCard" aria-labelledby="doneTitle" hidden>
-    <h2 id="doneTitle">Aap rating de chuke hain</h2>
+    <h2 id="doneTitle">You have already rated this trip</h2>
     <div id="doneBody"></div>
     <div class="controls">
-      <a class="btn ghost" id="doneBackLink" href="customer-dashboard.html">Wapas</a>
+      <a class="btn ghost" id="doneBackLink" href="customer-dashboard.html">Back</a>
     </div>
   </section>
 
@@ -161,8 +161,8 @@
   } catch(e){}
   var bookingId = qs.id || "";
   if(!/^[0-9a-fA-F-]{36}$/.test(bookingId)){
-    showAlert("err", "Booking ID sahi nahi hai (?id= lagakar kholo).");
-    document.getElementById("bookLine").textContent = "Booking nahi mili.";
+    showAlert("err", "Invalid booking ID. Please open this page with ?id= in the URL.");
+    document.getElementById("bookLine").textContent = "Booking not found.";
     return;
   }
 
@@ -251,7 +251,7 @@
     document.getElementById("doneBody").innerHTML =
       '<div class="done-stars" aria-label="' + esc(rating.stars) + ' star">' + esc(starStr(rating.stars)) + "</div>" +
       (rating.comment ? "<p>" + esc(rating.comment) + "</p>" : "") +
-      '<p class="meta">' + esc(fmtDate(rating.created_at)) + " ko di gayi</p>";
+      '<p class="meta">Given on ' + esc(fmtDate(rating.created_at)) + "</p>";
   }
 
   // Pehle booking verify (delivered?), phir rating check.
@@ -259,17 +259,17 @@
     .then(readBody)
     .then(function(result){
       if(result.status === 401){ window.location.href = "user-auth.html"; throw new Error("unauth"); }
-      if(result.status === 404){ showAlert("err", "Ye booking tumhari nahi hai ya mili nahi."); throw new Error("notfound"); }
+      if(result.status === 404){ showAlert("err", "This booking was not found or does not belong to you."); throw new Error("notfound"); }
       if(result.status !== 200 || !result.body || !result.body.booking) throw new Error("load");
       var b = result.body.booking;
       bookLine.textContent = "Booking #" + b.id;
       if(b.status !== "delivered"){
-        showAlert("info", "Trip abhi complete nahi hui — delivered hone ke baad rating de sakoge.");
+        showAlert("info", "Trip is not complete yet — you can rate it after delivery.");
         throw new Error("notdelivered");
       }
       tripInfo.innerHTML =
         "<div><strong>Trip:</strong> " + esc(addrText(b.pickup)) + " → " + esc(addrText(b.drop)) + "</div>" +
-        "<div><strong>Kiraya:</strong> Rs " + esc(b.price_rs) + "</div>";
+        "<div><strong>Fare:</strong> Rs " + esc(b.price_rs) + "</div>";
       return fetch(API_BASE_URL + "/api/bookings/" + encodeURIComponent(bookingId) + "/rating", { headers: authHeaders() })
         .then(readBody)
         .then(function(r2){
@@ -285,17 +285,17 @@
     })
     .catch(function(err){
       if(err && (err.message === "unauth" || err.message === "notfound" || err.message === "notdelivered")) return;
-      showAlert("err", "Load nahi hua — internet check karke refresh karo.");
+      showAlert("err", "Could not load. Please check your internet connection and refresh.");
     });
 
   submitBtn.addEventListener("click", function(){
     if(!picked){
-      rateErr.textContent = "1 se 5 tak star chuno.";
+      rateErr.textContent = "Please select 1 to 5 stars.";
       return;
     }
     rateErr.textContent = "";
     submitBtn.disabled = true;
-    submitBtn.textContent = "Bheja ja raha hai…";
+    submitBtn.textContent = "Submitting…";
     var payload = { stars: picked };
     var comment = commentBox.value.trim();
     if(comment) payload.comment = comment;
@@ -306,29 +306,29 @@
     }).then(readBody).then(function(result){
       if(result.status === 401){ window.location.href = "user-auth.html"; return; }
       if(result.status === 201 && result.body && result.body.rating){
-        showAlert("ok", "Rating ke liye shukriya!");
+        showAlert("ok", "Thank you for your rating!");
         showDone(result.body.rating);
         return;
       }
       var code = result.body && result.body.error;
       if(result.status === 409 && code === "already_rated"){
-        showAlert("info", "Is booking ki rating pehle hi di ja chuki hai.");
+        showAlert("info", "This booking has already been rated.");
       } else if(result.status === 409){
-        showAlert("err", "Delivery poori hone ke baad hi rating di ja sakti hai.");
+        showAlert("err", "Ratings can only be given after delivery is complete.");
       } else if(result.status === 429){
-        showAlert("err", "Bahut koshish ho gayi — thodi der rukkar try karo.");
+        showAlert("err", "Too many attempts — please wait and try again.");
       } else if(result.status >= 500){
-        showAlert("err", "Server me dikkat hai — thodi der baad try karo.");
+        showAlert("err", "Server error — please try again later.");
       } else {
         var detail = result.body && result.body.details && result.body.details[0] && result.body.details[0].message;
-        showAlert("err", detail || "Rating nahi bheji gayi — dobara try karo.");
+        showAlert("err", detail || "Rating could not be submitted — please try again.");
       }
       submitBtn.disabled = false;
-      submitBtn.textContent = "Submit Karein";
+      submitBtn.textContent = "Submit";
     }).catch(function(){
-      showAlert("err", "Internet me dikkat hai — connection check karke try karo.");
+      showAlert("err", "Connection issue — please check your internet and try again.");
       submitBtn.disabled = false;
-      submitBtn.textContent = "Submit Karein";
+      submitBtn.textContent = "Submit";
     });
   });
 

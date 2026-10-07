@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Drivers | ApnaShift Admin</title>
-<meta name="description" content="ApnaShift admin — driver verification aur management.">
+<meta name="description" content="ApnaShift admin — driver verification and management.">
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -88,7 +88,7 @@
 
   <section class="card" aria-labelledby="pageTitle">
     <h1 id="pageTitle">Drivers</h1>
-    <p class="sub">Status filter karo, verify/reject/deactivate karo. <span id="totalLine"></span></p>
+    <p class="sub">Filter by status — verify, reject, or deactivate drivers. <span id="totalLine"></span></p>
     <div class="controls">
       <div class="field">
         <label for="statusSel">Status</label>
@@ -104,7 +104,7 @@
       </div>
       <button class="btn" id="loadBtn" type="button">Load</button>
     </div>
-    <div id="driversList" aria-live="polite"><p class="loading">Status chuno aur Load dabao.</p></div>
+    <div id="driversList" aria-live="polite"><p class="loading">Choose a status and press Load.</p></div>
     <p class="back"><a href="admin-home.html">← Admin Home</a> • <a href="admin-dashboard.html">Full dashboard</a></p>
   </section>
 </main>
@@ -174,16 +174,16 @@
 
   function driverCard(d){
     var h = '<div class="row-card">';
-    h += '<h3>' + esc(d.name || "Naam nahi") + '</h3>';
+    h += '<h3>' + esc(d.name || "No name") + '</h3>';
     h += '<p>' + badgeFor(d) + '</p>';
     h += '<p class="meta">' + esc(d.phone || "—") +
       (d.email ? " • " + esc(d.email) : "") + '</p>';
-    h += '<p>Gaadi: ' + esc(d.vehicle_type || "—") +
+    h += '<p>Vehicle: ' + esc(d.vehicle_type || "—") +
       (d.vehicle_number ? " • " + esc(d.vehicle_number) : "") + '</p>';
     h += '<p class="meta">Rating: ' + esc(d.avg_rating === null ? "—" : d.avg_rating) +
       ' • Trips: ' + esc(d.total_trips || 0) +
       (d.city ? " • " + esc(d.city) : "") +
-      (d.rejection_reason ? '<br>Wajah: ' + esc(d.rejection_reason) : "") + '</p>';
+      (d.rejection_reason ? '<br>Reason: ' + esc(d.rejection_reason) : "") + '</p>';
     h += '<div class="actions">';
     if(!d.is_verified){
       h += '<button class="btn small" type="button" data-act="verify" data-id="' + esc(d.id) + '">Verify</button>';
@@ -203,7 +203,7 @@
     var page = Math.max(1, Number(pageInp.value) || 1);
     showAlert(null, "");
     loadBtn.disabled = true;
-    driversList.innerHTML = '<p class="loading">Load ho raha hai…</p>';
+    driversList.innerHTML = '<p class="loading">Loading…</p>';
     fetch(API_BASE_URL + "/api/admin/drivers?status=" + encodeURIComponent(status) +
       "&page=" + page + "&limit=20", { headers: authHeaders() })
       .then(readBody)
@@ -216,11 +216,11 @@
         totalLine.textContent = "Total: " + (result.body.total || 0) + " (page " + (result.body.page || page) + ")";
         driversList.innerHTML = arr.length
           ? arr.map(driverCard).join("")
-          : '<p class="empty">Is status me koi driver nahi mila.</p>';
+          : '<p class="empty">No drivers found with this status.</p>';
       })
       .catch(function(){
-        driversList.innerHTML = '<p class="empty">Load nahi hua — dobara try karo.</p>';
-        showAlert("err", "Drivers load nahi hue. Internet check karke dobara try karo.");
+        driversList.innerHTML = '<p class="empty">Could not load — please try again.</p>';
+        showAlert("err", "Could not load drivers. Check your internet and try again.");
       })
       .then(function(){ loadBtn.disabled = false; });
   }
@@ -229,9 +229,9 @@
     var url = null, opts = { method: "PATCH", headers: authHeaders({ "Content-Type": "application/json" }) };
     if(act === "reject"){
       var reason = null;
-      try { reason = window.prompt("Reject ki wajah likho (kam se kam 3 akshar):"); } catch(e){}
+      try { reason = window.prompt("Enter the rejection reason (at least 3 characters):"); } catch(e){}
       if(!reason) return;
-      if(reason.trim().length < 3){ showAlert("err", "Wajah kam se kam 3 akshar likho."); return; }
+      if(reason.trim().length < 3){ showAlert("err", "Please write at least 3 characters."); return; }
       url = API_BASE_URL + "/api/admin/drivers/" + encodeURIComponent(id) + "/reject";
       opts.body = JSON.stringify({ reason: reason.trim() });
     } else {
@@ -243,15 +243,15 @@
     fetch(url, opts).then(readBody).then(function(result){
       if(checkAuth(result)) return;
       if(result.status === 200 && result.body && result.body.ok === true){
-        showAlert("ok", "Driver " + act + " ho gaya.");
+        showAlert("ok", "Driver " + act + "d.");
         loadDrivers();
         return;
       }
-      if(result.status === 404) showAlert("err", "Driver nahi mila.");
-      else showAlert("err", "Action nahi hua — dobara try karo.");
+      if(result.status === 404) showAlert("err", "Driver not found.");
+      else showAlert("err", "Action failed — please try again.");
       btn.disabled = false;
     }).catch(function(){
-      showAlert("err", "Internet me dikkat hai.");
+      showAlert("err", "Internet issue.");
       btn.disabled = false;
     });
   }

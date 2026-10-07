@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Dashboard | ApnaShift</title>
-<meta name="description" content="ApnaShift internal admin dashboard — stats, drivers, enterprise aur bookings.">
+<meta name="description" content="ApnaShift internal admin dashboard — statistics, drivers, enterprise inquiries, and bookings.">
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -126,7 +126,7 @@
       <a href="enterprise.html">Enterprise</a>
       <a href="help.html">Help</a>
     </nav>
-    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">☰</button>
   </div>
 </header>
 
@@ -134,7 +134,7 @@
   <div class="top-row">
     <div>
       <h1>Admin Dashboard</h1>
-      <p class="sub">Sirf authorized staff ke liye. Stats, drivers, enterprise aur bookings yahin se sambhalo.</p>
+      <p class="sub">For authorized staff only. Manage statistics, drivers, enterprise inquiries, and bookings from here.</p>
     </div>
     <button class="logout-btn" id="logoutBtn" type="button">Logout</button>
   </div>
@@ -152,16 +152,16 @@
 
   <section class="card panel active" id="panelOverview" role="tabpanel" aria-labelledby="tabOverview">
     <h2>Overview</h2>
-    <p class="sub">Aaj, is hafte aur total ka hisaab.</p>
+    <p class="sub">Today's, this week's, and overall figures.</p>
     <div class="controls">
       <button class="btn ghost" id="refreshStats" type="button">Refresh</button>
     </div>
-    <div id="statsBox" aria-live="polite"><p class="loading">Stats load ho raha hai…</p></div>
+    <div id="statsBox" aria-live="polite"><p class="loading">Loading statistics…</p></div>
   </section>
 
   <section class="card panel" id="panelDrivers" role="tabpanel" aria-labelledby="tabDrivers">
     <h2>Drivers</h2>
-    <p class="sub">Status chuno, phir Verify / Reject / Deactivate karo.</p>
+    <p class="sub">Select a status, then verify, reject, or deactivate drivers.</p>
     <div class="controls">
       <div class="field">
         <label for="driverStatus">Status</label>
@@ -173,22 +173,22 @@
       </div>
       <button class="btn ghost" id="refreshDrivers" type="button">Load</button>
     </div>
-    <div class="list" id="driversList" aria-live="polite"><p class="loading">Driver list load karne ke liye Load dabao.</p></div>
+    <div class="list" id="driversList" aria-live="polite"><p class="loading">Press Load to load the driver list.</p></div>
     <h2 style="margin-top:16px">Password reset</h2>
-    <p class="sub">Phone number se user/driver dhoondo, naya password set karo (min 8 akshar).</p>
+    <p class="sub">Search for a user/driver by phone number and set a new password (minimum 8 characters).</p>
     <div class="controls">
       <div class="field">
         <label for="resetPhone">Phone number</label>
         <input type="text" id="resetPhone" inputmode="numeric" maxlength="15" placeholder="98765 43210">
       </div>
-      <button class="btn ghost" id="resetSearchBtn" type="button">Dhoondo</button>
+      <button class="btn ghost" id="resetSearchBtn" type="button">Search</button>
     </div>
     <div class="list" id="resetResults" aria-live="polite"></div>
   </section>
 
   <section class="card panel" id="panelEnterprise" role="tabpanel" aria-labelledby="tabEnterprise">
     <h2>Enterprise inquiries</h2>
-    <p class="sub">Status badlo: CONTACTED / IN_DISCUSSION / CONVERTED / CLOSED.</p>
+    <p class="sub">Update the status: CONTACTED / IN_DISCUSSION / CONVERTED / CLOSED.</p>
     <div class="controls">
       <div class="field">
         <label for="inqStatus">Status filter</label>
@@ -203,16 +203,16 @@
       </div>
       <div class="field">
         <label for="inqSearch">Search</label>
-        <input type="search" id="inqSearch" maxlength="80" placeholder="Company ya naam likho">
+        <input type="search" id="inqSearch" maxlength="80" placeholder="Enter a company or name">
       </div>
       <button class="btn ghost" id="refreshInquiries" type="button">Load</button>
     </div>
-    <div class="list" id="inquiriesList" aria-live="polite"><p class="loading">Inquiries dekhne ke liye Load dabao.</p></div>
+    <div class="list" id="inquiriesList" aria-live="polite"><p class="loading">Press Load to view inquiries.</p></div>
   </section>
 
   <section class="card panel" id="panelBookings" role="tabpanel" aria-labelledby="tabBookings">
     <h2>Bookings</h2>
-    <p class="sub">Status filter ke saath total aur revenue.</p>
+    <p class="sub">Totals and revenue with status filters.</p>
     <div class="controls">
       <div class="field">
         <label for="bookingStatus">Status filter</label>
@@ -235,22 +235,22 @@
       <button class="btn ghost" id="refreshBookings" type="button">Load</button>
     </div>
     <div id="bookingsSummary" aria-live="polite"></div>
-    <div class="list" id="bookingsList" aria-live="polite"><p class="loading">Bookings dekhne ke liye Load dabao.</p></div>
+    <div class="list" id="bookingsList" aria-live="polite"><p class="loading">Press Load to view bookings.</p></div>
   </section>
 
   <section class="card panel" id="panelTracking" role="tabpanel" aria-labelledby="tabTracking">
     <h2>Live tracking</h2>
-    <p class="sub">Active trips (accepted/arrived/in_transit) — driver ki last GPS location aur tracking status. 10 sec me auto-refresh.</p>
+    <p class="sub">Active trips (accepted/arrived/in_transit) — the driver's last GPS location and tracking status. Auto-refreshes every 10 seconds.</p>
     <div class="controls">
       <button class="btn ghost" id="refreshTracking" type="button">Load</button>
     </div>
     <div id="trackingSummary" aria-live="polite"></div>
-    <div class="list" id="trackingList" aria-live="polite"><p class="loading">Live trips dekhne ke liye Load dabao.</p></div>
+    <div class="list" id="trackingList" aria-live="polite"><p class="loading">Press Load to view live trips.</p></div>
   </section>
 
   <section class="card panel" id="panelMoney" role="tabpanel" aria-labelledby="tabMoney">
     <h2>Commission</h2>
-    <p class="sub">Rate sirf aage ki deliveries par lagta hai — purani payments ka snapshot nahi badalta.</p>
+    <p class="sub">The rate applies only to future deliveries — it does not change the snapshot of past payments.</p>
     <div class="controls">
       <div class="field">
         <label for="commissionPct">Commission % (0–100)</label>
@@ -259,16 +259,16 @@
       <button class="btn ghost" id="saveCommission" type="button">Save</button>
       <button class="btn ghost" id="refreshMoney" type="button">Load</button>
     </div>
-    <div id="commissionBox" aria-live="polite"><p class="loading">Commission load karne ke liye Load dabao.</p></div>
+    <div id="commissionBox" aria-live="polite"><p class="loading">Press Load to load the commission rate.</p></div>
 
-    <h2 style="margin-top:16px">Driver hisab</h2>
-    <p class="sub">Cash collection, kamai, commission, jama aur baaki — driver chuno to detail + settlement.</p>
-    <div class="list" id="balancesList" aria-live="polite"><p class="loading">Load dabao.</p></div>
+    <h2 style="margin-top:16px">Driver balances</h2>
+    <p class="sub">Cash collected, earnings, commission, settled amounts, and outstanding balances — select a driver for details and settlement.</p>
+    <div class="list" id="balancesList" aria-live="polite"><p class="loading">Press Load.</p></div>
 
     <div id="driverMoneyBox" hidden>
-      <h2 id="driverMoneyTitle" style="margin-top:14px">Driver detail</h2>
+      <h2 id="driverMoneyTitle" style="margin-top:14px">Driver details</h2>
       <div id="driverMoneySummary" aria-live="polite"></div>
-      <h2 style="margin-top:14px">Settlement jama karo</h2>
+      <h2 style="margin-top:14px">Record a settlement</h2>
       <div class="controls">
         <div class="field">
           <label for="settleAmount">Amount (Rs)</label>
@@ -285,17 +285,17 @@
       </div>
       <div class="controls">
         <div class="field">
-          <label for="settleRef">Reference no (bank/upi par zaroori)</label>
+          <label for="settleRef">Reference number (required for bank transfer/UPI)</label>
           <input type="text" id="settleRef" maxlength="100" placeholder="UPI-12345">
         </div>
         <div class="field">
           <label for="settleNotes">Notes (optional)</label>
-          <input type="text" id="settleNotes" maxlength="500" placeholder="Office me cash jama">
+          <input type="text" id="settleNotes" maxlength="500" placeholder="Cash deposited at the office">
         </div>
       </div>
       <div class="controls">
-        <button class="btn" id="settleSubmit" type="button">Settlement jama karo</button>
-        <button class="btn ghost" id="driverMoneyBack" type="button">Wapas</button>
+        <button class="btn" id="settleSubmit" type="button">Record settlement</button>
+        <button class="btn ghost" id="driverMoneyBack" type="button">Back</button>
       </div>
       <h2 style="margin-top:14px">Payments</h2>
       <div class="list" id="driverPayments" aria-live="polite"></div>
@@ -380,7 +380,7 @@
     }
     return false;
   }
-  function networkMsg(){ return "Network error — net check karke dobara try karo."; }
+  function networkMsg(){ return "Network error — please check your connection and try again."; }
 
   // Tab switching reuses the login page tab pattern.
   var tabs = [
@@ -422,8 +422,8 @@
   }
   function loadStats(){
     refreshStats.disabled = true;
-    refreshStats.textContent = "Load ho raha hai…";
-    statsBox.innerHTML = '<p class="loading">Stats load ho raha hai…</p>';
+    refreshStats.textContent = "Loading…";
+    statsBox.innerHTML = '<p class="loading">Loading statistics…</p>';
     fetch(API_BASE_URL + "/api/admin/stats", { method: "GET", headers: authHeaders() })
       .then(parseRes)
       .then(function(result){
@@ -433,8 +433,8 @@
         }
         var b = result.body;
         var html = '<div class="stats-grid">';
-        html += statCard("Aaj", b.today);
-        html += statCard("Is hafte", b.week);
+        html += statCard("Today", b.today);
+        html += statCard("This week", b.week);
         html += statCard("Total", b.total);
         html += '</div>';
         var verified = b.drivers && b.drivers.verified_active;
@@ -443,8 +443,8 @@
         hidePageAlert();
       })
       .catch(function(err){
-        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : "Stats load nahi hua. Dobara try karo.";
-        statsBox.innerHTML = '<p class="empty">Stats load nahi hua. Refresh dabakar dobara try karo.</p>';
+        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : "Statistics could not be loaded. Please try again.";
+        statsBox.innerHTML = '<p class="empty">Statistics could not be loaded. Press Refresh and try again.</p>';
         showPageAlert("err", msg);
       })
       .then(function(){
@@ -463,16 +463,16 @@
     var activeBadge = d.is_active ? '<span class="badge ok">Active</span>' : '<span class="badge bad">Inactive</span>';
     var rating = (d.avg_rating != null ? "Rating " + d.avg_rating : "Rating —") + " • Trips " + (d.total_trips != null ? d.total_trips : "—");
     var html = '<div class="row-card' + (d.is_verified ? " verified" : "") + (d.is_active ? "" : " inactive") + '">';
-    html += '<h3>' + esc(d.name || "Naam nahi") + ' ' + verifiedBadge + ' ' + activeBadge + '</h3>';
+    html += '<h3>' + esc(d.name || "No name") + ' ' + verifiedBadge + ' ' + activeBadge + '</h3>';
     html += '<p class="meta">Phone: ' + esc(d.phone || "—") + ' • ' + esc(d.city || "") + ' • Ref: ' + esc(d.application_ref || d.id || "—") + '</p>';
-    html += '<p>Gaadi: ' + esc(d.vehicle_type || "—") + ' • ' + esc(d.vehicle_number || "—") + '</p>';
+    html += '<p>Vehicle: ' + esc(d.vehicle_type || "—") + ' • ' + esc(d.vehicle_number || "—") + '</p>';
     html += '<p class="meta">License: ' + esc(d.license_number || "—") + ' • ' + esc(rating) + '</p>';
     if(d.rejection_reason) html += '<p class="meta">Reject reason: ' + esc(d.rejection_reason) + '</p>';
-    html += '<details><summary style="cursor:pointer;font-weight:700;color:var(--navy)">Poori application dekho (authenticity check)</summary>';
+    html += '<details><summary style="cursor:pointer;font-weight:700;color:var(--navy)">View the full application (authenticity check)</summary>';
     html += '<div class="meta" style="display:grid;gap:2px;margin-top:6px">';
     html += '<span><strong>Email:</strong> ' + esc(d.email || "—") + ' • <strong>DOB:</strong> ' + esc(d.dob || "—") + ' • <strong>Gender:</strong> ' + esc(d.gender || "—") + '</span>';
     html += '<span><strong>Address:</strong> ' + esc(d.address || "—") + ', ' + esc(d.city || "") + ', ' + esc(d.state || "") + '</span>';
-    html += '<span><strong>Gaadi:</strong> ' + esc(d.vehicle_make || "") + ' ' + esc(d.vehicle_model || "") +
+    html += '<span><strong>Vehicle:</strong> ' + esc(d.vehicle_make || "") + ' ' + esc(d.vehicle_model || "") +
       (d.vehicle_year != null ? ' (' + esc(d.vehicle_year) + ')' : '') + ' • Capacity: ' + esc(d.capacity_kg != null ? d.capacity_kg + " kg" : "—") +
       ' • Fuel: ' + esc(d.fuel_type || "—") + ' • ' + esc(d.ownership || "") + '</span>';
     html += '<span><strong>License:</strong> ' + esc(d.license_number || "—") + ' (' + esc(d.license_type || "—") +
@@ -497,8 +497,8 @@
   function loadDrivers(){
     var st = driverStatus.value;
     refreshDrivers.disabled = true;
-    refreshDrivers.textContent = "Load ho raha hai…";
-    driversList.innerHTML = '<p class="loading">Drivers load ho rahe hain…</p>';
+    refreshDrivers.textContent = "Loading…";
+    driversList.innerHTML = '<p class="loading">Loading drivers…</p>';
     fetch(API_BASE_URL + "/api/admin/drivers?status=" + encodeURIComponent(st), { method: "GET", headers: authHeaders() })
       .then(parseRes)
       .then(function(result){
@@ -508,15 +508,15 @@
         }
         var arr = result.body.drivers || [];
         if(!arr.length){
-          driversList.innerHTML = '<p class="empty">Is status me koi driver nahi mila.</p>';
+          driversList.innerHTML = '<p class="empty">No drivers found with this status.</p>';
           return;
         }
         driversList.innerHTML = arr.map(driverCard).join("");
         hidePageAlert();
       })
       .catch(function(err){
-        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : "Drivers load nahi hue. Dobara try karo.";
-        driversList.innerHTML = '<p class="empty">Drivers load nahi hue.</p>';
+        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : "Drivers could not be loaded. Please try again.";
+        driversList.innerHTML = '<p class="empty">Drivers could not be loaded.</p>';
         showPageAlert("err", msg);
       })
       .then(function(){
@@ -536,11 +536,11 @@
     var body = {};
     if(act === "verify") url = API_BASE_URL + "/api/admin/drivers/" + encodeURIComponent(id) + "/verify";
     else if(act === "reject"){
-      var reason = window.prompt("Reject ka reason likho (driver ko dikhega):", "");
+      var reason = window.prompt("Enter the rejection reason (visible to the driver):", "");
       if(reason == null) return;
       reason = String(reason).trim();
       if(!reason){
-        showPageAlert("err", "Reject ke liye reason zaroori hai.");
+        showPageAlert("err", "A reason is required to reject a driver.");
         return;
       }
       url = API_BASE_URL + "/api/admin/drivers/" + encodeURIComponent(id) + "/reject";
@@ -550,24 +550,24 @@
     else if(act === "reactivate") url = API_BASE_URL + "/api/admin/drivers/" + encodeURIComponent(id) + "/reactivate";
     else return;
     btn.disabled = true;
-    showPageAlert("info", "Kaam ho raha hai…");
+    showPageAlert("info", "Processing…");
     fetch(url, { method: "PATCH", headers: authHeaders({ "Content-Type": "application/json" }), body: JSON.stringify(body) })
       .then(parseRes)
       .then(function(result){
         if(checkAuth(result)) return;
         if(result.status !== 200 || !result.body || result.body.ok !== true){
           var code = result.body && result.body.error;
-          var m = "Kaam nahi hua. Dobara try karo.";
-          if(code === "already_verified") m = "Driver pehle se verified hai.";
-          else if(code === "not_found") m = "Driver nahi mila. List refresh karo.";
-          else if(code === "validation_failed") m = "Reason sahi likho (kam se kam 3 akshar).";
+          var m = "The action could not be completed. Please try again.";
+          if(code === "already_verified") m = "The driver is already verified.";
+          else if(code === "not_found") m = "Driver not found. Please refresh the list.";
+          else if(code === "validation_failed") m = "Please enter a valid reason (at least 3 characters).";
           throw new Error(m);
         }
-        showPageAlert("ok", "Ho gaya!");
+        showPageAlert("ok", "Done!");
         loadDrivers();
       })
       .catch(function(err){
-        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : (err && err.message) || "Kaam nahi hua. Dobara try karo.";
+        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : (err && err.message) || "The action could not be completed. Please try again.";
         showPageAlert("err", msg);
         btn.disabled = false;
       });
@@ -579,23 +579,23 @@
   var resetResults = document.getElementById("resetResults");
   function resetAccountCard(a){
     var html = '<div class="row-card">';
-    html += '<h3>' + esc(a.name || "Naam nahi") + ' <span class="badge">' + esc(a.kind || "") + '</span></h3>';
+    html += '<h3>' + esc(a.name || "No name") + ' <span class="badge">' + esc(a.kind || "") + '</span></h3>';
     html += '<p class="meta">Phone: ' + esc(a.phone || "—") + '</p>';
     html += '<div class="controls"><div class="field">' +
-      '<label for="newpw-' + esc(a.kind) + '-' + esc(a.id) + '">Naya password (min 8)</label>' +
+      '<label for="newpw-' + esc(a.kind) + '-' + esc(a.id) + '">New password (minimum 8 characters)</label>' +
       '<input type="text" id="newpw-' + esc(a.kind) + '-' + esc(a.id) + '" maxlength="128" autocomplete="off"></div>' +
-      '<button class="btn small" type="button" data-reset-kind="' + esc(a.kind) + '" data-reset-id="' + esc(a.id) + '">Set karo</button></div>';
+      '<button class="btn small" type="button" data-reset-kind="' + esc(a.kind) + '" data-reset-id="' + esc(a.id) + '">Set</button></div>';
     html += '</div>';
     return html;
   }
   resetSearchBtn.addEventListener("click", function(){
     var phone = resetPhone.value.trim();
     if(!phone){
-      showPageAlert("err", "Phone number likho.");
+      showPageAlert("err", "Please enter a phone number.");
       return;
     }
     resetSearchBtn.disabled = true;
-    resetResults.innerHTML = '<p class="loading">Dhoond rahe hain…</p>';
+    resetResults.innerHTML = '<p class="loading">Searching…</p>';
     fetch(API_BASE_URL + "/api/admin/accounts/lookup?phone=" + encodeURIComponent(phone), { method: "GET", headers: authHeaders() })
       .then(parseRes)
       .then(function(result){
@@ -604,12 +604,12 @@
           throw new Error((result.body && result.body.error) || "load_failed");
         }
         var arr = result.body.accounts || [];
-        resetResults.innerHTML = arr.length ? arr.map(resetAccountCard).join("") : '<p class="empty">Is number par koi user/driver nahi mila.</p>';
+        resetResults.innerHTML = arr.length ? arr.map(resetAccountCard).join("") : '<p class="empty">No user or driver found for this number.</p>';
         hidePageAlert();
       })
       .catch(function(err){
-        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : "Search nahi hua. Dobara try karo.";
-        resetResults.innerHTML = '<p class="empty">Search nahi hua.</p>';
+        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : "Search failed. Please try again.";
+        resetResults.innerHTML = '<p class="empty">Search failed.</p>';
         showPageAlert("err", msg);
       })
       .then(function(){
@@ -625,12 +625,12 @@
     var inp = document.getElementById("newpw-" + kind + "-" + id);
     var pw = inp ? inp.value : "";
     if(!pw || pw.length < 8){
-      showPageAlert("err", "Naya password kam se kam 8 akshar ho.");
+      showPageAlert("err", "The new password must be at least 8 characters.");
       return;
     }
     var path = kind === "user" ? "/api/admin/users/" : "/api/admin/drivers/";
     btn.disabled = true;
-    showPageAlert("info", "Password badal raha hai…");
+    showPageAlert("info", "Updating password…");
     fetch(API_BASE_URL + path + encodeURIComponent(id) + "/reset-password", {
       method: "PATCH", headers: authHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({ new_password: pw })
@@ -639,17 +639,17 @@
       .then(function(result){
         if(checkAuth(result)) return;
         if(result.status === 200 && result.body && result.body.ok === true){
-          showPageAlert("ok", "Password badal gaya (" + kind + ").");
+          showPageAlert("ok", "Password updated (" + kind + ").");
           if(inp) inp.value = "";
           return;
         }
         var code = result.body && result.body.error;
-        if(result.status === 404) showPageAlert("err", "Account nahi mila.");
-        else showPageAlert("err", code === "validation_failed" ? "Password min 8 akshar ho." : "Password nahi badla. Dobara try karo.");
+        if(result.status === 404) showPageAlert("err", "Account not found.");
+        else showPageAlert("err", code === "validation_failed" ? "The password must be at least 8 characters." : "The password could not be updated. Please try again.");
         btn.disabled = false;
       })
       .catch(function(err){
-        showPageAlert("err", (err && err.message === "Failed to fetch") ? networkMsg() : "Password nahi badla. Dobara try karo.");
+        showPageAlert("err", (err && err.message === "Failed to fetch") ? networkMsg() : "The password could not be updated. Please try again.");
         btn.disabled = false;
       });
   });
@@ -680,8 +680,8 @@
     if(inqSearch.value.trim()) qs.push("search=" + encodeURIComponent(inqSearch.value.trim()));
     var url = API_BASE_URL + "/api/enterprise/inquiries" + (qs.length ? "?" + qs.join("&") : "");
     refreshInquiries.disabled = true;
-    refreshInquiries.textContent = "Load ho raha hai…";
-    inquiriesList.innerHTML = '<p class="loading">Inquiries load ho rahi hain…</p>';
+    refreshInquiries.textContent = "Loading…";
+    inquiriesList.innerHTML = '<p class="loading">Loading inquiries…</p>';
     fetch(url, { method: "GET", headers: authHeaders() })
       .then(parseRes)
       .then(function(result){
@@ -691,15 +691,15 @@
         }
         var arr = result.body.inquiries || [];
         if(!arr.length){
-          inquiriesList.innerHTML = '<p class="empty">Koi inquiry nahi mili.</p>';
+          inquiriesList.innerHTML = '<p class="empty">No inquiries found.</p>';
           return;
         }
         inquiriesList.innerHTML = arr.map(inquiryCard).join("");
         hidePageAlert();
       })
       .catch(function(err){
-        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : "Inquiries load nahi hui. Dobara try karo.";
-        inquiriesList.innerHTML = '<p class="empty">Inquiries load nahi hui.</p>';
+        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : "Inquiries could not be loaded. Please try again.";
+        inquiriesList.innerHTML = '<p class="empty">Inquiries could not be loaded.</p>';
         showPageAlert("err", msg);
       })
       .then(function(){
@@ -715,7 +715,7 @@
     var st = btn.getAttribute("data-status");
     if(!id || !st) return;
     btn.disabled = true;
-    showPageAlert("info", "Status badal raha hai…");
+    showPageAlert("info", "Updating status…");
     fetch(API_BASE_URL + "/api/enterprise/inquiries/" + encodeURIComponent(id) + "/status", {
       method: "PATCH",
       headers: authHeaders({ "Content-Type": "application/json" }),
@@ -724,15 +724,15 @@
       if(checkAuth(result)) return;
       if(result.status !== 200 || !result.body || result.body.ok !== true){
         var code = result.body && result.body.error;
-        var m = "Status nahi badla. Dobara try karo.";
-        if(code === "not_found") m = "Inquiry nahi mili. List refresh karo.";
-        else if(code === "validation_failed") m = "Galat status bheja gaya.";
+        var m = "The status could not be updated. Please try again.";
+        if(code === "not_found") m = "Inquiry not found. Please refresh the list.";
+        else if(code === "validation_failed") m = "An invalid status was provided.";
         throw new Error(m);
       }
-      showPageAlert("ok", "Status " + st + " ho gaya.");
+      showPageAlert("ok", "Status updated to " + st + ".");
       loadInquiries();
     }).catch(function(err){
-      var msg = (err && err.message === "Failed to fetch") ? networkMsg() : (err && err.message) || "Status nahi badla.";
+      var msg = (err && err.message === "Failed to fetch") ? networkMsg() : (err && err.message) || "The status could not be updated.";
       showPageAlert("err", msg);
       btn.disabled = false;
     });
@@ -749,9 +749,9 @@
     var html = '<div class="row-card">';
     html += '<h3>#' + esc(b.id || "—") + ' <span class="badge">' + esc(b.status || "—") + '</span>' +
       (b.disputed ? ' <span class="badge bad">Disputed</span>' : '') + '</h3>';
-    if(b.disputed && b.dispute_reason) html += '<p class="meta">Vivad: ' + esc(b.dispute_reason) + '</p>';
+    if(b.disputed && b.dispute_reason) html += '<p class="meta">Dispute: ' + esc(b.dispute_reason) + '</p>';
     html += '<p>' + esc(pickup) + ' → ' + esc(drop) + '</p>';
-    html += '<p class="meta">Gaadi: ' + esc(b.vehicle_type || "—") + ' • Kiraya: ' + esc(fmtRs(b.price_rs)) + '</p>';
+    html += '<p class="meta">Vehicle: ' + esc(b.vehicle_type || "—") + ' • Fare: ' + esc(fmtRs(b.price_rs)) + '</p>';
     html += '<p class="meta">Customer: ' + esc(b.user_name || "—") + ' • Driver: ' + esc(b.driver_name || "—") + ' • ' + esc(fmtDate(b.created_at)) + '</p>';
     if(b.status === "cancelled"){
       var cr = b.cancellation && b.cancellation.reason;
@@ -769,8 +769,8 @@
     if(disp) qs.push("disputed=" + encodeURIComponent(disp));
     var url = API_BASE_URL + "/api/admin/bookings" + (qs.length ? "?" + qs.join("&") : "");
     refreshBookings.disabled = true;
-    refreshBookings.textContent = "Load ho raha hai…";
-    bookingsList.innerHTML = '<p class="loading">Bookings load ho rahi hain…</p>';
+    refreshBookings.textContent = "Loading…";
+    bookingsList.innerHTML = '<p class="loading">Loading bookings…</p>';
     bookingsSummary.innerHTML = "";
     fetch(url, { method: "GET", headers: authHeaders() })
       .then(parseRes)
@@ -784,15 +784,15 @@
         var rev = result.body.revenue_rs;
         bookingsSummary.innerHTML = '<p class="meta" style="font-size:.9rem;color:var(--navy);font-weight:700">Total: ' + esc(total) + ' • Revenue: ' + esc(fmtRs(rev)) + '</p>';
         if(!arr.length){
-          bookingsList.innerHTML = '<p class="empty">Koi booking nahi mili.</p>';
+          bookingsList.innerHTML = '<p class="empty">No bookings found.</p>';
           return;
         }
         bookingsList.innerHTML = arr.map(bookingCard).join("");
         hidePageAlert();
       })
       .catch(function(err){
-        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : "Bookings load nahi hui. Dobara try karo.";
-        bookingsList.innerHTML = '<p class="empty">Bookings load nahi hui.</p>';
+        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : "Bookings could not be loaded. Please try again.";
+        bookingsList.innerHTML = '<p class="empty">Bookings could not be loaded.</p>';
         showPageAlert("err", msg);
       })
       .then(function(){
@@ -812,8 +812,8 @@
   function ageText(iso){
     if(!iso) return "—";
     var s = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
-    if(s < 60) return s + " sec pehle";
-    return Math.floor(s / 60) + " min " + (s % 60) + " sec pehle";
+    if(s < 60) return s + " sec ago";
+    return Math.floor(s / 60) + " min " + (s % 60) + " sec ago";
   }
   function trackingCard(a){
     var t = a.tracking || {};
@@ -824,10 +824,10 @@
     html += '<h3>#' + esc(a.booking_id || "—") + ' <span class="badge">' + esc(a.booking_status || "—") + '</span>' +
       ' <span class="badge ' + badgeCls + '">' + esc(STATE_LABEL[st] || st) + '</span></h3>';
     html += '<p>' + esc(a.pickup_address || "—") + ' → ' + esc(a.drop_address || "—") + '</p>';
-    html += '<p class="meta">Driver: ' + esc((a.driver && a.driver.name) || "assign nahi") +
-      ' • Gaadi: ' + esc((a.driver && a.driver.vehicle_type) || (a.vehicle_type || "—")) +
+    html += '<p class="meta">Driver: ' + esc((a.driver && a.driver.name) || "not assigned") +
+      ' • Vehicle: ' + esc((a.driver && a.driver.vehicle_type) || (a.vehicle_type || "—")) +
       ' ' + esc((a.driver && a.driver.vehicle_number) || "") + '</p>';
-    html += '<p class="meta">Last location: ' + (p ? esc(p.lat) + ", " + esc(p.lng) + " (" + esc(ageText(p.recorded_at)) + ")" : "abhi nahi mili") +
+    html += '<p class="meta">Last location: ' + (p ? esc(p.lat) + ", " + esc(p.lng) + " (" + esc(ageText(p.recorded_at)) + ")" : "not available yet") +
       ' • Points: ' + esc(t.points_count == null ? "0" : t.points_count) + '</p>';
     if(p && (p.speed_mps != null || p.heading_deg != null)){
       html += '<p class="meta">Speed: ' + esc(p.speed_mps != null ? p.speed_mps + " m/s" : "—") +
@@ -839,8 +839,8 @@
   function loadTracking(silent){
     if(!silent){
       refreshTracking.disabled = true;
-      refreshTracking.textContent = "Load ho raha hai…";
-      trackingList.innerHTML = '<p class="loading">Live trips load ho rahi hain…</p>';
+      refreshTracking.textContent = "Loading…";
+      trackingList.innerHTML = '<p class="loading">Loading live trips…</p>';
     }
     fetch(API_BASE_URL + "/api/admin/tracking/active?limit=50", { method: "GET", headers: authHeaders() })
       .then(parseRes)
@@ -854,13 +854,13 @@
           esc(c.total == null ? "0" : c.total) + ' • Live: ' + esc(c.live == null ? "0" : c.live) +
           ' • Stale: ' + esc(c.stale == null ? "0" : c.stale) + ' • Offline: ' + esc(c.offline == null ? "0" : c.offline) + '</p>';
         var arr = result.body.actives || [];
-        trackingList.innerHTML = arr.length ? arr.map(trackingCard).join("") : '<p class="empty">Koi active trip nahi hai.</p>';
+        trackingList.innerHTML = arr.length ? arr.map(trackingCard).join("") : '<p class="empty">No active trips.</p>';
         hidePageAlert();
       })
       .catch(function(err){
         if(silent) return;
-        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : "Tracking load nahi hui. Dobara try karo.";
-        trackingList.innerHTML = '<p class="empty">Tracking load nahi hui.</p>';
+        var msg = (err && err.message === "Failed to fetch") ? networkMsg() : "Tracking could not be loaded. Please try again.";
+        trackingList.innerHTML = '<p class="empty">Tracking could not be loaded.</p>';
         showPageAlert("err", msg);
       })
       .then(function(){
@@ -895,7 +895,7 @@
   var balancesCache = [];
 
   function loadCommission(){
-    commissionBox.innerHTML = '<p class="loading">Commission load ho raha hai…</p>';
+    commissionBox.innerHTML = '<p class="loading">Loading commission…</p>';
     return fetch(API_BASE_URL + "/api/admin/commission", { method: "GET", headers: authHeaders() })
       .then(parseRes)
       .then(function(result){
@@ -903,10 +903,10 @@
         if(result.status !== 200 || !result.body || result.body.ok !== true) throw new Error("load_failed");
         var pct = result.body.commission_pct;
         commissionPct.value = (pct != null ? pct : "");
-        var html = '<p class="meta" style="font-size:.95rem;color:var(--navy);font-weight:700">Chalu rate: ' + esc(pct) + '%</p>';
+        var html = '<p class="meta" style="font-size:.95rem;color:var(--navy);font-weight:700">Current rate: ' + esc(pct) + '%</p>';
         var hist = result.body.history || [];
         if(hist.length){
-          html += '<p class="meta">Badlav history:</p>';
+          html += '<p class="meta">Change history:</p>';
           for(var i = 0; i < Math.min(hist.length, 5); i++){
             html += '<p class="meta">' + esc(fmtDate(hist[i].created_at)) + ' — ' +
               esc(hist[i].old_pct == null ? "—" : hist[i].old_pct) + '% → ' + esc(hist[i].new_pct) + '%</p>';
@@ -915,14 +915,14 @@
         commissionBox.innerHTML = html;
       })
       .catch(function(err){
-        commissionBox.innerHTML = '<p class="empty">Commission load nahi hui.</p>';
+        commissionBox.innerHTML = '<p class="empty">Commission could not be loaded.</p>';
         if(err && err.message !== "load_failed") showPageAlert("err", networkMsg());
       });
   }
   saveCommission.addEventListener("click", function(){
     var v = Number(String(commissionPct.value).trim());
     if(!isFinite(v) || v < 0 || v > 100){
-      showPageAlert("err", "Commission 0–100 ke beech number ho.");
+      showPageAlert("err", "Commission must be a number between 0 and 100.");
       return;
     }
     saveCommission.disabled = true;
@@ -935,10 +935,10 @@
         if(checkAuth(result)) return;
         if(result.status !== 200 || !result.body || result.body.ok !== true){
           var code = result.body && result.body.error;
-          showPageAlert("err", code === "validation_failed" ? "Rate 0–100 (2 decimal tak) ho." : "Save nahi hua. Dobara try karo.");
+          showPageAlert("err", code === "validation_failed" ? "The rate must be between 0 and 100 (up to 2 decimals)." : "Could not be saved. Please try again.");
           return;
         }
-        showPageAlert("ok", "Commission " + result.body.commission_pct + "% ho gaya — sirf aage ki trips par lagega.");
+        showPageAlert("ok", "Commission set to " + result.body.commission_pct + "% — it will apply only to future trips.");
         loadCommission();
       })
       .catch(function(){ showPageAlert("err", networkMsg()); })
@@ -947,27 +947,27 @@
 
   function balanceCard(b){
     var html = '<div class="row-card">';
-    html += '<h3>' + esc(b.driver_name || "Naam nahi") + ' <span class="badge ' + (b.outstanding_rs > 0 ? "bad" : "ok") + '">' +
-      (b.outstanding_rs > 0 ? "Baaki Rs " + esc(b.outstanding_rs) : "Clear") + '</span></h3>';
+    html += '<h3>' + esc(b.driver_name || "No name") + ' <span class="badge ' + (b.outstanding_rs > 0 ? "bad" : "ok") + '">' +
+      (b.outstanding_rs > 0 ? "Outstanding Rs " + esc(b.outstanding_rs) : "Clear") + '</span></h3>';
     html += '<p class="meta">Trips: ' + esc(b.completed_cash_bookings) + ' • Cash: Rs ' + esc(b.cash_collected_rs) + '</p>';
-    html += '<p class="meta">Kamai: Rs ' + esc(b.driver_earning_rs) + ' • Commission: Rs ' + esc(b.commission_rs) +
-      ' • Jama: Rs ' + esc(b.settled_rs) + '</p>';
-    html += '<div class="actions"><button class="btn small" type="button" data-driver="' + esc(b.driver_id) + '" data-name="' + esc(b.driver_name || "") + '">Detail</button></div>';
+    html += '<p class="meta">Earnings: Rs ' + esc(b.driver_earning_rs) + ' • Commission: Rs ' + esc(b.commission_rs) +
+      ' • Settled: Rs ' + esc(b.settled_rs) + '</p>';
+    html += '<div class="actions"><button class="btn small" type="button" data-driver="' + esc(b.driver_id) + '" data-name="' + esc(b.driver_name || "") + '">Details</button></div>';
     html += '</div>';
     return html;
   }
   function loadBalances(){
-    balancesList.innerHTML = '<p class="loading">Hisab load ho raha hai…</p>';
+    balancesList.innerHTML = '<p class="loading">Loading balances…</p>';
     return fetch(API_BASE_URL + "/api/admin/driver-balances?limit=50", { method: "GET", headers: authHeaders() })
       .then(parseRes)
       .then(function(result){
         if(checkAuth(result)) return;
         if(result.status !== 200 || !result.body || result.body.ok !== true) throw new Error("load_failed");
         balancesCache = result.body.balances || [];
-        balancesList.innerHTML = balancesCache.length ? balancesCache.map(balanceCard).join("") : '<p class="empty">Abhi koi cash trip poori nahi hui.</p>';
+        balancesList.innerHTML = balancesCache.length ? balancesCache.map(balanceCard).join("") : '<p class="empty">No completed cash trips yet.</p>';
       })
       .catch(function(){
-        balancesList.innerHTML = '<p class="empty">Hisab load nahi hua.</p>';
+        balancesList.innerHTML = '<p class="empty">Balances could not be loaded.</p>';
       });
   }
   function loadMoney(){ loadCommission(); loadBalances(); }
@@ -999,12 +999,12 @@
       if(balancesCache[i].driver_id === selectedDriverId) found = balancesCache[i];
     }
     driverMoneySummary.innerHTML = found
-      ? '<p class="meta" style="font-size:.92rem;color:var(--navy);font-weight:700">Baaki: Rs ' + esc(found.outstanding_rs) +
+      ? '<p class="meta" style="font-size:.92rem;color:var(--navy);font-weight:700">Outstanding: Rs ' + esc(found.outstanding_rs) +
         ' • Cash: Rs ' + esc(found.cash_collected_rs) + ' • Commission: Rs ' + esc(found.commission_rs) +
-        ' • Jama: Rs ' + esc(found.settled_rs) + '</p>'
-      : '<p class="meta">Summary load ho raha hai…</p>';
-    driverPayments.innerHTML = '<p class="loading">Payments load ho rahi hain…</p>';
-    driverSettlements.innerHTML = '<p class="loading">Settlements load ho rahe hain…</p>';
+        ' • Settled: Rs ' + esc(found.settled_rs) + '</p>'
+      : '<p class="meta">Loading summary…</p>';
+    driverPayments.innerHTML = '<p class="loading">Loading payments…</p>';
+    driverSettlements.innerHTML = '<p class="loading">Loading settlements…</p>';
     fetch(API_BASE_URL + "/api/admin/ledger?driver_id=" + encodeURIComponent(selectedDriverId) + "&limit=20", { method: "GET", headers: authHeaders() })
       .then(parseRes)
       .then(function(result){
@@ -1013,10 +1013,10 @@
         driverPayments.innerHTML = arr.length ? arr.map(function(p){
           return '<div class="row-card"><h3>#' + esc(p.booking_id) + ' <span class="badge">' + esc(p.settlement_status || "") + '</span></h3>' +
             '<p class="meta">Cash: Rs ' + esc(p.gross_rs) + ' • Commission: Rs ' + esc(p.platform_commission_rs) + ' (' + esc(p.commission_pct) + '%)' +
-            ' • Jama: Rs ' + esc(p.settled_rs) + ' • ' + esc(fmtDate(p.collected_at)) + '</p></div>';
-        }).join("") : '<p class="empty">Koi payment nahi.</p>';
+            ' • Settled: Rs ' + esc(p.settled_rs) + ' • ' + esc(fmtDate(p.collected_at)) + '</p></div>';
+        }).join("") : '<p class="empty">No payments.</p>';
       })
-      .catch(function(){ driverPayments.innerHTML = '<p class="empty">Payments load nahi huin.</p>'; });
+      .catch(function(){ driverPayments.innerHTML = '<p class="empty">Payments could not be loaded.</p>'; });
     fetch(API_BASE_URL + "/api/admin/settlements?driver_id=" + encodeURIComponent(selectedDriverId) + "&limit=20", { method: "GET", headers: authHeaders() })
       .then(parseRes)
       .then(function(result){
@@ -1025,15 +1025,15 @@
         driverSettlements.innerHTML = arr.length ? arr.map(function(s){
           return '<div class="row-card"><h3>Rs ' + esc(s.amount_rs) + ' <span class="badge ok">' + esc(s.method || "") + '</span></h3>' +
             '<p class="meta">Ref: ' + esc(s.reference_no || "—") + ' • ' + esc(s.notes || "") + ' • ' + esc(fmtDate(s.settled_at)) + '</p></div>';
-        }).join("") : '<p class="empty">Koi settlement nahi.</p>';
+        }).join("") : '<p class="empty">No settlements.</p>';
       })
-      .catch(function(){ driverSettlements.innerHTML = '<p class="empty">Settlements load nahi hue.</p>'; });
+      .catch(function(){ driverSettlements.innerHTML = '<p class="empty">Settlements could not be loaded.</p>'; });
   }
 
   settleSubmit.addEventListener("click", function(){
-    if(!selectedDriverId){ showPageAlert("err", "Pehle driver chuno."); return; }
+    if(!selectedDriverId){ showPageAlert("err", "Please select a driver first."); return; }
     var amt = Number(String(settleAmount.value).trim());
-    if(!isFinite(amt) || amt <= 0){ showPageAlert("err", "Amount 0 se zyada number ho."); return; }
+    if(!isFinite(amt) || amt <= 0){ showPageAlert("err", "The amount must be a number greater than 0."); return; }
     var body = { driver_id: selectedDriverId, amount_rs: amt, method: settleMethod.value };
     if(String(settleRef.value).trim()) body.reference_no = String(settleRef.value).trim();
     if(String(settleNotes.value).trim()) body.notes = String(settleNotes.value).trim();
@@ -1046,24 +1046,24 @@
       .then(function(result){
         if(checkAuth(result)) return;
         if(result.status === 201){
-          showPageAlert("ok", "Settlement jama ho gaya. Baaki: Rs " + ((result.body && result.body.outstanding_rs) || 0));
+          showPageAlert("ok", "Settlement recorded. Outstanding: Rs " + ((result.body && result.body.outstanding_rs) || 0));
           loadBalances();
           loadDriverMoney();
           return;
         }
         var code = result.body && result.body.error;
-        if(code === "settlement_exceeds_outstanding") showPageAlert("err", "Baaki se zyada amount nahi jama ho sakti.");
-        else if(code === "duplicate_settlement") showPageAlert("err", "Ye reference pehle use ho chuka hai.");
-        else if(result.status === 400) showPageAlert("err", "Details sahi likho (amount>0, bank/upi par reference zaroori).");
-        else if(result.status === 404) showPageAlert("err", "Driver nahi mila.");
-        else showPageAlert("err", "Settlement nahi hua. Dobara try karo.");
+        if(code === "settlement_exceeds_outstanding") showPageAlert("err", "The amount cannot exceed the outstanding balance.");
+        else if(code === "duplicate_settlement") showPageAlert("err", "This reference has already been used.");
+        else if(result.status === 400) showPageAlert("err", "Please check the details (amount must be greater than 0; a reference is required for bank transfer/UPI).");
+        else if(result.status === 404) showPageAlert("err", "Driver not found.");
+        else showPageAlert("err", "The settlement could not be recorded. Please try again.");
       })
       .catch(function(){ showPageAlert("err", networkMsg()); })
       .then(function(){ settleSubmit.disabled = false; });
   });
 
   var navMenuBtn=document.getElementById("navMenuBtn"),siteNav=document.getElementById("siteNav");
-  if(navMenuBtn&&siteNav){navMenuBtn.addEventListener("click",function(){var open=siteNav.classList.toggle("open");navMenuBtn.setAttribute("aria-expanded",open?"true":"false");navMenuBtn.setAttribute("aria-label",open?"Menu band karo":"Menu kholo");});siteNav.addEventListener("click",function(ev){if(ev.target.tagName==="A"&&siteNav.classList.contains("open")){siteNav.classList.remove("open");navMenuBtn.setAttribute("aria-expanded","false");}});}
+  if(navMenuBtn&&siteNav){navMenuBtn.addEventListener("click",function(){var open=siteNav.classList.toggle("open");navMenuBtn.setAttribute("aria-expanded",open?"true":"false");navMenuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");});siteNav.addEventListener("click",function(ev){if(ev.target.tagName==="A"&&siteNav.classList.contains("open")){siteNav.classList.remove("open");navMenuBtn.setAttribute("aria-expanded","false");}});}
 
   loadStats();
 })();

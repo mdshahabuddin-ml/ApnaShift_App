@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Enterprise Solutions | ApnaShift</title>
-<meta name="description" content="Business transport inquiry — apni company ki delivery needs batao, team sampark karegi.">
+<meta name="description" content="Business transport inquiry — tell us about your company's delivery needs and our team will contact you.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
@@ -121,45 +121,45 @@
       <a href="enterprise.html">Enterprise</a>
       <a href="help.html">Help</a>
     </nav>
-    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">☰</button>
   </div>
 </header>
 
 <main>
   <section class="hero" aria-labelledby="heroTitle">
-    <h1 id="heroTitle">Business transport, bina jhanjhat</h1>
-    <p class="sub">Apni delivery need batao — team sampark karke aage baat karegi.</p>
+    <h1 id="heroTitle">Business transportation, made simple</h1>
+    <p class="sub">Tell us about your delivery needs — our team will contact you to discuss the next steps.</p>
   </section>
 
   <section class="card" aria-labelledby="whyTitle">
-    <h2 id="whyTitle">Kyun inquiry bhejein?</h2>
+    <h2 id="whyTitle">Why submit an inquiry?</h2>
     <ul class="strip">
-      <li>Ek hi form me apni saari transport needs saaf-saaf batao.</li>
-      <li>Vehicle type aur frequency apne kaam ke hisaab se chuno.</li>
-      <li>Scheduled ya on-demand — dono tarah ki needs bhej sakte ho.</li>
-      <li>Form ke baad team khud sampark karke requirement samjhegi.</li>
+      <li>Describe all your transportation requirements clearly in one form.</li>
+      <li>Choose the vehicle type and service frequency that best fit your business needs.</li>
+      <li>Submit both scheduled and on-demand transportation requirements.</li>
+      <li>After you submit the form, our team will contact you to understand your requirements.</li>
     </ul>
   </section>
 
   <section class="card" aria-labelledby="howTitle">
-    <h2 id="howTitle">Kaise kaam karta hai?</h2>
+    <h2 id="howTitle">How it works</h2>
     <ol class="steps">
-      <li>Neeche form bharo aur bhejo.</li>
-      <li>Team tumhari requirement padhegi.</li>
-      <li>Di hui details par sampark karke aage baat hogi.</li>
+      <li>Complete and submit the form below.</li>
+      <li>Our team will review your requirements.</li>
+      <li>Our team will contact you using the details provided to discuss the next steps.</li>
     </ol>
   </section>
 
   <section class="card" aria-labelledby="formTitle">
     <h2 id="formTitle">Business inquiry form</h2>
-    <p class="sub">Star (<span aria-hidden="true">*</span>) wale fields zaroori hain.</p>
+    <p class="sub">Fields marked with (<span aria-hidden="true">*</span>) are required.</p>
     <div id="formAlert" role="alert" aria-live="assertive"></div>
 
     <form id="inqForm" novalidate>
       <fieldset>
         <legend>Contact details</legend>
         <div class="field" id="f-full_name">
-          <label for="full_name">Poora naam <span class="req" aria-hidden="true">*</span></label>
+          <label for="full_name">Full name <span class="req" aria-hidden="true">*</span></label>
           <input type="text" id="full_name" name="full_name" maxlength="100" autocomplete="name" required>
           <p class="error-text" id="e-full_name"></p>
         </div>
@@ -171,18 +171,18 @@
         <div class="field" id="f-phone">
           <label for="phone">Phone number <span class="req" aria-hidden="true">*</span></label>
           <input type="tel" id="phone" name="phone" inputmode="numeric" maxlength="15" autocomplete="tel" placeholder="98765 43210" required>
-          <p class="hint">10 digit ka Indian mobile. +91 ya space chalega.</p>
+          <p class="hint">Enter a 10-digit Indian mobile number. +91 prefix or spaces are accepted.</p>
           <p class="error-text" id="e-phone"></p>
         </div>
         <div class="field" id="f-company_name">
-          <label for="company_name">Company ka naam <span class="req" aria-hidden="true">*</span></label>
+          <label for="company_name">Company name <span class="req" aria-hidden="true">*</span></label>
           <input type="text" id="company_name" name="company_name" maxlength="150" autocomplete="organization" required>
           <p class="error-text" id="e-company_name"></p>
         </div>
         <div class="field">
           <label for="website">Website</label>
           <input type="url" id="website" name="website" maxlength="200" inputmode="url" placeholder="https://example.com">
-          <p class="hint">Khali bhi chhod sakte ho.</p>
+          <p class="hint">You can leave this blank.</p>
         </div>
         <div class="field">
           <label for="designation">Designation</label>
@@ -195,7 +195,7 @@
         <div class="field">
           <label for="business_type">Business type</label>
           <select id="business_type" name="business_type">
-            <option value="">Chuno (optional)</option>
+            <option value="">Select (optional)</option>
             <option value="ecommerce">Ecommerce</option>
             <option value="retail">Retail</option>
             <option value="manufacturing">Manufacturing</option>
@@ -210,7 +210,7 @@
         <div class="field">
           <label for="company_size">Company size</label>
           <select id="company_size" name="company_size">
-            <option value="">Chuno (optional)</option>
+            <option value="">Select (optional)</option>
             <option value="1-10">1-10</option>
             <option value="11-50">11-50</option>
             <option value="51-200">51-200</option>
@@ -221,14 +221,14 @@
         <div class="field">
           <label for="cities">Cities</label>
           <input type="text" id="cities" name="cities" maxlength="200" placeholder="Delhi, Noida">
-          <p class="hint">Comma se alag karke likho.</p>
+          <p class="hint">Separate multiple entries with commas.</p>
         </div>
         <div class="field">
           <label for="operating_state">State</label>
           <input type="text" id="operating_state" name="operating_state" maxlength="100" placeholder="Delhi">
         </div>
         <div class="field">
-          <label for="locations_count">Locations ki ginti</label>
+          <label for="locations_count">Number of locations</label>
           <input type="number" id="locations_count" name="locations_count" min="1" max="10000" step="1">
         </div>
       </fieldset>
@@ -236,7 +236,7 @@
       <fieldset>
         <legend>Requirement details</legend>
         <div class="field">
-          <span id="srvLabel" style="display:block;font-weight:600;font-size:.92rem;color:var(--navy);margin-bottom:6px">Chahiye services</span>
+          <span id="srvLabel" style="display:block;font-weight:600;font-size:.92rem;color:var(--navy);margin-bottom:6px">Services required</span>
           <div class="check-grid" role="group" aria-labelledby="srvLabel">
             <label class="check"><input type="checkbox" name="services_required" value="local_delivery"> Local delivery</label>
             <label class="check"><input type="checkbox" name="services_required" value="business_transport"> Business transport</label>
@@ -264,7 +264,7 @@
         <div class="field">
           <label for="fleet_size">Fleet size</label>
           <select id="fleet_size" name="fleet_size">
-            <option value="">Chuno (optional)</option>
+            <option value="">Select (optional)</option>
             <option value="1-5">1-5</option>
             <option value="6-20">6-20</option>
             <option value="21-50">21-50</option>
@@ -275,7 +275,7 @@
         <div class="field">
           <label for="monthly_trips">Monthly trips</label>
           <select id="monthly_trips" name="monthly_trips">
-            <option value="">Chuno (optional)</option>
+            <option value="">Select (optional)</option>
             <option value="1-100">1-100</option>
             <option value="101-500">101-500</option>
             <option value="501-1000">501-1000</option>
@@ -289,7 +289,7 @@
         <div class="field">
           <label for="service_frequency">Service frequency</label>
           <select id="service_frequency" name="service_frequency">
-            <option value="">Chuno (optional)</option>
+            <option value="">Select (optional)</option>
             <option value="daily">Daily</option>
             <option value="weekly">Weekly</option>
             <option value="monthly">Monthly</option>
@@ -299,33 +299,33 @@
         <div class="field">
           <label for="budget_range">Budget range</label>
           <select id="budget_range" name="budget_range">
-            <option value="">Chuno (optional)</option>
+            <option value="">Select (optional)</option>
             <option value="under_25k">Under 25k</option>
             <option value="25k_50k">25k - 50k</option>
             <option value="50k_1l">50k - 1L</option>
             <option value="1l_plus">1L plus</option>
-            <option value="discuss">Discuss karenge</option>
+            <option value="discuss">To be discussed</option>
           </select>
         </div>
         <div class="field">
-          <label for="requirements">Requirement likho</label>
-          <textarea id="requirements" name="requirements" maxlength="1000" aria-describedby="reqCount" placeholder="Apni need short me likho"></textarea>
+          <label for="requirements">Describe your requirements</label>
+          <textarea id="requirements" name="requirements" maxlength="1000" aria-describedby="reqCount" placeholder="Briefly describe your needs"></textarea>
           <p class="hint" id="reqCount">0 / 1000</p>
         </div>
       </fieldset>
 
       <div class="consent">
         <input type="checkbox" id="consent" name="consent" required>
-        <label for="consent" style="margin:0">Main sampark ke liye apni details dene par sehmat hun. <span class="req" aria-hidden="true">*</span></label>
+        <label for="consent" style="margin:0">I agree to share my details for business communication. <span class="req" aria-hidden="true">*</span></label>
       </div>
 
-      <button type="submit" id="submitBtn" disabled>Bhejo</button>
+      <button type="submit" id="submitBtn" disabled>Submit</button>
     </form>
   </section>
 
   <section id="success" aria-live="polite" aria-labelledby="successTitle">
-    <h2 id="successTitle">Dhanyavaad! Inquiry mil gayi.</h2>
-    <p>Team jald sampark karegi.</p>
+    <h2 id="successTitle">Thank you! We have received your inquiry.</h2>
+    <p>Our team will contact you shortly.</p>
     <div class="id-box" id="successMeta">—</div>
     <p id="successDate"></p>
   </section>
@@ -430,33 +430,33 @@
     var cleaned = cleanPhone(phoneRaw);
 
     if(!fullName){
-      setErr("f-full_name", "e-full_name", "Apna poora naam likho.");
+      setErr("f-full_name", "e-full_name", "Please enter your full name.");
       ok = false; firstBad = firstBad || document.getElementById("full_name");
     } else { setErr("f-full_name", "e-full_name", ""); }
 
     if(!email){
-      setErr("f-email", "e-email", "Apni email likho.");
+      setErr("f-email", "e-email", "Please enter your email address.");
       ok = false; firstBad = firstBad || document.getElementById("email");
     } else if(!EMAIL_RE.test(email)){
-      setErr("f-email", "e-email", "Sahi email likho. Example: naam@company.com");
+      setErr("f-email", "e-email", "Please enter a valid email address. Example: name@company.com");
       ok = false; firstBad = firstBad || document.getElementById("email");
     } else { setErr("f-email", "e-email", ""); }
 
     if(!phoneRaw.trim()){
-      setErr("f-phone", "e-phone", "Apna phone number likho.");
+      setErr("f-phone", "e-phone", "Please enter your phone number.");
       ok = false; firstBad = firstBad || document.getElementById("phone");
     } else if(!PHONE_RE.test(cleaned)){
-      setErr("f-phone", "e-phone", "Sahi 10 digit mobile number likho jo 6-9 se shuru ho.");
+      setErr("f-phone", "e-phone", "Please enter a valid 10-digit mobile number starting with 6-9.");
       ok = false; firstBad = firstBad || document.getElementById("phone");
     } else { setErr("f-phone", "e-phone", ""); }
 
     if(!company){
-      setErr("f-company_name", "e-company_name", "Company ka naam likho.");
+      setErr("f-company_name", "e-company_name", "Please enter your company name.");
       ok = false; firstBad = firstBad || document.getElementById("company_name");
     } else { setErr("f-company_name", "e-company_name", ""); }
 
     if(!consent.checked){
-      showAlert("err", "Aage badhne ke liye sehmati (consent) zaroori hai.");
+      showAlert("err", "Consent is required to proceed.");
       ok = false;
     }
 
@@ -499,7 +499,7 @@
     if(veh.length) payload.vehicle_types = veh;
 
     submitBtn.disabled = true;
-    submitBtn.textContent = "Bheja ja raha hai…";
+    submitBtn.textContent = "Submitting…";
 
     fetch(API_BASE_URL + "/api/enterprise/inquiries", {
       method: "POST",
@@ -516,33 +516,33 @@
         var inq = result.body.inquiry || {};
         form.style.display = "none";
         successMeta.textContent = "ID: " + (inq.id || "—") + " • Status: " + (inq.status || "NEW");
-        successDate.textContent = inq.created_at ? ("Bheja gaya: " + fmtDate(inq.created_at)) : "";
+        successDate.textContent = inq.created_at ? ("Submitted: " + fmtDate(inq.created_at)) : "";
         successBox.classList.add("show");
-        showAlert("ok", "Inquiry mil gayi.");
+        showAlert("ok", "Inquiry received.");
         successBox.scrollIntoView({ behavior: "smooth", block: "start" });
         return;
       }
       var code = result.body && (result.body.code || result.body.error);
       if(result.status === 409 || code === "duplicate_inquiry"){
-        showAlert("err", "Ye inquiry already mili hai. Team jald sampark karegi. Dobara bhejne ki zarurat nahi.");
+        showAlert("err", "This inquiry has already been received. Our team will contact you shortly. There is no need to submit it again.");
         return;
       }
       if(result.status === 400){
         var m = result.body && (result.body.message || result.body.error);
-        showAlert("err", m || "Details check karo. Kuch fields sahi nahi hain.");
+        showAlert("err", m || "Please check your details. Some fields are invalid.");
         return;
       }
       if(result.status >= 500){
-        showAlert("err", "Server busy hai. Thodi der baad try karo.");
+        showAlert("err", "The server is currently busy. Please try again later.");
         return;
       }
       var fallback = result.body && (result.body.message || result.body.error);
-      showAlert("err", fallback || "Kuch galat ho gaya. Dobara try karo.");
+      showAlert("err", fallback || "Something went wrong. Please try again.");
     }).catch(function(){
-      showAlert("err", "Network error hai. Internet check karke dobara try karo.");
+      showAlert("err", "Network error. Please check your internet connection and try again.");
     }).then(function(){
       submitBtn.disabled = !consent.checked;
-      submitBtn.textContent = "Bhejo";
+      submitBtn.textContent = "Submit";
     });
   });
 
@@ -552,7 +552,7 @@
     navMenuBtn.addEventListener("click", function(){
       var open = siteNav.classList.toggle("open");
       navMenuBtn.setAttribute("aria-expanded", open ? "true" : "false");
-      navMenuBtn.setAttribute("aria-label", open ? "Menu band karo" : "Menu kholo");
+      navMenuBtn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
     });
     siteNav.addEventListener("click", function(ev){
       if(ev.target.tagName === "A" && siteNav.classList.contains("open")){

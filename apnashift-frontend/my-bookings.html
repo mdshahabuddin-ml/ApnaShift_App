@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Bookings | ApnaShift</title>
-<meta name="description" content="Apni saari bookings dekho, status track karo aur zaroorat par cancel karo.">
+<meta name="description" content="View all your bookings, track status and cancel when needed.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
@@ -101,42 +101,42 @@
       <a href="my-bookings.html">My Bookings</a>
       <a href="help.html">Help</a>
     </nav>
-    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Menu kholo">☰</button>
+    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">☰</button>
   </div>
 </header>
 
 <main>
   <h1>My Bookings</h1>
-  <p class="sub" id="countLine">Bookings load ho rahi hain…</p>
+  <p class="sub" id="countLine">Loading bookings…</p>
 
   <div id="pageAlert" role="alert" aria-live="assertive"></div>
 
   <section class="card" aria-labelledby="listTitle">
-    <div id="bookingsList" aria-live="polite"><p class="loading">Bookings load ho rahi hain…</p></div>
+    <div id="bookingsList" aria-live="polite"><p class="loading">Loading bookings…</p></div>
     <div class="more-wrap">
-      <button type="button" class="btn ghost" id="moreBtn" hidden>Aur dikhao</button>
+      <button type="button" class="btn ghost" id="moreBtn" hidden>Show more</button>
     </div>
   </section>
 
   <div class="dialog-backdrop" id="cancelDialog" role="dialog" aria-modal="true" aria-labelledby="cancelDialogTitle">
     <div class="dialog">
-      <h2 id="cancelDialogTitle">Booking cancel karein?</h2>
-      <p class="sub" id="cancelDialogSub">Ye booking cancel ho jayegi. Reason chunna zaroori hai.</p>
-      <label for="cancelReason">Cancel ka reason</label>
+      <h2 id="cancelDialogTitle">Cancel booking?</h2>
+      <p class="sub" id="cancelDialogSub">This booking will be cancelled. Selecting a reason is required.</p>
+      <label for="cancelReason">Cancellation reason</label>
       <select id="cancelReason">
-        <option value="">— Reason chuno —</option>
-        <option value="wrong_pickup">Galat pickup location</option>
-        <option value="wrong_drop">Galat drop location</option>
-        <option value="wrong_vehicle">Galat gaadi type</option>
-        <option value="changed_plan">Plan badal gaya</option>
-        <option value="duplicate">Duplicate booking ho gayi</option>
-        <option value="driver_issue">Driver se dikkat</option>
+        <option value="">— Select a reason —</option>
+        <option value="wrong_pickup">Wrong pickup location</option>
+        <option value="wrong_drop">Wrong drop location</option>
+        <option value="wrong_vehicle">Wrong vehicle type</option>
+        <option value="changed_plan">Plans changed</option>
+        <option value="duplicate">Duplicate booking</option>
+        <option value="driver_issue">Issue with driver</option>
         <option value="other">Other</option>
       </select>
       <p class="error-text" id="cancelDialogErr"></p>
       <div class="btnrow">
-        <button type="button" class="btn danger small" id="cancelConfirmBtn">Haan, cancel karo</button>
-        <button type="button" class="btn ghost small" id="cancelBackBtn">Wapas jao</button>
+        <button type="button" class="btn danger small" id="cancelConfirmBtn">Yes, cancel booking</button>
+        <button type="button" class="btn ghost small" id="cancelBackBtn">Go back</button>
       </div>
     </div>
   </div>
@@ -164,13 +164,13 @@
   var TOKEN_KEY = "apnashift_user_token";
   var PAGE_LIMIT = 10;
   var STATUS_LABEL = {
-    pending: "Pending", accepted: "Confirmed", arrived: "Arriving",
-    in_transit: "In Progress", delivered: "Completed", cancelled: "Cancelled"
+    pending: "PENDING", accepted: "CONFIRMED", arrived: "DRIVER ARRIVING",
+    in_transit: "IN TRANSIT", delivered: "DELIVERED", cancelled: "CANCELLED"
   };
   var CANCEL_LABEL = {
-    wrong_pickup: "Galat pickup location", wrong_drop: "Galat drop location",
-    wrong_vehicle: "Galat gaadi type", changed_plan: "Plan badal gaya",
-    duplicate: "Duplicate booking", driver_issue: "Driver se dikkat", other: "Other"
+    wrong_pickup: "Wrong pickup location", wrong_drop: "Wrong drop location",
+    wrong_vehicle: "Wrong vehicle type", changed_plan: "Plans changed",
+    duplicate: "Duplicate booking", driver_issue: "Issue with driver", other: "Other"
   };
 
   function getToken(){
@@ -240,10 +240,10 @@
       " • " + esc(fmtDate(b.created_at)) + "</p>" +
       '<p class="meta" data-cancel-note="' + esc(b.id) + '"' +
       (b.status === "cancelled" && b.cancellation && b.cancellation.reason ? "" : ' hidden') + ">" +
-      (b.status === "cancelled" ? "Cancel wajah: " + esc(CANCEL_LABEL[b.cancellation && b.cancellation.reason] || (b.cancellation && b.cancellation.reason) || "–") : "") + "</p>";
+       (b.status === "cancelled" ? "Cancellation reason: " + esc(CANCEL_LABEL[b.cancellation && b.cancellation.reason] || (b.cancellation && b.cancellation.reason) || "–") : "") + "</p>";
     if(cancellable(b)){
       html += '<div class="btnrow" data-actions="' + esc(b.id) + '">' +
-        '<button type="button" class="btn danger small" data-cancel="' + esc(b.id) + '">Cancel Karein</button></div>';
+        '<button type="button" class="btn danger small" data-cancel="' + esc(b.id) + '">Cancel Booking</button></div>';
     }
     return html + "</article>";
   }
@@ -254,11 +254,11 @@
     loading = true;
     if(fresh){
       page = 1;
-      bookingsList.innerHTML = '<p class="loading">Bookings load ho rahi hain…</p>';
+      bookingsList.innerHTML = '<p class="loading">Loading bookings…</p>';
       moreBtn.hidden = true;
     } else {
       moreBtn.disabled = true;
-      moreBtn.textContent = "Load ho raha hai…";
+      moreBtn.textContent = "Loading…";
     }
     fetch(API_BASE_URL + "/api/bookings?page=" + page + "&limit=" + PAGE_LIMIT, { headers: authHeaders() })
       .then(readBody)
@@ -269,9 +269,9 @@
         total = (result.body.total !== undefined) ? result.body.total : arr.length;
         if(fresh){
           if(!arr.length){
-            countLine.textContent = "Abhi koi booking nahi.";
-            bookingsList.innerHTML = '<div class="empty">Abhi koi booking nahi.' +
-              '<br><a class="btn" href="create-booking.html">Pehli Booking Karo</a></div>';
+            countLine.textContent = "No bookings yet.";
+            bookingsList.innerHTML = '<div class="empty">No bookings yet.' +
+              '<br><a class="btn" href="create-booking.html">Create Booking</a></div>';
             moreBtn.hidden = true;
             return;
           }
@@ -282,7 +282,7 @@
           while(tmp.firstChild) bookingsList.appendChild(tmp.firstChild);
         }
         var shown = bookingsList.querySelectorAll("article.booking").length;
-        countLine.textContent = "Kul " + total + " bookings • " + shown + " dikh rahi hain.";
+        countLine.textContent = "Total " + total + " bookings • showing " + shown + ".";
         if(shown < total){
           page += 1;
           moreBtn.hidden = false;
@@ -294,15 +294,15 @@
       .catch(function(err){
         if(err && err.message === "unauth") return;
         if(fresh){
-          bookingsList.innerHTML = '<p class="empty">Bookings load nahi huin — internet check karke refresh karo.</p>';
-          countLine.textContent = "Load nahi hua.";
+          bookingsList.innerHTML = '<p class="empty">Bookings could not be loaded — check your internet connection and refresh.</p>';
+          countLine.textContent = "Could not load.";
         }
-        showAlert("err", "Bookings load nahi huin — internet check karke dobara try karo.");
+        showAlert("err", "Bookings could not be loaded — check your internet connection and try again.");
       })
       .then(function(){
         loading = false;
         moreBtn.disabled = false;
-        moreBtn.textContent = "Aur dikhao";
+        moreBtn.textContent = "Show more";
       });
   }
   moreBtn.addEventListener("click", function(){ loadList(false); });
@@ -313,7 +313,7 @@
     cancelReasonSel.value = "";
     cancelDialogErr.textContent = "";
     cancelConfirmBtn.disabled = false;
-    cancelConfirmBtn.textContent = "Haan, cancel karo";
+    cancelConfirmBtn.textContent = "Yes, cancel booking";
     cancelDialog.classList.add("show");
     try { cancelReasonSel.focus(); } catch(e){}
   }
@@ -343,7 +343,7 @@
     var note = card.querySelector('[data-cancel-note="' + id + '"]');
     if(note){
       note.hidden = false;
-      note.textContent = "Cancel wajah: " + (CANCEL_LABEL[reason] || reason);
+      note.textContent = "Cancellation reason: " + (CANCEL_LABEL[reason] || reason);
     }
   }
 
@@ -351,12 +351,12 @@
     if(!pendingCancelId) return;
     var reason = cancelReasonSel.value;
     if(!reason){
-      cancelDialogErr.textContent = "Reason chunna zaroori hai.";
+      cancelDialogErr.textContent = "Please select a reason.";
       return;
     }
     cancelDialogErr.textContent = "";
     cancelConfirmBtn.disabled = true;
-    cancelConfirmBtn.textContent = "Cancel ho rahi hai…";
+    cancelConfirmBtn.textContent = "Cancelling…";
     var id = pendingCancelId;
     fetch(API_BASE_URL + "/api/bookings/" + encodeURIComponent(id) + "/cancel", {
       method: "PATCH",
@@ -367,30 +367,30 @@
       if(result.status === 200){
         closeCancelDialog();
         markCancelledInPlace(id, reason);
-        showAlert("ok", "Booking cancel ho gayi.");
+        showAlert("ok", "Booking cancelled successfully.");
         return;
       }
       var code = result.body && result.body.error;
       closeCancelDialog();
       if(result.status === 409 || code === "invalid_transition"){
-        showAlert("err", "Ye booking ab cancel nahi ho sakti — driver nikal chuka hai ya trip poori ho gayi. List refresh ho rahi hai.");
+        showAlert("err", "This booking can no longer be cancelled — the driver is on the way or the trip is complete. Refreshing the list.");
       } else if(result.status === 400){
-        showAlert("err", "Reason sahi chuno — list refresh ho rahi hai.");
+        showAlert("err", "Please select a valid reason — refreshing the list.");
       } else if(result.status === 403){
-        showAlert("err", "Ye action allowed nahi hai — dobara login karke try karo. List refresh ho rahi hai.");
+        showAlert("err", "This action is not allowed — please log in again and try. Refreshing the list.");
       } else if(result.status === 404){
-        showAlert("err", "Booking mili nahi — list refresh ho rahi hai.");
+        showAlert("err", "Booking not found — refreshing the list.");
       } else if(result.status === 429){
-        showAlert("err", "Bahut koshish ho gayi — thodi der rukkar try karo. List refresh ho rahi hai.");
+        showAlert("err", "Too many attempts — please wait and try again. Refreshing the list.");
       } else if(result.status >= 500){
-        showAlert("err", "Server me dikkat hai — thodi der baad try karo. List refresh ho rahi hai.");
+        showAlert("err", "Server error — please try again later. Refreshing the list.");
       } else {
-        showAlert("err", "Cancel nahi hui — dobara try karo. List refresh ho rahi hai.");
+        showAlert("err", "Cancellation failed — please try again. Refreshing the list.");
       }
       loadList(true);
     }).catch(function(){
       closeCancelDialog();
-      showAlert("err", "Internet me dikkat hai — connection check karo. List refresh ho rahi hai.");
+      showAlert("err", "Connection issue — please check your internet. Refreshing the list.");
       loadList(true);
     });
   });

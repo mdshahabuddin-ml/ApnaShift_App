@@ -35,14 +35,17 @@ export function createApp() {
   // 'unsafe-inline' for scripts + styles (no inline event handlers exist).
   // connect-src must allow the production API + localhost (pages call the
   // API cross-origin in local testing) — else fetch() is CSP-blocked.
+  // Maps (Leaflet via unpkg + Geoapify/OSM tiles) need script + img access:
+  // without these the tracking map and booking map-picker stay dead.
   // Everything else keeps helmet's strict defaults.
   app.use(
     helmet({
       contentSecurityPolicy: {
         directives: {
           ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-          'script-src': ["'self'", "'unsafe-inline'"],
+          'script-src': ["'self'", "'unsafe-inline'", 'https://unpkg.com'],
           'style-src': ["'self'", "'unsafe-inline'", 'https:'],
+          'img-src': ["'self'", 'data:', 'https:'],
           'connect-src': ["'self'", 'https:', 'http://localhost:3000'],
         },
       },
