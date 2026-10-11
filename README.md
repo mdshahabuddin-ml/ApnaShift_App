@@ -90,7 +90,9 @@ URLs sirf CI ke migrate/admin steps use karte hain.
 
 ## Production deploy kaise hota hai
 
-Sirf jab: branch `main` **aur** staging ke saare gates green. Phir:
+Sirf jab: branch `main` **aur** staging ke saare gates green. Agar staging deploy
+required secrets missing hone ki wajah se safe-skip hua, to production path bhi
+auto-skip rehta hai (koi production deploy attempt nahi hota). Phir:
 prod migrate -> `railway up` (production env) -> `/health` + `/ready` ->
 smoke **HEALTH-ONLY** (sirf read checks — production me koi user/booking/test
 data NAHI banta). Full E2E prod par automatic kabhi nahi chalta.
