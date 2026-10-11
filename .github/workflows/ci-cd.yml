@@ -136,6 +136,8 @@ jobs:
     needs: [build]
     if: github.event_name == 'push' || github.event.inputs.deploy_target == 'staging' || github.event.inputs.deploy_target == 'production'
     environment: staging
+    outputs:
+      deploy_enabled: ${{ steps.deploy-prereq.outputs.deploy_enabled }}
     env:
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
     steps:
@@ -145,24 +147,38 @@ jobs:
           node-version: 20
           cache: npm
           cache-dependency-path: apnashift-backend/package-lock.json
-      - run: npm ci --no-audit --no-fund --omit=dev
       - name: Fail-safe guard (secrets present?)
+        id: deploy-prereq
         run: |
+          missing=0
           for v in RAILWAY_TOKEN RAILWAY_PROJECT_ID RAILWAY_STAGING_SERVICE_ID STAGING_DATABASE_URL STAGING_BASE_URL; do
-            [ -n "${!v}" ] || { echo "::error::DEPLOY RUKA (staging): secret/variable $v set nahi hai. README ka 'GitHub Secrets' section dekho."; exit 1; }
+            if [ -z "${!v}" ]; then
+              echo "::warning::DEPLOY SKIP (staging): secret/variable $v set nahi hai. README ka 'GitHub Secrets' section dekho."
+              missing=1
+            fi
           done
+          if [ "$missing" = 1 ]; then
+            echo "deploy_enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Staging deploy skip kiya gaya (missing deploy secrets/variables)."
+          else
+            echo "deploy_enabled=true" >> "$GITHUB_OUTPUT"
+          fi
         env:
           RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
           RAILWAY_STAGING_SERVICE_ID: ${{ secrets.RAILWAY_STAGING_SERVICE_ID }}
           STAGING_DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
           STAGING_BASE_URL: ${{ secrets.STAGING_BASE_URL }}
+      - run: npm ci --no-audit --no-fund --omit=dev
+        if: steps.deploy-prereq.outputs.deploy_enabled == 'true'
       - name: Migrate staging DB (additive only — kabhi destructive nahi)
+        if: steps.deploy-prereq.outputs.deploy_enabled == 'true'
         run: |
           DATABASE_URL="${{ secrets.STAGING_DATABASE_URL }}" npm run db:migrate || {
             echo '::error::DEPLOY RUKA (staging migrate): staging DB migrate fail. Production ko kuch nahi hua. Migration SQL haath se staging par check karo.'
             exit 1
           }
       - name: Deploy to Railway staging service
+        if: steps.deploy-prereq.outputs.deploy_enabled == 'true'
         run: |
           npm i -g @railway/cli
           railway up --service "${{ secrets.RAILWAY_STAGING_SERVICE_ID }}" --environment staging || {
@@ -177,6 +193,7 @@ jobs:
     name: Staging health/ready
     runs-on: ubuntu-latest
     needs: [deploy-staging]
+    if: needs.deploy-staging.outputs.deploy_enabled == 'true'
     steps:
       - name: Wait + check /api/health and /api/ready
         run: |

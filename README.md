@@ -27,7 +27,7 @@ log me seedha pata chalta hai kaunsa gate toota aur local me kaise reproduce kar
 | `lint` | `npm run lint` | Push aage nahi badhta |
 | `test` | Test DB migrate + `vitest run` (mssql excluded — neeche note) | Push aage nahi badhta |
 | `build` | `public/` mirror sync check + `docker build` | Push aage nahi badhta |
-| `deploy-staging` | Staging DB migrate (additive) + `railway up` (staging env) | Prod ko haath nahi lagta |
+| `deploy-staging` | Staging DB migrate (additive) + `railway up` (staging env) | Required deploy secrets missing ho to job safe-skip (warn), warna prod ko haath nahi lagta |
 | `verify-staging` | 5 min tak `/api/health` + `/api/ready` (`"db":"up"`) | Prod deploy NAHI hota |
 | `smoke-staging` | Admin banakar **FULL E2E** (neeche) | Prod deploy NAHI hota |
 | `deploy-production` | Sirf `main` + staging-green ke baad; prod migrate + `railway up` | — |
@@ -70,7 +70,7 @@ URLs sirf CI ke migrate/admin steps use karte hain.
 
 ## Pipeline kaise trigger hoti hai
 
-- **`main` par push** -> full pipeline: CI -> staging -> production (sab green par).
+- **`main` par push** -> full pipeline: CI -> staging -> production (sab green par). Agar deploy secrets missing hon to deploy path safe-skip hota hai (warn ke saath), CI fail nahi hota.
 - **Pull request** -> sirf lint/test/build (deploy jobs skip; tootne par merge mat karo).
 - **Manual** (Actions -> CI/CD -> Run workflow): `staging` (CI + staging tak) ya
   `production` (CI + staging-green + production). Production manual bhi gates
@@ -90,7 +90,9 @@ URLs sirf CI ke migrate/admin steps use karte hain.
 
 ## Production deploy kaise hota hai
 
-Sirf jab: branch `main` **aur** staging ke saare gates green. Phir:
+Sirf jab: branch `main` **aur** staging ke saare gates green. Agar staging deploy
+required secrets missing hone ki wajah se safe-skip hua, to production path bhi
+auto-skip rehta hai (koi production deploy attempt nahi hota). Phir:
 prod migrate -> `railway up` (production env) -> `/health` + `/ready` ->
 smoke **HEALTH-ONLY** (sirf read checks — production me koi user/booking/test
 data NAHI banta). Full E2E prod par automatic kabhi nahi chalta.
