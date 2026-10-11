@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS drivers (
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
   avg_rating NUMERIC(3, 2),
   total_trips INTEGER NOT NULL DEFAULT 0,
+  commission_due NUMERIC(10, 2) NOT NULL DEFAULT 0 CHECK (commission_due >= 0),
   needs_review BOOLEAN NOT NULL DEFAULT FALSE,
   rejection_reason TEXT,
   email TEXT UNIQUE CHECK (email IS NULL OR (char_length(email) <= 120 AND email ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$')),
@@ -167,6 +168,17 @@ END
 $$;
 -- NOTE (007 pattern): idx_bookings_disputed lives ONLY in migration 014
 -- (disputed column does not exist on older DBs until 014 runs).
+
+-- Admins (staff login; manual insert). Declared up-front: payments,
+-- settlements, platform_settings and audit tables all FK-reference it,
+-- so it must exist before them on a fresh DB.
+CREATE TABLE IF NOT EXISTS admins (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL CHECK (char_length(name) >= 2 AND char_length(name) <= 80),
+  phone VARCHAR(15) NOT NULL UNIQUE CHECK (phone ~ '^[6-9][0-9]{9}$'),
+  password_hash TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
 -- 013: one immutable financial transaction per delivered booking.
 -- Money exact: NUMERIC holds whole-paise values only (integer-paise math
@@ -422,14 +434,7 @@ CREATE TABLE IF NOT EXISTS pricing_rules (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- Admins (staff login; manual insert).
-CREATE TABLE IF NOT EXISTS admins (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL CHECK (char_length(name) >= 2 AND char_length(name) <= 80),
-  phone VARCHAR(15) NOT NULL UNIQUE CHECK (phone ~ '^[6-9][0-9]{9}$'),
-  password_hash TEXT NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
+-- (admins table lives near the top now — FK targets must exist first).
 
 -- 004: audit log (which admin did what) + pricing history.
 CREATE TABLE IF NOT EXISTS audit_logs (

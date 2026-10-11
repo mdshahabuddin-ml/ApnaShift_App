@@ -49,6 +49,28 @@ export const settlementCreateSchema = z.object({
   { message: 'bank_transfer/upi par reference_no zaroori hai.', path: ['reference_no'] },
 );
 
+export const settleCommissionSchema = z
+  .object({
+    amount_rs: amountRs,
+    note: z.string().trim().max(500, 'note 500 akshar se zyada nahi.').optional(),
+    method: z
+      .enum(['cash', 'bank_transfer', 'upi'], {
+        errorMap: () => ({ message: 'method cash, bank_transfer ya upi ho.' }),
+      })
+      .optional()
+      .default('cash'),
+    reference_no: z
+      .string()
+      .trim()
+      .min(2, 'reference_no kam se kam 2 akshar.')
+      .max(100, 'reference_no 100 akshar se zyada nahi.')
+      .optional(),
+  })
+  .refine((v) => v.method === 'cash' || (v.reference_no && v.reference_no.length >= 2), {
+    message: 'bank_transfer/upi par reference_no zaroori hai.',
+    path: ['reference_no'],
+  });
+
 export const adjustmentCreateSchema = z.object({
   payment_id: z.string({ required_error: 'payment_id likho.' }).uuid('payment_id UUID ho.'),
   // Signed integer paise deltas (corrections, append-only).

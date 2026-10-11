@@ -106,37 +106,37 @@
 </header>
 
 <main>
-  <h1>My Bookings</h1>
-  <p class="sub" id="countLine">Loading bookings…</p>
+  <h1 data-i18n="pg_my_bookings_01">My Bookings</h1>
+  <p class="sub" id="countLine" data-i18n="pg_my_bookings_02">Loading bookings…</p>
 
   <div id="pageAlert" role="alert" aria-live="assertive"></div>
 
   <section class="card" aria-labelledby="listTitle">
-    <div id="bookingsList" aria-live="polite"><p class="loading">Loading bookings…</p></div>
+    <div id="bookingsList" aria-live="polite"><p class="loading" data-i18n="pg_my_bookings_03">Loading bookings…</p></div>
     <div class="more-wrap">
-      <button type="button" class="btn ghost" id="moreBtn" hidden>Show more</button>
+      <button type="button" class="btn ghost" id="moreBtn" hidden data-i18n="pg_my_bookings_04">Show more</button>
     </div>
   </section>
 
   <div class="dialog-backdrop" id="cancelDialog" role="dialog" aria-modal="true" aria-labelledby="cancelDialogTitle">
     <div class="dialog">
-      <h2 id="cancelDialogTitle">Cancel booking?</h2>
-      <p class="sub" id="cancelDialogSub">This booking will be cancelled. Selecting a reason is required.</p>
-      <label for="cancelReason">Cancellation reason</label>
+      <h2 id="cancelDialogTitle" data-i18n="pg_my_bookings_05">Cancel booking?</h2>
+      <p class="sub" id="cancelDialogSub" data-i18n="pg_my_bookings_06">This booking will be cancelled. Selecting a reason is required.</p>
+      <label for="cancelReason" data-i18n="pg_my_bookings_07">Cancellation reason</label>
       <select id="cancelReason">
-        <option value="">— Select a reason —</option>
-        <option value="wrong_pickup">Wrong pickup location</option>
-        <option value="wrong_drop">Wrong drop location</option>
-        <option value="wrong_vehicle">Wrong vehicle type</option>
-        <option value="changed_plan">Plans changed</option>
-        <option value="duplicate">Duplicate booking</option>
-        <option value="driver_issue">Issue with driver</option>
-        <option value="other">Other</option>
+        <option value="" data-i18n="pg_my_bookings_08">— Select a reason —</option>
+        <option value="wrong_pickup" data-i18n="pg_my_bookings_09">Wrong pickup location</option>
+        <option value="wrong_drop" data-i18n="pg_my_bookings_10">Wrong drop location</option>
+        <option value="wrong_vehicle" data-i18n="pg_my_bookings_11">Wrong vehicle type</option>
+        <option value="changed_plan" data-i18n="pg_my_bookings_12">Plans changed</option>
+        <option value="duplicate" data-i18n="pg_my_bookings_13">Duplicate booking</option>
+        <option value="driver_issue" data-i18n="pg_my_bookings_14">Issue with driver</option>
+        <option value="other" data-i18n="pg_my_bookings_15">Other</option>
       </select>
       <p class="error-text" id="cancelDialogErr"></p>
       <div class="btnrow">
-        <button type="button" class="btn danger small" id="cancelConfirmBtn">Yes, cancel booking</button>
-        <button type="button" class="btn ghost small" id="cancelBackBtn">Go back</button>
+        <button type="button" class="btn danger small" id="cancelConfirmBtn" data-i18n="pg_my_bookings_16">Yes, cancel booking</button>
+        <button type="button" class="btn ghost small" id="cancelBackBtn" data-i18n="pg_my_bookings_17">Go back</button>
       </div>
     </div>
   </div>
@@ -145,10 +145,11 @@
   <div class="site-foot-inner">
     <div class="site-foot-brand">ApnaShift</div>
     <div class="site-foot-links">
-      <a href="index.html">Home</a>
-      <a href="help.html">Help</a>
-      <a href="privacy.html">Privacy Policy</a>
-      <a href="terms.html">Terms &amp; Conditions</a>
+      <a href="index.html" data-i18n="pg_my_bookings_18">Home</a>
+      <a href="help.html" data-i18n="pg_my_bookings_19">Help</a>
+      <a href="privacy.html" data-i18n="pg_my_bookings_20">Privacy Policy</a>
+      <a href="terms.html" data-i18n="pg_my_bookings_21">Terms &amp; Conditions</a>
+      <a href="mailto:support@apnashift.in?subject=ApnaShift%20Support%20Request">support@apnashift.in</a>
     </div>
   </div>
 </footer>
@@ -414,5 +415,7 @@
   loadList(true);
 })();
 </script>
+<script>window.PAGE_I18N={en:{pg_my_bookings_01:"My Bookings",pg_my_bookings_02:"Loading bookings…",pg_my_bookings_03:"Loading bookings…",pg_my_bookings_04:"Show more",pg_my_bookings_05:"Cancel booking?",pg_my_bookings_06:"This booking will be cancelled. Selecting a reason is required.",pg_my_bookings_07:"Cancellation reason",pg_my_bookings_08:"— Select a reason —",pg_my_bookings_09:"Wrong pickup location",pg_my_bookings_10:"Wrong drop location",pg_my_bookings_11:"Wrong vehicle type",pg_my_bookings_12:"Plans changed",pg_my_bookings_13:"Duplicate booking",pg_my_bookings_14:"Issue with driver",pg_my_bookings_15:"Other",pg_my_bookings_16:"Yes, cancel booking",pg_my_bookings_17:"Go back",pg_my_bookings_18:"Home",pg_my_bookings_19:"Help",pg_my_bookings_20:"Privacy Policy",pg_my_bookings_21:"Terms & Conditions",page_title:"My Bookings | ApnaShift",meta_desc:"View all your bookings, track status and cancel when needed."},hi:{pg_my_bookings_01:"मेरी बुकिंग",pg_my_bookings_02:"बुकिंग लोड हो रही है…",pg_my_bookings_03:"बुकिंग लोड हो रही है…",pg_my_bookings_04:"और दिखाएं",pg_my_bookings_05:"बुकिंग रद्द करें?",pg_my_bookings_06:"यह बुकिंग रद्द हो जाएगी। कारण चुनना ज़रूरी है।",pg_my_bookings_07:"रद्द करने का कारण",pg_my_bookings_08:"— कारण चुनें —",pg_my_bookings_09:"गलत पिकअप लोकेशन",pg_my_bookings_10:"गलत ड्रॉप लोकेशन",pg_my_bookings_11:"गलत गाड़ी का प्रकार",pg_my_bookings_12:"प्लान बदल गया",pg_my_bookings_13:"डुप्लिकेट बुकिंग",pg_my_bookings_14:"ड्राइवर से समस्या",pg_my_bookings_15:"अन्य",pg_my_bookings_16:"हां, बुकिंग रद्द करें",pg_my_bookings_17:"वापस जाएं",pg_my_bookings_18:"होम",pg_my_bookings_19:"सहायता",pg_my_bookings_20:"प्राइवेसी पॉलिसी",pg_my_bookings_21:"नियम व शर्तें",page_title:"मेरी बुकिंग | ApnaShift",meta_desc:"अपनी सभी बुकिंग देखें, स्थिति ट्रैक करें और ज़रूरत पर रद्द करें।"}};</script>
+<script src="lang.js"></script>
 </body>
 </html>

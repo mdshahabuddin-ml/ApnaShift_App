@@ -247,64 +247,65 @@
   <section class="card" aria-labelledby="pageTitle">
     <div class="card-head">
       <div class="logo" aria-hidden="true">A</div>
-      <div class="brand-name">ApnaShift<small>Admin Panel</small></div>
+      <div class="brand-name">ApnaShift<small data-i18n="pg_admin_login_01">Admin Panel</small></div>
     </div>
     <div class="card-body">
-    <h1 id="pageTitle">Admin Login</h1>
-    <p class="sub">For authorized staff only.</p>
+    <h1 id="pageTitle" data-i18n="pg_admin_login_02">Admin Login</h1>
+    <p class="sub" data-i18n="pg_admin_login_03">For authorized staff only.</p>
 
     <div id="formAlert" role="alert" aria-live="assertive"></div>
 
     <form id="loginForm" novalidate>
       <div class="field" id="f-phone">
-        <label for="phone">Admin Email / Phone <span class="req" aria-hidden="true">*</span></label>
+        <label for="phone" data-i18n="pg_admin_login_04">Admin Email / Phone <span class="req" aria-hidden="true">*</span></label>
         <input type="text" id="phone" name="phone" autocomplete="username" inputmode="text"
-               maxlength="120" placeholder="admin@example.com or 98765 43210"
+               maxlength="120" placeholder="admin@example.com or 98765 43210" data-i18n-ph="pg_admin_login_05"
                aria-describedby="phone-err" required>
         <p class="error-text" id="phone-err"></p>
       </div>
 
       <div class="field" id="f-password">
-        <label for="password">Password <span class="req" aria-hidden="true">*</span></label>
+        <label for="password" data-i18n="pg_admin_login_06">Password <span class="req" aria-hidden="true">*</span></label>
         <div class="pw-wrap">
           <input type="password" id="password" name="password" autocomplete="current-password"
-                 maxlength="128" placeholder="Admin password"
+                 maxlength="128" placeholder="Admin password" data-i18n-ph="pg_admin_login_07"
                  aria-describedby="password-err" required>
-          <button type="button" class="pw-toggle" id="pwToggle" aria-label="Show password">Show</button>
+          <button type="button" class="pw-toggle" id="pwToggle" aria-label="Show password" data-i18n="pg_admin_login_08">Show</button>
         </div>
         <p class="error-text" id="password-err"></p>
       </div>
 
-      <div class="forgot-row"><a href="#" id="forgotLink">Forgot Password?</a></div>
+      <div class="forgot-row"><a href="#" id="forgotLink" data-i18n="pg_admin_login_09">Forgot Password?</a></div>
 
-      <button type="submit" id="submitBtn">Login as Admin</button>
+      <button type="submit" id="submitBtn" data-i18n="pg_admin_login_10">Login as Admin</button>
     </form>
-    <p class="note">This is an internal tool. Do not share your credentials with anyone.</p>
+    <p class="note" data-i18n="pg_admin_login_11">This is an internal tool. Do not share your credentials with anyone.</p>
     </div>
   </section>
 
   <section id="success" aria-live="polite" aria-labelledby="successTitle">
-    <h2 id="successTitle">Login successful</h2>
-    <p id="welcomeText">Welcome, admin!</p>
-    <p>Opening the admin dashboard…</p>
+    <h2 id="successTitle" data-i18n="pg_admin_login_12">Login successful</h2>
+    <p id="welcomeText" data-i18n="pg_admin_login_13">Welcome, admin!</p>
+    <p data-i18n="pg_admin_login_14">Opening the admin dashboard…</p>
   </section>
 
   <div class="modal-backdrop" id="forgotModal" role="dialog" aria-modal="true" aria-labelledby="forgotTitle">
     <div class="modal">
-      <h2 id="forgotTitle">Password reset</h2>
-      <p>Send your registered phone number via WhatsApp to <strong id="supportNumberText">918757160137</strong>, and we will reset your admin password.</p>
-      <a class="wa-btn" id="forgotWaLink" href="#" target="_blank" rel="noopener">Send via WhatsApp</a>
-      <br><button type="button" class="ghost-btn" id="forgotClose">Close</button>
+      <h2 id="forgotTitle" data-i18n="pg_admin_login_15">Password reset</h2>
+      <p data-i18n="pg_admin_login_16">Send your registered phone number via WhatsApp to <strong id="supportNumberText">918757160137</strong>, and we will reset your admin password.</p>
+      <a class="wa-btn" id="forgotWaLink" href="#" target="_blank" rel="noopener" data-i18n="pg_admin_login_17">Send via WhatsApp</a>
+      <br><button type="button" class="ghost-btn" id="forgotClose" data-i18n="pg_admin_login_18">Close</button>
     </div>
   </div>
 <footer class="site-footer">
   <div class="site-foot-inner">
     <div class="site-foot-brand">ApnaShift</div>
     <div class="site-foot-links">
-      <a href="index.html">Home</a>
-      <a href="help.html">Help</a>
-      <a href="privacy.html">Privacy Policy</a>
-      <a href="terms.html">Terms &amp; Conditions</a>
+      <a href="index.html" data-i18n="pg_admin_login_19">Home</a>
+      <a href="help.html" data-i18n="pg_admin_login_20">Help</a>
+      <a href="privacy.html" data-i18n="pg_admin_login_21">Privacy Policy</a>
+      <a href="terms.html" data-i18n="pg_admin_login_22">Terms &amp; Conditions</a>
+      <a href="mailto:support@apnashift.in?subject=ApnaShift%20Support%20Request">support@apnashift.in</a>
     </div>
   </div>
 </footer>
@@ -493,5 +494,7 @@ var navMenuBtn=document.getElementById("navMenuBtn"),siteNav=document.getElement
 if(navMenuBtn&&siteNav){navMenuBtn.addEventListener("click",function(){var open=siteNav.classList.toggle("open");navMenuBtn.setAttribute("aria-expanded",open?"true":"false");navMenuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");});siteNav.addEventListener("click",function(ev){if(ev.target.tagName==="A"&&siteNav.classList.contains("open")){siteNav.classList.remove("open");navMenuBtn.setAttribute("aria-expanded","false");}});}
 })();
 </script>
+<script>window.PAGE_I18N={en:{pg_admin_login_01:"Admin Panel",pg_admin_login_02:"Admin Login",pg_admin_login_03:"For authorized staff only.",pg_admin_login_04:"Admin Email / Phone *",pg_admin_login_05:"admin@example.com or 98765 43210",pg_admin_login_06:"Password *",pg_admin_login_07:"Admin password",pg_admin_login_08:"Show",pg_admin_login_09:"Forgot Password?",pg_admin_login_10:"Login as Admin",pg_admin_login_11:"This is an internal tool. Do not share your credentials with anyone.",pg_admin_login_12:"Login successful",pg_admin_login_13:"Welcome, admin!",pg_admin_login_14:"Opening the admin dashboard…",pg_admin_login_15:"Password reset",pg_admin_login_16:"Send your registered phone number via WhatsApp to 918757160137, and we will reset your admin password.",pg_admin_login_17:"Send via WhatsApp",pg_admin_login_18:"Close",pg_admin_login_19:"Home",pg_admin_login_20:"Help",pg_admin_login_21:"Privacy Policy",pg_admin_login_22:"Terms & Conditions",page_title:"Admin Login | ApnaShift",meta_desc:"ApnaShift internal admin login."},hi:{pg_admin_login_01:"एडमिन पैनल",pg_admin_login_02:"एडमिन लॉगिन",pg_admin_login_03:"केवल अधिकृत स्टाफ के लिए।",pg_admin_login_04:"एडमिन ईमेल / फ़ोन *",pg_admin_login_05:"admin@example.com or 98765 43210",pg_admin_login_06:"पासवर्ड *",pg_admin_login_07:"एडमिन पासवर्ड",pg_admin_login_08:"दिखाएं",pg_admin_login_09:"पासवर्ड भूल गए?",pg_admin_login_10:"एडमिन के रूप में लॉगिन करें",pg_admin_login_11:"यह एक आंतरिक टूल है। अपने क्रेडेंशियल किसी के साथ साझा न करें।",pg_admin_login_12:"लॉगिन सफल",pg_admin_login_13:"स्वागत है, एडमिन!",pg_admin_login_14:"एडमिन डैशबोर्ड खुल रहा है…",pg_admin_login_15:"पासवर्ड रीसेट",pg_admin_login_16:"अपना पंजीकृत फ़ोन नंबर WhatsApp पर 918757160137 पर भेजें, और हम आपका एडमिन पासवर्ड रीसेट कर देंगे।",pg_admin_login_17:"WhatsApp पर भेजें",pg_admin_login_18:"बंद करें",pg_admin_login_19:"होम",pg_admin_login_20:"सहायता",pg_admin_login_21:"गोपनीयता नीति",pg_admin_login_22:"नियम और शर्तें",page_title:"एडमिन लॉगिन | ApnaShift",meta_desc:"ApnaShift आंतरिक एडमिन लॉगिन।"}};</script>
+<script src="lang.js"></script>
 </body>
 </html>

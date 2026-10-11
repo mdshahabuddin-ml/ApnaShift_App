@@ -70,6 +70,7 @@
   .site-foot-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;color:#fff;font-size:1.05rem}
   .site-foot-links{display:flex;gap:16px;flex-wrap:wrap}
   .site-foot-links a{color:var(--yellow);font-size:.86rem;font-weight:600;text-decoration:none}
+  .site-foot-links a:hover{text-decoration:underline}
 </style>
 </head>
 <body>
@@ -78,7 +79,7 @@
   <div class="site-header-inner">
     <a class="site-brand" href="admin-home.html" aria-label="ApnaShift admin home">ApnaShift<small>Admin Panel</small></a>
     <div class="spacer"></div>
-    <button class="logout-btn" id="logoutBtn" type="button">Logout</button>
+    <button class="logout-btn" id="logoutBtn" type="button" data-i18n="pg_admin_home_01">Logout</button>
   </div>
 </header>
 
@@ -86,39 +87,40 @@
   <div class="alert" id="pageAlert" role="alert" aria-live="assertive"></div>
 
   <section class="card" aria-labelledby="statsTitle">
-    <h1 id="statsTitle">Admin Overview</h1>
-    <p class="sub" id="welcomeLine">Loading…</p>
+    <h1 id="statsTitle" data-i18n="pg_admin_home_02">Admin Overview</h1>
+    <p class="sub" id="welcomeLine" data-i18n="pg_admin_home_03">Loading…</p>
     <div class="stat-grid">
       <div class="stat" aria-live="polite">
         <div class="num" id="statPending">—</div>
-        <div class="lbl">Pending driver verifications</div>
+        <div class="lbl" data-i18n="pg_admin_home_04">Pending driver verifications</div>
       </div>
       <div class="stat" aria-live="polite">
         <div class="num" id="statToday">—</div>
-        <div class="lbl">Today's bookings</div>
+        <div class="lbl" data-i18n="pg_admin_home_05">Today's bookings</div>
       </div>
       <div class="stat" aria-live="polite">
         <div class="num" id="statDue">—</div>
-        <div class="lbl">Total commission due (Rs)</div>
+        <div class="lbl" data-i18n="pg_admin_home_06">Total commission due (Rs)</div>
       </div>
       <div class="stat" aria-live="polite">
         <div class="num" id="statDisputed">—</div>
-        <div class="lbl">Disputed bookings</div>
+        <div class="lbl" data-i18n="pg_admin_home_07">Disputed bookings</div>
       </div>
     </div>
-    <p style="margin:10px 0 0"><button class="logout-btn" id="refreshBtn" type="button" style="border-color:var(--navy);color:var(--navy)">Refresh</button></p>
+    <p style="margin:10px 0 0"><button class="logout-btn" id="refreshBtn" type="button" style="border-color:var(--navy);color:var(--navy)" data-i18n="pg_admin_home_08">Refresh</button></p>
   </section>
 
   <section class="card" aria-labelledby="navTitle">
-    <h2 id="navTitle">Tools</h2>
-    <p class="sub">Choose a task — each card opens its page.</p>
+    <h2 id="navTitle" data-i18n="pg_admin_home_09">Tools</h2>
+    <p class="sub" data-i18n="pg_admin_home_10">Choose a task — each card opens its page.</p>
     <div class="nav-grid">
-      <a class="nav-card" href="admin-drivers.html"><b>Drivers</b><span>Verification, list, and driver actions</span></a>
-      <a class="nav-card" href="admin-bookings.html"><b>Bookings</b><span>View, assign, and manage bookings</span></a>
-      <a class="nav-card" href="admin-pricing.html"><b>Pricing</b><span>View and update rates</span></a>
-      <a class="nav-card" href="payment-status.html"><b>Payments</b><span>Payment status and settlements</span></a>
+      <a class="nav-card" href="admin-drivers.html"><b data-i18n="pg_admin_home_11">Drivers</b><span data-i18n="pg_admin_home_12">Verification, list, and driver actions</span></a>
+      <a class="nav-card" href="admin-bookings.html"><b data-i18n="pg_admin_home_13">Bookings</b><span data-i18n="pg_admin_home_14">View, assign, and manage bookings</span></a>
+      <a class="nav-card" href="admin-pricing.html"><b data-i18n="pg_admin_home_15">Pricing</b><span data-i18n="pg_admin_home_16">View and update rates</span></a>
+      <a class="nav-card" href="admin-reports.html"><b data-i18n="pg_admin_home_17">Reports &amp; Earnings</b><span data-i18n="pg_admin_home_18">Delivered trips and commission trends</span></a>
+      <a class="nav-card" href="payment-status.html"><b data-i18n="pg_admin_home_19">Payments</b><span data-i18n="pg_admin_home_20">Payment status and settlements</span></a>
     </div>
-    <p class="tools-link">Advanced tools (password reset, enterprise) → <a href="admin-dashboard.html">open the full dashboard</a></p>
+    <p class="tools-link">Advanced tools (password reset, enterprise) → <a href="admin-dashboard.html" data-i18n="pg_admin_home_21">open the full dashboard</a></p>
   </section>
 </main>
 
@@ -126,8 +128,9 @@
   <div class="site-foot-inner">
     <div class="site-foot-brand">ApnaShift</div>
     <div class="site-foot-links">
-      <a href="admin-home.html">Admin Home</a>
-      <a href="admin-dashboard.html">Full Dashboard</a>
+      <a href="admin-home.html" data-i18n="pg_admin_home_22">Admin Home</a>
+      <a href="admin-dashboard.html" data-i18n="pg_admin_home_23">Full Dashboard</a>
+      <a href="mailto:support@apnashift.in?subject=ApnaShift%20Support%20Request">support@apnashift.in</a>
     </div>
   </div>
 </footer>
@@ -267,5 +270,7 @@
   loadAll();
 })();
 </script>
+<script>window.PAGE_I18N={en:{pg_admin_home_01:"Logout",pg_admin_home_02:"Admin Overview",pg_admin_home_03:"Loading…",pg_admin_home_04:"Pending driver verifications",pg_admin_home_05:"Today's bookings",pg_admin_home_06:"Total commission due (Rs)",pg_admin_home_07:"Disputed bookings",pg_admin_home_08:"Refresh",pg_admin_home_09:"Tools",pg_admin_home_10:"Choose a task — each card opens its page.",pg_admin_home_11:"Drivers",pg_admin_home_12:"Verification, list, and driver actions",pg_admin_home_13:"Bookings",pg_admin_home_14:"View, assign, and manage bookings",pg_admin_home_15:"Pricing",pg_admin_home_16:"View and update rates",pg_admin_home_17:"Reports & Earnings",pg_admin_home_18:"Delivered trips and commission trends",pg_admin_home_19:"Payments",pg_admin_home_20:"Payment status and settlements",pg_admin_home_21:"open the full dashboard",pg_admin_home_22:"Admin Home",pg_admin_home_23:"Full Dashboard",page_title:"Admin Home | ApnaShift",meta_desc:"ApnaShift admin overview — stats and tools."},hi:{pg_admin_home_01:"लॉगआउट",pg_admin_home_02:"एडमिन अवलोकन",pg_admin_home_03:"लोड हो रहा है…",pg_admin_home_04:"लंबित ड्राइवर सत्यापन",pg_admin_home_05:"आज की बुकिंग",pg_admin_home_06:"कुल कमीशन बकाया (रु)",pg_admin_home_07:"विवादित बुकिंग",pg_admin_home_08:"रीफ्रेश करें",pg_admin_home_09:"टूल्स",pg_admin_home_10:"कोई कार्य चुनें — हर कार्ड उसका पेज खोलेगा।",pg_admin_home_11:"ड्राइवर",pg_admin_home_12:"सत्यापन, सूची और ड्राइवर कार्य",pg_admin_home_13:"बुकिंग",pg_admin_home_14:"बुकिंग देखें, असाइन करें और प्रबंधित करें",pg_admin_home_15:"मूल्य निर्धारण",pg_admin_home_16:"दरें देखें और अपडेट करें",pg_admin_home_17:"रिपोर्ट और कमाई",pg_admin_home_18:"डिलीवर की गई यात्राएं और कमीशन रुझान",pg_admin_home_19:"भुगतान",pg_admin_home_20:"भुगतान स्थिति और सेटलमेंट",pg_admin_home_21:"पूरा डैशबोर्ड खोलें",pg_admin_home_22:"एडमिन होम",pg_admin_home_23:"पूरा डैशबोर्ड",page_title:"एडमिन होम | ApnaShift",meta_desc:"ApnaShift एडमिन अवलोकन — आंकड़े और टूल्स।"}};</script>
+<script src="lang.js"></script>
 </body>
 </html>

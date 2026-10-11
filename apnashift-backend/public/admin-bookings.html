@@ -108,45 +108,45 @@
 <main>
   <div class="top-row">
     <div>
-      <h1>Bookings</h1>
-      <p class="sub">Filter bookings and assign drivers. Disputed bookings are highlighted in red.</p>
+      <h1 data-i18n="pg_admin-bookings_01">Bookings</h1>
+      <p class="sub" data-i18n="pg_admin-bookings_02">Filter bookings and assign drivers. Disputed bookings are highlighted in red.</p>
     </div>
-    <button class="logout-btn" id="logoutBtn" type="button">Logout</button>
+    <button class="logout-btn" id="logoutBtn" type="button" data-i18n="pg_admin-bookings_03">Logout</button>
   </div>
 
   <div id="pageAlert" role="alert" aria-live="assertive"></div>
 
   <section class="card" aria-labelledby="filterTitle">
-    <h2 id="filterTitle">Filter</h2>
+    <h2 id="filterTitle" data-i18n="pg_admin-bookings_04">Filter</h2>
     <div class="controls">
       <div class="field">
-        <label for="statusFilter">Status</label>
+        <label for="statusFilter" data-i18n="pg_admin-bookings_05">Status</label>
         <select id="statusFilter">
-          <option value="">All</option>
-          <option value="pending">pending</option>
-          <option value="accepted">accepted</option>
-          <option value="arrived">arrived</option>
-          <option value="in_transit">in_transit</option>
-          <option value="delivered">delivered</option>
-          <option value="cancelled">cancelled</option>
+          <option value="" data-i18n="pg_admin-bookings_06">All</option>
+          <option value="pending" data-i18n="pg_admin-bookings_07">pending</option>
+          <option value="accepted" data-i18n="pg_admin-bookings_08">accepted</option>
+          <option value="arrived" data-i18n="pg_admin-bookings_09">arrived</option>
+          <option value="in_transit" data-i18n="pg_admin-bookings_10">in_transit</option>
+          <option value="delivered" data-i18n="pg_admin-bookings_11">delivered</option>
+          <option value="cancelled" data-i18n="pg_admin-bookings_12">cancelled</option>
         </select>
       </div>
       <div class="field">
-        <label for="fromDate">From date</label>
+        <label for="fromDate" data-i18n="pg_admin-bookings_13">From date</label>
         <input type="date" id="fromDate">
       </div>
       <div class="field">
-        <label for="toDate">To date</label>
+        <label for="toDate" data-i18n="pg_admin-bookings_14">To date</label>
         <input type="date" id="toDate">
       </div>
-      <button class="btn ghost" id="filterBtn" type="button">Load</button>
+      <button class="btn ghost" id="filterBtn" type="button" data-i18n="pg_admin-bookings_15">Load</button>
     </div>
     <div id="summaryBox" aria-live="polite"></div>
-    <div class="list" id="bookingsList" aria-live="polite"><p class="loading">Press Load to view bookings.</p></div>
+    <div class="list" id="bookingsList" aria-live="polite"><p class="loading" data-i18n="pg_admin-bookings_16">Press Load to view bookings.</p></div>
     <div class="pager">
-      <button class="btn ghost small" id="prevBtn" type="button">← Previous</button>
-      <span id="pageInfo">Page 1</span>
-      <button class="btn ghost small" id="nextBtn" type="button">Next →</button>
+      <button class="btn ghost small" id="prevBtn" type="button" data-i18n="pg_admin-bookings_17">← Previous</button>
+      <span id="pageInfo" data-i18n="pg_admin-bookings_18">Page 1</span>
+      <button class="btn ghost small" id="nextBtn" type="button" data-i18n="pg_admin-bookings_19">Next →</button>
     </div>
   </section>
 
@@ -154,10 +154,11 @@
   <div class="site-foot-inner">
     <div class="site-foot-brand">ApnaShift</div>
     <div class="site-foot-links">
-      <a href="index.html">Home</a>
-      <a href="help.html">Help</a>
-      <a href="privacy.html">Privacy Policy</a>
-      <a href="terms.html">Terms &amp; Conditions</a>
+      <a href="index.html" data-i18n="pg_admin-bookings_20">Home</a>
+      <a href="help.html" data-i18n="pg_admin-bookings_21">Help</a>
+      <a href="privacy.html" data-i18n="pg_admin-bookings_22">Privacy Policy</a>
+      <a href="terms.html" data-i18n="pg_admin-bookings_23">Terms &amp; Conditions</a>
+      <a href="mailto:support@apnashift.in?subject=ApnaShift%20Support%20Request">support@apnashift.in</a>
     </div>
   </div>
 </footer>
@@ -399,5 +400,7 @@
   loadBookings();
 })();
 </script>
+<script>window.PAGE_I18N={en:{page_title:'Bookings | ApnaShift Admin',meta_desc:'ApnaShift admin — view bookings, apply filters, and assign drivers.','pg_admin-bookings_01':'Bookings','pg_admin-bookings_02':'Filter bookings and assign drivers. Disputed bookings are highlighted in red.','pg_admin-bookings_03':'Logout','pg_admin-bookings_04':'Filter','pg_admin-bookings_05':'Status','pg_admin-bookings_06':'All','pg_admin-bookings_07':'pending','pg_admin-bookings_08':'accepted','pg_admin-bookings_09':'arrived','pg_admin-bookings_10':'in_transit','pg_admin-bookings_11':'delivered','pg_admin-bookings_12':'cancelled','pg_admin-bookings_13':'From date','pg_admin-bookings_14':'To date','pg_admin-bookings_15':'Load','pg_admin-bookings_16':'Press Load to view bookings.','pg_admin-bookings_17':'← Previous','pg_admin-bookings_18':'Page 1','pg_admin-bookings_19':'Next →','pg_admin-bookings_20':'Home','pg_admin-bookings_21':'Help','pg_admin-bookings_22':'Privacy Policy','pg_admin-bookings_23':'Terms & Conditions'},hi:{page_title:'बुकिंग | ApnaShift एडमिन',meta_desc:'ApnaShift एडमिन — बुकिंग देखें, फ़िल्टर लगाएं और ड्राइवर असाइन करें।','pg_admin-bookings_01':'बुकिंग','pg_admin-bookings_02':'बुकिंग फ़िल्टर करें और ड्राइवर असाइन करें। विवादित बुकिंग लाल रंग में दिखती हैं।','pg_admin-bookings_03':'लॉगआउट','pg_admin-bookings_04':'फ़िल्टर','pg_admin-bookings_05':'स्टेटस','pg_admin-bookings_06':'सभी','pg_admin-bookings_07':'पेंडिंग','pg_admin-bookings_08':'स्वीकृत','pg_admin-bookings_09':'पहुंचा हुआ','pg_admin-bookings_10':'ट्रांजिट में','pg_admin-bookings_11':'डिलीवर हो गया','pg_admin-bookings_12':'रद्द','pg_admin-bookings_13':'शुरुआत की तारीख','pg_admin-bookings_14':'समाप्ति की तारीख','pg_admin-bookings_15':'लोड करें','pg_admin-bookings_16':'बुकिंग देखने के लिए लोड दबाएं।','pg_admin-bookings_17':'← पिछला','pg_admin-bookings_18':'पेज 1','pg_admin-bookings_19':'अगला →','pg_admin-bookings_20':'होम','pg_admin-bookings_21':'सहायता','pg_admin-bookings_22':'प्राइवेसी पॉलिसी','pg_admin-bookings_23':'नियम व शर्तें'}};</script>
+<script src="lang.js"></script>
 </body>
 </html>

@@ -121,83 +121,84 @@
 
 <main>
   <section class="card" aria-labelledby="pageTitle">
-    <h1 id="pageTitle">Driver Dashboard</h1>
-    <p class="sub">Welcome! View new trips, accept trips, and track your earnings.</p>
+    <h1 id="pageTitle" data-i18n="pg_driver_dashboard_01">Driver Dashboard</h1>
+    <p class="sub" data-i18n="pg_driver_dashboard_02">Welcome! View new trips, accept trips, and track your earnings.</p>
     <div id="globalAlert" role="alert" aria-live="assertive"></div>
     <div class="row-btns">
-      <button class="btn primary small" id="refreshBtn" type="button">Refresh</button>
-      <button class="btn ghost small" id="logoutBtn" type="button">Logout</button>
+      <button class="btn primary small" id="refreshBtn" type="button" data-i18n="pg_driver_dashboard_03">Refresh</button>
+      <button class="btn ghost small" id="logoutBtn" type="button" data-i18n="pg_driver_dashboard_04">Logout</button>
     </div>
   </section>
 
   <section class="card" aria-labelledby="profileTitle">
-    <h2 id="profileTitle">Profile</h2>
-    <div id="profileBox" aria-live="polite"><p class="loading">Loading profile…</p></div>
+    <h2 id="profileTitle" data-i18n="pg_driver_dashboard_05">Profile</h2>
+    <div id="profileBox" aria-live="polite"><p class="loading" data-i18n="pg_driver_dashboard_06">Loading profile…</p></div>
   </section>
 
   <section class="card" aria-labelledby="earnTitle">
-    <h2 id="earnTitle">7-Day Earnings</h2>
+    <h2 id="earnTitle" data-i18n="pg_driver_dashboard_07">7-Day Earnings</h2>
     <div class="earn-grid">
-      <div class="earn-cell"><span>Earnings (₹)</span><strong id="earnRs">—</strong></div>
-      <div class="earn-cell"><span>Trips</span><strong id="earnTrips">—</strong></div>
+      <div class="earn-cell"><span data-i18n="pg_driver_dashboard_08">Earnings (₹)</span><strong id="earnRs">—</strong></div>
+      <div class="earn-cell"><span data-i18n="pg_driver_dashboard_09">Trips</span><strong id="earnTrips">—</strong></div>
     </div>
-    <p class="hint" id="earnStatus" aria-live="polite">Loading earnings…</p>
+    <p class="hint" id="earnStatus" aria-live="polite" data-i18n="pg_driver_dashboard_10">Loading earnings…</p>
   </section>
 
   <section class="card" aria-labelledby="availTitle">
     <h2 id="availTitle">Available bookings <span class="pill" id="newBadge" hidden>New: 0</span></h2>
-    <p class="sub">New trips — accept quickly if you like one.</p>
+    <p class="sub" data-i18n="pg_driver_dashboard_11">New trips — accept quickly if you like one.</p>
     <div class="row-btns">
-      <button type="button" class="btn ghost small" id="notifyToggle">🔔 Alerts: Off</button>
-      <button type="button" class="btn ghost small" id="soundToggle">🔊 Sound: Off</button>
+      <button type="button" class="btn ghost small" id="notifyToggle" data-i18n="pg_driver_dashboard_12">🔔 Alerts: Off</button>
+      <button type="button" class="btn ghost small" id="soundToggle" data-i18n="pg_driver_dashboard_13">🔊 Sound: Off</button>
     </div>
-    <div id="availList" aria-live="polite"><p class="loading">Loading bookings…</p></div>
+    <div id="availList" aria-live="polite"><p class="loading" data-i18n="pg_driver_dashboard_14">Loading bookings…</p></div>
   </section>
 
   <section class="card" aria-labelledby="activeTitle">
-    <h2 id="activeTitle">My Active Trip</h2>
-    <p class="sub">Ongoing trip — move the status forward.</p>
-    <div id="activeTrip" aria-live="polite"><p class="loading">Your active trip will appear once bookings load…</p></div>
+    <h2 id="activeTitle" data-i18n="pg_driver_dashboard_15">My Active Trip</h2>
+    <p class="sub" data-i18n="pg_driver_dashboard_16">Ongoing trip — move the status forward.</p>
+    <div id="activeTrip" aria-live="polite"><p class="loading" data-i18n="pg_driver_dashboard_17">Your active trip will appear once bookings load…</p></div>
   </section>
 
   <section class="card" aria-labelledby="myTitle">
-    <h2 id="myTitle">My bookings</h2>
-    <p class="sub">Trips you accepted will appear here.</p>
+    <h2 id="myTitle" data-i18n="pg_driver_dashboard_18">My bookings</h2>
+    <p class="sub" data-i18n="pg_driver_dashboard_19">Trips you accepted will appear here.</p>
     <details id="historyWrap">
       <summary>Past trips history</summary>
-      <div id="myList" aria-live="polite"><p class="loading">Loading your bookings…</p></div>
+      <div id="myList" aria-live="polite"><p class="loading" data-i18n="pg_driver_dashboard_20">Loading your bookings…</p></div>
     </details>
   </section>
 
   <section class="card" aria-labelledby="moneyTitle">
-    <h2 id="moneyTitle">Money summary</h2>
-    <p class="sub">Cash collected, earnings, and commission due to ApnaShift.</p>
+    <h2 id="moneyTitle" data-i18n="pg_driver_dashboard_21">Money summary</h2>
+    <p class="sub" data-i18n="pg_driver_dashboard_22">Cash collected, earnings, and commission due to ApnaShift.</p>
     <div class="earn-grid">
-      <div class="earn-cell"><span>Cash collected (₹)</span><strong id="ledgerCash">—</strong></div>
-      <div class="earn-cell"><span>My earnings (₹)</span><strong id="ledgerEarn">—</strong></div>
-      <div class="earn-cell"><span>Commission due (₹)</span><strong id="ledgerDue">—</strong></div>
-      <div class="earn-cell"><span>Settled (₹)</span><strong id="ledgerSettled">—</strong></div>
+      <div class="earn-cell"><span data-i18n="pg_driver_dashboard_23">Cash collected (₹)</span><strong id="ledgerCash">—</strong></div>
+      <div class="earn-cell"><span data-i18n="pg_driver_dashboard_24">My earnings (₹)</span><strong id="ledgerEarn">—</strong></div>
+      <div class="earn-cell"><span data-i18n="pg_driver_dashboard_25">Commission due (₹)</span><strong id="ledgerDue">—</strong></div>
+      <div class="earn-cell"><span data-i18n="pg_driver_dashboard_26">Settled (₹)</span><strong id="ledgerSettled">—</strong></div>
     </div>
-    <p class="hint" id="ledgerStatus" aria-live="polite">Loading summary…</p>
+    <p class="hint" id="ledgerStatus" aria-live="polite" data-i18n="pg_driver_dashboard_27">Loading summary…</p>
     <div id="dueWarn" aria-live="polite"></div>
     <div id="ledgerList" aria-live="polite"></div>
   </section>
 
   <section class="card" aria-labelledby="shareTitle">
-    <h2 id="shareTitle">Live location</h2>
-    <p class="sub">Share location for your active trip — the customer can see your vehicle live. Sharing stops automatically when the trip ends.</p>
-    <div id="shareList" aria-live="polite"><p class="loading">Sharing options will appear once bookings load…</p></div>
-    <p class="hint" id="shareStatus">Sharing is off.</p>
+    <h2 id="shareTitle" data-i18n="pg_driver_dashboard_28">Live location</h2>
+    <p class="sub" data-i18n="pg_driver_dashboard_29">Share location for your active trip — the customer can see your vehicle live. Sharing stops automatically when the trip ends.</p>
+    <div id="shareList" aria-live="polite"><p class="loading" data-i18n="pg_driver_dashboard_30">Sharing options will appear once bookings load…</p></div>
+    <p class="hint" id="shareStatus" data-i18n="pg_driver_dashboard_31">Sharing is off.</p>
   </section>
 
 <footer class="site-footer">
   <div class="site-foot-inner">
     <div class="site-foot-brand">ApnaShift</div>
     <div class="site-foot-links">
-      <a href="index.html">Home</a>
-      <a href="help.html">Help</a>
-      <a href="privacy.html">Privacy Policy</a>
-      <a href="terms.html">Terms &amp; Conditions</a>
+      <a href="index.html" data-i18n="pg_driver_dashboard_32">Home</a>
+      <a href="help.html" data-i18n="pg_driver_dashboard_33">Help</a>
+      <a href="privacy.html" data-i18n="pg_driver_dashboard_34">Privacy Policy</a>
+      <a href="terms.html" data-i18n="pg_driver_dashboard_35">Terms &amp; Conditions</a>
+      <a href="mailto:support@apnashift.in?subject=ApnaShift%20Support%20Request">support@apnashift.in</a>
     </div>
   </div>
 </footer>
@@ -1115,5 +1116,7 @@
   startDriverStream();
 })();
 </script>
+<script>window.PAGE_I18N={en:{page_title:"Driver Dashboard | ApnaShift",meta_desc:"Driver dashboard — view new trips, accept trips, and track your earnings.",pg_driver_dashboard_01:"Driver Dashboard",pg_driver_dashboard_02:"Welcome! View new trips, accept trips, and track your earnings.",pg_driver_dashboard_03:"Refresh",pg_driver_dashboard_04:"Logout",pg_driver_dashboard_05:"Profile",pg_driver_dashboard_06:"Loading profile…",pg_driver_dashboard_07:"7-Day Earnings",pg_driver_dashboard_08:"Earnings (₹)",pg_driver_dashboard_09:"Trips",pg_driver_dashboard_10:"Loading earnings…",pg_driver_dashboard_11:"New trips — accept quickly if you like one.",pg_driver_dashboard_12:"🔔 Alerts: Off",pg_driver_dashboard_13:"🔊 Sound: Off",pg_driver_dashboard_14:"Loading bookings…",pg_driver_dashboard_15:"My Active Trip",pg_driver_dashboard_16:"Ongoing trip — move the status forward.",pg_driver_dashboard_17:"Your active trip will appear once bookings load…",pg_driver_dashboard_18:"My bookings",pg_driver_dashboard_19:"Trips you accepted will appear here.",pg_driver_dashboard_20:"Loading your bookings…",pg_driver_dashboard_21:"Money summary",pg_driver_dashboard_22:"Cash collected, earnings, and commission due to ApnaShift.",pg_driver_dashboard_23:"Cash collected (₹)",pg_driver_dashboard_24:"My earnings (₹)",pg_driver_dashboard_25:"Commission due (₹)",pg_driver_dashboard_26:"Settled (₹)",pg_driver_dashboard_27:"Loading summary…",pg_driver_dashboard_28:"Live location",pg_driver_dashboard_29:"Share location for your active trip — the customer can see your vehicle live. Sharing stops automatically when the trip ends.",pg_driver_dashboard_30:"Sharing options will appear once bookings load…",pg_driver_dashboard_31:"Sharing is off.",pg_driver_dashboard_32:"Home",pg_driver_dashboard_33:"Help",pg_driver_dashboard_34:"Privacy Policy",pg_driver_dashboard_35:"Terms & Conditions"},hi:{page_title:"ड्राइवर डैशबोर्ड | ApnaShift",meta_desc:"ड्राइवर डैशबोर्ड — नए ट्रिप देखें, स्वीकार करें और कमाई ट्रैक करें।",pg_driver_dashboard_01:"ड्राइवर डैशबोर्ड",pg_driver_dashboard_02:"स्वागत है! नए ट्रिप देखें, स्वीकार करें और कमाई ट्रैक करें।",pg_driver_dashboard_03:"रिफ्रेश करें",pg_driver_dashboard_04:"लॉगआउट",pg_driver_dashboard_05:"प्रोफ़ाइल",pg_driver_dashboard_06:"प्रोफ़ाइल लोड हो रही है…",pg_driver_dashboard_07:"7-दिन की कमाई",pg_driver_dashboard_08:"कमाई (₹)",pg_driver_dashboard_09:"ट्रिप",pg_driver_dashboard_10:"कमाई लोड हो रही है…",pg_driver_dashboard_11:"नए ट्रिप — पसंद आए तो जल्दी स्वीकार करें।",pg_driver_dashboard_12:"🔔 अलर्ट: बंद",pg_driver_dashboard_13:"🔊 आवाज़: बंद",pg_driver_dashboard_14:"बुकिंग लोड हो रही हैं…",pg_driver_dashboard_15:"मेरा चालू ट्रिप",pg_driver_dashboard_16:"चालू ट्रिप — स्थिति आगे बढ़ाएं।",pg_driver_dashboard_17:"बुकिंग लोड होते ही आपका चालू ट्रिप यहां दिखेगा…",pg_driver_dashboard_18:"मेरी बुकिंग",pg_driver_dashboard_19:"स्वीकार किए गए ट्रिप यहां दिखेंगे।",pg_driver_dashboard_20:"आपकी बुकिंग लोड हो रही हैं…",pg_driver_dashboard_21:"पैसे का हिसाब",pg_driver_dashboard_22:"नकद संग्रह, कमाई और ApnaShift को देय कमीशन।",pg_driver_dashboard_23:"नकद संग्रह (₹)",pg_driver_dashboard_24:"मेरी कमाई (₹)",pg_driver_dashboard_25:"बकाया कमीशन (₹)",pg_driver_dashboard_26:"चुकता (₹)",pg_driver_dashboard_27:"हिसाब लोड हो रहा है…",pg_driver_dashboard_28:"लाइव लोकेशन",pg_driver_dashboard_29:"चालू ट्रिप के लिए लोकेशन साझा करें — ग्राहक आपकी गाड़ी लाइव देख सकता है। ट्रिप खत्म होते ही साझा होना अपने आप बंद हो जाता है।",pg_driver_dashboard_30:"बुकिंग लोड होते ही साझा करने के विकल्प यहां दिखेंगे…",pg_driver_dashboard_31:"साझा करना बंद है।",pg_driver_dashboard_32:"होम",pg_driver_dashboard_33:"सहायता",pg_driver_dashboard_34:"प्राइवेसी पॉलिसी",pg_driver_dashboard_35:"नियम व शर्तें"}};</script>
+<script src="lang.js"></script>
 </body>
 </html>

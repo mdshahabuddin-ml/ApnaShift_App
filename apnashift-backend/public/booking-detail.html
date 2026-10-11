@@ -99,37 +99,37 @@
 </header>
 
 <main>
-  <h1>Booking Detail</h1>
-  <p class="sub" id="bookLine">Loading booking…</p>
+  <h1 data-i18n="pg_booking-detail_01">Booking Detail</h1>
+  <p class="sub" id="bookLine" data-i18n="pg_booking-detail_02">Loading booking…</p>
 
   <div id="pageAlert" role="alert" aria-live="assertive"></div>
 
   <section class="card" aria-labelledby="tripTitle">
-    <h2 id="tripTitle">Trip <span class="badge pending" id="statusBadge">—</span></h2>
-    <div class="kv" id="tripBox"><p class="loading">Loading…</p></div>
+    <h2 id="tripTitle" data-i18n="pg_booking-detail_03">Trip <span class="badge pending" id="statusBadge">—</span></h2>
+    <div class="kv" id="tripBox"><p class="loading" data-i18n="pg_booking-detail_04">Loading…</p></div>
   </section>
 
   <section class="card" aria-labelledby="moneyTitle">
-    <h2 id="moneyTitle">Fare breakup</h2>
-    <div id="moneyBox" aria-live="polite"><p class="loading">Loading…</p></div>
+    <h2 id="moneyTitle" data-i18n="pg_booking-detail_05">Fare breakup</h2>
+    <div id="moneyBox" aria-live="polite"><p class="loading" data-i18n="pg_booking-detail_06">Loading…</p></div>
   </section>
 
   <section class="card" aria-labelledby="payTitle">
-    <h2 id="payTitle">Payment</h2>
-    <div id="payBox" aria-live="polite"><p class="loading">Loading…</p></div>
+    <h2 id="payTitle" data-i18n="pg_booking-detail_07">Payment</h2>
+    <div id="payBox" aria-live="polite"><p class="loading" data-i18n="pg_booking-detail_08">Loading…</p></div>
   </section>
 
   <section class="card" id="rateSection" aria-labelledby="rateTitle" hidden>
-    <h2 id="rateTitle">Rating</h2>
+    <h2 id="rateTitle" data-i18n="pg_booking-detail_09">Rating</h2>
     <div id="rateBox" aria-live="polite"></div>
   </section>
 
   <section class="card" aria-labelledby="testTitle">
-    <h2 id="testTitle">Test: delivery</h2>
-    <p class="sub">Test button — marks the trip as delivered using the assigned driver login (commission is created in the backend).</p>
+    <h2 id="testTitle" data-i18n="pg_booking-detail_10">Test: delivery</h2>
+    <p class="sub" data-i18n="pg_booking-detail_11">Test button — marks the trip as delivered using the assigned driver login (commission is created in the backend).</p>
     <div class="controls">
-      <button type="button" class="btn ghost small" id="deliverBtn">Mark Delivered</button>
-      <a class="btn ghost small" href="customer-dashboard.html">← My Bookings</a>
+      <button type="button" class="btn ghost small" id="deliverBtn" data-i18n="pg_booking-detail_12">Mark Delivered</button>
+      <a class="btn ghost small" href="customer-dashboard.html" data-i18n="pg_booking-detail_13">← My Bookings</a>
     </div>
     <p class="meta" id="testStatus" aria-live="polite"></p>
   </section>
@@ -138,10 +138,11 @@
   <div class="site-foot-inner">
     <div class="site-foot-brand">ApnaShift</div>
     <div class="site-foot-links">
-      <a href="index.html">Home</a>
-      <a href="help.html">Help</a>
-      <a href="privacy.html">Privacy Policy</a>
-      <a href="terms.html">Terms &amp; Conditions</a>
+      <a href="index.html" data-i18n="pg_booking-detail_14">Home</a>
+      <a href="help.html" data-i18n="pg_booking-detail_15">Help</a>
+      <a href="privacy.html" data-i18n="pg_booking-detail_16">Privacy Policy</a>
+      <a href="terms.html" data-i18n="pg_booking-detail_17">Terms &amp; Conditions</a>
+      <a href="mailto:support@apnashift.in?subject=ApnaShift%20Support%20Request">support@apnashift.in</a>
     </div>
   </div>
 </footer>
@@ -454,5 +455,7 @@
   load();
 })();
 </script>
+<script>window.PAGE_I18N={en:{page_title:"Booking Detail | ApnaShift",meta_desc:"View your booking fare, commission breakdown and driver payment details.",'pg_booking-detail_01':"Booking Detail",'pg_booking-detail_02':"Loading booking…",'pg_booking-detail_03':"Trip —",'pg_booking-detail_04':"Loading…",'pg_booking-detail_05':"Fare breakup",'pg_booking-detail_06':"Loading…",'pg_booking-detail_07':"Payment",'pg_booking-detail_08':"Loading…",'pg_booking-detail_09':"Rating",'pg_booking-detail_10':"Test: delivery",'pg_booking-detail_11':"Test button — marks the trip as delivered using the assigned driver login (commission is created in the backend).",'pg_booking-detail_12':"Mark Delivered",'pg_booking-detail_13':"← My Bookings",'pg_booking-detail_14':"Home",'pg_booking-detail_15':"Help",'pg_booking-detail_16':"Privacy Policy",'pg_booking-detail_17':"Terms & Conditions"},hi:{page_title:"बुकिंग विवरण | ApnaShift",meta_desc:"अपनी बुकिंग का किराया, कमीशन विवरण और ड्राइवर भुगतान जानकारी देखें।",'pg_booking-detail_01':"बुकिंग विवरण",'pg_booking-detail_02':"बुकिंग लोड हो रही है…",'pg_booking-detail_03':"ट्रिप —",'pg_booking-detail_04':"लोड हो रहा है…",'pg_booking-detail_05':"किराया विवरण",'pg_booking-detail_06':"लोड हो रहा है…",'pg_booking-detail_07':"भुगतान",'pg_booking-detail_08':"लोड हो रहा है…",'pg_booking-detail_09':"रेटिंग",'pg_booking-detail_10':"टेस्ट: डिलीवरी",'pg_booking-detail_11':"टेस्ट बटन — असाइंड ड्राइवर लॉगिन से ट्रिप को डिलीवर मार्क करता है (कमीशन बैकएंड में बनता है)।",'pg_booking-detail_12':"डिलीवर मार्क करें",'pg_booking-detail_13':"← मेरी बुकिंग",'pg_booking-detail_14':"होम",'pg_booking-detail_15':"सहायता",'pg_booking-detail_16':"प्राइवेसी पॉलिसी",'pg_booking-detail_17':"नियम और शर्तें"}};</script>
+<script src="lang.js"></script>
 </body>
 </html>

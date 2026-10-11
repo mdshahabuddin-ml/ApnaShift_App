@@ -107,48 +107,49 @@
 <main>
   <div class="top-row">
     <div>
-      <h1>Payment Status</h1>
-      <p class="sub">View driver commission dues and record settlements. All calculations happen on the server.</p>
+      <h1 data-i18n="pg_payment-status_01">Payment Status</h1>
+      <p class="sub" data-i18n="pg_payment-status_02">View driver commission dues and record settlements. All calculations happen on the server.</p>
     </div>
-    <button class="logout-btn" id="logoutBtn" type="button">Logout</button>
+    <button class="logout-btn" id="logoutBtn" type="button" data-i18n="pg_payment-status_03">Logout</button>
   </div>
 
   <div id="pageAlert" role="alert" aria-live="assertive"></div>
 
   <section class="card" aria-labelledby="sumTitle">
-    <h2 id="sumTitle">Total outstanding</h2>
+    <h2 id="sumTitle" data-i18n="pg_payment-status_04">Total outstanding</h2>
     <div class="controls">
-      <button class="btn ghost" id="refreshBtn" type="button">Refresh</button>
+      <button class="btn ghost" id="refreshBtn" type="button" data-i18n="pg_payment-status_05">Refresh</button>
     </div>
-    <div id="summaryBox" aria-live="polite"><p class="loading">Loading…</p></div>
+    <div id="summaryBox" aria-live="polite"><p class="loading" data-i18n="pg_payment-status_06">Loading…</p></div>
   </section>
 
   <section class="card" aria-labelledby="listTitle">
-    <h2 id="listTitle">Driver commission dues</h2>
-    <p class="sub">Highest outstanding balance first.</p>
-    <div class="list" id="driversList" aria-live="polite"><p class="loading">Loading list…</p></div>
+    <h2 id="listTitle" data-i18n="pg_payment-status_07">Driver commission dues</h2>
+    <p class="sub" data-i18n="pg_payment-status_08">Highest outstanding balance first.</p>
+    <div class="list" id="driversList" aria-live="polite"><p class="loading" data-i18n="pg_payment-status_09">Loading list…</p></div>
   </section>
 
   <section class="card" aria-labelledby="weekTitle">
-    <h2 id="weekTitle">Weekly settlements (Mon–Sun)</h2>
-    <p class="sub">One driver + one week = one settlement. Pressing Generate again will not create duplicates. PAID is final (cannot be changed); resolve DISPUTED first.</p>
+    <h2 id="weekTitle" data-i18n="pg_payment-status_10">Weekly settlements (Mon–Sun)</h2>
+    <p class="sub" data-i18n="pg_payment-status_11">One driver + one week = one settlement. Pressing Generate again will not create duplicates. PAID is final (cannot be changed); resolve DISPUTED first.</p>
     <div class="controls">
-      <div><label for="weekInp">Week (Monday)</label><input type="date" id="weekInp"></div>
-      <div><label for="weekStatusSel">Status</label><select id="weekStatusSel"><option value="">All</option><option value="DUE">DUE</option><option value="PARTIALLY_PAID">PARTIALLY_PAID</option><option value="PAID">PAID</option><option value="OVERDUE">OVERDUE</option><option value="DISPUTED">DISPUTED</option></select></div>
-      <div><label>&nbsp;</label><button class="btn ghost" id="weekGenBtn" type="button">Generate week</button></div>
-      <div><label>&nbsp;</label><button class="btn ghost" id="weekLoadBtn" type="button">Load</button></div>
+      <div><label for="weekInp" data-i18n="pg_payment-status_12">Week (Monday)</label><input type="date" id="weekInp"></div>
+      <div><label for="weekStatusSel" data-i18n="pg_payment-status_13">Status</label><select id="weekStatusSel"><option value="" data-i18n="pg_payment-status_14">All</option><option value="DUE" data-i18n="pg_payment-status_15">DUE</option><option value="PARTIALLY_PAID" data-i18n="pg_payment-status_16">PARTIALLY_PAID</option><option value="PAID" data-i18n="pg_payment-status_17">PAID</option><option value="OVERDUE" data-i18n="pg_payment-status_18">OVERDUE</option><option value="DISPUTED" data-i18n="pg_payment-status_19">DISPUTED</option></select></div>
+      <div><label>&nbsp;</label><button class="btn ghost" id="weekGenBtn" type="button" data-i18n="pg_payment-status_20">Generate week</button></div>
+      <div><label>&nbsp;</label><button class="btn ghost" id="weekLoadBtn" type="button" data-i18n="pg_payment-status_21">Load</button></div>
     </div>
-    <div class="list" id="weekList" aria-live="polite"><p class="loading">Select a week and press Load.</p></div>
+    <div class="list" id="weekList" aria-live="polite"><p class="loading" data-i18n="pg_payment-status_22">Select a week and press Load.</p></div>
   </section>
 
 <footer class="site-footer">
   <div class="site-foot-inner">
     <div class="site-foot-brand">ApnaShift</div>
     <div class="site-foot-links">
-      <a href="index.html">Home</a>
-      <a href="help.html">Help</a>
-      <a href="privacy.html">Privacy Policy</a>
-      <a href="terms.html">Terms &amp; Conditions</a>
+      <a href="index.html" data-i18n="pg_payment-status_23">Home</a>
+      <a href="help.html" data-i18n="pg_payment-status_24">Help</a>
+      <a href="privacy.html" data-i18n="pg_payment-status_25">Privacy Policy</a>
+      <a href="terms.html" data-i18n="pg_payment-status_26">Terms &amp; Conditions</a>
+      <a href="mailto:support@apnashift.in?subject=ApnaShift%20Support%20Request" data-i18n="pg_payment-status_27">support@apnashift.in</a>
     </div>
   </div>
 </footer>
@@ -514,5 +515,7 @@
   loadBalances();
 })();
 </script>
+<script>window.PAGE_I18N={"en": {"page_title": "Payment Status | ApnaShift Admin", "meta_desc": "ApnaShift admin — driver commission dues and settlements.", "pg_payment-status_01": "Payment Status", "pg_payment-status_02": "View driver commission dues and record settlements. All calculations happen on the server.", "pg_payment-status_03": "Logout", "pg_payment-status_04": "Total outstanding", "pg_payment-status_05": "Refresh", "pg_payment-status_06": "Loading…", "pg_payment-status_07": "Driver commission dues", "pg_payment-status_08": "Highest outstanding balance first.", "pg_payment-status_09": "Loading list…", "pg_payment-status_10": "Weekly settlements (Mon–Sun)", "pg_payment-status_11": "One driver + one week = one settlement. Pressing Generate again will not create duplicates. PAID is final (cannot be changed); resolve DISPUTED first.", "pg_payment-status_12": "Week (Monday)", "pg_payment-status_13": "Status", "pg_payment-status_14": "All", "pg_payment-status_15": "DUE", "pg_payment-status_16": "PARTIALLY_PAID", "pg_payment-status_17": "PAID", "pg_payment-status_18": "OVERDUE", "pg_payment-status_19": "DISPUTED", "pg_payment-status_20": "Generate week", "pg_payment-status_21": "Load", "pg_payment-status_22": "Select a week and press Load.", "pg_payment-status_23": "Home", "pg_payment-status_24": "Help", "pg_payment-status_25": "Privacy Policy", "pg_payment-status_26": "Terms & Conditions", "pg_payment-status_27": "support@apnashift.in"}, "hi": {"page_title": "भुगतान स्थिति | ApnaShift व्यवस्थापक", "meta_desc": "ApnaShift व्यवस्थापक — ड्राइवर कमीशन बकाया और निपटान।", "pg_payment-status_01": "भुगतान स्थिति", "pg_payment-status_02": "ड्राइवर कमीशन बकाया देखें और निपटान दर्ज करें। सभी गणनाएं सर्वर पर होती हैं।", "pg_payment-status_03": "लॉगआउट", "pg_payment-status_04": "कुल बकाया", "pg_payment-status_05": "ताज़ा करें", "pg_payment-status_06": "लोड हो रहा है…", "pg_payment-status_07": "ड्राइवर कमीशन बकाया", "pg_payment-status_08": "सबसे अधिक बकाया पहले।", "pg_payment-status_09": "सूची लोड हो रही है…", "pg_payment-status_10": "साप्ताहिक निपटान (सोम–रवि)", "pg_payment-status_11": "एक ड्राइवर + एक सप्ताह = एक निपटान। दोबारा बनाने पर प्रतिलिपि नहीं बनेगी। PAID अंतिम है (बदला नहीं जा सकता); पहले DISPUTED सुलझाएं।", "pg_payment-status_12": "सप्ताह (सोमवार)", "pg_payment-status_13": "स्थिति", "pg_payment-status_14": "सभी", "pg_payment-status_15": "DUE", "pg_payment-status_16": "PARTIALLY_PAID", "pg_payment-status_17": "PAID", "pg_payment-status_18": "OVERDUE", "pg_payment-status_19": "DISPUTED", "pg_payment-status_20": "सप्ताह बनाएं", "pg_payment-status_21": "लोड करें", "pg_payment-status_22": "सप्ताह चुनें और लोड दबाएं।", "pg_payment-status_23": "होम", "pg_payment-status_24": "सहायता", "pg_payment-status_25": "गोपनीयता नीति", "pg_payment-status_26": "नियम व शर्तें", "pg_payment-status_27": "support@apnashift.in"}};</script>
+<script src="lang.js"></script>
 </body>
 </html>

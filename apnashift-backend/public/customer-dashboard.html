@@ -254,57 +254,57 @@
   <div class="alert" id="pageAlert" role="alert" aria-live="assertive"></div>
 
   <section class="card" aria-labelledby="welcomeTitle">
-    <h1 id="welcomeTitle">Hello!</h1>
-    <p class="sub">View your bookings here and book a new vehicle.</p>
+    <h1 id="welcomeTitle" data-i18n="pg_customer_dashboard_01">Hello!</h1>
+    <p class="sub" data-i18n="pg_customer_dashboard_02">View your bookings here and book a new vehicle.</p>
     <p class="profile-line">Name: <strong id="profileName">–</strong></p>
     <div class="btnrow">
-      <a class="btn primary" href="booking.html">Book a Vehicle</a>
-      <button type="button" class="btn ghost small" id="logoutBtn">Logout</button>
+      <a class="btn primary" href="booking.html" data-i18n="pg_customer_dashboard_03">Book a Vehicle</a>
+      <button type="button" class="btn ghost small" id="logoutBtn" data-i18n="pg_customer_dashboard_04">Logout</button>
     </div>
   </section>
 
   <div class="spinner" id="loadingSpin" role="status" aria-live="polite"><span class="ring" aria-hidden="true"></span>Loading bookings…</div>
 
   <section class="card" id="activeSection" aria-labelledby="activeTitle" hidden>
-    <h2 id="activeTitle">Active booking</h2>
+    <h2 id="activeTitle" data-i18n="pg_customer_dashboard_05">Active booking</h2>
     <div id="activeBody"></div>
   </section>
 
   <section class="card" id="historySection" aria-labelledby="historyTitle" hidden>
-    <h2 id="historyTitle">Booking history</h2>
+    <h2 id="historyTitle" data-i18n="pg_customer_dashboard_06">Booking history</h2>
     <div id="historyList"></div>
   </section>
 
   <section class="card empty" id="emptyState" hidden aria-labelledby="emptyTitle">
-    <h2 id="emptyTitle">No bookings yet</h2>
-    <p>You have no bookings yet — book your first shifting easily.</p>
-    <a class="btn primary" href="booking.html">Book a Vehicle</a>
+    <h2 id="emptyTitle" data-i18n="pg_customer_dashboard_07">No bookings yet</h2>
+    <p data-i18n="pg_customer_dashboard_08">You have no bookings yet — book your first shifting easily.</p>
+    <a class="btn primary" href="booking.html" data-i18n="pg_customer_dashboard_09">Book a Vehicle</a>
   </section>
 
   <section class="card" aria-labelledby="helpTitle">
-    <h2 id="helpTitle">Need help?</h2>
-    <p class="helpline">Having trouble with a booking? Open the <a href="help.html">Help page</a>.</p>
+    <h2 id="helpTitle" data-i18n="pg_customer_dashboard_10">Need help?</h2>
+    <p class="helpline">Having trouble with a booking? Open the <a href="help.html" data-i18n="pg_customer_dashboard_11">Help page</a>.</p>
   </section>
 
   <div class="dialog-backdrop" id="cancelDialog" role="dialog" aria-modal="true" aria-labelledby="cancelDialogTitle">
     <div class="dialog">
-      <h2 id="cancelDialogTitle">Cancel booking?</h2>
-      <p class="sub" id="cancelDialogSub">This booking will be cancelled. Choosing a reason is required.</p>
-      <label for="cancelReason">Cancellation reason</label>
+      <h2 id="cancelDialogTitle" data-i18n="pg_customer_dashboard_12">Cancel booking?</h2>
+      <p class="sub" id="cancelDialogSub" data-i18n="pg_customer_dashboard_13">This booking will be cancelled. Choosing a reason is required.</p>
+      <label for="cancelReason" data-i18n="pg_customer_dashboard_14">Cancellation reason</label>
       <select id="cancelReason">
-        <option value="">— Choose a reason —</option>
-        <option value="wrong_pickup">Wrong pickup location</option>
-        <option value="wrong_drop">Wrong drop location</option>
-        <option value="wrong_vehicle">Wrong vehicle type</option>
-        <option value="changed_plan">Plans changed</option>
-        <option value="duplicate">Duplicate booking</option>
-        <option value="driver_issue">Driver issue</option>
-        <option value="other">Other</option>
+        <option value="" data-i18n="pg_customer_dashboard_15">— Choose a reason —</option>
+        <option value="wrong_pickup" data-i18n="pg_customer_dashboard_16">Wrong pickup location</option>
+        <option value="wrong_drop" data-i18n="pg_customer_dashboard_17">Wrong drop location</option>
+        <option value="wrong_vehicle" data-i18n="pg_customer_dashboard_18">Wrong vehicle type</option>
+        <option value="changed_plan" data-i18n="pg_customer_dashboard_19">Plans changed</option>
+        <option value="duplicate" data-i18n="pg_customer_dashboard_20">Duplicate booking</option>
+        <option value="driver_issue" data-i18n="pg_customer_dashboard_21">Driver issue</option>
+        <option value="other" data-i18n="pg_customer_dashboard_22">Other</option>
       </select>
       <p class="error-text" id="cancelDialogErr"></p>
       <div class="btnrow">
-        <button type="button" class="btn danger small" id="cancelConfirmBtn">Yes, cancel it</button>
-        <button type="button" class="btn ghost small" id="cancelBackBtn">Go back</button>
+        <button type="button" class="btn danger small" id="cancelConfirmBtn" data-i18n="pg_customer_dashboard_23">Yes, cancel it</button>
+        <button type="button" class="btn ghost small" id="cancelBackBtn" data-i18n="pg_customer_dashboard_24">Go back</button>
       </div>
     </div>
   </div>
@@ -314,10 +314,11 @@
   <div class="site-foot-inner">
     <div class="site-foot-brand">ApnaShift</div>
     <div class="site-foot-links">
-      <a href="index.html">Home</a>
-      <a href="help.html">Help</a>
-      <a href="privacy.html">Privacy Policy</a>
-      <a href="terms.html">Terms &amp; Conditions</a>
+      <a href="index.html" data-i18n="pg_customer_dashboard_25">Home</a>
+      <a href="help.html" data-i18n="pg_customer_dashboard_26">Help</a>
+      <a href="privacy.html" data-i18n="pg_customer_dashboard_27">Privacy Policy</a>
+      <a href="terms.html" data-i18n="pg_customer_dashboard_28">Terms &amp; Conditions</a>
+      <a href="mailto:support@apnashift.in?subject=ApnaShift%20Support%20Request">support@apnashift.in</a>
     </div>
   </div>
 </footer>
@@ -911,5 +912,7 @@
   if(navMenuBtn&&siteNav){navMenuBtn.addEventListener("click",function(){var open=siteNav.classList.toggle("open");navMenuBtn.setAttribute("aria-expanded",open?"true":"false");navMenuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");});siteNav.addEventListener("click",function(ev){if(ev.target.tagName==="A"&&siteNav.classList.contains("open")){siteNav.classList.remove("open");navMenuBtn.setAttribute("aria-expanded","false");}});}
 })();
 </script>
+<script>window.PAGE_I18N={en:{pg_customer_dashboard_01:"Hello!",pg_customer_dashboard_02:"View your bookings here and book a new vehicle.",pg_customer_dashboard_03:"Book a Vehicle",pg_customer_dashboard_04:"Logout",pg_customer_dashboard_05:"Active booking",pg_customer_dashboard_06:"Booking history",pg_customer_dashboard_07:"No bookings yet",pg_customer_dashboard_08:"You have no bookings yet — book your first shifting easily.",pg_customer_dashboard_09:"Book a Vehicle",pg_customer_dashboard_10:"Need help?",pg_customer_dashboard_11:"Help page",pg_customer_dashboard_12:"Cancel booking?",pg_customer_dashboard_13:"This booking will be cancelled. Choosing a reason is required.",pg_customer_dashboard_14:"Cancellation reason",pg_customer_dashboard_15:"— Choose a reason —",pg_customer_dashboard_16:"Wrong pickup location",pg_customer_dashboard_17:"Wrong drop location",pg_customer_dashboard_18:"Wrong vehicle type",pg_customer_dashboard_19:"Plans changed",pg_customer_dashboard_20:"Duplicate booking",pg_customer_dashboard_21:"Driver issue",pg_customer_dashboard_22:"Other",pg_customer_dashboard_23:"Yes, cancel it",pg_customer_dashboard_24:"Go back",pg_customer_dashboard_25:"Home",pg_customer_dashboard_26:"Help",pg_customer_dashboard_27:"Privacy Policy",pg_customer_dashboard_28:"Terms & Conditions",page_title:"My Dashboard | ApnaShift",meta_desc:"ApnaShift customer dashboard — view your bookings, driver status and ratings in one place."},hi:{pg_customer_dashboard_01:"नमस्ते!",pg_customer_dashboard_02:"यहां अपनी बुकिंग देखें और नई गाड़ी बुक करें।",pg_customer_dashboard_03:"गाड़ी बुक करें",pg_customer_dashboard_04:"लॉगआउट",pg_customer_dashboard_05:"चालू बुकिंग",pg_customer_dashboard_06:"बुकिंग हिस्ट्री",pg_customer_dashboard_07:"अभी कोई बुकिंग नहीं",pg_customer_dashboard_08:"आपकी अभी कोई बुकिंग नहीं है — अपनी पहली शिफ्टिंग आसानी से बुक करें।",pg_customer_dashboard_09:"गाड़ी बुक करें",pg_customer_dashboard_10:"मदद चाहिए?",pg_customer_dashboard_11:"सहायता पेज",pg_customer_dashboard_12:"बुकिंग रद्द करें?",pg_customer_dashboard_13:"यह बुकिंग रद्द हो जाएगी। कारण चुनना ज़रूरी है।",pg_customer_dashboard_14:"रद्द करने का कारण",pg_customer_dashboard_15:"— कारण चुनें —",pg_customer_dashboard_16:"गलत पिकअप लोकेशन",pg_customer_dashboard_17:"गलत ड्रॉप लोकेशन",pg_customer_dashboard_18:"गलत गाड़ी का प्रकार",pg_customer_dashboard_19:"प्लान बदल गया",pg_customer_dashboard_20:"डुप्लिकेट बुकिंग",pg_customer_dashboard_21:"ड्राइवर से समस्या",pg_customer_dashboard_22:"अन्य",pg_customer_dashboard_23:"हां, रद्द करें",pg_customer_dashboard_24:"वापस जाएं",pg_customer_dashboard_25:"होम",pg_customer_dashboard_26:"सहायता",pg_customer_dashboard_27:"प्राइवेसी पॉलिसी",pg_customer_dashboard_28:"नियम व शर्तें",page_title:"मेरा डैशबोर्ड | ApnaShift",meta_desc:"ApnaShift कस्टमर डैशबोर्ड — अपनी बुकिंग, ड्राइवर स्थिति और रेटिंग एक जगह देखें।"}};</script>
+<script src="lang.js"></script>
 </body>
 </html>

@@ -68,6 +68,12 @@
   .empty,.loading{color:var(--muted);font-size:.9rem}
   .back{font-size:.9rem;margin-top:12px}
   .back a{color:var(--navy);font-weight:700}
+  .site-footer{background:var(--navy);color:#dbe2f0;padding:22px 16px 30px}
+  .site-foot-inner{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+  .site-foot-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;color:#fff;font-size:1.05rem}
+  .site-foot-links{display:flex;gap:16px;flex-wrap:wrap}
+  .site-foot-links a{color:var(--yellow);font-size:.86rem;font-weight:600;text-decoration:none}
+  .site-foot-links a:hover{text-decoration:underline}
 </style>
 </head>
 <body>
@@ -76,7 +82,7 @@
   <div class="site-header-inner">
     <a class="site-brand" href="admin-home.html" aria-label="ApnaShift admin home">ApnaShift<small>Admin Panel</small></a>
     <div class="spacer"></div>
-    <button class="logout-btn" id="logoutBtn" type="button">Logout</button>
+    <button class="logout-btn" id="logoutBtn" type="button" data-i18n="pg_admin-pricing_01">Logout</button>
   </div>
 </header>
 
@@ -84,47 +90,58 @@
   <div class="alert" id="pageAlert" role="alert" aria-live="assertive"></div>
 
   <section class="card" aria-labelledby="pageTitle">
-    <h1 id="pageTitle">Pricing</h1>
-    <p class="sub">Rates apply only to new bookings — snapshots of old bookings never change.</p>
-    <p><button class="btn ghost" id="loadBtn" type="button">Load rates</button></p>
-    <div class="table-wrap" id="ratesWrap" aria-live="polite"><p class="loading">Press Load.</p></div>
+    <h1 id="pageTitle" data-i18n="pg_admin-pricing_02">Pricing</h1>
+    <p class="sub" data-i18n="pg_admin-pricing_03">Rates apply only to new bookings — snapshots of old bookings never change.</p>
+    <p><button class="btn ghost" id="loadBtn" type="button" data-i18n="pg_admin-pricing_04">Load rates</button></p>
+    <div class="table-wrap" id="ratesWrap" aria-live="polite"><p class="loading" data-i18n="pg_admin-pricing_05">Press Load.</p></div>
 
-    <h2>Update rate</h2>
+    <h2 data-i18n="pg_admin-pricing_06">Update rate</h2>
     <div class="form-grid">
       <div class="field">
-        <label for="vehicleSel">Vehicle</label>
+        <label for="vehicleSel" data-i18n="pg_admin-pricing_07">Vehicle</label>
         <select id="vehicleSel">
-          <option value="pickup">pickup</option>
-          <option value="mini_truck">mini_truck</option>
-          <option value="mini_tractor">mini_tractor</option>
+          <option value="pickup" data-i18n="pg_admin-pricing_08">pickup</option>
+          <option value="mini_truck" data-i18n="pg_admin-pricing_09">mini_truck</option>
+          <option value="mini_tractor" data-i18n="pg_admin-pricing_10">mini_tractor</option>
         </select>
       </div>
       <div class="field">
-        <label for="baseInp">Base Rs (blank = no change)</label>
-        <input type="number" id="baseInp" min="0" placeholder="350">
+        <label for="baseInp" data-i18n="pg_admin-pricing_11">Base Rs (blank = no change)</label>
+        <input type="number" id="baseInp" min="0" placeholder="350" data-i18n-ph="pg_admin-pricing_12">
       </div>
       <div class="field">
-        <label for="kmInp">Per km Rs (blank = no change)</label>
-        <input type="number" id="kmInp" min="0" step="0.5" placeholder="17.5">
+        <label for="kmInp" data-i18n="pg_admin-pricing_13">Per km Rs (blank = no change)</label>
+        <input type="number" id="kmInp" min="0" step="0.5" placeholder="17.5" data-i18n-ph="pg_admin-pricing_14">
       </div>
       <div class="field">
-        <label for="helperInp">Helper Rs (blank = no change)</label>
-        <input type="number" id="helperInp" min="0" placeholder="200">
+        <label for="helperInp" data-i18n="pg_admin-pricing_15">Helper Rs (blank = no change)</label>
+        <input type="number" id="helperInp" min="0" placeholder="200" data-i18n-ph="pg_admin-pricing_16">
       </div>
       <div class="field">
-        <label for="commInp">Commission % (blank = no change)</label>
-        <input type="number" id="commInp" min="0" max="100" step="0.5" placeholder="15">
+        <label for="commInp" data-i18n="pg_admin-pricing_17">Commission % (blank = no change)</label>
+        <input type="number" id="commInp" min="0" max="100" step="0.5" placeholder="15" data-i18n-ph="pg_admin-pricing_18">
       </div>
     </div>
-    <p style="margin-top:10px"><button class="btn" id="saveBtn" type="button">Save rate</button></p>
+    <p style="margin-top:10px"><button class="btn" id="saveBtn" type="button" data-i18n="pg_admin-pricing_19">Save rate</button></p>
 
-    <h2>History</h2>
-    <p><button class="btn ghost" id="histBtn" type="button">Load history</button></p>
-    <div class="table-wrap" id="histWrap" aria-live="polite"><p class="loading">Press Load.</p></div>
+    <h2 data-i18n="pg_admin-pricing_20">History</h2>
+    <p><button class="btn ghost" id="histBtn" type="button" data-i18n="pg_admin-pricing_21">Load history</button></p>
+    <div class="table-wrap" id="histWrap" aria-live="polite"><p class="loading" data-i18n="pg_admin-pricing_22">Press Load.</p></div>
 
-    <p class="back"><a href="admin-home.html">← Admin Home</a> • <a href="admin-dashboard.html">Full dashboard</a></p>
+    <p class="back"><a href="admin-home.html" data-i18n="pg_admin-pricing_23">← Admin Home</a> • <a href="admin-dashboard.html" data-i18n="pg_admin-pricing_24">Full dashboard</a></p>
   </section>
 </main>
+
+<footer class="site-footer">
+  <div class="site-foot-inner">
+    <div class="site-foot-brand">ApnaShift</div>
+    <div class="site-foot-links">
+      <a href="admin-home.html" data-i18n="pg_admin-pricing_25">Admin Home</a>
+      <a href="admin-dashboard.html" data-i18n="pg_admin-pricing_26">Full Dashboard</a>
+      <a href="mailto:support@apnashift.in?subject=ApnaShift%20Support%20Request">support@apnashift.in</a>
+    </div>
+  </div>
+</footer>
 
 <script>
 (function(){
@@ -293,5 +310,7 @@
   loadRates();
 })();
 </script>
+<script>window.PAGE_I18N={en:{page_title:'Pricing | ApnaShift Admin',meta_desc:'ApnaShift admin — view and update pricing rates.','pg_admin-pricing_01':'Logout','pg_admin-pricing_02':'Pricing','pg_admin-pricing_03':'Rates apply only to new bookings — snapshots of old bookings never change.','pg_admin-pricing_04':'Load rates','pg_admin-pricing_05':'Press Load.','pg_admin-pricing_06':'Update rate','pg_admin-pricing_07':'Vehicle','pg_admin-pricing_08':'pickup','pg_admin-pricing_09':'mini_truck','pg_admin-pricing_10':'mini_tractor','pg_admin-pricing_11':'Base Rs (blank = no change)','pg_admin-pricing_12':'350','pg_admin-pricing_13':'Per km Rs (blank = no change)','pg_admin-pricing_14':'17.5','pg_admin-pricing_15':'Helper Rs (blank = no change)','pg_admin-pricing_16':'200','pg_admin-pricing_17':'Commission % (blank = no change)','pg_admin-pricing_18':'15','pg_admin-pricing_19':'Save rate','pg_admin-pricing_20':'History','pg_admin-pricing_21':'Load history','pg_admin-pricing_22':'Press Load.','pg_admin-pricing_23':'← Admin Home','pg_admin-pricing_24':'Full dashboard','pg_admin-pricing_25':'Admin Home','pg_admin-pricing_26':'Full Dashboard'},hi:{page_title:'प्राइसिंग | ApnaShift एडमिन',meta_desc:'ApnaShift एडमिन — प्राइसिंग दरें देखें और अपडेट करें।','pg_admin-pricing_01':'लॉगआउट','pg_admin-pricing_02':'प्राइसिंग','pg_admin-pricing_03':'दरें सिर्फ नई बुकिंग पर लागू होती हैं — पुरानी बुकिंग के स्नैपशॉट कभी नहीं बदलते।','pg_admin-pricing_04':'दरें लोड करें','pg_admin-pricing_05':'लोड दबाएं।','pg_admin-pricing_06':'दर अपडेट करें','pg_admin-pricing_07':'वाहन','pg_admin-pricing_08':'पिकअप','pg_admin-pricing_09':'मिनी ट्रक','pg_admin-pricing_10':'मिनी ट्रैक्टर','pg_admin-pricing_11':'बेस रुपये (खाली = कोई बदलाव नहीं)','pg_admin-pricing_12':'350','pg_admin-pricing_13':'प्रति किमी रुपये (खाली = कोई बदलाव नहीं)','pg_admin-pricing_14':'17.5','pg_admin-pricing_15':'हेल्पर रुपये (खाली = कोई बदलाव नहीं)','pg_admin-pricing_16':'200','pg_admin-pricing_17':'कमीशन % (खाली = कोई बदलाव नहीं)','pg_admin-pricing_18':'15','pg_admin-pricing_19':'दर सेव करें','pg_admin-pricing_20':'इतिहास','pg_admin-pricing_21':'इतिहास लोड करें','pg_admin-pricing_22':'लोड दबाएं।','pg_admin-pricing_23':'← एडमिन होम','pg_admin-pricing_24':'पूरा डैशबोर्ड','pg_admin-pricing_25':'एडमिन होम','pg_admin-pricing_26':'पूरा डैशबोर्ड'}};</script>
+<script src="lang.js"></script>
 </body>
 </html>

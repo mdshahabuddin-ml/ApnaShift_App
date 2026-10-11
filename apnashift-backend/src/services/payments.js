@@ -152,7 +152,23 @@ export async function insertPaymentTx(client, { bookingId, userId, driverId, gro
       pct,
     ],
   );
+  // Stored due moves in the SAME transaction (never drifts mid-flight).
+  await client.query('UPDATE drivers SET commission_due = commission_due + $2 WHERE id = $1', [
+    driverId,
+    paiseToRs(commissionPaise),
+  ]);
   return inserted.rows[0];
+}
+
+// Stored drivers.commission_due correction (same tx as the caller).
+// Positive delta raises the due, negative lowers it — GREATEST keeps the
+// CHECK-safe floor (derived outstanding floors at 0 the same way).
+export async function bumpCommissionDueTx(client, driverId, deltaPaise) {
+  if (!deltaPaise) return;
+  await client.query(
+    'UPDATE drivers SET commission_due = GREATEST(0, commission_due + $2) WHERE id = $1',
+    [driverId, paiseToRs(deltaPaise)],
+  );
 }
 
 // Driver money summary — derived, never stored (no balance column exists,
@@ -276,6 +292,13 @@ export async function createSettlementTx(client, { driverId, amountPaise, method
     touched.push(t.id);
     left -= take;
   }
+  // Stored due drops in the SAME transaction. The amount<=outstanding guard
+  // above already blocks over-settlement; GREATEST is the race backstop
+  // (CHECK constraint is the final floor).
+  await client.query(
+    'UPDATE drivers SET commission_due = GREATEST(0, commission_due - $2) WHERE id = $1',
+    [driverId, paiseToRs(amountPaise)],
+  );
   // Keep weekly periods in sync when the global flow touches their payments.
   await recomputePeriodsForPayments(client, touched);
   await logAuditTx(client, adminId, 'settlement.create', 'settlement', inserted.rows[0].id, {

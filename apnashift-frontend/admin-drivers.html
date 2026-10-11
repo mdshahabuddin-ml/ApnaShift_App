@@ -71,6 +71,12 @@
   .empty,.loading{color:var(--muted);font-size:.9rem}
   .back{font-size:.9rem;margin-top:12px}
   .back a{color:var(--navy);font-weight:700}
+  .site-footer{background:var(--navy);color:#dbe2f0;padding:22px 16px 30px}
+  .site-foot-inner{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+  .site-foot-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;color:#fff;font-size:1.05rem}
+  .site-foot-links{display:flex;gap:16px;flex-wrap:wrap}
+  .site-foot-links a{color:var(--yellow);font-size:.86rem;font-weight:600;text-decoration:none}
+  .site-foot-links a:hover{text-decoration:underline}
 </style>
 </head>
 <body>
@@ -79,7 +85,7 @@
   <div class="site-header-inner">
     <a class="site-brand" href="admin-home.html" aria-label="ApnaShift admin home">ApnaShift<small>Admin Panel</small></a>
     <div class="spacer"></div>
-    <button class="logout-btn" id="logoutBtn" type="button">Logout</button>
+    <button class="logout-btn" id="logoutBtn" type="button" data-i18n="pg_admin-drivers_01">Logout</button>
   </div>
 </header>
 
@@ -87,27 +93,38 @@
   <div class="alert" id="pageAlert" role="alert" aria-live="assertive"></div>
 
   <section class="card" aria-labelledby="pageTitle">
-    <h1 id="pageTitle">Drivers</h1>
+    <h1 id="pageTitle" data-i18n="pg_admin-drivers_02">Drivers</h1>
     <p class="sub">Filter by status — verify, reject, or deactivate drivers. <span id="totalLine"></span></p>
     <div class="controls">
       <div class="field">
-        <label for="statusSel">Status</label>
+        <label for="statusSel" data-i18n="pg_admin-drivers_03">Status</label>
         <select id="statusSel">
-          <option value="pending">pending</option>
-          <option value="verified">verified</option>
-          <option value="review">review</option>
+          <option value="pending" data-i18n="pg_admin-drivers_04">pending</option>
+          <option value="verified" data-i18n="pg_admin-drivers_05">verified</option>
+          <option value="review" data-i18n="pg_admin-drivers_06">review</option>
         </select>
       </div>
       <div class="field">
-        <label for="pageInp">Page</label>
+        <label for="pageInp" data-i18n="pg_admin-drivers_07">Page</label>
         <input type="number" id="pageInp" value="1" min="1" style="width:90px">
       </div>
-      <button class="btn" id="loadBtn" type="button">Load</button>
+      <button class="btn" id="loadBtn" type="button" data-i18n="pg_admin-drivers_08">Load</button>
     </div>
-    <div id="driversList" aria-live="polite"><p class="loading">Choose a status and press Load.</p></div>
-    <p class="back"><a href="admin-home.html">← Admin Home</a> • <a href="admin-dashboard.html">Full dashboard</a></p>
+    <div id="driversList" aria-live="polite"><p class="loading" data-i18n="pg_admin-drivers_09">Choose a status and press Load.</p></div>
+    <p class="back"><a href="admin-home.html" data-i18n="pg_admin-drivers_10">← Admin Home</a> • <a href="admin-dashboard.html" data-i18n="pg_admin-drivers_11">Full dashboard</a></p>
   </section>
 </main>
+
+<footer class="site-footer">
+  <div class="site-foot-inner">
+    <div class="site-foot-brand">ApnaShift</div>
+    <div class="site-foot-links">
+      <a href="admin-home.html" data-i18n="pg_admin-drivers_12">Admin Home</a>
+      <a href="admin-dashboard.html" data-i18n="pg_admin-drivers_13">Full Dashboard</a>
+      <a href="mailto:support@apnashift.in?subject=ApnaShift%20Support%20Request">support@apnashift.in</a>
+    </div>
+  </div>
+</footer>
 
 <script>
 (function(){
@@ -272,5 +289,7 @@
   loadDrivers();
 })();
 </script>
+<script>window.PAGE_I18N={en:{page_title:'Drivers | ApnaShift Admin',meta_desc:'ApnaShift admin — driver verification and management.','pg_admin-drivers_01':'Logout','pg_admin-drivers_02':'Drivers','pg_admin-drivers_03':'Status','pg_admin-drivers_04':'pending','pg_admin-drivers_05':'verified','pg_admin-drivers_06':'review','pg_admin-drivers_07':'Page','pg_admin-drivers_08':'Load','pg_admin-drivers_09':'Choose a status and press Load.','pg_admin-drivers_10':'← Admin Home','pg_admin-drivers_11':'Full dashboard','pg_admin-drivers_12':'Admin Home','pg_admin-drivers_13':'Full Dashboard'},hi:{page_title:'ड्राइवर | ApnaShift एडमिन',meta_desc:'ApnaShift एडमिन — ड्राइवर वेरिफिकेशन और प्रबंधन।','pg_admin-drivers_01':'लॉगआउट','pg_admin-drivers_02':'ड्राइवर','pg_admin-drivers_03':'स्टेटस','pg_admin-drivers_04':'पेंडिंग','pg_admin-drivers_05':'वेरिफाइड','pg_admin-drivers_06':'रिव्यू','pg_admin-drivers_07':'पेज','pg_admin-drivers_08':'लोड करें','pg_admin-drivers_09':'स्टेटस चुनें और लोड दबाएं।','pg_admin-drivers_10':'← एडमिन होम','pg_admin-drivers_11':'पूरा डैशबोर्ड','pg_admin-drivers_12':'एडमिन होम','pg_admin-drivers_13':'पूरा डैशबोर्ड'}};</script>
+<script src="lang.js"></script>
 </body>
 </html>

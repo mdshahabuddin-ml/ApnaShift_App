@@ -647,6 +647,51 @@ paths:
                     type: object
                     properties:
                       verified_active: { type: integer }
+  /api/admin/reports/summary:
+    get:
+      summary: Earnings report (admin; delivered trips + commission by delivered_at)
+      parameters:
+        - { name: from, in: query, schema: { type: string, example: '2026-03-01' }, description: 'YYYY-MM-DD ya ISO datetime (default: to se 29 din pehle)' }
+        - { name: to, in: query, schema: { type: string, example: '2026-03-31' }, description: 'YYYY-MM-DD ya ISO datetime (default: abhi)' }
+        - { name: group_by, in: query, schema: { type: string, enum: [day, week, month], default: day } }
+      responses:
+        '200':
+          description: totals + by_vehicle + series
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, example: true }
+                  range:
+                    type: object
+                    properties:
+                      from: { type: string, format: date-time }
+                      to: { type: string, format: date-time }
+                      group_by: { type: string, enum: [day, week, month] }
+                  totals:
+                    type: object
+                    properties:
+                      delivered_trips: { type: integer }
+                      commission_rs: { type: number }
+                      settled_rs: { type: number }
+                      pending_rs: { type: number }
+                  by_vehicle:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        vehicle_type: { type: string, enum: [pickup, mini_truck, mini_tractor] }
+                        trips: { type: integer }
+                        commission_rs: { type: number }
+                  series:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        period: { type: string, example: '2026-03-10' }
+                        trips: { type: integer }
+                        commission_rs: { type: number }
   /api/enterprise/inquiries:
     post:
       summary: Submit enterprise inquiry (public, rate limited)
@@ -950,6 +995,36 @@ paths:
         '400': { description: validation_failed }
         '404': { description: not_found (driver) }
         '409': { description: settlement_exceeds_outstanding / duplicate_settlement }
+  /api/admin/drivers/commission-summary:
+    get:
+      summary: All drivers with stored commission_due + total_trips, highest due first (admin, paginated)
+      parameters:
+        - { name: page, in: query, schema: { type: integer, minimum: 1 } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100 } }
+      responses:
+        '200': { description: OK }
+  /api/admin/drivers/{id}/settle-commission:
+    post:
+      summary: Settle stored commission due (admin, FIFO + audit, never negative)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount_rs]
+              properties:
+                amount_rs: { type: number, exclusiveMinimum: 0, example: 150 }
+                note: { type: string }
+                method: { type: string, enum: [cash, bank_transfer, upi], default: cash }
+                reference_no: { type: string }
+      responses:
+        '201': { description: Created (+ commission_due_rs, outstanding_rs) }
+        '400': { description: validation_failed }
+        '404': { description: not_found (driver) }
+        '409': { description: settlement_exceeds_outstanding }
   /api/admin/adjustments:
     post:
       summary: Append-only payment correction (admin)

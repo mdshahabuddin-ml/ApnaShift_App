@@ -295,8 +295,11 @@ creation-time `commission_percent` snapshot + `payment: null` aata hai
   { estimated:true, gross_rs, commission_pct, commission_rs, earning_rs }`.
 - `GET /api/driver/bookings` — delivered par actual `payment`, baaki par estimate.
 - `GET /api/driver/ledger` — summary (cash collected, earning, commission,
-  settled, outstanding — sab derived, koi stored balance nahi) + 50 payments
-  + 50 settlements. Sirf apna data.
+  settled, outstanding — sab derived) + 50 payments
+  + 50 settlements. Sirf apna data. Stored fast-path: `drivers.commission_due`
+  (delivery/settle/adjustment wali same transaction me update hota hai;
+  `GET /api/driver/commission-due` aur accept-gate derived outstanding par
+  hi chalte hain).
 - Delivery (`PATCH .../status` → `delivered`) ek transaction me booking +
   immutable payment (gross=booking price) + audit likhta hai. UPI turant
   `collected`; COD (cash) `pending` rehta hai jab tak driver confirm na
@@ -316,6 +319,11 @@ cancel se ledger kharab nahi hota (payment banti hi delivered par hai).
 - `GET /api/admin/payments/:id` — ek transaction + uska adjustment trail.
 - `GET /api/admin/driver-balances` — settlement dashboard: trips, cash,
   earning, commission, settled, outstanding (adjustments samet).
+- `GET /api/admin/drivers/commission-summary?page&limit` — saare drivers:
+  stored `commission_due` + `total_trips`, paginated, highest due first.
+- `POST /api/admin/drivers/:id/settle-commission` `{ amount_rs, note?,
+  method?='cash', reference_no? }` — stored due ghatao + settlement record
+  (same FIFO engine); due se zyada par `409`, negative due impossible.
 - `GET /api/admin/settlements?driver_id` — settlement history.
 - `POST /api/admin/settlements` `{ driver_id, amount_rs, method,
   reference_no?, notes? }` — amount>0, outstanding se zyada nahi (`409

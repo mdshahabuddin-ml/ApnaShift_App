@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reports &amp; Earnings | ApnaShift Admin</title>
+<meta name="description" content="ApnaShift admin — delivered trips and commission earnings report.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#14213d;
+    --yellow:#fcbf49;
+    --bg:#f4f6fa;
+    --border:#c9d0de;
+    --ink:#20242e;
+    --muted:#5b6070;
+    --red:#c0392b;
+    --green:#1a7a3a;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    line-height:1.6;
+  }
+  :focus-visible{
+    outline:3px solid var(--navy);
+    outline-offset:2px;
+    box-shadow:0 0 0 4px var(--yellow);
+    border-radius:6px;
+  }
+  .site-header{background:var(--navy);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:50}
+  .site-header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px}
+  .site-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.3rem;line-height:1;color:#fff;text-decoration:none}
+  .site-brand small{display:block;font-family:"Noto Sans",system-ui,sans-serif;font-weight:600;font-size:.64rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow)}
+  .site-header .spacer{flex:1}
+  .logout-btn{background:transparent;border:2px solid var(--yellow);border-radius:8px;color:var(--yellow);font:inherit;font-weight:800;padding:6px 12px;cursor:pointer}
+  main{max-width:960px;margin:0 auto;padding:20px 16px 40px}
+  .card{background:#fff;border:2px solid var(--navy);border-radius:var(--radius);padding:18px;box-shadow:6px 6px 0 var(--yellow);margin-bottom:16px}
+  .card h1{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;color:var(--navy);margin:0 0 4px;font-size:1.5rem}
+  .card h2{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;color:var(--navy);margin:0 0 8px;font-size:1.2rem}
+  .sub{margin:0 0 10px;color:var(--muted);font-size:.9rem}
+  .alert{display:none;border-radius:10px;padding:11px 12px;font-size:.9rem;font-weight:600;margin:0 0 14px}
+  .alert.show{display:block}
+  .alert.err{background:#fdecea;color:#7a1f14;border:2px solid var(--red)}
+  .alert.ok{background:#e6f6ea;color:#0d5c26;border:2px solid var(--green)}
+  .quick-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .quick-btn{font-family:"Baloo 2",system-ui,sans-serif;font-weight:800;font-size:.88rem;padding:8px 14px;border-radius:10px;border:2px solid var(--navy);background:#fff;color:var(--navy);cursor:pointer}
+  .quick-btn.active{background:var(--navy);color:var(--yellow)}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:6px}
+  .field{display:flex;flex-direction:column;gap:4px;min-width:140px;flex:1}
+  .field label{font-weight:600;font-size:.84rem;color:var(--navy)}
+  select,input[type="date"]{font:inherit;color:var(--ink);background:#fff;border:2px solid var(--border);border-radius:8px;padding:8px 10px;width:100%}
+  select:focus,input:focus{border-color:var(--navy);outline:none}
+  .btn{font-family:"Baloo 2",system-ui,sans-serif;font-weight:800;font-size:.9rem;padding:9px 16px;border-radius:10px;border:2px solid var(--navy);background:var(--yellow);color:var(--navy);cursor:pointer}
+  .btn:disabled{opacity:.6;cursor:wait}
+  .range-line{font-size:.84rem;color:var(--muted);margin:8px 0 0}
+  .stat-grid{display:grid;gap:12px;margin-top:12px}
+  @media(min-width:640px){.stat-grid{grid-template-columns:repeat(2,1fr)}}
+  @media(min-width:960px){.stat-grid{grid-template-columns:repeat(4,1fr)}}
+  .stat{background:#fffdf4;border:2px solid var(--navy);border-radius:12px;padding:14px}
+  .stat .num{font-family:"Baloo 2",system-ui,sans-serif;font-weight:800;font-size:1.6rem;color:var(--navy);line-height:1.1}
+  .stat .lbl{font-size:.84rem;color:var(--muted);font-weight:600;margin-top:2px}
+  table{width:100%;border-collapse:collapse;font-size:.88rem;margin-top:10px}
+  th,td{border:1px solid var(--border);padding:7px 8px;text-align:left;vertical-align:middle}
+  th{background:#f7f3e8;color:var(--navy)}
+  .vbar{height:12px;border:2px solid var(--navy);border-radius:99px;background:#fff;overflow:hidden;min-width:80px}
+  .vbar > div{height:100%;background:var(--yellow)}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.84rem;color:var(--muted);margin-top:8px}
+  .legend .sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:baseline}
+  .sw-trips{background:#16a34a;border:2px solid #16a34a}
+  .sw-comm{background:#ea580c;border:2px solid #ea580c}
+  #trendChart{width:100%;height:280px;display:block;margin-top:10px;cursor:crosshair;touch-action:pan-y}
+  .chart-wrap{position:relative}
+  .chart-tip{position:absolute;display:none;background:#14213d;color:#fff;font-size:.78rem;line-height:1.55;border-radius:10px;padding:8px 11px;box-shadow:0 8px 22px rgba(0,0,0,.35);z-index:5;pointer-events:none;white-space:nowrap;border:1px solid #2a3d66}
+  .chart-tip .tdate{font-weight:700;color:#fff;margin-bottom:2px}
+  .chart-tip .tdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+  .chart-tip b{color:var(--yellow)}
+  .empty,.loading{color:var(--muted);font-size:.9rem}
+  .back{font-size:.9rem;margin-top:12px}
+  .back a{color:var(--navy);font-weight:700}
+  .site-footer{background:var(--navy);color:#dbe2f0;padding:22px 16px 30px}
+  .site-foot-inner{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+  .site-foot-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;color:#fff;font-size:1.05rem}
+  .site-foot-links{display:flex;gap:16px;flex-wrap:wrap}
+  .site-foot-links a{color:var(--yellow);font-size:.86rem;font-weight:600;text-decoration:none}
+  .site-foot-links a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="admin-home.html" aria-label="ApnaShift admin home">ApnaShift<small>Admin Panel</small></a>
+    <div class="spacer"></div>
+    <button class="logout-btn" id="logoutBtn" type="button" data-i18n="pg_admin-reports_01">Logout</button>
+  </div>
+</header>
+
+<main>
+  <div class="alert" id="pageAlert" role="alert" aria-live="assertive"></div>
+
+  <section class="card" aria-labelledby="pageTitle">
+    <h1 id="pageTitle" data-i18n="pg_admin-reports_02">Reports &amp; Earnings</h1>
+    <p class="sub" data-i18n="pg_admin-reports_03">Delivered trips aur commission — range chuno, Load dabao.</p>
+    <div class="quick-row" role="group" aria-label="Date range">
+      <button class="quick-btn" id="qWeek" type="button" data-i18n="pg_admin-reports_04">This Week</button>
+      <button class="quick-btn active" id="qMonth" type="button" data-i18n="pg_admin-reports_05">This Month</button>
+      <button class="quick-btn" id="qCustom" type="button" data-i18n="pg_admin-reports_06">Custom</button>
+    </div>
+    <div class="controls">
+      <div class="field">
+        <label for="fromDate" data-i18n="pg_admin-reports_07">From</label>
+        <input type="date" id="fromDate">
+      </div>
+      <div class="field">
+        <label for="toDate" data-i18n="pg_admin-reports_08">To</label>
+        <input type="date" id="toDate">
+      </div>
+      <div class="field">
+        <label for="groupSel" data-i18n="pg_admin-reports_09">Group by</label>
+        <select id="groupSel">
+          <option value="day" data-i18n="pg_admin-reports_10">Day</option>
+          <option value="week" data-i18n="pg_admin-reports_11">Week</option>
+          <option value="month" data-i18n="pg_admin-reports_12">Month</option>
+        </select>
+      </div>
+      <button class="btn" id="loadBtn" type="button" data-i18n="pg_admin-reports_13">Load</button>
+    </div>
+    <p class="range-line" id="rangeLine" aria-live="polite"></p>
+  </section>
+
+  <section class="card" aria-labelledby="totalsTitle">
+    <h2 id="totalsTitle" data-i18n="pg_admin-reports_14">Totals</h2>
+    <div class="stat-grid">
+      <div class="stat"><div class="num" id="statTrips">—</div><div class="lbl" data-i18n="pg_admin-reports_15">Total trips</div></div>
+      <div class="stat"><div class="num" id="statEarned">—</div><div class="lbl" data-i18n="pg_admin-reports_16">Total commission earned</div></div>
+      <div class="stat"><div class="num" id="statSettled">—</div><div class="lbl" data-i18n="pg_admin-reports_17">Commission settled</div></div>
+      <div class="stat"><div class="num" id="statPending">—</div><div class="lbl" data-i18n="pg_admin-reports_18">Commission pending</div></div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="vehTitle">
+    <h2 id="vehTitle" data-i18n="pg_admin-reports_19">Vehicle type breakdown</h2>
+    <div id="vehWrap" aria-live="polite"><p class="loading" data-i18n="pg_admin-reports_20">Press Load.</p></div>
+  </section>
+
+  <section class="card" aria-labelledby="trendTitle">
+    <h2 id="trendTitle" data-i18n="pg_admin-reports_21">Trend — deliveries + commission over time</h2>
+    <div class="chart-wrap">
+      <canvas id="trendChart" role="img" aria-label="Deliveries and commission trend chart"></canvas>
+      <div class="chart-tip" id="chartTip" aria-hidden="true"></div>
+    </div>
+    <div class="legend"><span data-i18n="pg_admin-reports_22"><span class="sw sw-trips"></span>Deliveries (line)</span><span data-i18n="pg_admin-reports_23"><span class="sw sw-comm"></span>Commission Rs (line)</span></div>
+    <div id="trendEmpty" aria-live="polite"></div>
+  </section>
+
+  <p class="back"><a href="admin-home.html" data-i18n="pg_admin-reports_24">← Admin Home</a> • <a href="admin-dashboard.html" data-i18n="pg_admin-reports_25">Full dashboard</a></p>
+</main>
+
+<footer class="site-footer">
+  <div class="site-foot-inner">
+    <div class="site-foot-brand">ApnaShift</div>
+    <div class="site-foot-links">
+      <a href="admin-home.html" data-i18n="pg_admin-reports_26">Admin Home</a>
+      <a href="admin-dashboard.html" data-i18n="pg_admin-reports_27">Full Dashboard</a>
+      <a href="mailto:support@apnashift.in?subject=ApnaShift%20Support%20Request">support@apnashift.in</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  var API_BASE_URL = "https://apnashiftapp-production.up.railway.app";
+  var TOKEN_KEY = "apnashift_admin_token";
+
+  function getToken(){ try { return localStorage.getItem(TOKEN_KEY); } catch(e){ return null; } }
+  if(!getToken()){ window.location.href = "admin-login.html"; return; }
+
+  var alertBox = document.getElementById("pageAlert");
+  var loadBtn = document.getElementById("loadBtn");
+  var fromDate = document.getElementById("fromDate");
+  var toDate = document.getElementById("toDate");
+  var groupSel = document.getElementById("groupSel");
+  var rangeLine = document.getElementById("rangeLine");
+  var qWeek = document.getElementById("qWeek");
+  var qMonth = document.getElementById("qMonth");
+  var qCustom = document.getElementById("qCustom");
+  var vehWrap = document.getElementById("vehWrap");
+  var trendEmpty = document.getElementById("trendEmpty");
+  var chart = document.getElementById("trendChart");
+  var lastSeries = [];
+
+  var VEH_LABEL = { pickup: "Pickup", mini_truck: "Mini Truck", mini_tractor: "Mini Tractor" };
+
+  function showAlert(type, msg){
+    if(!msg){ alertBox.className = "alert"; alertBox.textContent = ""; return; }
+    alertBox.className = "alert show " + (type === "err" ? "err" : "ok");
+    alertBox.textContent = msg;
+  }
+
+  function fmtDate(d){
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, "0");
+    var day = String(d.getDate()).padStart(2, "0");
+    return y + "-" + m + "-" + day;
+  }
+  function fmtRs(n){
+    var v = Number(n);
+    if(!isFinite(v)) return "Rs 0";
+    return "Rs " + v.toLocaleString("en-IN", { maximumFractionDigits: 2 });
+  }
+  function esc(s){
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  function setQuick(which){
+    [qWeek, qMonth, qCustom].forEach(function(b){ b.classList.remove("active"); });
+    var now = new Date();
+    if(which === "week"){
+      qWeek.classList.add("active");
+      var dow = (now.getDay() + 6) % 7; // Monday start
+      var mon = new Date(now); mon.setDate(now.getDate() - dow);
+      var sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+      fromDate.value = fmtDate(mon);
+      toDate.value = fmtDate(new Date(Math.min(sun.getTime(), now.getTime())));
+      groupSel.value = "day";
+    } else if(which === "month"){
+      qMonth.classList.add("active");
+      fromDate.value = fmtDate(new Date(now.getFullYear(), now.getMonth(), 1));
+      toDate.value = fmtDate(now);
+      groupSel.value = "day";
+    } else {
+      qCustom.classList.add("active");
+    }
+  }
+
+  qWeek.addEventListener("click", function(){ setQuick("week"); load(); });
+  qMonth.addEventListener("click", function(){ setQuick("month"); load(); });
+  qCustom.addEventListener("click", function(){ setQuick("custom"); });
+  [fromDate, toDate, groupSel].forEach(function(el){
+    el.addEventListener("change", function(){ setQuick("custom"); });
+  });
+
+  function authHeaders(){
+    return { "Authorization": "Bearer " + getToken() };
+  }
+
+  function load(){
+    showAlert(null, "");
+    var f = fromDate.value, t = toDate.value, g = groupSel.value;
+    if(!f || !t){ showAlert("err", "From aur To date chuno."); return; }
+    if(f > t){ showAlert("err", "From, To se pehle hona chahiye."); return; }
+    loadBtn.disabled = true;
+    vehWrap.innerHTML = '<p class="loading">Loading…</p>';
+    trendEmpty.innerHTML = "";
+    var url = API_BASE_URL + "/api/admin/reports/summary?from=" + encodeURIComponent(f) +
+      "&to=" + encodeURIComponent(t) + "&group_by=" + encodeURIComponent(g);
+    fetch(url, { headers: authHeaders() }).then(function(res){
+      if(res.status === 401){
+        try { localStorage.removeItem(TOKEN_KEY); } catch(e){}
+        window.location.href = "admin-login.html";
+        throw new Error("unauth");
+      }
+      return res.json().then(function(data){ return { status: res.status, body: data }; });
+    }).then(function(result){
+      if(result.status !== 200 || !result.body || result.body.ok !== true){
+        throw new Error("load_failed");
+      }
+      render(result.body);
+    }).catch(function(err){
+      if(err && err.message === "unauth") return;
+      showAlert("err", "Report load nahi hui — internet check karke dobara try karo.");
+      vehWrap.innerHTML = '<p class="empty">Could not load.</p>';
+    }).then(function(){ loadBtn.disabled = false; });
+  }
+
+  function render(data){
+    var t = data.totals;
+    document.getElementById("statTrips").textContent = String(t.delivered_trips);
+    document.getElementById("statEarned").textContent = fmtRs(t.commission_rs);
+    document.getElementById("statSettled").textContent = fmtRs(t.settled_rs);
+    document.getElementById("statPending").textContent = fmtRs(t.pending_rs);
+    rangeLine.textContent = data.range.from.slice(0, 10) + " → " + data.range.to.slice(0, 10) +
+      " (" + data.range.group_by + ") — " + t.delivered_trips + " delivered trips.";
+
+    if(!data.by_vehicle.length){
+      vehWrap.innerHTML = '<p class="empty">Is range me koi delivered trip nahi.</p>';
+    } else {
+      var max = Math.max.apply(null, data.by_vehicle.map(function(r){ return r.trips; }).concat([1]));
+      var h = '<table><tr><th>Vehicle</th><th>Trips</th><th></th><th>Commission</th></tr>';
+      data.by_vehicle.forEach(function(r){
+        var pct = Math.round((r.trips / max) * 100);
+        h += "<tr><td>" + esc(VEH_LABEL[r.vehicle_type] || r.vehicle_type) + "</td><td>" + r.trips +
+          '</td><td><div class="vbar"><div style="width:' + pct + '%"></div></div></td><td>' +
+          esc(fmtRs(r.commission_rs)) + "</td></tr>";
+      });
+      vehWrap.innerHTML = h + "</table>";
+    }
+
+    lastSeries = data.series || [];
+    if(!lastSeries.length){
+      trendEmpty.innerHTML = '<p class="empty">Chart ke liye data nahi.</p>';
+    } else {
+      var anyTrip = lastSeries.some(function(p){ return p.trips > 0; });
+      trendEmpty.innerHTML = anyTrip ? "" : '<p class="empty">Is range me koi delivered trip nahi.</p>';
+    }
+    drawChart();
+  }
+
+  // Share-market style canvas chart: green line = deliveries (left scale),
+  // orange line = commission Rs (right scale). Peaks/dips get value labels,
+  // hover (or touch) shows a crosshair + tooltip with exact values.
+  // No external library — plain Canvas 2D only.
+  var LINE_TRIPS = "#16a34a";
+  var LINE_COMM = "#ea580c";
+  var hoverIdx = -1;
+  var tip = document.getElementById("chartTip");
+
+  function niceCeil(v){
+    if(!(v > 0)) return 1;
+    var p = Math.pow(10, Math.floor(Math.log10(v)));
+    var n = v / p;
+    var nice = n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10;
+    return nice * p;
+  }
+  function shortRs(v){
+    var n = Number(v);
+    if(!isFinite(n)) return "0";
+    return n >= 1000 ? (n / 1000).toFixed(1) + "k" : String(Math.round(n));
+  }
+  function drawChart(){
+    if(!chart.getContext) return;
+    var dpr = window.devicePixelRatio || 1;
+    var W = chart.clientWidth || 600, H = 280;
+    chart.width = W * dpr; chart.height = H * dpr;
+    var ctx = chart.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    var padL = 40, padR = 56, padT = 18, padB = 28;
+    var plotW = W - padL - padR, plotH = H - padT - padB;
+    ctx.font = "11px system-ui, sans-serif";
+
+    var n = lastSeries.length;
+    var maxT = 1, maxC = 1;
+    lastSeries.forEach(function(p){
+      if(p.trips > maxT) maxT = p.trips;
+      if(p.commission_rs > maxC) maxC = p.commission_rs;
+    });
+    maxT = niceCeil(maxT * 1.05);
+    maxC = niceCeil(maxC * 1.05);
+
+    // Grid + dual y labels (left = deliveries, right = commission Rs).
+    ctx.strokeStyle = "#dbe1ec"; ctx.fillStyle = "#5b6070"; ctx.lineWidth = 1;
+    for(var gLine = 0; gLine <= 4; gLine++){
+      var y = padT + (plotH * gLine) / 4;
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+      ctx.fillText(String(Math.round(maxT * (4 - gLine) / 4)), 6, y + 4);
+      ctx.fillText(shortRs(maxC * (4 - gLine) / 4), W - padR + 6, y + 4);
+    }
+    if(!n){ ctx.fillStyle = "#5b6070"; ctx.fillText("No data", padL + 8, padT + 20); return; }
+    var slot = plotW / n;
+
+    function xOf(i){ return padL + slot * i + slot / 2; }
+    var tripPts = lastSeries.map(function(p, i){
+      return { x: xOf(i), y: padT + plotH - (p.trips / maxT) * plotH };
+    });
+    var commPts = lastSeries.map(function(p, i){
+      return { x: xOf(i), y: padT + plotH - (p.commission_rs / maxC) * plotH };
+    });
+
+    // The two fluctuating lines.
+    ctx.lineJoin = "round"; ctx.lineCap = "round";
+    ctx.strokeStyle = LINE_TRIPS; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    tripPts.forEach(function(pt, i){ if(i === 0) ctx.moveTo(pt.x, pt.y); else ctx.lineTo(pt.x, pt.y); });
+    ctx.stroke();
+    ctx.strokeStyle = LINE_COMM; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    commPts.forEach(function(pt, i){ if(i === 0) ctx.moveTo(pt.x, pt.y); else ctx.lineTo(pt.x, pt.y); });
+    ctx.stroke();
+
+    // Markers on every point so dips and peaks are clearly visible.
+    tripPts.forEach(function(pt){
+      ctx.beginPath(); ctx.fillStyle = LINE_TRIPS;
+      ctx.arc(pt.x, pt.y, 3.2, 0, Math.PI * 2); ctx.fill();
+    });
+    commPts.forEach(function(pt){
+      ctx.beginPath(); ctx.fillStyle = LINE_COMM;
+      ctx.arc(pt.x, pt.y, 3.2, 0, Math.PI * 2); ctx.fill();
+    });
+
+    // Peak (high) / dip (low) value labels for both lines.
+    function tagExtreme(pts, idx, color, text, above){
+      var pt = pts[idx];
+      ctx.font = "700 10px system-ui, sans-serif";
+      var w = ctx.measureText(text).width;
+      var bx = Math.min(Math.max(pt.x - w / 2 - 4, padL), W - padR - w - 8);
+      var by = above ? pt.y - 23 : pt.y + 8;
+      by = Math.max(padT - 15, Math.min(by, padT + plotH - 4));
+      ctx.fillStyle = "rgba(255,255,255,.94)";
+      ctx.strokeStyle = color; ctx.lineWidth = 1;
+      ctx.beginPath();
+      if(ctx.roundRect) ctx.roundRect(bx, by, w + 8, 15, 4); else ctx.rect(bx, by, w + 8, 15);
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = color;
+      ctx.fillText(text, bx + 4, by + 11);
+      ctx.font = "11px system-ui, sans-serif";
+    }
+    function extremes(getter, pts, color, fmtFn){
+      if(lastSeries.length < 2) return;
+      var iMax = 0, iMin = 0, i;
+      for(i = 1; i < lastSeries.length; i++){
+        if(getter(lastSeries[i]) > getter(lastSeries[iMax])) iMax = i;
+        if(getter(lastSeries[i]) < getter(lastSeries[iMin])) iMin = i;
+      }
+      tagExtreme(pts, iMax, color, "▲ " + fmtFn(getter(lastSeries[iMax])), true);
+      if(iMin !== iMax) tagExtreme(pts, iMin, color, "▼ " + fmtFn(getter(lastSeries[iMin])), false);
+    }
+    extremes(function(p){ return p.trips; }, tripPts, LINE_TRIPS, function(v){ return String(v); });
+    extremes(function(p){ return p.commission_rs; }, commPts, LINE_COMM, shortRs);
+
+    // X labels (bheed ho to har Nth).
+    ctx.fillStyle = "#5b6070"; ctx.font = "11px system-ui, sans-serif";
+    var every = Math.max(1, Math.ceil(n / 8));
+    lastSeries.forEach(function(p, i){
+      if(i % every !== 0 && i !== n - 1) return;
+      var label = String(p.period).slice(5) || String(p.period); // MM-DD
+      var x = xOf(i);
+      ctx.fillText(label, Math.min(x - 12, W - padR - 30), H - 8);
+    });
+
+    // Hover crosshair + highlighted points.
+    if(hoverIdx >= 0 && hoverIdx < n){
+      var hx = xOf(hoverIdx);
+      ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 1;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.moveTo(hx, padT); ctx.lineTo(hx, padT + plotH); ctx.stroke();
+      ctx.setLineDash([]);
+      [[tripPts[hoverIdx], LINE_TRIPS], [commPts[hoverIdx], LINE_COMM]].forEach(function(pair){
+        ctx.beginPath(); ctx.fillStyle = "#fff";
+        ctx.arc(pair[0].x, pair[0].y, 5.5, 0, Math.PI * 2); ctx.fill();
+        ctx.lineWidth = 2.5; ctx.strokeStyle = pair[1]; ctx.stroke();
+      });
+    }
+  }
+
+  function pointFromEvent(ev){
+    var rect = chart.getBoundingClientRect();
+    var cx = ((ev.touches && ev.touches.length ? ev.touches[0].clientX : ev.clientX) - rect.left);
+    var W = chart.clientWidth || 600;
+    var padL = 40, padR = 56;
+    var n = lastSeries.length;
+    if(!n) return -1;
+    var slot = (W - padL - padR) / n;
+    return Math.min(n - 1, Math.max(0, Math.round((cx - padL - slot / 2) / slot)));
+  }
+  function showTip(idx){
+    var p = lastSeries[idx];
+    if(!p || !tip) return;
+    var isHi = document.documentElement.lang === "hi";
+    tip.innerHTML = '<div class="tdate">' + esc(String(p.period).slice(0, 10)) + '</div>' +
+      '<div><span class="tdot" style="background:' + LINE_TRIPS + '"></span>' +
+      esc(isHi ? "डिलीवरी" : "Deliveries") + ': <b>' + p.trips + '</b></div>' +
+      '<div><span class="tdot" style="background:' + LINE_COMM + '"></span>' +
+      esc(isHi ? "कमीशन" : "Commission") + ': <b>' + esc(fmtRs(p.commission_rs)) + '</b></div>';
+    tip.style.display = "block";
+    var W = chart.clientWidth || 600;
+    var tw = tip.offsetWidth || 170;
+    var padL = 40, padR = 56, n = lastSeries.length;
+    var slot = (W - padL - padR) / Math.max(n, 1);
+    var px = padL + slot * idx + slot / 2;
+    var left = px + 14;
+    if(left + tw > W - 4) left = px - tw - 14;
+    tip.style.left = Math.max(6, left) + "px";
+    tip.style.top = "8px";
+  }
+  chart.addEventListener("mousemove", function(ev){
+    var idx = pointFromEvent(ev);
+    if(idx !== hoverIdx){ hoverIdx = idx; drawChart(); }
+    showTip(idx);
+  });
+  chart.addEventListener("mouseleave", function(){
+    hoverIdx = -1;
+    if(tip) tip.style.display = "none";
+    drawChart();
+  });
+  function handleTouch(ev){
+    var idx = pointFromEvent(ev);
+    hoverIdx = idx; drawChart(); showTip(idx);
+  }
+  chart.addEventListener("touchstart", handleTouch, { passive: true });
+  chart.addEventListener("touchmove", handleTouch, { passive: true });
+
+  window.addEventListener("resize", function(){
+    hoverIdx = -1;
+    if(tip) tip.style.display = "none";
+    drawChart();
+  });
+
+  document.getElementById("logoutBtn").addEventListener("click", function(){
+    try { localStorage.removeItem(TOKEN_KEY); } catch(e){}
+    window.location.href = "admin-login.html";
+  });
+  loadBtn.addEventListener("click", load);
+
+  setQuick("month");
+  load();
+})();
+</script>
+<script>window.PAGE_I18N={en:{page_title:'Reports & Earnings | ApnaShift Admin',meta_desc:'ApnaShift admin — delivered trips and commission earnings report.','pg_admin-reports_01':'Logout','pg_admin-reports_02':'Reports & Earnings','pg_admin-reports_03':'Delivered trips aur commission — range chuno, Load dabao.','pg_admin-reports_04':'This Week','pg_admin-reports_05':'This Month','pg_admin-reports_06':'Custom','pg_admin-reports_07':'From','pg_admin-reports_08':'To','pg_admin-reports_09':'Group by','pg_admin-reports_10':'Day','pg_admin-reports_11':'Week','pg_admin-reports_12':'Month','pg_admin-reports_13':'Load','pg_admin-reports_14':'Totals','pg_admin-reports_15':'Total trips','pg_admin-reports_16':'Total commission earned','pg_admin-reports_17':'Commission settled','pg_admin-reports_18':'Commission pending','pg_admin-reports_19':'Vehicle type breakdown','pg_admin-reports_20':'Press Load.','pg_admin-reports_21':'Trend — deliveries + commission over time','pg_admin-reports_22':'Deliveries (line)','pg_admin-reports_23':'Commission Rs (line)','pg_admin-reports_24':'← Admin Home','pg_admin-reports_25':'Full dashboard','pg_admin-reports_26':'Admin Home','pg_admin-reports_27':'Full Dashboard'},hi:{page_title:'रिपोर्ट व कमाई | ApnaShift एडमिन',meta_desc:'ApnaShift एडमिन — डिलीवर ट्रिप और कमीशन कमाई रिपोर्ट।','pg_admin-reports_01':'लॉगआउट','pg_admin-reports_02':'रिपोर्ट व कमाई','pg_admin-reports_03':'डिलीवर ट्रिप और कमीशन — रेंज चुनें, लोड दबाएं।','pg_admin-reports_04':'इस सप्ताह','pg_admin-reports_05':'इस महीना','pg_admin-reports_06':'कस्टम','pg_admin-reports_07':'शुरुआत','pg_admin-reports_08':'समाप्ति','pg_admin-reports_09':'समूह बनाएं','pg_admin-reports_10':'दिन','pg_admin-reports_11':'सप्ताह','pg_admin-reports_12':'महीना','pg_admin-reports_13':'लोड करें','pg_admin-reports_14':'कुल योग','pg_admin-reports_15':'कुल ट्रिप','pg_admin-reports_16':'कुल कमीशन कमाई','pg_admin-reports_17':'सेटल कमीशन','pg_admin-reports_18':'बकाया कमीशन','pg_admin-reports_19':'वाहन प्रकार विवरण','pg_admin-reports_20':'लोड दबाएं।','pg_admin-reports_21':'ट्रेंड — डिलीवरी + कमीशन','pg_admin-reports_22':'डिलीवरी (लाइन)','pg_admin-reports_23':'कमीशन रुपये (लाइन)','pg_admin-reports_24':'← एडमिन होम','pg_admin-reports_25':'पूरा डैशबोर्ड','pg_admin-reports_26':'एडमिन होम','pg_admin-reports_27':'पूरा डैशबोर्ड'}};</script>
+<script src="lang.js"></script>
+</body>
+</html>

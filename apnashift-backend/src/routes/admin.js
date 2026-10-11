@@ -12,11 +12,13 @@ import {
   getCommissionPct,
   driverBalance,
   createSettlementTx,
+  bumpCommissionDueTx,
 } from '../services/payments.js';
 import { toPaise, paiseToRs } from '../services/money.js';
 import {
   commissionUpdateSchema,
   settlementCreateSchema,
+  settleCommissionSchema,
   adjustmentCreateSchema,
   ledgerQuerySchema,
   settlementsQuerySchema,
@@ -35,6 +37,7 @@ import {
   bookingAssignSchema,
   pricingUpdateSchema,
   pricingHistoryQuerySchema,
+  reportsSummaryQuerySchema,
   parseQuery,
 } from '../validation/admin.js';
 import { pool } from '../db.js';
@@ -1037,6 +1040,99 @@ adminRoutes.post('/settlements', async (req, res, next) => {
   }
 });
 
+// POST /api/admin/drivers/:id/settle-commission — simple due settlement.
+// Body: { amount_rs, note?, method?='cash', reference_no? }. Same FIFO engine
+// as POST /api/admin/settlements (settlements row + allocation + audit),
+// plus the stored drivers.commission_due decrement in the same transaction.
+// Guards: driver must exist (404), amount>0 (400), amount<=due (409 —
+// negative due impossible: guard + GREATEST + CHECK constraint).
+adminRoutes.post('/drivers/:id/settle-commission', validateIdParam, async (req, res, next) => {
+  const client = await pool.connect();
+  try {
+    const { amount_rs, note, method, reference_no } = parsePaymentBody(
+      settleCommissionSchema,
+      req.body,
+    );
+    const driver = await query('SELECT id FROM drivers WHERE id = $1', [req.params.id]);
+    if (driver.rowCount === 0) {
+      return res.status(404).json({ ok: false, error: 'not_found' });
+    }
+    await client.query('BEGIN');
+    const row = await createSettlementTx(client, {
+      driverId: req.params.id,
+      amountPaise: toPaise(amount_rs),
+      method,
+      referenceNo: reference_no,
+      notes: note,
+      adminId: req.user.id,
+    });
+    await client.query('COMMIT');
+    const [dueRow, balance] = await Promise.all([
+      query('SELECT commission_due FROM drivers WHERE id = $1', [req.params.id]),
+      driverBalance(query, req.params.id),
+    ]);
+    res.status(201).json({
+      ok: true,
+      settlement: {
+        id: row.id,
+        driver_id: row.driver_id,
+        amount_rs: Number(row.amount),
+        method: row.method,
+        reference_no: row.reference_no,
+        admin_id: row.admin_id,
+        notes: row.notes,
+        settled_at: row.settled_at,
+        created_at: row.created_at,
+      },
+      commission_due_rs: Number(dueRow.rows[0].commission_due),
+      outstanding_rs: balance.outstanding_rs,
+    });
+  } catch (err) {
+    try {
+      await client.query('ROLLBACK');
+    } catch {
+      // ignore — original error propagates.
+    }
+    next(err);
+  } finally {
+    client.release();
+  }
+});
+
+// GET /api/admin/drivers/commission-summary — saare drivers, stored due +
+// total_trips, paginated, highest due first (settlement queue order).
+adminRoutes.get('/drivers/commission-summary', async (req, res, next) => {
+  try {
+    const { page, limit } = parsePaymentQuery(settlementsQuerySchema, req.query);
+    const offset = (page - 1) * limit;
+    const [rows, count] = await Promise.all([
+      query(
+        `SELECT id, name, phone, vehicle_type, total_trips, commission_due
+           FROM drivers ORDER BY commission_due DESC, created_at ASC
+          LIMIT $1 OFFSET $2`,
+        [limit, offset],
+      ),
+      query('SELECT COUNT(*) AS total FROM drivers'),
+    ]);
+    res.json({
+      ok: true,
+      page,
+      limit,
+      total: Number(count.rows[0].total),
+      drivers: rows.rows.map((d) => ({
+        driver_id: d.id,
+        name: d.name,
+        phone: d.phone,
+        vehicle_type: d.vehicle_type,
+        total_trips: Number(d.total_trips),
+        commission_due_rs: Number(d.commission_due),
+      })),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // POST /api/admin/adjustments — append-only correction (admin only).
 // Never edits payments rows; outstanding math picks the deltas up.
 adminRoutes.post('/adjustments', async (req, res, next) => {
@@ -1047,7 +1143,7 @@ adminRoutes.post('/adjustments', async (req, res, next) => {
       req.body,
     );
     await client.query('BEGIN');
-    const payment = await client.query('SELECT id FROM payments WHERE id = $1', [payment_id]);
+    const payment = await client.query('SELECT id, driver_id FROM payments WHERE id = $1', [payment_id]);
     if (payment.rowCount === 0) {
       await client.query('ROLLBACK');
       return res.status(404).json({ ok: false, error: 'not_found' });
@@ -1062,6 +1158,9 @@ adminRoutes.post('/adjustments', async (req, res, next) => {
        RETURNING id, payment_id, commission_delta_paise, earning_delta_paise, reason, admin_id, created_at`,
       [payment_id, commission_delta_paise, earning_delta_paise, reason, req.user.id],
     );
+    // Stored due commission correction ke saath chalta hai (same tx) —
+    // derived outstanding se drift nahi hota.
+    await bumpCommissionDueTx(client, payment.rows[0].driver_id, commission_delta_paise);
     await client.query('COMMIT');
     await logAuditSafe(req.user.id, 'payment.adjust', 'payment', payment_id, {
       commission_delta_paise,
@@ -1123,6 +1222,144 @@ adminRoutes.get('/stats', async (req, res, next) => {
         revenue_rs: Number(s.all_revenue),
       },
       drivers: { verified_active: Number(drivers.rows[0].verified_active) },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/admin/reports/summary (admin) — earnings report.
+// Range me delivered bookings (delivered_at se): kul trips, vehicle-wise
+// split, kul commission (delivered payments + adjustments se), settled vs
+// pending, aur charting ke liye time-series (day/week/month buckets).
+// Paise exact: commission NUMERIC (whole-paise), adjustments paise me —
+// dono ko yahin jodkar Rs me bhejte hain (2 decimal tak round).
+adminRoutes.get('/reports/summary', async (req, res, next) => {
+  try {
+    const { from, to, group_by } = parseQuery(reportsSummaryQuerySchema, req.query);
+    const toDate = to ? new Date(to) : new Date();
+    const fromDate = from ? new Date(from) : new Date(toDate.getTime() - 29 * 86400000);
+    const fromISO = fromDate.toISOString();
+    const toISO = toDate.toISOString();
+
+    // date_trunc field SQL identifier nahi, value hai — phir bhi validated
+    // enum se bahar kuch aa hi nahi sakta (whitelist map).
+    const trunc = { day: 'day', week: 'week', month: 'month' }[group_by];
+
+    const [totals, byVehicle, buckets] = await Promise.all([
+      query(
+        `SELECT COUNT(*) AS trips,
+                COALESCE(SUM(p.platform_commission), 0) AS commission_base,
+                COALESCE(SUM(COALESCE(adj.adj_c, 0)), 0) AS adj_paise,
+                COALESCE(SUM(p.settled_amount), 0) AS settled
+           FROM bookings b
+           JOIN payments p ON p.booking_id = b.id
+           LEFT JOIN (
+             SELECT payment_id, SUM(commission_delta_paise) AS adj_c
+               FROM payment_adjustments GROUP BY payment_id
+           ) adj ON adj.payment_id = p.id
+          WHERE b.status = 'delivered'
+            AND b.delivered_at >= $1 AND b.delivered_at <= $2`,
+        [fromISO, toISO],
+      ),
+      query(
+        `SELECT b.vehicle_type AS vehicle_type,
+                COUNT(*) AS trips,
+                COALESCE(SUM(p.platform_commission), 0) AS commission_base,
+                COALESCE(SUM(COALESCE(adj.adj_c, 0)), 0) AS adj_paise,
+                COALESCE(SUM(p.settled_amount), 0) AS settled
+           FROM bookings b
+           JOIN payments p ON p.booking_id = b.id
+           LEFT JOIN (
+             SELECT payment_id, SUM(commission_delta_paise) AS adj_c
+               FROM payment_adjustments GROUP BY payment_id
+           ) adj ON adj.payment_id = p.id
+          WHERE b.status = 'delivered'
+            AND b.delivered_at >= $1 AND b.delivered_at <= $2
+          GROUP BY b.vehicle_type ORDER BY trips DESC`,
+        [fromISO, toISO],
+      ),
+      query(
+        `SELECT date_trunc('${trunc}', b.delivered_at) AS bucket,
+                COUNT(*) AS trips,
+                COALESCE(SUM(p.platform_commission), 0) AS commission_base,
+                COALESCE(SUM(COALESCE(adj.adj_c, 0)), 0) AS adj_paise
+           FROM bookings b
+           JOIN payments p ON p.booking_id = b.id
+           LEFT JOIN (
+             SELECT payment_id, SUM(commission_delta_paise) AS adj_c
+               FROM payment_adjustments GROUP BY payment_id
+           ) adj ON adj.payment_id = p.id
+          WHERE b.status = 'delivered'
+            AND b.delivered_at >= $1 AND b.delivered_at <= $2
+          GROUP BY bucket ORDER BY bucket ASC`,
+        [fromISO, toISO],
+      ),
+    ]);
+
+    const round2 = (n) => Math.round(Number(n) * 100) / 100;
+    const commissionOf = (r) => round2(Number(r.commission_base) + Number(r.adj_paise) / 100);
+
+    const t = totals.rows[0];
+    const commissionRs = commissionOf(t);
+    const settledRs = round2(t.settled);
+    const pendingRs = round2(Math.max(0, commissionRs - settledRs));
+
+    // Bucket map (YYYY-MM-DD) -> { trips, commission_rs }.
+    const byBucket = new Map();
+    for (const r of buckets.rows) {
+      const key = new Date(r.bucket).toISOString().slice(0, 10);
+      byBucket.set(key, {
+        trips: Number(r.trips),
+        commission_rs: commissionOf(r),
+      });
+    }
+
+    // Khaali periods me zero bharo taaki chart me gap na toote.
+    const start = new Date(fromISO);
+    const end = new Date(toISO);
+    const series = [];
+    if (group_by === 'month') {
+      const cur = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), 1));
+      const last = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), 1));
+      while (cur <= last) {
+        const key = cur.toISOString().slice(0, 10);
+        const hit = byBucket.get(key) ?? { trips: 0, commission_rs: 0 };
+        series.push({ period: key, ...hit });
+        cur.setUTCMonth(cur.getUTCMonth() + 1);
+      }
+    } else {
+      const step = group_by === 'week' ? 7 : 1;
+      const cur = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()));
+      if (group_by === 'week') {
+        // date_trunc('week') = Monday 00:00 — usi se align karo.
+        const dow = (cur.getUTCDay() + 6) % 7;
+        cur.setUTCDate(cur.getUTCDate() - dow);
+      }
+      const endDay = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate()));
+      while (cur <= endDay) {
+        const key = cur.toISOString().slice(0, 10);
+        const hit = byBucket.get(key) ?? { trips: 0, commission_rs: 0 };
+        series.push({ period: key, ...hit });
+        cur.setUTCDate(cur.getUTCDate() + step);
+      }
+    }
+
+    res.json({
+      ok: true,
+      range: { from: fromISO, to: toISO, group_by },
+      totals: {
+        delivered_trips: Number(t.trips),
+        commission_rs: commissionRs,
+        settled_rs: settledRs,
+        pending_rs: pendingRs,
+      },
+      by_vehicle: byVehicle.rows.map((r) => ({
+        vehicle_type: VEHICLE_TO_API[r.vehicle_type] ?? r.vehicle_type,
+        trips: Number(r.trips),
+        commission_rs: commissionOf(r),
+      })),
+      series,
     });
   } catch (err) {
     next(err);

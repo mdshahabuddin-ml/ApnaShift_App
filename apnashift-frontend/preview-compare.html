@@ -133,11 +133,11 @@
 </header>
 
 <div class="bar">
-  <label for="leftUrl">Left</label>
+  <label for="leftUrl" data-i18n="pg_preview-compare_01">Left</label>
   <input id="leftUrl" value="http://localhost:8080/">
-  <label for="rightUrl">Right</label>
+  <label for="rightUrl" data-i18n="pg_preview-compare_02">Right</label>
   <input id="rightUrl" value="http://localhost:3000/driver-register.html">
-  <button id="loadBtn" type="button">Load</button>
+  <button id="loadBtn" type="button" data-i18n="pg_preview-compare_03">Load</button>
 </div>
 
 <div class="split">
@@ -155,10 +155,11 @@
   <div class="site-foot-inner">
     <div class="site-foot-brand">ApnaShift</div>
     <div class="site-foot-links">
-      <a href="index.html">Home</a>
-      <a href="help.html">Help</a>
-      <a href="privacy.html">Privacy Policy</a>
-      <a href="terms.html">Terms &amp; Conditions</a>
+      <a href="index.html" data-i18n="pg_preview-compare_04">Home</a>
+      <a href="help.html" data-i18n="pg_preview-compare_05">Help</a>
+      <a href="privacy.html" data-i18n="pg_preview-compare_06">Privacy Policy</a>
+      <a href="terms.html" data-i18n="pg_preview-compare_07">Terms &amp; Conditions</a>
+      <a href="mailto:support@apnashift.in?subject=ApnaShift%20Support%20Request">support@apnashift.in</a>
     </div>
   </div>
 </footer>
@@ -189,5 +190,7 @@ var navMenuBtn=document.getElementById("navMenuBtn"),siteNav=document.getElement
 if(navMenuBtn&&siteNav){navMenuBtn.addEventListener("click",function(){var open=siteNav.classList.toggle("open");navMenuBtn.setAttribute("aria-expanded",open?"true":"false");navMenuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");});siteNav.addEventListener("click",function(ev){if(ev.target.tagName==="A"&&siteNav.classList.contains("open")){siteNav.classList.remove("open");navMenuBtn.setAttribute("aria-expanded","false");}});}
 })();
 </script>
+<script>window.PAGE_I18N={en:{page_title:'Preview Compare (dev only) | ApnaShift','pg_preview-compare_01':'Left','pg_preview-compare_02':'Right','pg_preview-compare_03':'Load','pg_preview-compare_04':'Home','pg_preview-compare_05':'Help','pg_preview-compare_06':'Privacy Policy','pg_preview-compare_07':'Terms & Conditions'},hi:{page_title:'प्रीव्यू तुलना (केवल डेव) | ApnaShift','pg_preview-compare_01':'बायां','pg_preview-compare_02':'दायां','pg_preview-compare_03':'लोड करें','pg_preview-compare_04':'होम','pg_preview-compare_05':'सहायता','pg_preview-compare_06':'प्राइवेसी पॉलिसी','pg_preview-compare_07':'नियम व शर्तें'}};</script>
+<script src="lang.js"></script>
 </body>
 </html>

@@ -133,176 +133,176 @@
 <main>
   <div class="top-row">
     <div>
-      <h1>Admin Dashboard</h1>
-      <p class="sub">For authorized staff only. Manage statistics, drivers, enterprise inquiries, and bookings from here.</p>
+      <h1 data-i18n="pg_admin_dashboard_01">Admin Dashboard</h1>
+      <p class="sub" data-i18n="pg_admin_dashboard_02">For authorized staff only. Manage statistics, drivers, enterprise inquiries, and bookings from here.</p>
     </div>
-    <button class="logout-btn" id="logoutBtn" type="button">Logout</button>
+    <button class="logout-btn" id="logoutBtn" type="button" data-i18n="pg_admin_dashboard_03">Logout</button>
   </div>
 
   <div id="pageAlert" role="alert" aria-live="assertive"></div>
 
   <div class="tabs" role="tablist" aria-label="Admin sections">
-    <button type="button" id="tabOverview" class="active" role="tab" aria-selected="true" aria-controls="panelOverview">Overview</button>
-    <button type="button" id="tabDrivers" role="tab" aria-selected="false" aria-controls="panelDrivers">Drivers</button>
-    <button type="button" id="tabEnterprise" role="tab" aria-selected="false" aria-controls="panelEnterprise">Enterprise</button>
-    <button type="button" id="tabBookings" role="tab" aria-selected="false" aria-controls="panelBookings">Bookings</button>
-    <button type="button" id="tabTracking" role="tab" aria-selected="false" aria-controls="panelTracking">Tracking</button>
-    <button type="button" id="tabMoney" role="tab" aria-selected="false" aria-controls="panelMoney">Settlement</button>
+    <button type="button" id="tabOverview" class="active" role="tab" aria-selected="true" aria-controls="panelOverview" data-i18n="pg_admin_dashboard_04">Overview</button>
+    <button type="button" id="tabDrivers" role="tab" aria-selected="false" aria-controls="panelDrivers" data-i18n="pg_admin_dashboard_05">Drivers</button>
+    <button type="button" id="tabEnterprise" role="tab" aria-selected="false" aria-controls="panelEnterprise" data-i18n="pg_admin_dashboard_06">Enterprise</button>
+    <button type="button" id="tabBookings" role="tab" aria-selected="false" aria-controls="panelBookings" data-i18n="pg_admin_dashboard_07">Bookings</button>
+    <button type="button" id="tabTracking" role="tab" aria-selected="false" aria-controls="panelTracking" data-i18n="pg_admin_dashboard_08">Tracking</button>
+    <button type="button" id="tabMoney" role="tab" aria-selected="false" aria-controls="panelMoney" data-i18n="pg_admin_dashboard_09">Settlement</button>
   </div>
 
   <section class="card panel active" id="panelOverview" role="tabpanel" aria-labelledby="tabOverview">
-    <h2>Overview</h2>
-    <p class="sub">Today's, this week's, and overall figures.</p>
+    <h2 data-i18n="pg_admin_dashboard_10">Overview</h2>
+    <p class="sub" data-i18n="pg_admin_dashboard_11">Today's, this week's, and overall figures.</p>
     <div class="controls">
-      <button class="btn ghost" id="refreshStats" type="button">Refresh</button>
+      <button class="btn ghost" id="refreshStats" type="button" data-i18n="pg_admin_dashboard_12">Refresh</button>
     </div>
-    <div id="statsBox" aria-live="polite"><p class="loading">Loading statistics…</p></div>
+    <div id="statsBox" aria-live="polite"><p class="loading" data-i18n="pg_admin_dashboard_13">Loading statistics…</p></div>
   </section>
 
   <section class="card panel" id="panelDrivers" role="tabpanel" aria-labelledby="tabDrivers">
-    <h2>Drivers</h2>
-    <p class="sub">Select a status, then verify, reject, or deactivate drivers.</p>
+    <h2 data-i18n="pg_admin_dashboard_14">Drivers</h2>
+    <p class="sub" data-i18n="pg_admin_dashboard_15">Select a status, then verify, reject, or deactivate drivers.</p>
     <div class="controls">
       <div class="field">
-        <label for="driverStatus">Status</label>
+        <label for="driverStatus" data-i18n="pg_admin_dashboard_16">Status</label>
         <select id="driverStatus">
-          <option value="pending">pending</option>
-          <option value="verified">verified</option>
-          <option value="review">review</option>
+          <option value="pending" data-i18n="pg_admin_dashboard_17">pending</option>
+          <option value="verified" data-i18n="pg_admin_dashboard_18">verified</option>
+          <option value="review" data-i18n="pg_admin_dashboard_19">review</option>
         </select>
       </div>
-      <button class="btn ghost" id="refreshDrivers" type="button">Load</button>
+      <button class="btn ghost" id="refreshDrivers" type="button" data-i18n="pg_admin_dashboard_20">Load</button>
     </div>
-    <div class="list" id="driversList" aria-live="polite"><p class="loading">Press Load to load the driver list.</p></div>
-    <h2 style="margin-top:16px">Password reset</h2>
-    <p class="sub">Search for a user/driver by phone number and set a new password (minimum 8 characters).</p>
+    <div class="list" id="driversList" aria-live="polite"><p class="loading" data-i18n="pg_admin_dashboard_21">Press Load to load the driver list.</p></div>
+    <h2 style="margin-top:16px" data-i18n="pg_admin_dashboard_22">Password reset</h2>
+    <p class="sub" data-i18n="pg_admin_dashboard_23">Search for a user/driver by phone number and set a new password (minimum 8 characters).</p>
     <div class="controls">
       <div class="field">
-        <label for="resetPhone">Phone number</label>
-        <input type="text" id="resetPhone" inputmode="numeric" maxlength="15" placeholder="98765 43210">
+        <label for="resetPhone" data-i18n="pg_admin_dashboard_24">Phone number</label>
+        <input type="text" id="resetPhone" inputmode="numeric" maxlength="15" placeholder="98765 43210" data-i18n-ph="pg_admin_dashboard_25">
       </div>
-      <button class="btn ghost" id="resetSearchBtn" type="button">Search</button>
+      <button class="btn ghost" id="resetSearchBtn" type="button" data-i18n="pg_admin_dashboard_26">Search</button>
     </div>
     <div class="list" id="resetResults" aria-live="polite"></div>
   </section>
 
   <section class="card panel" id="panelEnterprise" role="tabpanel" aria-labelledby="tabEnterprise">
-    <h2>Enterprise inquiries</h2>
-    <p class="sub">Update the status: CONTACTED / IN_DISCUSSION / CONVERTED / CLOSED.</p>
+    <h2 data-i18n="pg_admin_dashboard_27">Enterprise inquiries</h2>
+    <p class="sub" data-i18n="pg_admin_dashboard_28">Update the status: CONTACTED / IN_DISCUSSION / CONVERTED / CLOSED.</p>
     <div class="controls">
       <div class="field">
-        <label for="inqStatus">Status filter</label>
+        <label for="inqStatus" data-i18n="pg_admin_dashboard_29">Status filter</label>
         <select id="inqStatus">
-          <option value="">All</option>
-          <option value="NEW">NEW</option>
-          <option value="CONTACTED">CONTACTED</option>
-          <option value="IN_DISCUSSION">IN_DISCUSSION</option>
-          <option value="CONVERTED">CONVERTED</option>
-          <option value="CLOSED">CLOSED</option>
+          <option value="" data-i18n="pg_admin_dashboard_30">All</option>
+          <option value="NEW" data-i18n="pg_admin_dashboard_31">NEW</option>
+          <option value="CONTACTED" data-i18n="pg_admin_dashboard_32">CONTACTED</option>
+          <option value="IN_DISCUSSION" data-i18n="pg_admin_dashboard_33">IN_DISCUSSION</option>
+          <option value="CONVERTED" data-i18n="pg_admin_dashboard_34">CONVERTED</option>
+          <option value="CLOSED" data-i18n="pg_admin_dashboard_35">CLOSED</option>
         </select>
       </div>
       <div class="field">
-        <label for="inqSearch">Search</label>
-        <input type="search" id="inqSearch" maxlength="80" placeholder="Enter a company or name">
+        <label for="inqSearch" data-i18n="pg_admin_dashboard_36">Search</label>
+        <input type="search" id="inqSearch" maxlength="80" placeholder="Enter a company or name" data-i18n-ph="pg_admin_dashboard_37">
       </div>
-      <button class="btn ghost" id="refreshInquiries" type="button">Load</button>
+      <button class="btn ghost" id="refreshInquiries" type="button" data-i18n="pg_admin_dashboard_38">Load</button>
     </div>
-    <div class="list" id="inquiriesList" aria-live="polite"><p class="loading">Press Load to view inquiries.</p></div>
+    <div class="list" id="inquiriesList" aria-live="polite"><p class="loading" data-i18n="pg_admin_dashboard_39">Press Load to view inquiries.</p></div>
   </section>
 
   <section class="card panel" id="panelBookings" role="tabpanel" aria-labelledby="tabBookings">
-    <h2>Bookings <span class="badge" id="pendingBadge" title="Pending orders right now">New: —</span></h2>
-    <p class="sub">Totals and revenue with status filters.</p>
+    <h2 data-i18n="pg_admin_dashboard_40">Bookings <span class="badge" id="pendingBadge" title="Pending orders right now" data-i18n="pg_admin_dashboard_41">New: —</span></h2>
+    <p class="sub" data-i18n="pg_admin_dashboard_42">Totals and revenue with status filters.</p>
     <div class="list" id="orderAlerts" aria-live="polite"></div>
     <div class="controls">
       <div class="field">
-        <label for="bookingStatus">Status filter</label>
+        <label for="bookingStatus" data-i18n="pg_admin_dashboard_43">Status filter</label>
         <select id="bookingStatus">
-          <option value="">All</option>
-          <option value="pending">pending</option>
-          <option value="assigned">assigned</option>
-          <option value="completed">completed</option>
-          <option value="cancelled">cancelled</option>
+          <option value="" data-i18n="pg_admin_dashboard_44">All</option>
+          <option value="pending" data-i18n="pg_admin_dashboard_45">pending</option>
+          <option value="assigned" data-i18n="pg_admin_dashboard_46">assigned</option>
+          <option value="completed" data-i18n="pg_admin_dashboard_47">completed</option>
+          <option value="cancelled" data-i18n="pg_admin_dashboard_48">cancelled</option>
         </select>
       </div>
       <div class="field">
-        <label for="bookingDisputed">Dispute filter</label>
+        <label for="bookingDisputed" data-i18n="pg_admin_dashboard_49">Dispute filter</label>
         <select id="bookingDisputed">
-          <option value="">All</option>
-          <option value="true">Disputed only</option>
-          <option value="false">Clean only</option>
+          <option value="" data-i18n="pg_admin_dashboard_50">All</option>
+          <option value="true" data-i18n="pg_admin_dashboard_51">Disputed only</option>
+          <option value="false" data-i18n="pg_admin_dashboard_52">Clean only</option>
         </select>
       </div>
-      <button class="btn ghost" id="refreshBookings" type="button">Load</button>
-      <button class="btn ghost" id="orderNotifyToggle" type="button">🔔 Alerts: Off</button>
-      <button class="btn ghost" id="orderSoundToggle" type="button">🔊 Sound: Off</button>
+      <button class="btn ghost" id="refreshBookings" type="button" data-i18n="pg_admin_dashboard_53">Load</button>
+      <button class="btn ghost" id="orderNotifyToggle" type="button" data-i18n="pg_admin_dashboard_54">🔔 Alerts: Off</button>
+      <button class="btn ghost" id="orderSoundToggle" type="button" data-i18n="pg_admin_dashboard_55">🔊 Sound: Off</button>
     </div>
     <div id="bookingsSummary" aria-live="polite"></div>
-    <div class="list" id="bookingsList" aria-live="polite"><p class="loading">Press Load to view bookings.</p></div>
+    <div class="list" id="bookingsList" aria-live="polite"><p class="loading" data-i18n="pg_admin_dashboard_56">Press Load to view bookings.</p></div>
   </section>
 
   <section class="card panel" id="panelTracking" role="tabpanel" aria-labelledby="tabTracking">
-    <h2>Live tracking</h2>
-    <p class="sub">Active trips (accepted/arrived/in_transit) — the driver's last GPS location and tracking status. Auto-refreshes every 10 seconds.</p>
+    <h2 data-i18n="pg_admin_dashboard_57">Live tracking</h2>
+    <p class="sub" data-i18n="pg_admin_dashboard_58">Active trips (accepted/arrived/in_transit) — the driver's last GPS location and tracking status. Auto-refreshes every 10 seconds.</p>
     <div class="controls">
-      <button class="btn ghost" id="refreshTracking" type="button">Load</button>
+      <button class="btn ghost" id="refreshTracking" type="button" data-i18n="pg_admin_dashboard_59">Load</button>
     </div>
     <div id="trackingSummary" aria-live="polite"></div>
-    <div class="list" id="trackingList" aria-live="polite"><p class="loading">Press Load to view live trips.</p></div>
+    <div class="list" id="trackingList" aria-live="polite"><p class="loading" data-i18n="pg_admin_dashboard_60">Press Load to view live trips.</p></div>
   </section>
 
   <section class="card panel" id="panelMoney" role="tabpanel" aria-labelledby="tabMoney">
-    <h2>Commission</h2>
-    <p class="sub">The rate applies only to future deliveries — it does not change the snapshot of past payments.</p>
+    <h2 data-i18n="pg_admin_dashboard_61">Commission</h2>
+    <p class="sub" data-i18n="pg_admin_dashboard_62">The rate applies only to future deliveries — it does not change the snapshot of past payments.</p>
     <div class="controls">
       <div class="field">
-        <label for="commissionPct">Commission % (0–100)</label>
-        <input type="text" id="commissionPct" inputmode="decimal" maxlength="6" placeholder="15">
+        <label for="commissionPct" data-i18n="pg_admin_dashboard_63">Commission % (0–100)</label>
+        <input type="text" id="commissionPct" inputmode="decimal" maxlength="6" placeholder="15" data-i18n-ph="pg_admin_dashboard_64">
       </div>
-      <button class="btn ghost" id="saveCommission" type="button">Save</button>
-      <button class="btn ghost" id="refreshMoney" type="button">Load</button>
+      <button class="btn ghost" id="saveCommission" type="button" data-i18n="pg_admin_dashboard_65">Save</button>
+      <button class="btn ghost" id="refreshMoney" type="button" data-i18n="pg_admin_dashboard_66">Load</button>
     </div>
-    <div id="commissionBox" aria-live="polite"><p class="loading">Press Load to load the commission rate.</p></div>
+    <div id="commissionBox" aria-live="polite"><p class="loading" data-i18n="pg_admin_dashboard_67">Press Load to load the commission rate.</p></div>
 
-    <h2 style="margin-top:16px">Driver balances</h2>
-    <p class="sub">Cash collected, earnings, commission, settled amounts, and outstanding balances — select a driver for details and settlement.</p>
-    <div class="list" id="balancesList" aria-live="polite"><p class="loading">Press Load.</p></div>
+    <h2 style="margin-top:16px" data-i18n="pg_admin_dashboard_68">Driver balances</h2>
+    <p class="sub" data-i18n="pg_admin_dashboard_69">Cash collected, earnings, commission, settled amounts, and outstanding balances — select a driver for details and settlement.</p>
+    <div class="list" id="balancesList" aria-live="polite"><p class="loading" data-i18n="pg_admin_dashboard_70">Press Load.</p></div>
 
     <div id="driverMoneyBox" hidden>
-      <h2 id="driverMoneyTitle" style="margin-top:14px">Driver details</h2>
+      <h2 id="driverMoneyTitle" style="margin-top:14px" data-i18n="pg_admin_dashboard_71">Driver details</h2>
       <div id="driverMoneySummary" aria-live="polite"></div>
-      <h2 style="margin-top:14px">Record a settlement</h2>
+      <h2 style="margin-top:14px" data-i18n="pg_admin_dashboard_72">Record a settlement</h2>
       <div class="controls">
         <div class="field">
-          <label for="settleAmount">Amount (Rs)</label>
-          <input type="text" id="settleAmount" inputmode="decimal" maxlength="12" placeholder="150">
+          <label for="settleAmount" data-i18n="pg_admin_dashboard_73">Amount (Rs)</label>
+          <input type="text" id="settleAmount" inputmode="decimal" maxlength="12" placeholder="150" data-i18n-ph="pg_admin_dashboard_74">
         </div>
         <div class="field">
-          <label for="settleMethod">Method</label>
+          <label for="settleMethod" data-i18n="pg_admin_dashboard_75">Method</label>
           <select id="settleMethod">
-            <option value="cash">cash</option>
-            <option value="bank_transfer">bank_transfer</option>
-            <option value="upi">upi</option>
+            <option value="cash" data-i18n="pg_admin_dashboard_76">cash</option>
+            <option value="bank_transfer" data-i18n="pg_admin_dashboard_77">bank_transfer</option>
+            <option value="upi" data-i18n="pg_admin_dashboard_78">upi</option>
           </select>
         </div>
       </div>
       <div class="controls">
         <div class="field">
-          <label for="settleRef">Reference number (required for bank transfer/UPI)</label>
-          <input type="text" id="settleRef" maxlength="100" placeholder="UPI-12345">
+          <label for="settleRef" data-i18n="pg_admin_dashboard_79">Reference number (required for bank transfer/UPI)</label>
+          <input type="text" id="settleRef" maxlength="100" placeholder="UPI-12345" data-i18n-ph="pg_admin_dashboard_80">
         </div>
         <div class="field">
-          <label for="settleNotes">Notes (optional)</label>
-          <input type="text" id="settleNotes" maxlength="500" placeholder="Cash deposited at the office">
+          <label for="settleNotes" data-i18n="pg_admin_dashboard_81">Notes (optional)</label>
+          <input type="text" id="settleNotes" maxlength="500" placeholder="Cash deposited at the office" data-i18n-ph="pg_admin_dashboard_82">
         </div>
       </div>
       <div class="controls">
-        <button class="btn" id="settleSubmit" type="button">Record settlement</button>
-        <button class="btn ghost" id="driverMoneyBack" type="button">Back</button>
+        <button class="btn" id="settleSubmit" type="button" data-i18n="pg_admin_dashboard_83">Record settlement</button>
+        <button class="btn ghost" id="driverMoneyBack" type="button" data-i18n="pg_admin_dashboard_84">Back</button>
       </div>
-      <h2 style="margin-top:14px">Payments</h2>
+      <h2 style="margin-top:14px" data-i18n="pg_admin_dashboard_85">Payments</h2>
       <div class="list" id="driverPayments" aria-live="polite"></div>
-      <h2 style="margin-top:14px">Settlements</h2>
+      <h2 style="margin-top:14px" data-i18n="pg_admin_dashboard_86">Settlements</h2>
       <div class="list" id="driverSettlements" aria-live="polite"></div>
     </div>
   </section>
@@ -311,10 +311,11 @@
   <div class="site-foot-inner">
     <div class="site-foot-brand">ApnaShift</div>
     <div class="site-foot-links">
-      <a href="index.html">Home</a>
-      <a href="help.html">Help</a>
-      <a href="privacy.html">Privacy Policy</a>
-      <a href="terms.html">Terms &amp; Conditions</a>
+      <a href="index.html" data-i18n="pg_admin_dashboard_87">Home</a>
+      <a href="help.html" data-i18n="pg_admin_dashboard_88">Help</a>
+      <a href="privacy.html" data-i18n="pg_admin_dashboard_89">Privacy Policy</a>
+      <a href="terms.html" data-i18n="pg_admin_dashboard_90">Terms &amp; Conditions</a>
+      <a href="mailto:support@apnashift.in?subject=ApnaShift%20Support%20Request">support@apnashift.in</a>
     </div>
   </div>
 </footer>
@@ -1249,5 +1250,7 @@
   loadStats();
 })();
 </script>
+<script>window.PAGE_I18N={en:{pg_admin_dashboard_01:"Admin Dashboard",pg_admin_dashboard_02:"For authorized staff only. Manage statistics, drivers, enterprise inquiries, and bookings from here.",pg_admin_dashboard_03:"Logout",pg_admin_dashboard_04:"Overview",pg_admin_dashboard_05:"Drivers",pg_admin_dashboard_06:"Enterprise",pg_admin_dashboard_07:"Bookings",pg_admin_dashboard_08:"Tracking",pg_admin_dashboard_09:"Settlement",pg_admin_dashboard_10:"Overview",pg_admin_dashboard_11:"Today's, this week's, and overall figures.",pg_admin_dashboard_12:"Refresh",pg_admin_dashboard_13:"Loading statistics…",pg_admin_dashboard_14:"Drivers",pg_admin_dashboard_15:"Select a status, then verify, reject, or deactivate drivers.",pg_admin_dashboard_16:"Status",pg_admin_dashboard_17:"pending",pg_admin_dashboard_18:"verified",pg_admin_dashboard_19:"review",pg_admin_dashboard_20:"Load",pg_admin_dashboard_21:"Press Load to load the driver list.",pg_admin_dashboard_22:"Password reset",pg_admin_dashboard_23:"Search for a user/driver by phone number and set a new password (minimum 8 characters).",pg_admin_dashboard_24:"Phone number",pg_admin_dashboard_25:"98765 43210",pg_admin_dashboard_26:"Search",pg_admin_dashboard_27:"Enterprise inquiries",pg_admin_dashboard_28:"Update the status: CONTACTED / IN_DISCUSSION / CONVERTED / CLOSED.",pg_admin_dashboard_29:"Status filter",pg_admin_dashboard_30:"All",pg_admin_dashboard_31:"NEW",pg_admin_dashboard_32:"CONTACTED",pg_admin_dashboard_33:"IN_DISCUSSION",pg_admin_dashboard_34:"CONVERTED",pg_admin_dashboard_35:"CLOSED",pg_admin_dashboard_36:"Search",pg_admin_dashboard_37:"Enter a company or name",pg_admin_dashboard_38:"Load",pg_admin_dashboard_39:"Press Load to view inquiries.",pg_admin_dashboard_40:"Bookings New: —",pg_admin_dashboard_41:"New: —",pg_admin_dashboard_42:"Totals and revenue with status filters.",pg_admin_dashboard_43:"Status filter",pg_admin_dashboard_44:"All",pg_admin_dashboard_45:"pending",pg_admin_dashboard_46:"assigned",pg_admin_dashboard_47:"completed",pg_admin_dashboard_48:"cancelled",pg_admin_dashboard_49:"Dispute filter",pg_admin_dashboard_50:"All",pg_admin_dashboard_51:"Disputed only",pg_admin_dashboard_52:"Clean only",pg_admin_dashboard_53:"Load",pg_admin_dashboard_54:"🔔 Alerts: Off",pg_admin_dashboard_55:"🔊 Sound: Off",pg_admin_dashboard_56:"Press Load to view bookings.",pg_admin_dashboard_57:"Live tracking",pg_admin_dashboard_58:"Active trips (accepted/arrived/in_transit) — the driver's last GPS location and tracking status. Auto-refreshes every 10 seconds.",pg_admin_dashboard_59:"Load",pg_admin_dashboard_60:"Press Load to view live trips.",pg_admin_dashboard_61:"Commission",pg_admin_dashboard_62:"The rate applies only to future deliveries — it does not change the snapshot of past payments.",pg_admin_dashboard_63:"Commission % (0–100)",pg_admin_dashboard_64:"15",pg_admin_dashboard_65:"Save",pg_admin_dashboard_66:"Load",pg_admin_dashboard_67:"Press Load to load the commission rate.",pg_admin_dashboard_68:"Driver balances",pg_admin_dashboard_69:"Cash collected, earnings, commission, settled amounts, and outstanding balances — select a driver for details and settlement.",pg_admin_dashboard_70:"Press Load.",pg_admin_dashboard_71:"Driver details",pg_admin_dashboard_72:"Record a settlement",pg_admin_dashboard_73:"Amount (Rs)",pg_admin_dashboard_74:"150",pg_admin_dashboard_75:"Method",pg_admin_dashboard_76:"cash",pg_admin_dashboard_77:"bank_transfer",pg_admin_dashboard_78:"upi",pg_admin_dashboard_79:"Reference number (required for bank transfer/UPI)",pg_admin_dashboard_80:"UPI-12345",pg_admin_dashboard_81:"Notes (optional)",pg_admin_dashboard_82:"Cash deposited at the office",pg_admin_dashboard_83:"Record settlement",pg_admin_dashboard_84:"Back",pg_admin_dashboard_85:"Payments",pg_admin_dashboard_86:"Settlements",pg_admin_dashboard_87:"Home",pg_admin_dashboard_88:"Help",pg_admin_dashboard_89:"Privacy Policy",pg_admin_dashboard_90:"Terms & Conditions",page_title:"Admin Dashboard | ApnaShift",meta_desc:"ApnaShift internal admin dashboard — statistics, drivers, enterprise inquiries, and bookings."},hi:{pg_admin_dashboard_01:"एडमिन डैशबोर्ड",pg_admin_dashboard_02:"केवल अधिकृत स्टाफ के लिए। आंकड़े, ड्राइवर, एंटरप्राइज़ पूछताछ और बुकिंग यहीं से प्रबंधित करें।",pg_admin_dashboard_03:"लॉगआउट",pg_admin_dashboard_04:"अवलोकन",pg_admin_dashboard_05:"ड्राइवर",pg_admin_dashboard_06:"एंटरप्राइज़",pg_admin_dashboard_07:"बुकिंग",pg_admin_dashboard_08:"ट्रैकिंग",pg_admin_dashboard_09:"सेटलमेंट",pg_admin_dashboard_10:"अवलोकन",pg_admin_dashboard_11:"आज, इस सप्ताह और कुल आंकड़े।",pg_admin_dashboard_12:"रीफ्रेश करें",pg_admin_dashboard_13:"आंकड़े लोड हो रहे हैं…",pg_admin_dashboard_14:"ड्राइवर",pg_admin_dashboard_15:"स्थिति चुनें, फिर ड्राइवरों को सत्यापित, अस्वीकृत या निष्क्रिय करें।",pg_admin_dashboard_16:"स्थिति",pg_admin_dashboard_17:"लंबित",pg_admin_dashboard_18:"सत्यापित",pg_admin_dashboard_19:"समीक्षा",pg_admin_dashboard_20:"लोड करें",pg_admin_dashboard_21:"ड्राइवर सूची लोड करने के लिए लोड दबाएं।",pg_admin_dashboard_22:"पासवर्ड रीसेट",pg_admin_dashboard_23:"फ़ोन नंबर से यूज़र या ड्राइवर खोजें और नया पासवर्ड सेट करें (कम से कम 8 अक्षर)।",pg_admin_dashboard_24:"फ़ोन नंबर",pg_admin_dashboard_25:"98765 43210",pg_admin_dashboard_26:"खोजें",pg_admin_dashboard_27:"एंटरप्राइज़ पूछताछ",pg_admin_dashboard_28:"स्थिति अपडेट करें: CONTACTED / IN_DISCUSSION / CONVERTED / CLOSED।",pg_admin_dashboard_29:"स्थिति फ़िल्टर",pg_admin_dashboard_30:"सभी",pg_admin_dashboard_31:"NEW",pg_admin_dashboard_32:"CONTACTED",pg_admin_dashboard_33:"IN_DISCUSSION",pg_admin_dashboard_34:"CONVERTED",pg_admin_dashboard_35:"CLOSED",pg_admin_dashboard_36:"खोजें",pg_admin_dashboard_37:"कंपनी या नाम लिखें",pg_admin_dashboard_38:"लोड करें",pg_admin_dashboard_39:"पूछताछ देखने के लिए लोड दबाएं।",pg_admin_dashboard_40:"बुकिंग नई: —",pg_admin_dashboard_41:"नई: —",pg_admin_dashboard_42:"स्थिति फ़िल्टर के साथ कुल और राजस्व।",pg_admin_dashboard_43:"स्थिति फ़िल्टर",pg_admin_dashboard_44:"सभी",pg_admin_dashboard_45:"लंबित",pg_admin_dashboard_46:"असाइन किया गया",pg_admin_dashboard_47:"पूर्ण",pg_admin_dashboard_48:"रद्द",pg_admin_dashboard_49:"विवाद फ़िल्टर",pg_admin_dashboard_50:"सभी",pg_admin_dashboard_51:"केवल विवादित",pg_admin_dashboard_52:"केवल साफ",pg_admin_dashboard_53:"लोड करें",pg_admin_dashboard_54:"🔔 अलर्ट: बंद",pg_admin_dashboard_55:"🔊 आवाज़: बंद",pg_admin_dashboard_56:"बुकिंग देखने के लिए लोड दबाएं।",pg_admin_dashboard_57:"लाइव ट्रैकिंग",pg_admin_dashboard_58:"सक्रिय यात्राएं (accepted/arrived/in_transit) — ड्राइवर की अंतिम GPS लोकेशन और ट्रैकिंग स्थिति। हर 10 सेकंड में ऑटो-रीफ्रेश।",pg_admin_dashboard_59:"लोड करें",pg_admin_dashboard_60:"लाइव यात्राएं देखने के लिए लोड दबाएं।",pg_admin_dashboard_61:"कमीशन",pg_admin_dashboard_62:"यह दर केवल भविष्य की डिलीवरी पर लागू होती है — पिछले भुगतान का रिकॉर्ड नहीं बदलता।",pg_admin_dashboard_63:"कमीशन % (0–100)",pg_admin_dashboard_64:"15",pg_admin_dashboard_65:"सहेजें",pg_admin_dashboard_66:"लोड करें",pg_admin_dashboard_67:"कमीशन दर लोड करने के लिए लोड दबाएं।",pg_admin_dashboard_68:"ड्राइवर बैलेंस",pg_admin_dashboard_69:"एकत्र नकद, कमाई, कमीशन, सेटल राशि और बकाया बैलेंस — विवरण और सेटलमेंट के लिए ड्राइवर चुनें।",pg_admin_dashboard_70:"लोड दबाएं।",pg_admin_dashboard_71:"ड्राइवर विवरण",pg_admin_dashboard_72:"सेटलमेंट दर्ज करें",pg_admin_dashboard_73:"राशि (रु)",pg_admin_dashboard_74:"150",pg_admin_dashboard_75:"तरीका",pg_admin_dashboard_76:"नकद",pg_admin_dashboard_77:"बैंक ट्रांसफर",pg_admin_dashboard_78:"UPI",pg_admin_dashboard_79:"संदर्भ संख्या (बैंक ट्रांसफर या UPI के लिए आवश्यक)",pg_admin_dashboard_80:"UPI-12345",pg_admin_dashboard_81:"नोट्स (वैकल्पिक)",pg_admin_dashboard_82:"कार्यालय में नकद जमा किया",pg_admin_dashboard_83:"सेटलमेंट दर्ज करें",pg_admin_dashboard_84:"वापस",pg_admin_dashboard_85:"भुगतान",pg_admin_dashboard_86:"सेटलमेंट",pg_admin_dashboard_87:"होम",pg_admin_dashboard_88:"सहायता",pg_admin_dashboard_89:"गोपनीयता नीति",pg_admin_dashboard_90:"नियम और शर्तें",page_title:"एडमिन डैशबोर्ड | ApnaShift",meta_desc:"ApnaShift आंतरिक एडमिन डैशबोर्ड — आंकड़े, ड्राइवर, एंटरप्राइज़ पूछताछ और बुकिंग।"}};</script>
+<script src="lang.js"></script>
 </body>
 </html>

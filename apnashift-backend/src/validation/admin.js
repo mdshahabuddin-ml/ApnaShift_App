@@ -83,4 +83,50 @@ export const pricingHistoryQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(50),
 });
 
+// GET /api/admin/reports/summary — from/to accept YYYY-MM-DD (poora din)
+// ya full ISO datetime. Date-only `to` din ke aakhir tak (23:59:59.999).
+function toRangeISO(v, endOfDay) {
+  if (typeof v !== 'string') return v;
+  const s = v.trim();
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+  if (!m) return s;
+  const y = Number(m[1]);
+  const mo = Number(m[2]);
+  const d = Number(m[3]);
+  const dt = new Date(Date.UTC(y, mo - 1, d));
+  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) return s;
+  return endOfDay ? new Date(dt.getTime() + 86400000 - 1).toISOString() : dt.toISOString();
+}
+
+const reportDateInput = (field, endOfDay) =>
+  z.preprocess(
+    (v) => {
+      if (v === undefined || v === null || (typeof v === 'string' && v.trim() === '')) return undefined;
+      return toRangeISO(v, endOfDay);
+    },
+    z.string().datetime({ message: `${field} YYYY-MM-DD ya ISO datetime ho.` }).optional(),
+  );
+
+export const reportsSummaryQuerySchema = z
+  .object({
+    from: reportDateInput('from', false),
+    to: reportDateInput('to', true),
+    group_by: z
+      .enum(['day', 'week', 'month'], {
+        errorMap: () => ({ message: 'group_by day, week ya month ho.' }),
+      })
+      .default('day'),
+  })
+  .refine((v) => !(v.from && v.to) || new Date(v.from).getTime() <= new Date(v.to).getTime(), {
+    message: 'from, to se pehle ya barabar ho.',
+    path: ['from'],
+  })
+  .refine(
+    (v) => {
+      if (!v.from || !v.to) return true;
+      return new Date(v.to).getTime() - new Date(v.from).getTime() <= 366 * 86400000;
+    },
+    { message: 'Range 366 din se zyada nahi.', path: ['to'] },
+  );
+
 export { parseQuery };

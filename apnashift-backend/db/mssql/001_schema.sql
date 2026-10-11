@@ -41,6 +41,7 @@ CREATE TABLE drivers (
   is_active BIT NOT NULL DEFAULT 1,
   avg_rating DECIMAL(3, 2) NULL,
   total_trips INT NOT NULL DEFAULT 0,
+  commission_due DECIMAL(10, 2) NOT NULL DEFAULT 0 CHECK (commission_due >= 0),
   needs_review BIT NOT NULL DEFAULT 0,
   rejection_reason NVARCHAR(MAX) NULL,
   email NVARCHAR(120) NULL UNIQUE,

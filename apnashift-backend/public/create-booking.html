@@ -97,77 +97,78 @@
 </header>
 
 <main>
-  <h1>Book a Vehicle</h1>
-  <p class="sub">Enter addresses, view the live fare, then confirm your booking.</p>
+  <h1 data-i18n="pg_create-booking_01">Book a Vehicle</h1>
+  <p class="sub" data-i18n="pg_create-booking_02">Enter addresses, view the live fare, then confirm your booking.</p>
 
   <div id="pageAlert" role="alert" aria-live="assertive"></div>
 
   <section class="card" aria-labelledby="formTitle">
-    <h2 id="formTitle">Trip details</h2>
+    <h2 id="formTitle" data-i18n="pg_create-booking_03">Trip details</h2>
     <div class="field" id="f-pickup">
-      <label for="pickupAddr">Pickup address</label>
-      <input type="text" id="pickupAddr" maxlength="300" placeholder="Example: 12 MG Road, Indore">
+      <label for="pickupAddr" data-i18n="pg_create-booking_04">Pickup address</label>
+      <input type="text" id="pickupAddr" maxlength="300" placeholder="Example: 12 MG Road, Indore" data-i18n-ph="pg_create-booking_05">
       <p class="error-text" id="pickupAddr-err"></p>
     </div>
     <div class="row2">
       <div class="field">
-        <label for="pickupLat">Pickup lat</label>
+        <label for="pickupLat" data-i18n="pg_create-booking_06">Pickup lat</label>
         <input type="number" id="pickupLat" step="any" min="-90" max="90" value="22.7196">
       </div>
       <div class="field">
-        <label for="pickupLng">Pickup lng</label>
+        <label for="pickupLng" data-i18n="pg_create-booking_07">Pickup lng</label>
         <input type="number" id="pickupLng" step="any" min="-180" max="180" value="75.8577">
       </div>
     </div>
     <div class="field" id="f-drop">
-      <label for="dropAddr">Drop address</label>
-      <input type="text" id="dropAddr" maxlength="300" placeholder="Example: 45 AB Road, Indore">
+      <label for="dropAddr" data-i18n="pg_create-booking_08">Drop address</label>
+      <input type="text" id="dropAddr" maxlength="300" placeholder="Example: 45 AB Road, Indore" data-i18n-ph="pg_create-booking_09">
       <p class="error-text" id="dropAddr-err"></p>
     </div>
     <div class="row2">
       <div class="field">
-        <label for="dropLat">Drop lat</label>
+        <label for="dropLat" data-i18n="pg_create-booking_10">Drop lat</label>
         <input type="number" id="dropLat" step="any" min="-90" max="90" value="22.7296">
       </div>
       <div class="field">
-        <label for="dropLng">Drop lng</label>
+        <label for="dropLng" data-i18n="pg_create-booking_11">Drop lng</label>
         <input type="number" id="dropLng" step="any" min="-180" max="180" value="75.8677">
       </div>
     </div>
     <div class="field" id="f-vehicle">
-      <label for="vehicle">Select vehicle</label>
+      <label for="vehicle" data-i18n="pg_create-booking_12">Select vehicle</label>
       <select id="vehicle">
-        <option value="pickup">Pickup — Small goods</option>
-        <option value="mini_truck">Mini Truck — Household goods</option>
-        <option value="mini_tractor">Mini Tractor — Heavy goods</option>
+        <option value="pickup" data-i18n="pg_create-booking_13">Pickup — Small goods</option>
+        <option value="mini_truck" data-i18n="pg_create-booking_14">Mini Truck — Household goods</option>
+        <option value="mini_tractor" data-i18n="pg_create-booking_15">Mini Tractor — Heavy goods</option>
       </select>
       <p class="error-text" id="vehicle-err"></p>
     </div>
     <div class="controls">
-      <button type="button" class="btn ghost" id="estimateBtn">Check Live Price</button>
+      <button type="button" class="btn ghost" id="estimateBtn" data-i18n="pg_create-booking_16">Check Live Price</button>
     </div>
     <div class="fare" id="fareCard" aria-live="polite">
       <table>
         <tbody>
-          <tr><td>Distance</td><td id="fareDist">–</td></tr>
-          <tr><td>Total fare</td><td id="fareTotal">–</td></tr>
+          <tr><td data-i18n="pg_create-booking_17">Distance</td><td id="fareDist">–</td></tr>
+          <tr><td data-i18n="pg_create-booking_18">Total fare</td><td id="fareTotal">–</td></tr>
         </tbody>
       </table>
     </div>
     <div class="controls">
-      <button type="button" class="btn" id="bookBtn">Confirm Booking</button>
+      <button type="button" class="btn" id="bookBtn" data-i18n="pg_create-booking_19">Confirm Booking</button>
     </div>
-    <p class="hint">Default payment method is UPI (cannot be changed after booking).</p>
+    <p class="hint" data-i18n="pg_create-booking_20">Default payment method is UPI (cannot be changed after booking).</p>
   </section>
 
 <footer class="site-footer">
   <div class="site-foot-inner">
     <div class="site-foot-brand">ApnaShift</div>
     <div class="site-foot-links">
-      <a href="index.html">Home</a>
-      <a href="help.html">Help</a>
-      <a href="privacy.html">Privacy Policy</a>
-      <a href="terms.html">Terms &amp; Conditions</a>
+      <a href="index.html" data-i18n="pg_create-booking_21">Home</a>
+      <a href="help.html" data-i18n="pg_create-booking_22">Help</a>
+      <a href="privacy.html" data-i18n="pg_create-booking_23">Privacy Policy</a>
+      <a href="terms.html" data-i18n="pg_create-booking_24">Terms &amp; Conditions</a>
+      <a href="mailto:support@apnashift.in?subject=ApnaShift%20Support%20Request">support@apnashift.in</a>
     </div>
   </div>
 </footer>
@@ -335,5 +336,7 @@
   }
 })();
 </script>
+<script>window.PAGE_I18N={en:{page_title:"Create Booking | ApnaShift",meta_desc:"Book a vehicle on ApnaShift — view live fares and confirm your booking.",'pg_create-booking_01':"Book a Vehicle",'pg_create-booking_02':"Enter addresses, view the live fare, then confirm your booking.",'pg_create-booking_03':"Trip details",'pg_create-booking_04':"Pickup address",'pg_create-booking_05':"Example: 12 MG Road, Indore",'pg_create-booking_06':"Pickup lat",'pg_create-booking_07':"Pickup lng",'pg_create-booking_08':"Drop address",'pg_create-booking_09':"Example: 45 AB Road, Indore",'pg_create-booking_10':"Drop lat",'pg_create-booking_11':"Drop lng",'pg_create-booking_12':"Select vehicle",'pg_create-booking_13':"Pickup — Small goods",'pg_create-booking_14':"Mini Truck — Household goods",'pg_create-booking_15':"Mini Tractor — Heavy goods",'pg_create-booking_16':"Check Live Price",'pg_create-booking_17':"Distance",'pg_create-booking_18':"Total fare",'pg_create-booking_19':"Confirm Booking",'pg_create-booking_20':"Default payment method is UPI (cannot be changed after booking).",'pg_create-booking_21':"Home",'pg_create-booking_22':"Help",'pg_create-booking_23':"Privacy Policy",'pg_create-booking_24':"Terms & Conditions"},hi:{page_title:"बुकिंग बनाएं | ApnaShift",meta_desc:"ApnaShift पर वाहन बुक करें — लाइव किराया देखें और बुकिंग कन्फर्म करें।",'pg_create-booking_01':"वाहन बुक करें",'pg_create-booking_02':"पता भरें, लाइव किराया देखें, फिर बुकिंग कन्फर्म करें।",'pg_create-booking_03':"ट्रिप विवरण",'pg_create-booking_04':"पिकअप पता",'pg_create-booking_05':"उदाहरण: 12 एमजी रोड, इंदौर",'pg_create-booking_06':"पिकअप अक्षांश",'pg_create-booking_07':"पिकअप देशांतर",'pg_create-booking_08':"ड्रॉप पता",'pg_create-booking_09':"उदाहरण: 45 एबी रोड, इंदौर",'pg_create-booking_10':"ड्रॉप अक्षांश",'pg_create-booking_11':"ड्रॉप देशांतर",'pg_create-booking_12':"वाहन चुनें",'pg_create-booking_13':"पिकअप — छोटा सामान",'pg_create-booking_14':"मिनी ट्रक — घर का सामान",'pg_create-booking_15':"मिनी ट्रैक्टर — भारी सामान",'pg_create-booking_16':"लाइव किराया देखें",'pg_create-booking_17':"दूरी",'pg_create-booking_18':"कुल किराया",'pg_create-booking_19':"बुकिंग कन्फर्म करें",'pg_create-booking_20':"डिफॉल्ट भुगतान UPI है (बुकिंग के बाद बदला नहीं जा सकता)।",'pg_create-booking_21':"होम",'pg_create-booking_22':"सहायता",'pg_create-booking_23':"प्राइवेसी पॉलिसी",'pg_create-booking_24':"नियम और शर्तें"}};</script>
+<script src="lang.js"></script>
 </body>
 </html>

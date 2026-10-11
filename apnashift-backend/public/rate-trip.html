@@ -97,29 +97,29 @@
 </header>
 
 <main>
-  <h1>Trip Rating</h1>
-  <p class="sub" id="bookLine">Loading booking…</p>
+  <h1 data-i18n="pg_rate-trip_01">Trip Rating</h1>
+  <p class="sub" id="bookLine" data-i18n="pg_rate-trip_02">Loading booking…</p>
 
   <div id="pageAlert" role="alert" aria-live="assertive"></div>
 
   <section class="card" id="rateCard" aria-labelledby="rateTitle" hidden>
-    <h2 id="rateTitle">How many stars would you give?</h2>
+    <h2 id="rateTitle" data-i18n="pg_rate-trip_03">How many stars would you give?</h2>
     <div class="kv" id="tripInfo"></div>
     <div class="stars" id="starsBox" role="radiogroup" aria-label="Choose 1 to 5 stars"></div>
-    <label for="commentBox">Comment (optional)</label>
-    <textarea id="commentBox" maxlength="500" placeholder="Example: Driver arrived on time and handled goods carefully"></textarea>
+    <label for="commentBox" data-i18n="pg_rate-trip_04">Comment (optional)</label>
+    <textarea id="commentBox" maxlength="500" placeholder="Example: Driver arrived on time and handled goods carefully" data-i18n-ph="pg_rate-trip_05"></textarea>
     <p class="error-text" id="rateErr"></p>
     <div class="controls">
-      <button type="button" class="btn" id="submitBtn">Submit</button>
-      <a class="btn ghost" id="backLink" href="customer-dashboard.html">Back</a>
+      <button type="button" class="btn" id="submitBtn" data-i18n="pg_rate-trip_06">Submit</button>
+      <a class="btn ghost" id="backLink" href="customer-dashboard.html" data-i18n="pg_rate-trip_07">Back</a>
     </div>
   </section>
 
   <section class="card" id="doneCard" aria-labelledby="doneTitle" hidden>
-    <h2 id="doneTitle">You have already rated this trip</h2>
+    <h2 id="doneTitle" data-i18n="pg_rate-trip_08">You have already rated this trip</h2>
     <div id="doneBody"></div>
     <div class="controls">
-      <a class="btn ghost" id="doneBackLink" href="customer-dashboard.html">Back</a>
+      <a class="btn ghost" id="doneBackLink" href="customer-dashboard.html" data-i18n="pg_rate-trip_09">Back</a>
     </div>
   </section>
 
@@ -127,10 +127,11 @@
   <div class="site-foot-inner">
     <div class="site-foot-brand">ApnaShift</div>
     <div class="site-foot-links">
-      <a href="index.html">Home</a>
-      <a href="help.html">Help</a>
-      <a href="privacy.html">Privacy Policy</a>
-      <a href="terms.html">Terms &amp; Conditions</a>
+      <a href="index.html" data-i18n="pg_rate-trip_10">Home</a>
+      <a href="help.html" data-i18n="pg_rate-trip_11">Help</a>
+      <a href="privacy.html" data-i18n="pg_rate-trip_12">Privacy Policy</a>
+      <a href="terms.html" data-i18n="pg_rate-trip_13">Terms &amp; Conditions</a>
+      <a href="mailto:support@apnashift.in?subject=ApnaShift%20Support%20Request" data-i18n="pg_rate-trip_14">support@apnashift.in</a>
     </div>
   </div>
 </footer>
@@ -341,5 +342,7 @@
   }
 })();
 </script>
+<script>window.PAGE_I18N={"en": {"page_title": "Rate Trip | ApnaShift", "meta_desc": "Rate your completed trip with stars.", "pg_rate-trip_01": "Trip Rating", "pg_rate-trip_02": "Loading booking…", "pg_rate-trip_03": "How many stars would you give?", "pg_rate-trip_04": "Comment (optional)", "pg_rate-trip_05": "Example: Driver arrived on time and handled goods carefully", "pg_rate-trip_06": "Submit", "pg_rate-trip_07": "Back", "pg_rate-trip_08": "You have already rated this trip", "pg_rate-trip_09": "Back", "pg_rate-trip_10": "Home", "pg_rate-trip_11": "Help", "pg_rate-trip_12": "Privacy Policy", "pg_rate-trip_13": "Terms & Conditions", "pg_rate-trip_14": "support@apnashift.in"}, "hi": {"page_title": "यात्रा रेटिंग | ApnaShift", "meta_desc": "अपनी पूरी यात्रा को स्टार दें।", "pg_rate-trip_01": "यात्रा रेटिंग", "pg_rate-trip_02": "बुकिंग लोड हो रही है…", "pg_rate-trip_03": "आप कितने स्टार देंगे?", "pg_rate-trip_04": "टिप्पणी (वैकल्पिक)", "pg_rate-trip_05": "उदाहरण: ड्राइवर समय पर आया और सामान सावधानी से रखा", "pg_rate-trip_06": "भेजें", "pg_rate-trip_07": "वापस", "pg_rate-trip_08": "आप इस यात्रा को पहले ही रेट कर चुके हैं", "pg_rate-trip_09": "वापस", "pg_rate-trip_10": "होम", "pg_rate-trip_11": "सहायता", "pg_rate-trip_12": "गोपनीयता नीति", "pg_rate-trip_13": "नियम व शर्तें", "pg_rate-trip_14": "support@apnashift.in"}};</script>
+<script src="lang.js"></script>
 </body>
 </html>
