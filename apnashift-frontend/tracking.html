@@ -101,32 +101,32 @@
   <div class="alert" id="pageAlert" role="alert" aria-live="assertive"></div>
 
   <section class="card" aria-labelledby="trackTitle">
-    <h1 id="trackTitle">Live Tracking</h1>
-    <p class="sub" id="bookLine">Loading booking…</p>
+    <h1 id="trackTitle" data-i18n="pg_tracking_01">Live Tracking</h1>
+    <p class="sub" id="bookLine" data-i18n="pg_tracking_02">Loading booking…</p>
     <div>
-      <span class="badge status" id="statusBadge">Status: —</span>
-      <span class="badge offline" id="trackBadge">Tracking: —</span>
+      <span class="badge status" id="statusBadge" data-i18n="pg_tracking_03">Status: —</span>
+      <span class="badge offline" id="trackBadge" data-i18n="pg_tracking_04">Tracking: —</span>
     </div>
-    <p class="meta" id="updateLine" aria-live="polite">Last update: —</p>
+    <p class="meta" id="updateLine" aria-live="polite" data-i18n="pg_tracking_05">Last update: —</p>
   </section>
 
   <div class="cols">
     <section class="card" aria-label="Live map">
-      <h2>Vehicle Location</h2>
+      <h2 data-i18n="pg_tracking_06">Vehicle Location</h2>
       <div id="map" role="img" aria-label="Live vehicle map"></div>
-      <p class="meta" id="mapNote">Driver's real GPS location — keep this page open for live updates.</p>
+      <p class="meta" id="mapNote" data-i18n="pg_tracking_07">Driver's real GPS location — keep this page open for live updates.</p>
     </section>
 
     <section class="card" aria-labelledby="detailTitle">
-      <h2 id="detailTitle">Trip details</h2>
-      <div class="kv" id="detailBox"><p class="meta">Loading…</p></div>
-      <p style="margin-top:12px"><a class="btn ghost" href="customer-dashboard.html">← My Bookings</a></p>
+      <h2 id="detailTitle" data-i18n="pg_tracking_08">Trip details</h2>
+      <div class="kv" id="detailBox"><p class="meta" data-i18n="pg_tracking_09">Loading…</p></div>
+      <p style="margin-top:12px"><a class="btn ghost" href="customer-dashboard.html" data-i18n="pg_tracking_10">← My Bookings</a></p>
     </section>
   </div>
 
   <section class="card" aria-label="Tracking states">
-    <h2>What the states mean</h2>
-    <p class="meta" style="margin:0">
+    <h2 data-i18n="pg_tracking_11">What the states mean</h2>
+    <p class="meta" style="margin:0" data-i18n="pg_tracking_12">
       <b>Live</b> = location received within the last 1 minute.
       <b>Stale</b> = 1–3 minutes old (network may be slow).
       <b>Offline</b> = no update for 3+ minutes or sharing stopped.
@@ -139,10 +139,11 @@
 <footer class="site-footer">
   <div class="site-foot-inner">
     <div class="site-foot-links">
-      <a href="index.html">Home</a>
-      <a href="help.html">Help</a>
-      <a href="privacy.html">Privacy Policy</a>
-      <a href="terms.html">Terms &amp; Conditions</a>
+      <a href="index.html" data-i18n="pg_tracking_13">Home</a>
+      <a href="help.html" data-i18n="pg_tracking_14">Help</a>
+      <a href="privacy.html" data-i18n="pg_tracking_15">Privacy Policy</a>
+      <a href="terms.html" data-i18n="pg_tracking_16">Terms &amp; Conditions</a>
+      <a href="mailto:support@apnashift.in?subject=ApnaShift%20Support%20Request" data-i18n="pg_tracking_17">support@apnashift.in</a>
     </div>
   </div>
 </footer>
@@ -158,9 +159,12 @@
   // the boot fallback before the first snapshot arrives.
   var STALE_MS = 60000, OFFLINE_MS = 180000;
   // Map tiles: Geoapify template fetched at runtime from /api/geo/config
-  // (key lives in backend env, never hard-coded here). OSM fallback.
+  // (key lives in backend env, never hard-coded here). OSM fallback, then
+  // CARTO backup (OSM servers 403-block some networks — auto-switch).
   var TILE_TEMPLATE = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
   var TILE_ATTRIB = "&copy; OpenStreetMap contributors";
+  var CARTO_TEMPLATE = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+  var tileErrCount = 0, cartoActive = false, trackTiles = null;
 
   function getToken(){ try { return localStorage.getItem(TOKEN_KEY); } catch(e){ return null; } }
   if(!getToken()){ window.location.href = "user-auth.html"; return; }
@@ -229,16 +233,26 @@
     in_transit: "IN TRANSIT", delivered: "DELIVERED", cancelled: "CANCELLED"
   };
 
-  // ---- Map (Leaflet + Geoapify tiles via /api/geo/config, OSM fallback).
+  // ---- Map (Leaflet + Geoapify tiles via /api/geo/config, OSM fallback, CARTO backup).
   // Text fallback if CDN blocked.
   var map = null, vehicleMarker = null, headingMarker = null, accuracyCircle = null, pickupMarker = null, dropMarker = null, routeLine = null;
   var routeGeometry = null, routeMeta = null, routeLoadedFor = "";
   function ensureMap(center){
     if(map || typeof L === "undefined") return;
     map = L.map("map").setView(center, 14);
-    L.tileLayer(TILE_TEMPLATE, {
+    trackTiles = L.tileLayer(TILE_TEMPLATE, {
       maxZoom: 19, attribution: TILE_ATTRIB
     }).addTo(map);
+    // OSM 403 (tile usage policy block) -> CARTO backup, GPS keeps working.
+    trackTiles.on("tileerror", function(){
+      tileErrCount++;
+      if(tileErrCount >= 3 && !cartoActive){
+        cartoActive = true;
+        try { trackTiles.setUrl(CARTO_TEMPLATE); } catch(e){}
+        try { if(map && map.attributionControl) map.attributionControl.addAttribution("&copy; CARTO"); } catch(e2){}
+        if(mapNote) mapNote.textContent = "Backup map tiles active — live GPS still updates here.";
+      }
+    });
   }
   function renderMap(){
     if(typeof L === "undefined"){
@@ -468,6 +482,7 @@
       .then(function(r){ return r.json().then(function(b){ return { status: r.status, body: b }; }); })
       .then(function(res){
         if(res.status === 200 && res.body && res.body.ok){
+          tileErrCount = 0; cartoActive = false;
           if(res.body.tiles && res.body.tiles.template) TILE_TEMPLATE = res.body.tiles.template;
           if(res.body.tiles && res.body.tiles.attribution) TILE_ATTRIB = res.body.tiles.attribution;
           if(res.body.thresholds){
@@ -605,5 +620,7 @@
   }
 })();
 </script>
+<script>window.PAGE_I18N={"en": {"page_title": "Live Tracking | ApnaShift", "meta_desc": "Track your booking vehicle live — driver, status and last location.", "pg_tracking_01": "Live Tracking", "pg_tracking_02": "Loading booking…", "pg_tracking_03": "Status: —", "pg_tracking_04": "Tracking: —", "pg_tracking_05": "Last update: —", "pg_tracking_06": "Vehicle Location", "pg_tracking_07": "Driver's real GPS location — keep this page open for live updates.", "pg_tracking_08": "Trip details", "pg_tracking_09": "Loading…", "pg_tracking_10": "← My Bookings", "pg_tracking_11": "What the states mean", "pg_tracking_12": "Live = location received within the last 1 minute. Stale = 1–3 minutes old (network may be slow). Offline = no update for 3+ minutes or sharing stopped. Ended = trip delivered/cancelled — tracking stops here. We do not show ETA — only the real location.", "pg_tracking_13": "Home", "pg_tracking_14": "Help", "pg_tracking_15": "Privacy Policy", "pg_tracking_16": "Terms & Conditions", "pg_tracking_17": "support@apnashift.in"}, "hi": {"page_title": "लाइव ट्रैकिंग | ApnaShift", "meta_desc": "अपनी बुकिंग का वाहन लाइव ट्रैक करें — ड्राइवर, स्थिति और अंतिम लोकेशन।", "pg_tracking_01": "लाइव ट्रैकिंग", "pg_tracking_02": "बुकिंग लोड हो रही है…", "pg_tracking_03": "स्थिति: —", "pg_tracking_04": "ट्रैकिंग: —", "pg_tracking_05": "अंतिम अपडेट: —", "pg_tracking_06": "वाहन की लोकेशन", "pg_tracking_07": "ड्राइवर की असली GPS लोकेशन — लाइव अपडेट के लिए यह पेज खुला रखें।", "pg_tracking_08": "यात्रा विवरण", "pg_tracking_09": "लोड हो रहा है…", "pg_tracking_10": "← मेरी बुकिंग", "pg_tracking_11": "स्थितियों का अर्थ", "pg_tracking_12": "लाइव = पिछले 1 मिनट में लोकेशन मिली है। पुरानी = 1–3 मिनट पुरानी (नेटवर्क धीमा हो सकता है)। ऑफ़लाइन = 3+ मिनट से कोई अपडेट नहीं या शेयरिंग बंद। समाप्त = यात्रा पूरी/रद्द — यहां ट्रैकिंग रुकती है। हम ETA नहीं दिखाते — सिर्फ असली लोकेशन।", "pg_tracking_13": "होम", "pg_tracking_14": "सहायता", "pg_tracking_15": "गोपनीयता नीति", "pg_tracking_16": "नियम व शर्तें", "pg_tracking_17": "support@apnashift.in"}};</script>
+<script src="lang.js"></script>
 </body>
 </html>

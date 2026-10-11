@@ -2,226 +2,240 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script>try{var __t=localStorage.getItem("apnashift-theme")||"system";var __d=__t;if(__t==="system"){__d=(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";}document.documentElement.setAttribute("data-theme",__d);document.documentElement.style.colorScheme=__d;}catch(__e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Book a Vehicle | ApnaShift</title>
 <meta name="description" content="Book a vehicle on ApnaShift — enter pickup and drop details to get the correct fare.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
-  :root{
-    --navy:#14213d;
-    --yellow:#fcbf49;
-    --bg:#f4f6fa;
-    --border:#c9d0de;
-    --ink:#20242e;
-    --muted:#5b6070;
-    --red:#c0392b;
-    --green:#1a7a3a;
-    --radius:14px;
-  }
-  *{box-sizing:border-box}
-  html{-webkit-text-size-adjust:100%}
-  body{
-    margin:0;
-    background:var(--bg);
-    color:var(--ink);
-    font-family:"Noto Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-    line-height:1.6;
-  }
-  :focus-visible{
-    outline:3px solid var(--navy);
-    outline-offset:2px;
-    box-shadow:0 0 0 6px var(--yellow);
-    border-radius:8px;
-  }
-  main{
-    max-width:560px;
-    margin:0 auto;
-    padding:20px 16px 40px;
-  }
-  .card{
-    background:#fff;
-    border:2px solid var(--navy);
-    border-radius:var(--radius);
-    padding:22px 18px;
-    box-shadow:6px 6px 0 var(--yellow);
-  }
-  h1{
-    font-family:"Baloo 2", "Comic Sans MS", system-ui, sans-serif;
-    color:var(--navy);
-    font-size:1.6rem;
-    line-height:1.2;
-    margin:0 0 6px;
-  }
-  .sub{
-    margin:0 0 12px;
-    color:var(--muted);
-    font-size:.92rem;
-  }
-  .field{margin-bottom:14px}
-  label{
-    display:block;
-    font-weight:600;
-    font-size:.92rem;
-    color:var(--navy);
-    margin-bottom:6px;
-  }
-  label .req{color:var(--red)}
-  .hint{
-    font-weight:400;
-    color:var(--muted);
-    font-size:.82rem;
-    margin:4px 0 0;
-  }
-  input,select,textarea{
-    width:100%;
-    font:inherit;
-    color:var(--ink);
-    background:#fff;
-    border:2px solid var(--border);
-    border-radius:10px;
-    padding:11px 12px;
-  }
-  input:focus,select:focus,textarea:focus{
-    border-color:var(--navy);
-    outline:none;
-  }
-  textarea{resize:vertical;min-height:76px}
-  input[type="checkbox"]{
-    width:20px;
-    height:20px;
-    flex:0 0 20px;
-    margin-top:3px;
-    accent-color:var(--navy);
-  }
-  .row2{display:grid;gap:12px;grid-template-columns:1fr 1fr}
-  @media(max-width:420px){.row2{grid-template-columns:1fr}}
-  .checkline{
-    display:flex;
-    gap:10px;
-    align-items:flex-start;
-    font-size:.9rem;
-    margin:4px 0 14px;
-  }
-  .error-text{
-    display:none;
-    color:var(--red);
-    font-size:.86rem;
-    font-weight:600;
-    margin:6px 0 0;
-  }
-  .field.invalid input,.field.invalid select,.field.invalid textarea{border-color:var(--red);background:#fff5f3}
-  .field.invalid .error-text{display:block}
-  .alert{
-    display:none;
-    border-radius:10px;
-    padding:11px 12px;
-    font-size:.9rem;
-    font-weight:600;
-    margin:0 0 14px;
-  }
-  .alert.show{display:block}
-  .alert.err{background:#fdecea;color:#7a1f14;border:2px solid var(--red)}
-  .alert.ok{background:#e6f6ea;color:#0d5c26;border:2px solid var(--green)}
-  .alert.info{background:#e8effc;color:#1c2f5e;border:2px solid var(--navy)}
-  .btn{
-    width:100%;
-    font-family:"Baloo 2", "Comic Sans MS", system-ui, sans-serif;
-    font-size:1.05rem;
-    font-weight:800;
-    color:var(--navy);
-    background:var(--yellow);
-    border:2px solid var(--navy);
-    border-radius:12px;
-    padding:12px 14px;
-    cursor:pointer;
-    box-shadow:0 4px 0 var(--navy);
-  }
-  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--navy)}
-  .btn[disabled]{opacity:.65;cursor:wait;transform:none}
-  .btn.ghost{background:#fff}
-  .btnrow{display:grid;gap:10px;margin-top:6px}
-  .fare{
-    display:none;
-    margin-top:16px;
-    background:#fff;
-    border:2px dashed var(--navy);
-    border-radius:var(--radius);
-    padding:16px;
-  }
-  .fare.show{display:block}
-  .fare h2{
-    font-family:"Baloo 2", "Comic Sans MS", system-ui, sans-serif;
-    color:var(--navy);
-    font-size:1.2rem;
-    margin:0 0 8px;
-  }
-  .fare table{width:100%;border-collapse:collapse;font-size:.92rem}
-  .fare td{padding:6px 4px;border-bottom:1px solid var(--border)}
-  .fare td:last-child{text-align:right;font-weight:600}
-  .fare tr.total td{border-bottom:none;font-size:1.05rem;color:var(--navy)}
-  #successCard{
-    display:none;
-    margin-top:16px;
-    background:var(--navy);
-    color:#fff;
-    border-radius:var(--radius);
-    padding:22px 18px;
-    border:2px solid var(--navy);
-    box-shadow:6px 6px 0 var(--yellow);
-    text-align:center;
-  }
-  #successCard.show{display:block}
-  #successCard h2{
-    font-family:"Baloo 2", "Comic Sans MS", system-ui, sans-serif;
-    color:var(--yellow);
-    margin:0 0 6px;
-    font-size:1.4rem;
-  }
-  #successCard p{margin:6px 0;color:#dbe2f0;overflow-wrap:anywhere}
-  #successCard a{color:var(--yellow);font-weight:600}
-  .backlink{display:inline-block;margin-top:14px;color:var(--navy);font-weight:600;font-size:.9rem}
-  .map-backdrop{display:none;position:fixed;inset:0;background:rgba(20,33,61,.55);z-index:1000;padding:16px}
-  .map-backdrop.show{display:flex;align-items:center;justify-content:center}
-  .map-modal{background:#fff;border:2px solid var(--navy);border-radius:14px;box-shadow:6px 6px 0 var(--yellow);max-width:560px;width:100%;padding:16px}
-  .map-modal h2{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;color:var(--navy);font-size:1.2rem;margin:0 0 8px}
-  #pickMap{height:min(60vh,420px);min-height:260px;border:2px solid var(--navy);border-radius:10px;background:#eef1f7;z-index:0}
-  .map-modal{max-height:92vh;overflow:auto}
-  @media(max-width:480px){.map-backdrop{padding:8px}.map-modal{padding:12px}}
-  .loc-status{font-size:.84rem;color:var(--muted);margin:6px 0 0}
-  .loc-status b{color:var(--navy)}
-  .site-header{background:var(--navy);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:50}
-  .site-header-inner{max-width:1140px;margin:0 auto;display:flex;align-items:center;gap:14px}
-  .site-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.3rem;line-height:1;color:#fff;text-decoration:none}
-  .site-brand small{display:block;font-family:"Noto Sans",system-ui,sans-serif;font-weight:600;font-size:.64rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow)}
-  .site-nav{display:flex;gap:10px;margin-left:12px;align-items:center;flex-wrap:wrap}
-  .site-nav> a,.nav-drop summary{color:#fff;text-decoration:none;font-weight:800;font-size:1rem;padding:12px 18px;border-radius:12px;background:rgba(255,255,255,.07);border:2px solid var(--yellow);min-height:50px;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;box-shadow:0 2px 0 rgba(0,0,0,.25)}
-  .site-nav> a:hover,.nav-drop summary:hover{background:var(--yellow);color:var(--navy);border-color:var(--navy)}
-  .nav-drop{position:relative}
-  .nav-drop summary{cursor:pointer;list-style:none}
-  .nav-drop summary::-webkit-details-marker{display:none}
-  .nav-drop[open] summary{background:var(--yellow);color:var(--navy);border-color:var(--navy)}
-  .drop-menu{display:flex;flex-direction:column;gap:2px}
-  @media(min-width:761px){.drop-menu{position:absolute;top:100%;left:0;background:var(--navy);border:1px solid #2a3d66;border-radius:8px;padding:6px;min-width:180px}.drop-menu a{white-space:nowrap}}
-  #navMenuBtn{display:none;background:transparent;border:2px solid var(--yellow);border-radius:8px;color:var(--yellow);font:inherit;font-weight:800;padding:6px 12px;cursor:pointer}
-  .site-footer{background:var(--navy);color:#dbe2f0;padding:22px 16px 30px}
-  .site-foot-inner{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
-  .site-foot-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;color:#fff;font-size:1.05rem}
-  .site-foot-links{display:flex;gap:16px;flex-wrap:wrap}
-  .site-foot-links a{color:var(--yellow);font-size:.86rem;font-weight:600;text-decoration:none}
-  .site-foot-links a:hover{text-decoration:underline}
-  @media (max-width:760px){#navMenuBtn{display:block;margin-left:auto}.site-nav{display:none;position:absolute;top:100%;left:0;right:0;background:var(--navy);flex-direction:column;align-items:stretch;padding:8px 16px 14px;margin:0;border-top:1px solid #2a3d66}.site-nav.open{display:flex}.site-header-inner{flex-wrap:wrap;position:relative}}
+:root{
+  --navy:#0a2340;
+  --navy-2:#102e57;
+  --ink:#0b1f3a;
+  --yellow:#ffb200;
+  --orange:#f59e0b;
+  --blue:#1a73e8;
+  --muted:#5b6b82;
+  --line:#d9e1ec;
+  --bg:#edf1f6;
+  --card:#ffffff;
+  --red:#d93025;
+  --green:#16a34a;
+  --radius:18px;
+  --shadow:0 12px 40px rgba(10,35,64,.10);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Inter","Noto Sans Devanagari",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.5}
+h1,h2,h3{font-family:"Plus Jakarta Sans","Noto Sans Devanagari","Inter",system-ui,sans-serif}
+:focus-visible{outline:3px solid var(--navy);outline-offset:2px;border-radius:8px}
+a{color:inherit}
+
+/* ===== Header ===== */
+.site-header{background:var(--navy);color:#fff;position:sticky;top:0;z-index:60;box-shadow:0 1px 0 rgba(255,255,255,.08)}
+.site-header-inner{max-width:1360px;margin:0 auto;display:flex;align-items:center;gap:18px;padding:12px 28px}
+.site-brand{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none;flex:0 0 auto}
+.logo-mark{width:52px;height:34px;flex:0 0 52px}
+.logo-text{font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:1.55rem;line-height:1;letter-spacing:-.5px;color:var(--yellow)}
+.logo-text small{display:block;font-family:"Inter",sans-serif;font-weight:600;font-size:.58rem;letter-spacing:2.2px;color:#fff;margin-top:2px}
+.site-nav{display:flex;gap:10px;margin:0 auto;align-items:center;justify-content:center;flex-wrap:nowrap}
+.site-nav>a,.nav-drop summary{color:#e8eef7;text-decoration:none;font-weight:600;font-size:.92rem;padding:8px 22px;border-radius:10px;background:transparent;border:1.5px solid var(--yellow);display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;transition:.15s}
+.site-nav>a:hover,.nav-drop summary:hover{background:rgba(255,178,0,.14);border-color:var(--yellow);color:var(--yellow)}
+.site-nav>a.active{background:var(--yellow);border-color:var(--yellow);color:var(--navy);font-weight:800}
+.nav-drop{position:relative}
+.nav-drop summary{cursor:pointer;list-style:none}
+.nav-drop summary::-webkit-details-marker{display:none}
+.drop-menu{display:flex;flex-direction:column;gap:2px}
+.drop-menu a{color:#fff;text-decoration:none;font-weight:600;font-size:.88rem;padding:10px 14px;border-radius:8px;white-space:nowrap}
+.drop-menu a:hover{background:var(--yellow);color:var(--navy)}
+@media(min-width:901px){.drop-menu{position:absolute;top:calc(100% + 8px);left:0;background:var(--navy-2);border:1px solid #24406b;border-radius:12px;padding:6px;min-width:190px;box-shadow:0 12px 30px rgba(0,0,0,.35)}}
+.header-actions{display:flex;gap:12px;align-items:center;margin-left:auto;flex:0 0 auto}
+.lang-drop{position:relative}
+.lang-drop summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;color:#fff;font-weight:600;font-size:.9rem;padding:8px 16px;border-radius:10px;background:rgba(255,255,255,.03);border:1.2px solid rgba(255,255,255,.28);white-space:nowrap}
+.lang-drop summary::-webkit-details-marker{display:none}
+.lang-menu{position:absolute;top:calc(100% + 8px);right:0;background:var(--navy-2);border:1px solid #24406b;border-radius:12px;padding:6px;min-width:180px;box-shadow:0 12px 30px rgba(0,0,0,.35);z-index:70}
+.lang-menu button{display:flex;width:100%;align-items:center;gap:8px;background:transparent;border:0;color:#fff;font:inherit;font-weight:600;font-size:.88rem;padding:10px 12px;border-radius:8px;cursor:pointer;text-align:left}
+.lang-menu button:hover{background:rgba(255,255,255,.12)}
+.lang-menu button.active{background:rgba(255,178,0,.15)}
+.lang-menu .tick{margin-left:auto;color:var(--yellow);font-weight:800;visibility:hidden}
+.lang-menu button.active .tick{visibility:visible}
+#navMenuBtn{display:none;background:transparent;border:1.5px solid var(--yellow);border-radius:10px;color:var(--yellow);font:inherit;font-weight:800;padding:8px 14px;cursor:pointer}
+@media(max-width:900px){
+  #navMenuBtn{display:block}
+  .site-header-inner{flex-wrap:wrap;padding:10px 16px}
+  .site-nav{display:none;position:absolute;top:100%;left:0;right:0;background:var(--navy);flex-direction:column;align-items:stretch;padding:12px 16px 16px;margin:0;border-top:1px solid #24406b;z-index:65}
+  .site-nav.open{display:flex}
+}
+
+/* ===== Booking layout over full-bleed city collage ===== */
+.book-main{position:relative;overflow:hidden;background:linear-gradient(180deg,#5f9fe6 0%,#9cc6f1 38%,#f3dcae 68%,#e7d3a8 100%)}
+.collage{position:absolute;inset:0;z-index:0;pointer-events:none}
+.collage svg{width:100%;height:100%;display:block}
+/* ===== Photographic collage over the illustrated fallback ===== */
+.photo-layer{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.photo-layer img{position:absolute;object-fit:cover;background:#c9d8ea}
+.ph-mumbai{top:0;left:0;width:100%;height:62%;object-position:center 32%}
+.ph-frame{border:6px solid #fff;box-shadow:0 18px 50px rgba(10,35,64,.35)}
+.ph-hyd{left:29%;top:25%;width:23%;aspect-ratio:3/4;border-radius:999px 999px 26px 26px;object-position:center 30%}
+.ph-chennai{left:55%;top:29%;width:31%;aspect-ratio:16/10;border-radius:48% 52% 50% 50%/62% 60% 40% 42%;object-position:center 60%}
+.ph-bengaluru{left:3%;top:50%;width:30%;aspect-ratio:16/10;border-radius:220px 220px 26px 26px;object-position:center 45%}
+.ph-road{left:0;bottom:0;width:100%;height:33%;object-position:center 62%;border:0;border-top:6px solid #fff;border-radius:50% 50% 0 0/7% 7% 0 0;box-shadow:0 -14px 40px rgba(10,35,64,.25)}
+.ph-truck{position:absolute;left:44%;bottom:3%;width:35%;filter:drop-shadow(0 16px 22px rgba(0,0,0,.4))}
+.city-pill{position:absolute;display:inline-flex;align-items:center;gap:8px;background:rgba(10,35,64,.94);color:#fff;font-weight:700;font-size:.95rem;padding:8px 18px 8px 12px;border-radius:999px;box-shadow:0 8px 22px rgba(10,35,64,.35);white-space:nowrap}
+.city-pill svg{width:20px;height:20px;flex:0 0 20px}
+.pill-mumbai{left:52%;top:11%}
+.pill-hyderabad{left:43%;top:37%}
+.pill-chennai{left:66%;top:33%}
+.pill-bengaluru{left:19%;top:58%}
+.book-wrap{position:relative;z-index:1;max-width:1360px;margin:0 auto;padding:28px;display:grid;grid-template-columns:1.05fr .95fr;gap:28px;align-items:start}
+
+/* ===== Left hero panel (transparent — collage shows through) ===== */
+.hero-panel{position:relative;padding:40px 8px 40px 12px;min-height:660px;display:flex;flex-direction:column}
+.hero-scrim{position:absolute;inset:-60px -120px -60px -140px;background:linear-gradient(100deg,rgba(255,255,255,.96) 0%,rgba(255,255,255,.88) 34%,rgba(255,255,255,.55) 58%,rgba(255,255,255,0) 82%);pointer-events:none}
+.hero-content{position:relative;z-index:1;max-width:440px}
+.badge{display:inline-flex;align-items:center;gap:8px;background:#d9e8fb;color:#0b1f3a;font-weight:700;font-size:.85rem;padding:8px 18px;border-radius:999px}
+.hero-panel h1 .accent{color:#f5a301}
+.hero-sub{margin:0;color:#43536b;font-size:1.02rem;line-height:1.55;text-shadow:0 1px 0 rgba(255,255,255,.6)}
+
+/* ===== Right booking card ===== */
+.features{margin:30px 0 0;padding:0;list-style:none;display:grid;gap:20px;position:relative;z-index:1}
+.feat{display:flex;gap:14px;align-items:center}
+.feat-ic{width:52px;height:52px;flex:0 0 52px;border-radius:50%;background:#fff;display:grid;place-items:center;color:#1a73e8;box-shadow:0 4px 14px rgba(10,35,64,.14)}
+.feat-ic svg{width:26px;height:26px;display:block}
+.feat-ic .rupee{font-size:1.6rem;font-weight:800;line-height:1}
+.feat b{display:block;font-size:.95rem;color:#0a1931;text-shadow:0 1px 0 rgba(255,255,255,.6)}
+.feat small{font-size:.83rem;color:#43536b}
+.hero-panel h1{font-size:3.1rem;line-height:1.06;margin:20px 0 12px;letter-spacing:-1.5px;font-weight:800;color:#0a1931;text-shadow:0 2px 12px rgba(255,255,255,.55)}
+
+/* ===== Right booking card ===== */
+.book-card{background:var(--card);border-radius:20px;padding:32px 30px;box-shadow:var(--shadow);width:100%}
+.title-row{display:flex;gap:14px;align-items:flex-start}
+.title-ic{width:54px;height:54px;flex:0 0 54px;border-radius:50%;background:#fdf0d0;display:grid;place-items:center;color:#0a1931}
+.title-ic svg{width:28px;height:28px;display:block}
+.book-card h1{font-size:1.7rem;margin:2px 0 4px;letter-spacing:-.5px;color:#0a1931;font-weight:800}
+.card-sub{margin:0 0 20px;color:#5b6b82;font-size:.9rem}
+.alert{display:none;border-radius:10px;padding:11px 12px;font-size:.9rem;font-weight:600;margin:0 0 14px}
+.alert.show{display:block}
+.alert.err{background:#fdecea;color:#7a1f14;border:1.5px solid var(--red)}
+.alert.ok{background:#e6f6ea;color:#0d5c26;border:1.5px solid var(--green)}
+.alert.info{background:#e8effc;color:#1c2f5e;border:1.5px solid var(--navy)}
+.field{margin-bottom:16px}
+.field label{display:block;font-weight:700;font-size:.88rem;color:#0a1931;margin-bottom:7px}
+.field label .req{color:var(--red)}
+.alabel::before,.floc::before{content:"";display:inline-block;width:15px;height:15px;margin-right:7px;vertical-align:-2px}
+.alabel::before{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230b1f3a'%3E%3Cpath d='M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z'/%3E%3C/svg%3E") center/contain no-repeat}
+.floc::before{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d93025' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='7'/%3E%3Ccircle cx='12' cy='12' r='1.5' fill='%23d93025'/%3E%3Cpath d='M12 2v3M12 19v3M2 12h3M19 12h3'/%3E%3C/svg%3E") center/contain no-repeat}
+.dlabel::before{content:"\01F4C5  "}
+.tlabel::before{content:"\01F550  "}
+.hint{font-weight:400;color:var(--muted);font-size:.8rem;margin:6px 0 0}
+.error-text{display:none;color:var(--red);font-size:.83rem;font-weight:600;margin:6px 0 0}
+.field.invalid .error-text{display:block}
+.field.invalid .error-text::before{content:"\26D4  "}
+.field.invalid input,.field.invalid select,.field.invalid textarea{border-color:var(--red);background:#fff7f6}
+.input-wrap{position:relative;display:flex}
+.input-wrap input{width:100%;font:inherit;font-size:.93rem;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:13px 14px 13px 42px}
+.input-wrap input:focus{border-color:var(--navy);outline:none;box-shadow:0 0 0 3px rgba(26,115,232,.12)}
+.lead-ic{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:#0a1931;pointer-events:none}
+.lead-ic svg{width:100%;height:100%;display:block}
+input,select,textarea{font:inherit;color:var(--ink)}
+.field select,.field textarea,.field input[type="date"],.field input[type="time"]{width:100%;font-size:.93rem;background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:13px 14px;color:var(--ink)}
+.field select:focus,.field textarea:focus,.field input[type="date"]:focus,.field input[type="time"]:focus{border-color:var(--navy);outline:none;box-shadow:0 0 0 3px rgba(26,115,232,.12)}
+textarea{resize:vertical;min-height:76px}
+input[type="checkbox"],input[type="radio"]{width:19px;height:19px;flex:0 0 19px;accent-color:var(--navy);cursor:pointer}
+.row2{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+@media(max-width:480px){.row2{grid-template-columns:1fr}}
+fieldset.field{border:0;padding:0;margin:0 0 16px}
+fieldset.field legend{font-weight:700;font-size:.88rem;color:#0a1931;margin-bottom:7px;padding:0}
+fieldset.field legend .req{color:var(--red)}
+.checkline{display:flex;gap:10px;align-items:flex-start;font-size:.88rem;margin:8px 0;color:#0a1931;cursor:pointer}
+.loc-status{font-size:.82rem;color:var(--muted);margin:6px 0 10px}
+.loc-status b{color:var(--navy)}
+.btnrow{display:grid;gap:10px;margin-top:6px}
+.btn{width:100%;font-family:"Plus Jakarta Sans","Noto Sans Devanagari",sans-serif;font-size:1rem;font-weight:800;color:#0a1931;background:var(--yellow);border:0;border-radius:12px;padding:13px 14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(255,178,0,.45);transition:.15s}
+.btn:hover{background:#ffbe26}
+.btn:active{transform:translateY(2px);box-shadow:none}
+.btn[disabled]{opacity:.65;cursor:wait;transform:none}
+.map-btn{width:100%;font-family:"Plus Jakarta Sans","Noto Sans Devanagari",sans-serif;font-size:.93rem;font-weight:700;color:var(--blue);background:#e9f2fe;border:1.5px solid var(--blue);border-radius:12px;padding:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:.15s}
+.map-btn:hover{background:#d9e9fd}
+.map-btn::before{content:"\01F5FA  "}
+.btn-est{width:100%;font-family:"Plus Jakarta Sans","Noto Sans Devanagari",sans-serif;font-size:.95rem;font-weight:800;color:#0a1931;background:#fff;border:1.5px solid var(--navy);border-radius:12px;padding:13px;cursor:pointer;transition:.15s}
+.btn-est:hover{background:#fff7dd}
+.btn-est[disabled]{opacity:.65;cursor:wait}
+.fare{display:none;margin-top:18px;background:#fffdf4;border:1.5px dashed var(--navy);border-radius:14px;padding:16px}
+.fare.show{display:block}
+.fare h2{color:var(--navy);font-size:1.15rem;margin:0 0 8px}
+.fare table{width:100%;border-collapse:collapse;font-size:.9rem}
+.fare td{padding:6px 4px;border-bottom:1px solid var(--line)}
+.fare td:last-child{text-align:right;font-weight:600}
+.fare tr.total td{border-bottom:none;font-size:1.05rem;color:var(--navy)}
+#successCard{display:none;margin-top:18px;background:var(--navy);color:#fff;border-radius:var(--radius);padding:22px 18px;text-align:center}
+#successCard.show{display:block}
+#successCard h2{color:var(--yellow);margin:0 0 6px;font-size:1.35rem}
+#successCard p{margin:6px 0;color:#dbe2f0;overflow-wrap:anywhere}
+#successCard a{color:var(--yellow);font-weight:600}
+.backlink{display:inline-block;margin-top:14px;color:var(--navy);font-weight:600;font-size:.9rem}
+.map-backdrop{display:none;position:fixed;inset:0;background:rgba(10,35,64,.55);z-index:1000;padding:16px}
+.map-backdrop.show{display:flex;align-items:center;justify-content:center}
+.map-modal{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);max-width:560px;width:100%;padding:18px 16px;max-height:92vh;overflow:auto}
+.map-modal h2{color:var(--navy);font-size:1.2rem;margin:0 0 8px}
+#pickMap{height:min(60vh,420px);min-height:260px;border:1.5px solid var(--navy);border-radius:10px;background:#eef1f7;z-index:0}
+@media(max-width:480px){.map-backdrop{padding:8px}.map-modal{padding:12px}}
+
+/* ===== Footer ===== */
+.site-footer{background:var(--navy);color:#dbe2f0;padding:26px 28px 30px;margin-top:28px}
+.site-foot-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.foot-brand{font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:1.5rem;line-height:1;color:#fff}
+.foot-brand .y{color:var(--yellow)}
+.foot-brand small{display:block;font-family:"Inter",sans-serif;font-weight:500;font-size:.62rem;letter-spacing:2.4px;color:#cfd8e6;margin-top:4px}
+.foot-mid{flex:1;text-align:center}
+.site-foot-links{display:flex;gap:26px;flex-wrap:wrap;justify-content:center}
+.site-foot-links a{color:#e8eef7;font-size:.92rem;font-weight:500;text-decoration:none}
+.site-foot-links a:hover{text-decoration:underline}
+.foot-mail{margin-top:8px;font-size:.88rem}
+.foot-mail a{color:var(--yellow);font-weight:600;text-decoration:none}
+.soc-row{display:flex;gap:12px}
+.soc{width:40px;height:40px;border-radius:10px;border:1.2px solid rgba(255,255,255,.3);display:grid;place-items:center;color:#fff}
+.soc svg{width:18px;height:18px;display:block}
+
+@media(max-width:980px){
+  .book-wrap{grid-template-columns:1fr;padding:18px}
+  .hero-panel{min-height:0;padding:28px 12px 8px}
+  .hero-panel h1{font-size:2.3rem}
+  .hero-scrim{inset:-40px -40px -80px -40px;background:linear-gradient(180deg,rgba(255,255,255,.95) 0%,rgba(255,255,255,.8) 60%,rgba(255,255,255,0) 100%)}
+  .ph-hyd{left:2%;top:2%;width:34%}
+  .ph-chennai{left:40%;top:4%;width:56%}
+  .ph-bengaluru{left:2%;top:24%;width:44%}
+  .ph-road{height:24%}
+  .ph-truck{left:22%;bottom:2%;width:72%}
+  .pill-mumbai{left:56%;top:2%}
+  .pill-hyderabad{left:30%;top:16%}
+  .pill-chennai{left:58%;top:20%}
+  .pill-bengaluru{left:8%;top:33%}
+  .city-pill{font-size:.8rem;padding:6px 14px 6px 10px}
+  .book-card{padding:26px 20px}
+  .site-foot-inner{flex-direction:column;text-align:center}
+  .foot-mid{order:3;width:100%}
+}
+@media(max-width:900px){
+  .site-header-inner{padding:10px 16px}
+  .logo-text{font-size:1.25rem}
+}
 </style>
 </head>
 <body>
 
 <header class="site-header">
   <div class="site-header-inner">
-    <a class="site-brand" href="index.html" aria-label="ApnaShift home">ApnaShift<small>Shifting • Transport</small></a>
+    <a class="site-brand" href="index.html" aria-label="ApnaShift home">
+      <svg class="logo-mark" viewBox="0 0 52 34" aria-hidden="true"><path d="M4 30 L18 4 L24 4 L10 30 Z" fill="#fff"/><path d="M14 30 L28 4 L34 4 L20 30 Z" fill="#ffb200"/><path d="M26 30 L38 4 L42 4 L30 30 Z" fill="#fff" opacity=".85"/><rect x="2" y="28" width="34" height="3" rx="1.5" fill="#ffb200"/></svg>
+      <span class="logo-text">ApnaShift<small>SHIFTING • TRANSPORT</small></span>
+    </a>
     <nav class="site-nav" id="siteNav" aria-label="Main navigation">
       <a href="index.html">Home</a>
+      <a href="booking.html" class="active" aria-current="page">Book</a>
       <a href="user-auth.html">Login</a>
       <details class="nav-drop">
         <summary>Driver</summary>
@@ -230,51 +244,454 @@
           <a href="driver-login.html">Driver Login</a>
         </div>
       </details>
+      <a href="enterprise.html">Enterprise</a>
       <a href="help.html">Help</a>
     </nav>
-    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">☰</button>
+    <div class="header-actions">
+      <details class="lang-drop" id="langDrop">
+        <summary aria-label="Language">🌐&nbsp; <span id="langLabel">English</span>&nbsp; ▾</summary>
+        <div class="lang-menu">
+          <button type="button" data-setlang="en" class="active"><span>English</span><span class="tick">✓</span></button>
+          <button type="button" data-setlang="hi"><span>हिन्दी</span><span class="tick">✓</span></button>
+        </div>
+      </details>
+      <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">☰</button>
+    </div>
   </div>
 </header>
 
-<main>
-  <section class="card" aria-labelledby="pageTitle">
-    <h1 id="pageTitle">Book a Vehicle</h1>
-    <p class="sub">Enter pickup and drop-off details, check the correct fare first, then confirm your booking.</p>
+<main class="book-main">
+<div class="collage" aria-hidden="true">
+<svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" font-family="'Plus Jakarta Sans','Inter',sans-serif">
+  <defs>
+    <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5f9fe6"/><stop offset=".42" stop-color="#9cc6f1"/>
+      <stop offset=".68" stop-color="#f3dcae"/><stop offset="1" stop-color="#eed9a8"/>
+    </linearGradient>
+    <radialGradient id="sunG" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#fff8e2" stop-opacity=".95"/><stop offset=".55" stop-color="#fbe3ae" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#fbe3ae" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="seaG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a9cbe9"/><stop offset="1" stop-color="#5d8fc4"/>
+    </linearGradient>
+    <linearGradient id="groundG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d3c194"/><stop offset="1" stop-color="#a3a06e"/>
+    </linearGradient>
+    <linearGradient id="roadG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4b505b"/><stop offset="1" stop-color="#31353d"/>
+    </linearGradient>
+    <linearGradient id="boxG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e9edf3"/>
+    </linearGradient>
+  </defs>
+
+  <!-- sky, sun, clouds -->
+  <rect x="0" y="0" width="1600" height="900" fill="url(#skyG)"/>
+  <circle cx="1150" cy="170" r="320" fill="url(#sunG)"/>
+  <g fill="#ffffff" opacity=".7">
+    <ellipse cx="300" cy="140" rx="120" ry="26"/><ellipse cx="390" cy="122" rx="90" ry="22"/><ellipse cx="220" cy="122" rx="70" ry="18"/>
+    <ellipse cx="800" cy="90" rx="130" ry="24"/><ellipse cx="900" cy="72" rx="80" ry="18"/>
+  </g>
+  <g fill="#fbe3d0" opacity=".8">
+    <ellipse cx="1180" cy="330" rx="110" ry="20"/><ellipse cx="1350" cy="300" rx="90" ry="18"/>
+    <ellipse cx="600" cy="220" rx="100" ry="18"/>
+  </g>
+
+  <!-- distant + mid skylines (Mumbai high-rises, right) -->
+  <g fill="#a8bedd" opacity=".75">
+    <rect x="0" y="280" width="60" height="70"/><rect x="70" y="250" width="44" height="100"/>
+    <rect x="122" y="290" width="70" height="60"/><rect x="200" y="262" width="40" height="88"/>
+    <rect x="248" y="296" width="80" height="54"/><rect x="336" y="270" width="46" height="80"/>
+    <rect x="390" y="300" width="70" height="50"/><rect x="1230" y="120" width="52" height="230"/>
+    <rect x="1290" y="60" width="60" height="290"/><rect x="1358" y="140" width="44" height="210"/>
+    <rect x="1410" y="90" width="58" height="260"/><rect x="1476" y="170" width="48" height="180"/>
+    <rect x="1532" y="120" width="56" height="230"/>
+  </g>
+  <g fill="#8ba3c4" opacity=".85">
+    <rect x="20" y="330" width="90" height="70"/><rect x="180" y="340" width="110" height="60"/>
+    <rect x="330" y="335" width="80" height="65"/><rect x="440" y="345" width="120" height="55"/>
+    <rect x="640" y="340" width="90" height="60"/><rect x="940" y="335" width="120" height="65"/>
+    <rect x="1180" y="300" width="70" height="100"/><rect x="1420" y="320" width="90" height="80"/>
+  </g>
+
+  <!-- birds -->
+  <g fill="none" stroke="#43536b" stroke-width="3" stroke-linecap="round" opacity=".8">
+    <path d="M636,168 q14,-12 28,0 q14,-12 28,0"/>
+    <path d="M706,138 q11,-9 22,0 q11,-9 22,0"/>
+  </g>
+
+  <!-- ground + greenery -->
+  <rect x="0" y="616" width="1600" height="124" fill="url(#groundG)"/>
+  <g fill="#4a7a3f" opacity=".9">
+    <ellipse cx="300" cy="648" rx="130" ry="22"/><ellipse cx="700" cy="656" rx="150" ry="22"/>
+    <ellipse cx="1050" cy="650" rx="120" ry="20"/><ellipse cx="1460" cy="646" rx="130" ry="22"/>
+  </g>
+  <g fill="#33592c" opacity=".9">
+    <ellipse cx="380" cy="644" rx="70" ry="14"/><ellipse cx="760" cy="652" rx="80" ry="14"/>
+    <ellipse cx="1240" cy="646" rx="70" ry="13"/>
+  </g>
+
+  <!-- harbour behind Gateway -->
+  <rect x="1100" y="556" width="500" height="70" fill="url(#seaG)"/>
+  <g>
+    <path d="M1436,584 l44,0 l-8,12 l-28,0 z" fill="#5e4023"/>
+    <rect x="1452" y="566" width="12" height="18" fill="#f3ede2"/>
+    <line x1="1458" y1="556" x2="1458" y2="566" stroke="#5e4023" stroke-width="3"/>
+  </g>
+
+  <!-- ===== Vidhana Soudha · Bengaluru (left) ===== -->
+  <g>
+    <rect x="76" y="628" width="328" height="14" fill="#a89a78"/>
+    <rect x="100" y="560" width="280" height="68" fill="#d8cdb4"/>
+    <rect x="112" y="566" width="256" height="50" fill="#a89a78"/>
+    <g fill="#f2e9d2">
+      <rect x="120" y="566" width="15" height="50"/><rect x="152" y="566" width="15" height="50"/>
+      <rect x="184" y="566" width="15" height="50"/><rect x="216" y="566" width="15" height="50"/>
+      <rect x="248" y="566" width="15" height="50"/><rect x="280" y="566" width="15" height="50"/>
+      <rect x="312" y="566" width="15" height="50"/><rect x="344" y="566" width="15" height="50"/>
+    </g>
+    <rect x="100" y="548" width="280" height="14" fill="#847655"/>
+    <rect x="140" y="502" width="200" height="46" fill="#e6dbc0"/>
+    <g fill="#847655">
+      <rect x="156" y="516" width="14" height="20"/><rect x="182" y="516" width="14" height="20"/>
+      <rect x="284" y="516" width="14" height="20"/><rect x="310" y="516" width="14" height="20"/>
+    </g>
+    <rect x="132" y="520" width="36" height="28" fill="#d8cdb4"/>
+    <rect x="312" y="520" width="36" height="28" fill="#d8cdb4"/>
+    <circle cx="150" cy="512" r="12" fill="#847655"/><circle cx="330" cy="512" r="12" fill="#847655"/>
+    <rect x="206" y="470" width="68" height="26" fill="#b3a684"/>
+    <ellipse cx="240" cy="468" rx="46" ry="30" fill="#6f6650"/>
+    <ellipse cx="224" cy="458" rx="18" ry="12" fill="#847655" opacity=".8"/>
+    <line x1="240" y1="418" x2="240" y2="440" stroke="#4e4636" stroke-width="4"/>
+    <circle cx="240" cy="414" r="5" fill="#4e4636"/>
+    <rect x="56" y="584" width="44" height="44" fill="#c9bc9c"/>
+    <rect x="380" y="584" width="44" height="44" fill="#c9bc9c"/>
+    <circle cx="78" cy="576" r="10" fill="#847655"/><circle cx="402" cy="576" r="10" fill="#847655"/>
+  </g>
+
+  <!-- ===== Charminar · Hyderabad (center-left) ===== -->
+  <g>
+    <rect x="452" y="628" width="296" height="16" fill="#7d6242"/>
+    <g fill="#b98f56">
+      <circle cx="540" cy="452" r="10"/><circle cx="580" cy="448" r="10"/>
+      <circle cx="620" cy="448" r="10"/><circle cx="660" cy="452" r="10"/>
+    </g>
+    <rect x="500" y="470" width="200" height="162" fill="#d9b382"/>
+    <rect x="600" y="470" width="100" height="162" fill="#b98f56" opacity=".55"/>
+    <rect x="490" y="444" width="220" height="28" fill="#8a6a42"/>
+    <g fill="#d9b382">
+      <rect x="496" y="424" width="14" height="22"/><rect x="522" y="424" width="14" height="22"/>
+      <rect x="593" y="424" width="14" height="22"/><rect x="619" y="424" width="14" height="22"/>
+      <rect x="645" y="424" width="14" height="22"/><rect x="671" y="424" width="14" height="22"/>
+    </g>
+    <path d="M560,632 v-70 a40,42 0 0 1 80,0 v70 z" fill="#4e3319"/>
+    <path d="M512,632 v-44 a17,18 0 0 1 34,0 v44 z" fill="#4e3319"/>
+    <path d="M654,632 v-44 a17,18 0 0 1 34,0 v44 z" fill="#4e3319"/>
+    <g fill="#4e3319">
+      <rect x="516" y="488" width="14" height="24" rx="7"/><rect x="542" y="488" width="14" height="24" rx="7"/>
+      <rect x="644" y="488" width="14" height="24" rx="7"/><rect x="670" y="488" width="14" height="24" rx="7"/>
+    </g>
+    <g>
+      <rect x="462" y="300" width="30" height="328" fill="#e0bd85"/>
+      <rect x="477" y="300" width="15" height="328" fill="#b98f56" opacity=".6"/>
+      <rect x="454" y="404" width="46" height="12" fill="#8a6a42"/>
+      <rect x="454" y="506" width="46" height="12" fill="#8a6a42"/>
+      <ellipse cx="477" cy="286" rx="17" ry="22" fill="#8a6a42"/>
+      <line x1="477" y1="250" x2="477" y2="266" stroke="#5e4023" stroke-width="4"/>
+      <circle cx="477" cy="246" r="5" fill="#5e4023"/>
+      <rect x="708" y="300" width="30" height="328" fill="#e0bd85"/>
+      <rect x="723" y="300" width="15" height="328" fill="#b98f56" opacity=".6"/>
+      <rect x="700" y="404" width="46" height="12" fill="#8a6a42"/>
+      <rect x="700" y="506" width="46" height="12" fill="#8a6a42"/>
+      <ellipse cx="723" cy="286" rx="17" ry="22" fill="#8a6a42"/>
+      <line x1="723" y1="250" x2="723" y2="266" stroke="#5e4023" stroke-width="4"/>
+      <circle cx="723" cy="246" r="5" fill="#5e4023"/>
+    </g>
+    <circle cx="505" cy="436" r="9" fill="#8a6a42"/><circle cx="695" cy="436" r="9" fill="#8a6a42"/>
+  </g>
+
+  <!-- ===== Chennai Central (center) ===== -->
+  <g>
+    <rect x="690" y="638" width="420" height="16" fill="#7e352a"/>
+    <rect x="700" y="540" width="400" height="100" fill="#b6503f"/>
+    <rect x="900" y="540" width="200" height="100" fill="#7e352a" opacity=".45"/>
+    <rect x="692" y="526" width="416" height="14" fill="#f3ede2"/>
+    <rect x="712" y="550" width="376" height="32" fill="#f3ede2"/>
+    <rect x="712" y="590" width="376" height="32" fill="#f3ede2"/>
+    <g fill="#5d2a22">
+      <rect x="722" y="554" width="14" height="24"/><rect x="762" y="554" width="14" height="24"/>
+      <rect x="802" y="554" width="14" height="24"/><rect x="902" y="554" width="14" height="24"/>
+      <rect x="942" y="554" width="14" height="24"/><rect x="982" y="554" width="14" height="24"/>
+      <rect x="1022" y="554" width="14" height="24"/><rect x="1062" y="554" width="14" height="24"/>
+      <rect x="722" y="594" width="14" height="24"/><rect x="762" y="594" width="14" height="24"/>
+      <rect x="802" y="594" width="14" height="24"/><rect x="902" y="594" width="14" height="24"/>
+      <rect x="942" y="594" width="14" height="24"/><rect x="982" y="594" width="14" height="24"/>
+      <rect x="1022" y="594" width="14" height="24"/><rect x="1062" y="594" width="14" height="24"/>
+    </g>
+    <rect x="668" y="566" width="32" height="74" fill="#a04738"/>
+    <polygon points="664,566 704,566 684,540" fill="#7e352a"/>
+    <rect x="1100" y="566" width="32" height="74" fill="#a04738"/>
+    <polygon points="1096,566 1136,566 1116,540" fill="#7e352a"/>
+    <rect x="852" y="404" width="56" height="140" fill="#b6503f"/>
+    <rect x="852" y="404" width="10" height="140" fill="#f3ede2"/>
+    <rect x="898" y="404" width="10" height="140" fill="#f3ede2"/>
+    <rect x="880" y="404" width="28" height="140" fill="#7e352a" opacity=".4"/>
+    <rect x="862" y="492" width="36" height="34" rx="16" fill="#4e2a22"/>
+    <line x1="880" y1="492" x2="880" y2="526" stroke="#b6503f" stroke-width="5"/>
+    <circle cx="880" cy="446" r="21" fill="#ffffff" stroke="#0a2340" stroke-width="4"/>
+    <line x1="880" y1="446" x2="880" y2="432" stroke="#0a2340" stroke-width="3" stroke-linecap="round"/>
+    <line x1="880" y1="446" x2="892" y2="450" stroke="#0a2340" stroke-width="3" stroke-linecap="round"/>
+    <rect x="844" y="388" width="72" height="14" fill="#f3ede2"/>
+    <ellipse cx="880" cy="372" rx="30" ry="22" fill="#e8e2d4"/>
+    <line x1="880" y1="330" x2="880" y2="352" stroke="#5e4023" stroke-width="4"/>
+    <circle cx="880" cy="326" r="5" fill="#5e4023"/>
+    <polygon points="880,326 902,332 880,338" fill="#ffb200"/>
+  </g>
+
+  <!-- palms between Chennai and Gateway -->
+  <g fill="none" stroke-linecap="round">
+    <path d="M180,730 C174,690 186,660 180,632" stroke="#6b4a2a" stroke-width="9"/>
+    <g stroke="#2e5b2a" stroke-width="7">
+      <path d="M180,632 q-34,-16 -62,-6"/><path d="M180,632 q-24,-28 -54,-28"/>
+      <path d="M180,632 q2,-32 8,-54"/><path d="M180,632 q26,-24 54,-22"/><path d="M180,632 q34,-10 60,4"/>
+    </g>
+    <circle cx="172" cy="636" r="6" fill="#5e4023" stroke="none"/>
+    <circle cx="188" cy="636" r="6" fill="#5e4023" stroke="none"/>
+    <path d="M480,735 C474,688 488,656 482,622" stroke="#6b4a2a" stroke-width="9"/>
+    <g stroke="#2e5b2a" stroke-width="7">
+      <path d="M482,622 q-34,-16 -62,-6"/><path d="M482,622 q-24,-28 -54,-28"/>
+      <path d="M482,622 q2,-32 8,-54"/><path d="M482,622 q26,-24 54,-22"/><path d="M482,622 q34,-10 60,4"/>
+    </g>
+    <path d="M1330,726 C1324,684 1336,654 1330,626" stroke="#6b4a2a" stroke-width="9"/>
+    <g stroke="#2e5b2a" stroke-width="7">
+      <path d="M1330,626 q-34,-16 -62,-6"/><path d="M1330,626 q-24,-28 -54,-28"/>
+      <path d="M1330,626 q2,-32 8,-54"/><path d="M1330,626 q26,-24 54,-22"/><path d="M1330,626 q34,-10 60,4"/>
+    </g>
+  </g>
+
+  <!-- ===== Gateway of India · Mumbai (right) ===== -->
+  <g>
+    <rect x="1150" y="628" width="300" height="18" fill="#7d6242"/>
+    <rect x="1162" y="610" width="276" height="20" fill="#93805c"/>
+    <rect x="1150" y="470" width="30" height="142" fill="#bd9260"/>
+    <rect x="1420" y="470" width="30" height="142" fill="#bd9260"/>
+    <g fill="#4e3319">
+      <rect x="1158" y="490" width="6" height="100"/><rect x="1168" y="490" width="6" height="100"/>
+      <rect x="1426" y="490" width="6" height="100"/><rect x="1436" y="490" width="6" height="100"/>
+    </g>
+    <rect x="1180" y="420" width="240" height="192" fill="#c9a06a"/>
+    <rect x="1300" y="420" width="120" height="192" fill="#9a7443" opacity=".55"/>
+    <rect x="1170" y="404" width="260" height="16" fill="#8a6a42"/>
+    <rect x="1166" y="352" width="30" height="56" fill="#bd9260"/>
+    <rect x="1414" y="352" width="30" height="56" fill="#bd9260"/>
+    <circle cx="1181" cy="344" r="17" fill="#8a6a42"/><circle cx="1429" cy="344" r="17" fill="#8a6a42"/>
+    <g fill="#c9a06a">
+      <circle cx="1215" cy="378" r="13"/><circle cx="1270" cy="378" r="13"/>
+      <circle cx="1340" cy="378" r="13"/><circle cx="1395" cy="378" r="13"/>
+    </g>
+    <g fill="#8a6a42">
+      <rect x="1210" y="388" width="10" height="18"/><rect x="1265" y="388" width="10" height="18"/>
+      <rect x="1335" y="388" width="10" height="18"/><rect x="1390" y="388" width="10" height="18"/>
+    </g>
+    <rect x="1275" y="388" width="60" height="18" fill="#8a6a42"/>
+    <ellipse cx="1305" cy="372" rx="36" ry="28" fill="#8a6a42"/>
+    <ellipse cx="1292" cy="362" rx="14" ry="10" fill="#a5855c" opacity=".8"/>
+    <line x1="1305" y1="326" x2="1305" y2="346" stroke="#5e4023" stroke-width="4"/>
+    <circle cx="1305" cy="322" r="5" fill="#5e4023"/>
+    <path d="M1247,612 v-88 a53,55 0 0 1 106,0 v88 z" fill="#4e3319"/>
+    <path d="M1262,612 v-72 a38,40 0 0 1 76,0 v72 z" fill="#7a5630"/>
+    <path d="M1196,612 v-40 a17,18 0 0 1 34,0 v40 z" fill="#4e3319"/>
+    <path d="M1380,612 v-40 a17,18 0 0 1 34,0 v40 z" fill="#4e3319"/>
+    <g fill="#4e3319">
+      <rect x="1196" y="448" width="14" height="24" rx="7"/><rect x="1222" y="448" width="14" height="24" rx="7"/>
+      <rect x="1374" y="448" width="14" height="24" rx="7"/><rect x="1400" y="448" width="14" height="24" rx="7"/>
+    </g>
+  </g>
+
+  <!-- road + guardrail -->
+  <polygon points="0,748 1600,720 1600,900 0,900" fill="url(#roadG)"/>
+  <polygon points="0,706 1600,678 1600,690 0,718" fill="#d5dbe3"/>
+  <polygon points="0,718 1600,690 1600,696 0,724" fill="#7c8490"/>
+  <path d="M60,836 L1540,806" stroke="#f7d54e" stroke-width="6" stroke-dasharray="42 32" opacity=".8"/>
+
+  <!-- ===== branded ApnaShift truck ===== -->
+  <g>
+    <ellipse cx="1020" cy="730" rx="205" ry="15" fill="#000000" opacity=".28"/>
+    <rect x="948" y="532" width="266" height="152" fill="url(#boxG)" stroke="#d9dee6" stroke-width="2"/>
+    <rect x="948" y="532" width="266" height="8" fill="#e8ecf2"/>
+    <g stroke="#e3e7ee" stroke-width="3">
+      <line x1="986" y1="548" x2="986" y2="676"/><line x1="1024" y1="548" x2="1024" y2="676"/>
+      <line x1="1062" y1="548" x2="1062" y2="676"/><line x1="1100" y1="548" x2="1100" y2="676"/>
+      <line x1="1138" y1="548" x2="1138" y2="676"/>
+    </g>
+    <rect x="948" y="662" width="266" height="12" fill="#ffb200"/>
+    <rect x="948" y="674" width="266" height="10" fill="#0a2340" opacity=".12"/>
+    <text x="972" y="618" font-size="46" font-weight="800"><tspan fill="#0a2340">Apna</tspan><tspan fill="#f5a301">Shift</tspan></text>
+    <text x="974" y="644" font-size="13" letter-spacing="3" fill="#0a2340" font-weight="700">SHIFTING • TRANSPORT</text>
+    <path d="M948,548 L892,548 L862,600 L856,676 L948,676 Z" fill="#f7f9fc" stroke="#d9dee6" stroke-width="2"/>
+    <path d="M934,560 L896,560 L880,600 L934,600 Z" fill="#8fb8dd"/>
+    <line x1="907" y1="560" x2="907" y2="600" stroke="#e8ecf2" stroke-width="3"/>
+    <path d="M892,548 L920,516 L948,516 L948,548 Z" fill="#eef1f6" stroke="#d9dee6" stroke-width="2"/>
+    <line x1="862" y1="628" x2="948" y2="628" stroke="#d9dee6" stroke-width="2"/>
+    <rect x="918" y="638" width="22" height="7" rx="3" fill="#6b7280"/>
+    <rect x="846" y="660" width="18" height="22" fill="#6b7280"/>
+    <rect x="848" y="626" width="10" height="16" fill="#ffd766" stroke="#b78a00" stroke-width="1.5"/>
+    <g stroke="#9aa2ad" stroke-width="2">
+      <line x1="856" y1="648" x2="876" y2="648"/><line x1="856" y1="656" x2="876" y2="656"/>
+    </g>
+    <rect x="952" y="682" width="60" height="20" rx="8" fill="#9aa2ad"/>
+    <g>
+      <circle cx="905" cy="700" r="30" fill="#23272f"/><circle cx="905" cy="700" r="13" fill="#9aa2ad"/><circle cx="905" cy="700" r="5" fill="#4a4f5a"/>
+      <circle cx="1062" cy="702" r="30" fill="#23272f"/><circle cx="1062" cy="702" r="13" fill="#9aa2ad"/><circle cx="1062" cy="702" r="5" fill="#4a4f5a"/>
+      <circle cx="1150" cy="700" r="30" fill="#23272f"/><circle cx="1150" cy="700" r="13" fill="#9aa2ad"/><circle cx="1150" cy="700" r="5" fill="#4a4f5a"/>
+    </g>
+  </g>
+
+  <!-- ===== city label pills ===== -->
+  <g font-size="23" font-weight="700" fill="#ffffff">
+    <g><rect x="140" y="406" width="182" height="46" rx="23" fill="#0a2340" opacity=".94"/>
+      <circle cx="164" cy="424" r="8" fill="#ffb200"/><path d="M158.5,429 L164,439 L169.5,429 Z" fill="#ffb200"/><circle cx="164" cy="424" r="3" fill="#0a2340"/>
+      <text x="184" y="438">Bengaluru</text></g>
+    <g><rect x="742" y="248" width="182" height="46" rx="23" fill="#0a2340" opacity=".94"/>
+      <circle cx="766" cy="266" r="8" fill="#ffb200"/><path d="M760.5,271 L766,281 L771.5,271 Z" fill="#ffb200"/><circle cx="766" cy="266" r="3" fill="#0a2340"/>
+      <text x="786" y="280">Hyderabad</text></g>
+    <g><rect x="948" y="300" width="162" height="46" rx="23" fill="#0a2340" opacity=".94"/>
+      <circle cx="972" cy="318" r="8" fill="#ffb200"/><path d="M966.5,323 L972,333 L977.5,323 Z" fill="#ffb200"/><circle cx="972" cy="318" r="3" fill="#0a2340"/>
+      <text x="992" y="332">Chennai</text></g>
+    <g><rect x="1128" y="248" width="152" height="46" rx="23" fill="#0a2340" opacity=".94"/>
+      <circle cx="1152" cy="266" r="8" fill="#ffb200"/><path d="M1146.5,271 L1152,281 L1157.5,271 Z" fill="#ffb200"/><circle cx="1152" cy="266" r="3" fill="#0a2340"/>
+      <text x="1172" y="280">Mumbai</text></g>
+  </g>
+</svg>
+</div>
+<!-- Photographic collage (Wikimedia Commons, CC BY-SA — see file pages for authors).
+     Mumbai: "Gateway of India in the evening, Mumbai, India.jpg"
+       https://commons.wikimedia.org/wiki/File:Gateway_of_India_in_the_evening,_Mumbai,_India.jpg
+     Hyderabad: "Charminar Hyderabad 1.jpg"
+       https://commons.wikimedia.org/wiki/File:Charminar_Hyderabad_1.jpg
+     Chennai: "Chennai train station.jpg"
+       https://commons.wikimedia.org/wiki/File:Chennai_train_station.jpg
+     Bengaluru: "Vidhan Soudha Bangalore Front view.JPG"
+       https://commons.wikimedia.org/wiki/File:Vidhan_Soudha_Bangalore_Front_view.JPG
+     Road: "Mumbai-Pune Express Highway.JPG"
+       https://commons.wikimedia.org/wiki/File:Mumbai-Pune_Express_Highway.JPG -->
+<div class="photo-layer" aria-hidden="true">
+  <img class="ph-mumbai" src="https://commons.wikimedia.org/wiki/Special:FilePath/Gateway%20of%20India%20in%20the%20evening,%20Mumbai,%20India.jpg?width=1600" alt="" loading="eager" onerror="this.style.display='none'">
+  <img class="ph-frame ph-hyd" src="https://commons.wikimedia.org/wiki/Special:FilePath/Charminar%20Hyderabad%201.jpg?width=800" alt="" loading="lazy" onerror="this.style.display='none'">
+  <img class="ph-frame ph-chennai" src="https://commons.wikimedia.org/wiki/Special:FilePath/Chennai%20train%20station.jpg?width=900" alt="" loading="lazy" onerror="this.style.display='none'">
+  <img class="ph-frame ph-bengaluru" src="https://commons.wikimedia.org/wiki/Special:FilePath/Vidhan%20Soudha%20Bangalore%20Front%20view.JPG?width=900" alt="" loading="lazy" onerror="this.style.display='none'">
+  <img class="ph-road" src="https://commons.wikimedia.org/wiki/Special:FilePath/Mumbai-Pune%20Express%20Highway.JPG?width=1600" alt="" loading="lazy" onerror="this.style.display='none'">
+  <svg class="ph-truck" viewBox="830 500 400 250" font-family="'Plus Jakarta Sans','Inter',sans-serif">
+    <defs>
+      <linearGradient id="boxG2" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e9edf3"/>
+      </linearGradient>
+    </defs>
+    <g>
+      <ellipse cx="1020" cy="730" rx="205" ry="15" fill="#000000" opacity=".28"/>
+      <rect x="948" y="532" width="266" height="152" fill="url(#boxG2)" stroke="#d9dee6" stroke-width="2"/>
+      <rect x="948" y="532" width="266" height="8" fill="#e8ecf2"/>
+      <g stroke="#e3e7ee" stroke-width="3">
+        <line x1="986" y1="548" x2="986" y2="676"/><line x1="1024" y1="548" x2="1024" y2="676"/>
+        <line x1="1062" y1="548" x2="1062" y2="676"/><line x1="1100" y1="548" x2="1100" y2="676"/>
+        <line x1="1138" y1="548" x2="1138" y2="676"/>
+      </g>
+      <rect x="948" y="662" width="266" height="12" fill="#ffb200"/>
+      <rect x="948" y="674" width="266" height="10" fill="#0a2340" opacity=".12"/>
+      <text x="972" y="618" font-size="46" font-weight="800"><tspan fill="#0a2340">Apna</tspan><tspan fill="#f5a301">Shift</tspan></text>
+      <text x="974" y="644" font-size="13" letter-spacing="3" fill="#0a2340" font-weight="700">SHIFTING • TRANSPORT</text>
+      <path d="M948,548 L892,548 L862,600 L856,676 L948,676 Z" fill="#f7f9fc" stroke="#d9dee6" stroke-width="2"/>
+      <path d="M934,560 L896,560 L880,600 L934,600 Z" fill="#8fb8dd"/>
+      <line x1="907" y1="560" x2="907" y2="600" stroke="#e8ecf2" stroke-width="3"/>
+      <path d="M892,548 L920,516 L948,516 L948,548 Z" fill="#eef1f6" stroke="#d9dee6" stroke-width="2"/>
+      <line x1="862" y1="628" x2="948" y2="628" stroke="#d9dee6" stroke-width="2"/>
+      <rect x="918" y="638" width="22" height="7" rx="3" fill="#6b7280"/>
+      <rect x="846" y="660" width="18" height="22" fill="#6b7280"/>
+      <rect x="848" y="626" width="10" height="16" fill="#ffd766" stroke="#b78a00" stroke-width="1.5"/>
+      <g stroke="#9aa2ad" stroke-width="2">
+        <line x1="856" y1="648" x2="876" y2="648"/><line x1="856" y1="656" x2="876" y2="656"/>
+      </g>
+      <rect x="952" y="682" width="60" height="20" rx="8" fill="#9aa2ad"/>
+      <g>
+        <circle cx="905" cy="700" r="30" fill="#23272f"/><circle cx="905" cy="700" r="13" fill="#9aa2ad"/><circle cx="905" cy="700" r="5" fill="#4a4f5a"/>
+        <circle cx="1062" cy="702" r="30" fill="#23272f"/><circle cx="1062" cy="702" r="13" fill="#9aa2ad"/><circle cx="1062" cy="702" r="5" fill="#4a4f5a"/>
+        <circle cx="1150" cy="700" r="30" fill="#23272f"/><circle cx="1150" cy="700" r="13" fill="#9aa2ad"/><circle cx="1150" cy="700" r="5" fill="#4a4f5a"/>
+      </g>
+    </g>
+  </svg>
+  <span class="city-pill pill-mumbai"><svg viewBox="0 0 24 24" fill="#ffb200"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>Mumbai</span>
+  <span class="city-pill pill-hyderabad"><svg viewBox="0 0 24 24" fill="#ffb200"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>Hyderabad</span>
+  <span class="city-pill pill-chennai"><svg viewBox="0 0 24 24" fill="#ffb200"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>Chennai</span>
+  <span class="city-pill pill-bengaluru"><svg viewBox="0 0 24 24" fill="#ffb200"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>Bengaluru</span>
+</div>
+<div class="book-wrap">
+  <!-- LEFT: hero -->
+  <section class="hero-panel" aria-labelledby="heroTitle">
+    <div class="hero-scrim" aria-hidden="true"></div>
+    <div class="hero-content">
+      <span class="badge"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="#1a73e8"><path d="M12 2.5l7.5 2.8v5.4c0 4.6-3.2 7.9-7.5 10.3-4.3-2.4-7.5-5.7-7.5-10.3V5.3z"/><path d="M8.8 12.2l2.3 2.3 4.2-4.4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pg_booking_48">Safe • Reliable • Affordable</span></span>
+      <h1 id="heroTitle"><span data-i18n="pg_booking_49">Book Your</span><br><span class="accent" data-i18n="pg_booking_50">Vehicle in Minutes</span></h1>
+      <p class="hero-sub" data-i18n="pg_booking_51">Easy pickup and drop-off, transparent pricing, and verified drivers — all in one place.</p>
+      <ul class="features">
+        <li class="feat"><span class="feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span><div><b data-i18n="pg_booking_52">Quick Booking</b><small data-i18n="pg_booking_53">Simple and fast process</small></div></li>
+        <li class="feat"><span class="feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l7.5 2.8v5.4c0 4.6-3.2 7.9-7.5 10.3-4.3-2.4-7.5-5.7-7.5-10.3V5.3z"/><path d="M8.8 12l2.3 2.3 4.2-4.2"/></svg></span><div><b data-i18n="pg_booking_54">Verified Drivers</b><small data-i18n="pg_booking_55">Safe &amp; secure rides</small></div></li>
+        <li class="feat"><span class="feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-5.4-6.5-10.4A6.5 6.5 0 0 1 12 4a6.5 6.5 0 0 1 6.5 6.6C18.5 15.6 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.3"/></svg></span><div><b data-i18n="pg_booking_56">Live Tracking</b><small data-i18n="pg_booking_57">Know where your vehicle is</small></div></li>
+        <li class="feat"><span class="feat-ic"><span class="rupee">₹</span></span><div><b data-i18n="pg_booking_58">Transparent Pricing</b><small data-i18n="pg_booking_59">No hidden charges</small></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- RIGHT: booking card -->
+  <section class="book-card" aria-labelledby="pageTitle">
+    <div class="title-row">
+      <span class="title-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 5.5h12.5V16H1.5z"/><path d="M14 10h3.8l3.7 3.7V16H14z"/><circle cx="6" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg></span>
+      <div>
+        <h1 id="pageTitle" data-i18n="pg_booking_01">Book a Vehicle</h1>
+        <p class="card-sub" data-i18n="pg_booking_02">Enter pickup and drop-off details, check the correct fare first, then confirm your booking.</p>
+      </div>
+    </div>
 
     <div class="alert" id="formAlert" role="alert" aria-live="assertive"></div>
 
     <form id="bookingForm" novalidate>
       <div class="field" id="f-pickupAddr">
-        <label for="pickupAddr">Pickup address <span class="req" aria-hidden="true">*</span></label>
-        <input type="text" id="pickupAddr" name="pickup-address" autocomplete="street-address" maxlength="300" placeholder="Example: 12 MG Road, Indore" aria-describedby="pickupAddr-err" list="pickupSuggest" required>
-        <datalist id="pickupSuggest"></datalist>
+        <label class="alabel" for="pickupAddr" data-i18n="pg_booking_03">Pickup address <span class="req" aria-hidden="true">*</span></label>
+        <div class="input-wrap">
+          <span class="lead-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#0b1f3a"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg></span>
+          <input type="text" id="pickupAddr" name="pickup-address" autocomplete="street-address" maxlength="300" placeholder="Example: 12 MG Road, Indore" data-i18n-ph="pg_booking_04" aria-describedby="pickupAddr-err" list="pickupSuggest" required>
+          <datalist id="pickupSuggest"></datalist>
+        </div>
         <p class="error-text" id="pickupAddr-err"></p>
       </div>
       <input type="hidden" id="pickupLat" name="pickup-lat" value="">
       <input type="hidden" id="pickupLng" name="pickup-lng" value="">
       <div class="field" id="f-pickupLat">
-        <label>📍 Pickup location <span class="req" aria-hidden="true">*</span></label>
-        <p class="loc-status" id="pickupLocStatus">No location chosen yet — pick an address suggestion above or choose on the map.</p>
+        <label class="floc" data-i18n="pg_booking_05">Pickup location <span class="req" aria-hidden="true">*</span></label>
+        <p class="loc-status" id="pickupLocStatus" data-i18n="pg_booking_06">No location chosen yet — pick an address suggestion above or choose on the map.</p>
         <div class="btnrow">
-          <button type="button" class="btn ghost" id="pickupMapBtn">Choose on map</button>
+          <button type="button" class="map-btn" id="pickupMapBtn" data-i18n="pg_booking_07">Choose on map</button>
         </div>
         <p class="error-text" id="pickupLat-err"></p>
         <p class="error-text" id="pickupLng-err"></p>
       </div>
 
       <div class="field" id="f-dropAddr">
-        <label for="dropAddr">Drop address <span class="req" aria-hidden="true">*</span></label>
-        <input type="text" id="dropAddr" name="drop-address" autocomplete="street-address" maxlength="300" placeholder="Example: 45 AB Road, Indore" aria-describedby="dropAddr-err" list="dropSuggest" required>
-        <datalist id="dropSuggest"></datalist>
+        <label class="alabel" for="dropAddr" data-i18n="pg_booking_08">Drop address <span class="req" aria-hidden="true">*</span></label>
+        <div class="input-wrap">
+          <span class="lead-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#0b1f3a"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg></span>
+          <input type="text" id="dropAddr" name="drop-address" autocomplete="street-address" maxlength="300" placeholder="Example: 45 AB Road, Indore" data-i18n-ph="pg_booking_09" aria-describedby="dropAddr-err" list="dropSuggest" required>
+          <datalist id="dropSuggest"></datalist>
+        </div>
         <p class="error-text" id="dropAddr-err"></p>
       </div>
       <input type="hidden" id="dropLat" name="drop-lat" value="">
       <input type="hidden" id="dropLng" name="drop-lng" value="">
       <div class="field" id="f-dropLat">
-        <label>📍 Drop-off location <span class="req" aria-hidden="true">*</span></label>
-        <p class="loc-status" id="dropLocStatus">No location chosen yet — pick an address suggestion above or choose on the map.</p>
+        <label class="floc" data-i18n="pg_booking_10">Drop-off location <span class="req" aria-hidden="true">*</span></label>
+        <p class="loc-status" id="dropLocStatus" data-i18n="pg_booking_11">No location chosen yet — pick an address suggestion above or choose on the map.</p>
         <div class="btnrow">
-          <button type="button" class="btn ghost" id="dropMapBtn">Choose on map</button>
+          <button type="button" class="map-btn" id="dropMapBtn" data-i18n="pg_booking_12">Choose on map</button>
         </div>
         <p class="error-text" id="dropLat-err"></p>
         <p class="error-text" id="dropLng-err"></p>
@@ -282,105 +699,115 @@
 
       <div class="row2">
         <div class="field" id="f-schedDate">
-          <label for="schedDate">Date (optional)</label>
+          <label class="dlabel" for="schedDate" data-i18n="pg_booking_13">Date (optional)</label>
           <input type="date" id="schedDate" name="scheduled-date" aria-describedby="schedDate-hint schedDate-err">
-          <p class="hint" id="schedDate-hint">Leave blank to book for now.</p>
+          <p class="hint" id="schedDate-hint" data-i18n="pg_booking_14">Leave blank to book for now.</p>
           <p class="error-text" id="schedDate-err"></p>
         </div>
         <div class="field" id="f-schedTime">
-          <label for="schedTime">Time (optional)</label>
+          <label class="tlabel" for="schedTime" data-i18n="pg_booking_15">Time (optional)</label>
           <input type="time" id="schedTime" name="scheduled-time" aria-describedby="schedTime-err">
           <p class="error-text" id="schedTime-err"></p>
         </div>
       </div>
 
       <div class="field" id="f-vehicle">
-        <label for="vehicle">Select vehicle <span class="req" aria-hidden="true">*</span></label>
+        <label for="vehicle" data-i18n="pg_booking_16">Select vehicle <span class="req" aria-hidden="true">*</span></label>
         <select id="vehicle" name="vehicle-type" aria-describedby="vehicle-err" required>
-          <option value="pickup">Pickup — small items</option>
-          <option value="mini_truck">Mini Truck — household items</option>
-          <option value="mini_tractor">Mini Tractor — heavy items</option>
+          <option value="pickup" data-i18n="pg_booking_17">Pickup — small items</option>
+          <option value="mini_truck" data-i18n="pg_booking_18">Mini Truck — household items</option>
+          <option value="mini_tractor" data-i18n="pg_booking_19">Mini Tractor — heavy items</option>
         </select>
         <p class="error-text" id="vehicle-err"></p>
       </div>
 
       <fieldset class="field" id="f-payMethod">
-        <legend>How will you pay? <span class="req" aria-hidden="true">*</span></legend>
+        <legend data-i18n="pg_booking_20">How will you pay? <span class="req" aria-hidden="true">*</span></legend>
         <label class="checkline" for="payUpi">
           <input type="radio" id="payUpi" name="payment-method" value="upi" checked>
-          <span>Online (UPI) (default, recommended) — pay to the driver's UPI ID</span>
+          <span data-i18n="pg_booking_21">Online (UPI) (default, recommended) — pay to the driver's UPI ID</span>
         </label>
         <label class="checkline" for="payCash">
           <input type="radio" id="payCash" name="payment-method" value="cash">
-          <span>Cash on Delivery (COD) — pay the full fare to the driver (driver will confirm)</span>
+          <span data-i18n="pg_booking_22">Cash on Delivery (COD) — pay the full fare to the driver (driver will confirm)</span>
         </label>
         <p class="error-text" id="payMethod-err"></p>
       </fieldset>
 
       <label class="checkline" for="helper">
         <input type="checkbox" id="helper" name="helper-needed">
-        <span>I need a helper (help with lifting/loading the items)</span>
+        <span data-i18n="pg_booking_23">I need a helper (help with lifting/loading the items)</span>
       </label>
 
       <div class="field" id="f-itemDesc">
-        <label for="itemDesc">Item details (optional)</label>
-        <textarea id="itemDesc" name="item-description" maxlength="500" placeholder="Example: 1 double bed, 4 boxes, 1 fridge" aria-describedby="itemDesc-hint itemDesc-err"></textarea>
-        <p class="hint" id="itemDesc-hint">This helps the driver estimate the amount of luggage/items.</p>
+        <label for="itemDesc" data-i18n="pg_booking_24">Item details (optional)</label>
+        <textarea id="itemDesc" name="item-description" maxlength="500" placeholder="Example: 1 double bed, 4 boxes, 1 fridge" data-i18n-ph="pg_booking_25" aria-describedby="itemDesc-hint itemDesc-err"></textarea>
+        <p class="hint" id="itemDesc-hint" data-i18n="pg_booking_26">This helps the driver estimate the amount of luggage/items.</p>
         <p class="error-text" id="itemDesc-err"></p>
       </div>
 
       <div class="btnrow">
-        <button type="button" class="btn ghost" id="estimateBtn">Get Estimate — See Fare</button>
+        <button type="button" class="btn-est" id="estimateBtn" data-i18n="pg_booking_27">Get Estimate — See Fare</button>
       </div>
     </form>
 
     <section class="fare" id="fareCard" aria-live="polite" aria-labelledby="fareTitle">
-      <h2 id="fareTitle">Fare breakdown</h2>
+      <h2 id="fareTitle" data-i18n="pg_booking_28">Fare breakdown</h2>
       <table>
         <tbody>
-          <tr><td>Distance</td><td id="fareDist">–</td></tr>
-          <tr><td>Base fare</td><td id="fareBase">–</td></tr>
-          <tr><td>Distance fare</td><td id="fareDistFare">–</td></tr>
-          <tr><td>Helper charge</td><td id="fareHelper">–</td></tr>
-          <tr class="total"><td>Total fare</td><td id="fareTotal">–</td></tr>
-          <tr><td>Estimated range</td><td id="fareRange">–</td></tr>
+          <tr><td data-i18n="pg_booking_29">Distance</td><td id="fareDist">–</td></tr>
+          <tr><td data-i18n="pg_booking_30">Base fare</td><td id="fareBase">–</td></tr>
+          <tr><td data-i18n="pg_booking_31">Distance fare</td><td id="fareDistFare">–</td></tr>
+          <tr><td data-i18n="pg_booking_32">Helper charge</td><td id="fareHelper">–</td></tr>
+          <tr class="total"><td data-i18n="pg_booking_33">Total fare</td><td id="fareTotal">–</td></tr>
+          <tr><td data-i18n="pg_booking_34">Estimated range</td><td id="fareRange">–</td></tr>
         </tbody>
       </table>
       <div class="btnrow" style="margin-top:12px">
-        <button type="button" class="btn" id="confirmBtn">Confirm Booking</button>
+        <button type="button" class="btn" id="confirmBtn" data-i18n="pg_booking_35">Confirm Booking</button>
       </div>
     </section>
 
     <section id="successCard" aria-live="polite" aria-labelledby="successTitle">
-      <h2 id="successTitle">Booking confirmed!</h2>
-      <p id="successText">Booking ID received.</p>
-      <p><a href="customer-dashboard.html">View my bookings — Open Dashboard</a></p>
+      <h2 id="successTitle" data-i18n="pg_booking_36">Booking confirmed!</h2>
+      <p id="successText" data-i18n="pg_booking_37">Booking ID received.</p>
+      <p><a href="customer-dashboard.html" data-i18n="pg_booking_38">View my bookings — Open Dashboard</a></p>
     </section>
 
-    <a class="backlink" href="customer-dashboard.html">← Back to Dashboard</a>
+    <a class="backlink" href="customer-dashboard.html" data-i18n="pg_booking_39">← Back to Dashboard</a>
   </section>
+</div>
 
-  <div class="map-backdrop" id="mapModal" role="dialog" aria-modal="true" aria-labelledby="mapTitle">
-    <div class="map-modal">
-      <h2 id="mapTitle">Choose location</h2>
-      <div id="pickMap" role="img" aria-label="Map to choose pickup or drop location"></div>
-      <p class="loc-status" id="mapPickStatus">Drag the map to move • use +/− or pinch to zoom • tap to drop the pin.</p>
-      <div class="btnrow">
-        <button type="button" class="btn" id="mapConfirmBtn">Use this location</button>
-        <button type="button" class="btn ghost" id="mapCloseBtn">Cancel</button>
-      </div>
+<div class="map-backdrop" id="mapModal" role="dialog" aria-modal="true" aria-labelledby="mapTitle">
+  <div class="map-modal">
+    <h2 id="mapTitle" data-i18n="pg_booking_40">Choose location</h2>
+    <div id="pickMap" role="img" aria-label="Map to choose pickup or drop location"></div>
+    <p class="loc-status" id="mapPickStatus" data-i18n="pg_booking_41">Drag the map to move • use +/− or pinch to zoom • tap to drop the pin.</p>
+    <div class="btnrow">
+      <button type="button" class="btn" id="mapConfirmBtn" data-i18n="pg_booking_42">Use this location</button>
+      <button type="button" class="btn-est" id="mapCloseBtn" data-i18n="pg_booking_43">Cancel</button>
     </div>
   </div>
+</div>
 </main>
 
 <footer class="site-footer">
   <div class="site-foot-inner">
-    <div class="site-foot-brand">ApnaShift</div>
-    <div class="site-foot-links">
-      <a href="index.html">Home</a>
-      <a href="help.html">Help</a>
-      <a href="privacy.html">Privacy Policy</a>
-      <a href="terms.html">Terms &amp; Conditions</a>
+    <div class="foot-brand">Apna<span class="y">Shift</span><small>SHIFTING • TRANSPORT</small></div>
+    <div class="foot-mid">
+      <div class="site-foot-links">
+        <a href="index.html" data-i18n="pg_booking_44">Home</a>
+        <a href="help.html" data-i18n="pg_booking_45">Help</a>
+        <a href="privacy.html" data-i18n="pg_booking_46">Privacy Policy</a>
+        <a href="terms.html" data-i18n="pg_booking_47">Terms &amp; Conditions</a>
+      </div>
+      <div class="foot-mail"><a href="mailto:support@apnashift.in?subject=ApnaShift%20Support%20Request">support@apnashift.in</a></div>
+    </div>
+    <div class="soc-row" aria-label="Social links">
+      <span class="soc" role="img" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 22v-8h2.7l.4-3.2h-3.1V8.7c0-.9.3-1.6 1.7-1.6h1.5V4.2c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.7H7.8V14h2.7v8z"/></svg></span>
+      <span class="soc" role="img" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1.3" fill="currentColor" stroke="none"/></svg></span>
+      <span class="soc" role="img" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.9 8.6H3.6V21h3.3zM5.2 3.5a1.9 1.9 0 1 0 0 3.9 1.9 1.9 0 0 0 0-3.9zM12 13.4c0-1.1.9-2 2.1-2 1.1 0 1.9.8 1.9 2V21h3.3v-4.1c0-2.9-1.6-4.3-3.7-4.3-1.7 0-2.6 1-3 1.7V8.6H9.3c0 .9 0 12.4 0 12.4H12z"/></svg></span>
+      <span class="soc" role="img" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2.5" y="6" width="19" height="12" rx="4"/><path d="M10.5 9.8v4.4L14.5 12z" fill="currentColor" stroke="none"/></svg></span>
     </div>
   </div>
 </footer>
@@ -449,6 +876,30 @@
   // range validation below is untouched.
   var TILE_TEMPLATE = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
   var TILE_ATTRIB = "&copy; OpenStreetMap contributors";
+  // Backup basemap (CARTO voyager, free quota, OSM data): OSM's own servers
+  // 403-block some networks/IPs (tile usage policy) — after a few failed
+  // tiles we jump here automatically so the picker never stays blank.
+  var CARTO_TEMPLATE = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+  var CARTO_ATTRIB = "&copy; OpenStreetMap contributors &copy; CARTO";
+  var tileErrCount = 0, cartoActive = false;
+  function useBackupTiles(){
+    if(cartoActive) return;
+    cartoActive = true;
+    TILE_ATTRIB = CARTO_ATTRIB;
+    if(typeof pickTiles !== "undefined" && pickTiles){
+      try { pickTiles.setUrl(CARTO_TEMPLATE); } catch(e){}
+    } else {
+      TILE_TEMPLATE = CARTO_TEMPLATE;
+    }
+    try {
+      if(typeof pickMap !== "undefined" && pickMap && pickMap.attributionControl){
+        pickMap.attributionControl.addAttribution("&copy; CARTO");
+      }
+    } catch(e2){}
+    if(typeof mapPickStatus !== "undefined" && mapPickStatus && typeof mapModal !== "undefined" && mapModal && mapModal.classList.contains("show")){
+      mapPickStatus.textContent = "Switched to backup map tiles — tap to drop the pin.";
+    }
+  }
   // Authorized India fallback center (Jaipur) — used ONLY when no saved
   // pin, no geocode hit and no device location exist. Never 0,0 / ocean.
   var JAIPUR = [26.9124, 75.7873];
@@ -459,8 +910,10 @@
       if(b && b.ok && b.tiles && b.tiles.template) TILE_TEMPLATE = b.tiles.template;
       if(b && b.ok && b.tiles && b.tiles.attribution) TILE_ATTRIB = b.tiles.attribution;
       // Config map khulne ke baad aaye to bani hui layer upgrade karo.
+      // Geoapify preferred hai — backup par gaye hon to wapas lao.
       try {
         if(pickTiles && TILE_TEMPLATE.indexOf("geoapify") !== -1){
+          tileErrCount = 0; cartoActive = false;
           pickTiles.setUrl(TILE_TEMPLATE);
           if(mapPickStatus && mapModal && mapModal.classList.contains("show") &&
              mapPickStatus.textContent.indexOf("failed") !== -1){
@@ -530,6 +983,9 @@
     });
     pickTiles = L.tileLayer(TILE_TEMPLATE, { maxZoom: 19, attribution: TILE_ATTRIB });
     pickTiles.on("tileerror", function(){
+      tileErrCount++;
+      // OSM 403 (tile usage policy block) -> backup basemap, map stays usable.
+      if(tileErrCount >= 3){ useBackupTiles(); return; }
       if(mapPickStatus && mapModal && mapModal.classList.contains("show")){
         mapPickStatus.textContent = "Map tiles failed to load — check internet and retry.";
       }
@@ -1055,5 +1511,9 @@
   if(navMenuBtn&&siteNav){navMenuBtn.addEventListener("click",function(){var open=siteNav.classList.toggle("open");navMenuBtn.setAttribute("aria-expanded",open?"true":"false");navMenuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");});siteNav.addEventListener("click",function(ev){if(ev.target.tagName==="A"&&siteNav.classList.contains("open")){siteNav.classList.remove("open");navMenuBtn.setAttribute("aria-expanded","false");}});}
 })();
 </script>
+
+<script>window.PAGE_I18N={en:{"page_title":"Book a Vehicle | ApnaShift","meta_desc":"Book a vehicle on ApnaShift — enter pickup and drop details to get the correct fare.","pg_booking_01":"Book a Vehicle","pg_booking_02":"Enter pickup and drop-off details, check the correct fare first, then confirm your booking.","pg_booking_03":"Pickup address *","pg_booking_04":"Example: 12 MG Road, Indore","pg_booking_05":"Pickup location *","pg_booking_06":"No location chosen yet — pick an address suggestion above or choose on the map.","pg_booking_07":"Choose on map","pg_booking_08":"Drop address *","pg_booking_09":"Example: 45 AB Road, Indore","pg_booking_10":"Drop-off location *","pg_booking_11":"No location chosen yet — pick an address suggestion above or choose on the map.","pg_booking_12":"Choose on map","pg_booking_13":"Date (optional)","pg_booking_14":"Leave blank to book for now.","pg_booking_15":"Time (optional)","pg_booking_16":"Select vehicle *","pg_booking_17":"Pickup — small items","pg_booking_18":"Mini Truck — household items","pg_booking_19":"Mini Tractor — heavy items","pg_booking_20":"How will you pay? *","pg_booking_21":"Online (UPI) (default, recommended) — pay to the driver's UPI ID","pg_booking_22":"Cash on Delivery (COD) — pay the full fare to the driver (driver will confirm)","pg_booking_23":"I need a helper (help with lifting/loading the items)","pg_booking_24":"Item details (optional)","pg_booking_25":"Example: 1 double bed, 4 boxes, 1 fridge","pg_booking_26":"This helps the driver estimate the amount of luggage/items.","pg_booking_27":"Get Estimate — See Fare","pg_booking_28":"Fare breakdown","pg_booking_29":"Distance","pg_booking_30":"Base fare","pg_booking_31":"Distance fare","pg_booking_32":"Helper charge","pg_booking_33":"Total fare","pg_booking_34":"Estimated range","pg_booking_35":"Confirm Booking","pg_booking_36":"Booking confirmed!","pg_booking_37":"Booking ID received.","pg_booking_38":"View my bookings — Open Dashboard","pg_booking_39":"← Back to Dashboard","pg_booking_40":"Choose location","pg_booking_41":"Drag the map to move • use +/− or pinch to zoom • tap to drop the pin.","pg_booking_42":"Use this location","pg_booking_43":"Cancel","pg_booking_44":"Home","pg_booking_45":"Help","pg_booking_46":"Privacy Policy","pg_booking_47":"Terms & Conditions","pg_booking_48":"Safe • Reliable • Affordable","pg_booking_49":"Book Your","pg_booking_50":"Vehicle in Minutes","pg_booking_51":"Easy pickup and drop-off, transparent pricing, and verified drivers — all in one place.","pg_booking_52":"Quick Booking","pg_booking_53":"Simple and fast process","pg_booking_54":"Verified Drivers","pg_booking_55":"Safe & secure rides","pg_booking_56":"Live Tracking","pg_booking_57":"Know where your vehicle is","pg_booking_58":"Transparent Pricing","pg_booking_59":"No hidden charges"},hi:{"page_title":"वाहन बुक करें | ApnaShift","meta_desc":"ApnaShift पर वाहन बुक करें — पिकअप और ड्रॉप की जानकारी भरकर सही किराया पाएं।","pg_booking_01":"वाहन बुक करें","pg_booking_02":"पिकअप और ड्रॉप की जानकारी भरें, पहले सही किराया देखें, फिर बुकिंग कन्फर्म करें।","pg_booking_03":"पिकअप पता *","pg_booking_04":"उदाहरण: 12 एमजी रोड, इंदौर","pg_booking_05":"पिकअप लोकेशन *","pg_booking_06":"अभी कोई लोकेशन नहीं चुनी — ऊपर से पता सुझाव चुनें या मैप पर चुनें।","pg_booking_07":"मैप पर चुनें","pg_booking_08":"ड्रॉप पता *","pg_booking_09":"उदाहरण: 45 एबी रोड, इंदौर","pg_booking_10":"ड्रॉप लोकेशन *","pg_booking_11":"अभी कोई लोकेशन नहीं चुनी — ऊपर से पता सुझाव चुनें या मैप पर चुनें।","pg_booking_12":"मैप पर चुनें","pg_booking_13":"तारीख (वैकल्पिक)","pg_booking_14":"अभी बुक करने के लिए खाली छोड़ दें।","pg_booking_15":"समय (वैकल्पिक)","pg_booking_16":"वाहन चुनें *","pg_booking_17":"पिकअप — छोटा सामान","pg_booking_18":"मिनी ट्रक — घर का सामान","pg_booking_19":"मिनी ट्रैक्टर — भारी सामान","pg_booking_20":"भुगतान कैसे करेंगे? *","pg_booking_21":"ऑनलाइन (UPI) (डिफॉल्ट, सुझाया गया) — ड्राइवर की UPI ID पर भुगतान करें","pg_booking_22":"कैश ऑन डिलीवरी (COD) — पूरा किराया ड्राइवर को दें (ड्राइवर कन्फर्म करेगा)","pg_booking_23":"मुझे हेल्पर चाहिए (सामान उठाने और लोड करने में मदद)","pg_booking_24":"सामान की जानकारी (वैकल्पिक)","pg_booking_25":"उदाहरण: 1 डबल बेड, 4 बॉक्स, 1 फ्रिज","pg_booking_26":"इससे ड्राइवर को सामान का अंदाजा लगाने में मदद मिलती है।","pg_booking_27":"अनुमान देखें — किराया जानें","pg_booking_28":"किराया विवरण","pg_booking_29":"दूरी","pg_booking_30":"बेस किराया","pg_booking_31":"दूरी का किराया","pg_booking_32":"हेल्पर शुल्क","pg_booking_33":"कुल किराया","pg_booking_34":"अनुमानित रेंज","pg_booking_35":"बुकिंग कन्फर्म करें","pg_booking_36":"बुकिंग कन्फर्म हो गई!","pg_booking_37":"बुकिंग ID मिल गई।","pg_booking_38":"मेरी बुकिंग देखें — डैशबोर्ड खोलें","pg_booking_39":"← डैशबोर्ड पर वापस","pg_booking_40":"लोकेशन चुनें","pg_booking_41":"मैप को खींचें • +/− या पिंच से ज़ूम करें • पिन लगाने के लिए टैप करें।","pg_booking_42":"इस लोकेशन का उपयोग करें","pg_booking_43":"रद्द करें","pg_booking_44":"होम","pg_booking_45":"सहायता","pg_booking_46":"प्राइवेसी पॉलिसी","pg_booking_47":"नियम और शर्तें","pg_booking_48":"सुरक्षित • भरोसेमंद • किफायती","pg_booking_49":"मिनटों में","pg_booking_50":"वाहन बुक करें","pg_booking_51":"आसान पिकअप और ड्रॉप, पारदर्शी कीमत और वेरिफाइड ड्राइवर — सब एक ही जगह।","pg_booking_52":"तुरंत बुकिंग","pg_booking_53":"आसान और तेज़ प्रक्रिया","pg_booking_54":"वेरिफाइड ड्राइवर","pg_booking_55":"सुरक्षित राइड","pg_booking_56":"लाइव ट्रैकिंग","pg_booking_57":"जानें आपका वाहन कहां है","pg_booking_58":"पारदर्शी कीमत","pg_booking_59":"कोई छिपा शुल्क नहीं"}};</script>
+<script src="lang.js"></script>
+<script src="theme.js"></script>
 </body>
 </html>
