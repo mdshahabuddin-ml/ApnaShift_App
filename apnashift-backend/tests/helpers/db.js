@@ -4,6 +4,18 @@ import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 
 export async function applyTestSchema(client, root) {
+  // Fresh schema per file: suites share one test DB sequentially, so wipe
+  // all public tables first (extension/functions survive; triggers drop with
+  // their tables). Without this, a previous file's schema makes
+  // non-idempotent migration statements (e.g. 014 ADD CONSTRAINT) fail with
+  // "already exists". Test-only helper — production migrate untouched.
+  await client.query(
+    `DO $$ DECLARE r RECORD; BEGIN
+       FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') LOOP
+         EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE';
+       END LOOP;
+     END $$;`,
+  );
   await client.query(await readFile(path.join(root, 'db', 'schema.sql'), 'utf8'));
   let migs = [];
   try {

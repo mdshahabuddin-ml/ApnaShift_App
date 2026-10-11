@@ -1280,7 +1280,11 @@ adminRoutes.get('/reports/summary', async (req, res, next) => {
         [fromISO, toISO],
       ),
       query(
-        `SELECT date_trunc('${trunc}', b.delivered_at) AS bucket,
+        // Buckets UTC me kaato (AT TIME ZONE 'UTC') aur key text me banao
+        // (to_char): DB/server timezone jo bhi ho, period key hamesha wahi
+        // rahe — warna IST jaisi TZ me month/week bucket ek din khisak jata
+        // hai (JS Date + toISOString UTC me convert kar deta hai).
+        `SELECT to_char(date_trunc('${trunc}', b.delivered_at AT TIME ZONE 'UTC'), 'YYYY-MM-DD') AS bucket,
                 COUNT(*) AS trips,
                 COALESCE(SUM(p.platform_commission), 0) AS commission_base,
                 COALESCE(SUM(COALESCE(adj.adj_c, 0)), 0) AS adj_paise
@@ -1305,10 +1309,11 @@ adminRoutes.get('/reports/summary', async (req, res, next) => {
     const settledRs = round2(t.settled);
     const pendingRs = round2(Math.max(0, commissionRs - settledRs));
 
-    // Bucket map (YYYY-MM-DD) -> { trips, commission_rs }.
+    // Bucket map (YYYY-MM-DD) -> { trips, commission_rs }. Key SQL se text
+    // me aati hai (to_char), isliye yahan koi Date/UTC conversion nahi.
     const byBucket = new Map();
     for (const r of buckets.rows) {
-      const key = new Date(r.bucket).toISOString().slice(0, 10);
+      const key = String(r.bucket).slice(0, 10);
       byBucket.set(key, {
         trips: Number(r.trips),
         commission_rs: commissionOf(r),
