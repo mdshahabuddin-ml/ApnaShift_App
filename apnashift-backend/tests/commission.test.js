@@ -2,7 +2,7 @@
 // Requires real Postgres. Skips if TEST_DATABASE_URL not set.
 import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
 import request from 'supertest';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import pg from 'pg';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

@@ -3,7 +3,7 @@
 // Extended profile fields (migration 009) are optional — legacy quick form
 // still returns 201 without them (backward compatible).
 import { Router } from 'express';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
 import { query } from '../db.js';
 import { config } from '../config.js';

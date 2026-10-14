@@ -7,15 +7,17 @@
 <meta name="description" content="ApnaShift customer dashboard — view your bookings, driver status and ratings in one place.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --navy:#14213d;
-    --yellow:#fcbf49;
-    --bg:#f4f6fa;
+    --navy:#0a2340;
+    --navy-2:#102e57;
+    --yellow:#ffb200;
+    --bg:#ffffff;
     --border:#c9d0de;
-    --ink:#20242e;
-    --muted:#5b6070;
+    --ink:#0b1f3a;
+    --muted:#5b6b82;
+    --blue:#1a73e8;
     --red:#c0392b;
     --green:#1a7a3a;
     --radius:14px;
@@ -26,7 +28,7 @@
     margin:0;
     background:var(--bg);
     color:var(--ink);
-    font-family:"Noto Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-family:"Inter","Noto Sans",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
     line-height:1.6;
   }
   :focus-visible{
@@ -36,53 +38,62 @@
     border-radius:8px;
   }
   main{
-    max-width:560px;
+    max-width:1400px;
     margin:0 auto;
-    padding:20px 16px 40px;
+    padding:18px 28px 36px;
   }
   .card{
     background:#fff;
     border:2px solid var(--navy);
     border-radius:var(--radius);
-    padding:22px 18px;
-    box-shadow:6px 6px 0 var(--yellow);
-    margin-bottom:16px;
+    padding:26px 28px;
+    box-shadow:0 6px 0 var(--yellow);
+    margin-bottom:18px;
   }
   h1{
-    font-family:"Baloo 2", "Comic Sans MS", system-ui, sans-serif;
+    font-family:"Plus Jakarta Sans","Inter",system-ui,sans-serif;
     color:var(--navy);
-    font-size:1.6rem;
+    font-size:2rem;
     line-height:1.2;
-    margin:0 0 6px;
+    margin:0 0 8px;
+    font-weight:800;
+    letter-spacing:-.5px;
   }
   h2{
-    font-family:"Baloo 2", "Comic Sans MS", system-ui, sans-serif;
+    font-family:"Plus Jakarta Sans","Inter",system-ui,sans-serif;
     color:var(--navy);
-    font-size:1.25rem;
+    font-size:1.6rem;
     margin:0 0 8px;
+    font-weight:800;
+    letter-spacing:-.3px;
   }
   .sub{margin:0 0 12px;color:var(--muted);font-size:.92rem}
   .profile-line{margin:4px 0;font-size:.94rem}
   .profile-line strong{color:var(--navy)}
   .btn{
-    display:inline-block;
-    font-family:"Baloo 2", "Comic Sans MS", system-ui, sans-serif;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    font-family:"Plus Jakarta Sans","Inter",system-ui,sans-serif;
     font-size:1rem;
     font-weight:800;
-    padding:12px 20px;
+    padding:13px 22px;
     border-radius:12px;
     border:2px solid var(--navy);
     text-decoration:none;
     cursor:pointer;
     text-align:center;
+    position:relative;
   }
   .btn.primary{background:var(--yellow);color:var(--navy);box-shadow:0 4px 0 var(--navy)}
   .btn.primary:active{transform:translateY(3px);box-shadow:0 1px 0 var(--navy)}
   .btn.ghost{background:#fff;color:var(--navy)}
   .btn.small{font-size:.9rem;padding:9px 14px;width:auto}
+  .btn .bic{font-size:1.15rem;line-height:1}
+  .btn .go{font-size:.95rem;font-weight:800;margin-left:2px}
   .btn.danger{background:#fff;color:var(--red);border-color:var(--red)}
   .btn[disabled]{opacity:.65;cursor:wait}
-  .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  .btnrow{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;align-items:center}
   .pay-box{background:#fff8e2;border:2px dashed var(--navy);border-radius:10px;padding:12px;margin-top:10px}
   .pay-box .upi-big{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.35rem;color:var(--navy);word-break:break-all;margin:4px 0 8px}
   .pay-box .meta{font-size:.84rem;color:var(--muted);margin:8px 0 0}
@@ -101,14 +112,22 @@
   .dialog .error-text{color:var(--red);font-size:.84rem;font-weight:600;min-height:1.2em;margin:6px 0 0}
   .alert{
     display:none;
-    border-radius:10px;
-    padding:11px 12px;
-    font-size:.9rem;
-    font-weight:600;
-    margin:0 0 14px;
+    border-radius:12px;
+    padding:16px 18px 16px 60px;
+    font-size:1rem;
+    font-weight:700;
+    margin:0 0 16px;
+    position:relative;
   }
   .alert.show{display:block}
-  .alert.err{background:#fdecea;color:#7a1f14;border:2px solid var(--red)}
+  .alert.err{background:#fef2f2;color:#991b1b;border:1.5px solid #dc2626}
+  .alert.err::before{
+    content:"!";
+    position:absolute;left:16px;top:50%;transform:translateY(-50%);
+    width:30px;height:30px;border-radius:50%;
+    border:2.5px solid #dc2626;color:#dc2626;
+    display:grid;place-items:center;font-weight:800;font-size:1.1rem;
+  }
   .alert.ok{background:#e6f6ea;color:#0d5c26;border:2px solid var(--green)}
   .alert.info{background:#e8effc;color:#1c2f5e;border:2px solid var(--navy)}
   .spinner{
@@ -204,49 +223,110 @@
   .invalid .error-text{display:block}
   .empty{text-align:center;padding:28px 16px}
   .empty p{color:var(--muted);margin:0 0 14px}
-  .helpline{margin-top:4px;font-size:.9rem}
-  .helpline a{color:var(--navy);font-weight:600}
-  .site-header{background:var(--navy);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:50}
-  .site-header-inner{max-width:1140px;margin:0 auto;display:flex;align-items:center;gap:14px}
-  .site-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:1.3rem;line-height:1;color:#fff;text-decoration:none}
-  .site-brand small{display:block;font-family:"Noto Sans",system-ui,sans-serif;font-weight:600;font-size:.64rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow)}
-  .site-nav{display:flex;gap:10px;margin-left:12px;align-items:center;flex-wrap:wrap}
-  .site-nav> a,.nav-drop summary{color:#fff;text-decoration:none;font-weight:800;font-size:1rem;padding:12px 18px;border-radius:12px;background:rgba(255,255,255,.07);border:2px solid var(--yellow);min-height:50px;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;box-shadow:0 2px 0 rgba(0,0,0,.25)}
-  .site-nav> a:hover,.nav-drop summary:hover{background:var(--yellow);color:var(--navy);border-color:var(--navy)}
+  .helpline{margin:4px 0 0;font-size:.95rem;color:var(--muted)}
+  .helpline a{color:var(--blue);font-weight:700}
+  .help-card{display:flex;align-items:center;gap:20px;cursor:default}
+  .help-ic{width:72px;height:72px;flex:0 0 72px;border-radius:50%;background:#e8f1fd;display:grid;place-items:center;font-size:2rem;color:var(--blue)}
+  .help-body{flex:1;min-width:0}
+  .help-body h2{margin:0 0 2px}
+  .help-go{flex:0 0 auto;color:var(--navy);font-size:1.8rem;font-weight:800;text-decoration:none;line-height:1;padding:8px}
+  .help-go:hover{color:var(--blue)}
+  .site-header{background:var(--navy);color:#fff;position:sticky;top:0;z-index:60;box-shadow:0 1px 0 rgba(255,255,255,.08)}
+  .site-header-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:18px;padding:12px 28px}
+  .site-brand{display:flex;flex-direction:column;color:#fff;text-decoration:none;flex:0 0 auto;font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:1.9rem;line-height:1;letter-spacing:-.5px}
+  .site-brand .row{white-space:nowrap}
+  .site-brand .w{color:#fff}
+  .site-brand .y{color:var(--yellow)}
+  .site-brand small{font-family:"Inter",sans-serif;font-weight:600;font-size:.6rem;letter-spacing:2.4px;color:#fff;margin-top:3px}
+  .site-nav{display:flex;gap:10px;margin:0 auto;align-items:center;justify-content:center;flex-wrap:nowrap}
+  .site-nav>a,.nav-drop summary{
+    color:#e8eef7;text-decoration:none;font-weight:600;font-size:.95rem;
+    padding:9px 26px;border-radius:10px;background:rgba(255,255,255,.03);
+    border:1.2px solid rgba(255,255,255,.28);
+    display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;
+    transition:.15s;
+  }
+  .site-nav>a:hover,.nav-drop summary:hover{background:rgba(255,255,255,.10);border-color:#fff;color:#fff}
+  .site-nav>a.active{background:var(--yellow);border-color:var(--yellow);color:#111;font-weight:700}
   .nav-drop{position:relative}
   .nav-drop summary{cursor:pointer;list-style:none}
   .nav-drop summary::-webkit-details-marker{display:none}
-  .nav-drop[open] summary{background:var(--yellow);color:var(--navy);border-color:var(--navy)}
+  .nav-drop[open] summary{background:var(--yellow);border-color:var(--yellow);color:#111}
   .drop-menu{display:flex;flex-direction:column;gap:2px}
-  @media(min-width:761px){.drop-menu{position:absolute;top:100%;left:0;background:var(--navy);border:1px solid #2a3d66;border-radius:8px;padding:6px;min-width:180px}.drop-menu a{white-space:nowrap}}
-  #navMenuBtn{display:none;background:transparent;border:2px solid var(--yellow);border-radius:8px;color:var(--yellow);font:inherit;font-weight:800;padding:6px 12px;cursor:pointer}
-  .site-footer{background:var(--navy);color:#dbe2f0;padding:22px 16px 30px}
-  .site-foot-inner{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
-  .site-foot-brand{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;color:#fff;font-size:1.05rem}
-  .site-foot-links{display:flex;gap:16px;flex-wrap:wrap}
-  .site-foot-links a{color:var(--yellow);font-size:.86rem;font-weight:600;text-decoration:none}
+  .drop-menu a{color:#fff;text-decoration:none;font-weight:600;font-size:.88rem;padding:10px 14px;border-radius:8px;white-space:nowrap}
+  .drop-menu a:hover{background:var(--yellow);color:var(--navy)}
+  @media(min-width:901px){
+    .drop-menu{position:absolute;top:calc(100% + 8px);left:0;background:var(--navy-2);border:1px solid #24406b;border-radius:12px;padding:6px;min-width:190px;box-shadow:0 12px 30px rgba(0,0,0,.35)}
+  }
+  .header-actions{display:flex;gap:12px;align-items:center;margin-left:auto;flex:0 0 auto}
+  .lang-drop{position:relative}
+  .lang-drop summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;color:#fff;font-weight:600;font-size:.9rem;padding:8px 16px;border-radius:10px;background:rgba(255,255,255,.03);border:1.2px solid rgba(255,255,255,.28);white-space:nowrap}
+  .lang-drop summary::-webkit-details-marker{display:none}
+  .lang-menu{position:absolute;top:calc(100% + 8px);right:0;background:var(--navy-2);border:1px solid #24406b;border-radius:12px;padding:6px;min-width:180px;box-shadow:0 12px 30px rgba(0,0,0,.35);z-index:70}
+  .lang-menu button{display:flex;width:100%;align-items:center;gap:8px;background:transparent;border:0;color:#fff;font:inherit;font-weight:600;font-size:.88rem;padding:10px 12px;border-radius:8px;cursor:pointer;text-align:left}
+  .lang-menu button:hover{background:rgba(255,255,255,.12)}
+  .lang-menu button.active{background:rgba(255,178,0,.15)}
+  .lang-menu .tick{margin-left:auto;color:var(--yellow);font-weight:800;visibility:hidden}
+  .lang-menu button.active .tick{visibility:visible}
+  .btn-getstarted{font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:.95rem;background:var(--yellow);color:#111;border:0;border-radius:10px;padding:11px 22px;text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center;gap:8px}
+  .btn-getstarted:hover{background:#ffbe26}
+  #navMenuBtn{display:none;background:transparent;border:1.5px solid var(--yellow);border-radius:10px;color:var(--yellow);font:inherit;font-weight:800;padding:8px 14px;cursor:pointer}
+  .site-footer{background:var(--navy);color:#dbe2f0;padding:16px 28px;margin-top:8px}
+  .site-foot-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:26px;flex-wrap:wrap}
+  .site-foot-brand{font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:1.7rem;line-height:1;color:#fff}
+  .site-foot-brand .w{color:#fff}
+  .site-foot-brand .y{color:var(--yellow)}
+  .site-foot-brand small{display:block;font-family:"Inter",sans-serif;font-weight:600;font-size:.58rem;letter-spacing:2.2px;color:#fff;margin-top:3px}
+  .site-foot-links{display:flex;gap:28px;flex-wrap:wrap;align-items:center;flex:1}
+  .site-foot-links a{color:var(--yellow);font-size:.92rem;font-weight:700;text-decoration:none;white-space:nowrap}
   .site-foot-links a:hover{text-decoration:underline}
-  @media (max-width:760px){#navMenuBtn{display:block;margin-left:auto}.site-nav{display:none;position:absolute;top:100%;left:0;right:0;background:var(--navy);flex-direction:column;align-items:stretch;padding:8px 16px 14px;margin:0;border-top:1px solid #2a3d66}.site-nav.open{display:flex}.site-header-inner{flex-wrap:wrap;position:relative}}
+  .foot-social{display:flex;gap:12px;align-items:center}
+  .soc{width:42px;height:42px;border-radius:50%;border:1.3px solid rgba(255,255,255,.35);display:grid;place-items:center;color:#fff}
+  .soc svg{width:17px;height:17px;display:block}
+  .foot-copy{border-left:1px solid rgba(255,255,255,.22);padding-left:26px;color:#e8eef7;font-size:.85rem;white-space:nowrap}
+  @media (max-width:900px){
+    #navMenuBtn{display:block}
+    .site-header-inner{flex-wrap:wrap;padding:10px 16px}
+    .site-nav{display:none;position:absolute;top:100%;left:0;right:0;background:var(--navy);flex-direction:column;align-items:stretch;padding:12px 16px 16px;margin:0;border-top:1px solid #24406b;z-index:65}
+    .site-nav.open{display:flex}
+    .site-foot-inner{justify-content:center;text-align:center}
+    .site-foot-links{justify-content:center}
+    .foot-copy{border-left:0;padding-left:0;width:100%}
+    main{padding:14px 14px 28px}
+    .card{padding:20px 18px}
+    h1{font-size:1.6rem}
+    .help-ic{width:56px;height:56px;flex-basis:56px;font-size:1.6rem}
+  }
 </style>
 </head>
 <body>
 
 <header class="site-header">
   <div class="site-header-inner">
-    <a class="site-brand" href="index.html" aria-label="ApnaShift home">ApnaShift<small>Shifting • Transport</small></a>
+    <a class="site-brand" href="index.html" aria-label="ApnaShift home"><span class="row"><span class="w">Apna</span><span class="y">Shift</span></span><small>SHIFTING • TRANSPORT</small></a>
     <nav class="site-nav" id="siteNav" aria-label="Main navigation">
-      <a href="index.html">Home</a>
-      <a href="user-auth.html">Login</a>
+      <a href="index.html" class="active" aria-current="page" data-i18n="nav_home">Home</a>
+      <a href="user-auth.html" data-i18n="nav_login">Login</a>
       <details class="nav-drop">
-        <summary>Driver</summary>
+        <summary data-i18n="nav_driver">Driver</summary>
         <div class="drop-menu">
-          <a href="driver-register.html">Join as Driver</a>
-          <a href="driver-login.html">Driver Login</a>
+          <a href="driver-register.html" data-i18n="nav_join">Join as Driver</a>
+          <a href="driver-login.html" data-i18n="nav_driver_login">Driver Login</a>
         </div>
       </details>
-      <a href="help.html">Help</a>
+      <a href="help.html" data-i18n="nav_help">Help</a>
     </nav>
-    <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">☰</button>
+    <div class="header-actions">
+      <details class="lang-drop" id="langDrop">
+        <summary aria-label="Language">🌐&nbsp; <span id="langLabel">English</span>&nbsp; ▾</summary>
+        <div class="lang-menu">
+          <button type="button" data-setlang="en" class="active"><span>English</span><span class="tick">✓</span></button>
+          <button type="button" data-setlang="hi"><span>हिन्दी</span><span class="tick">✓</span></button>
+        </div>
+      </details>
+      <a class="btn-getstarted" href="booking.html"><span data-i18n="nav_getstarted">Get Started</span> <span aria-hidden="true">→</span></a>
+      <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">☰</button>
+    </div>
   </div>
 </header>
 
@@ -258,8 +338,8 @@
     <p class="sub" data-i18n="pg_customer_dashboard_02">View your bookings here and book a new vehicle.</p>
     <p class="profile-line">Name: <strong id="profileName">–</strong></p>
     <div class="btnrow">
-      <a class="btn primary" href="booking.html" data-i18n="pg_customer_dashboard_03">Book a Vehicle</a>
-      <button type="button" class="btn ghost small" id="logoutBtn" data-i18n="pg_customer_dashboard_04">Logout</button>
+      <a class="btn primary" href="booking.html"><span class="bic" aria-hidden="true">🚚</span><span data-i18n="pg_customer_dashboard_03">Book a Vehicle</span><span class="go" aria-hidden="true">→</span></a>
+      <button type="button" class="btn ghost" id="logoutBtn"><span class="bic" aria-hidden="true">🚪</span><span data-i18n="pg_customer_dashboard_04">Logout</span></button>
     </div>
   </section>
 
@@ -281,9 +361,13 @@
     <a class="btn primary" href="booking.html" data-i18n="pg_customer_dashboard_09">Book a Vehicle</a>
   </section>
 
-  <section class="card" aria-labelledby="helpTitle">
-    <h2 id="helpTitle" data-i18n="pg_customer_dashboard_10">Need help?</h2>
-    <p class="helpline">Having trouble with a booking? Open the <a href="help.html" data-i18n="pg_customer_dashboard_11">Help page</a>.</p>
+  <section class="card help-card" aria-labelledby="helpTitle">
+    <span class="help-ic" aria-hidden="true">🛟</span>
+    <div class="help-body">
+      <h2 id="helpTitle" data-i18n="pg_customer_dashboard_10">Need help?</h2>
+      <p class="helpline">Having trouble with a booking? Open the <a href="help.html" data-i18n="pg_customer_dashboard_11">Help page</a>.</p>
+    </div>
+    <a class="help-go" href="help.html" aria-label="Open Help page">›</a>
   </section>
 
   <div class="dialog-backdrop" id="cancelDialog" role="dialog" aria-modal="true" aria-labelledby="cancelDialogTitle">
@@ -312,7 +396,7 @@
 
 <footer class="site-footer">
   <div class="site-foot-inner">
-    <div class="site-foot-brand">ApnaShift</div>
+    <div class="site-foot-brand"><span class="w">Apna</span><span class="y">Shift</span><small>SHIFTING • TRANSPORT</small></div>
     <div class="site-foot-links">
       <a href="index.html" data-i18n="pg_customer_dashboard_25">Home</a>
       <a href="help.html" data-i18n="pg_customer_dashboard_26">Help</a>
@@ -320,6 +404,13 @@
       <a href="terms.html" data-i18n="pg_customer_dashboard_28">Terms &amp; Conditions</a>
       <a href="mailto:support@apnashift.in?subject=ApnaShift%20Support%20Request">support@apnashift.in</a>
     </div>
+    <div class="foot-social" aria-label="Social links">
+      <span class="soc" role="img" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 22v-8h2.7l.4-3.2h-3.1V8.7c0-.9.3-1.6 1.7-1.6h1.5V4.2c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.7H7.8V14h2.7v8z"/></svg></span>
+      <span class="soc" role="img" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1.3" fill="currentColor" stroke="none"/></svg></span>
+      <span class="soc" role="img" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.9 8.6H3.6V21h3.3zM5.2 3.5a1.9 1.9 0 1 0 0 3.9 1.9 1.9 0 0 0 0-3.9zM12 13.4c0-1.1.9-2 2.1-2 1.1 0 1.9.8 1.9 2V21h3.3v-4.1c0-2.9-1.6-4.3-3.7-4.3-1.7 0-2.6 1-3 1.7V8.6H9.3c0 .9 0 12.4 0 12.4H12z"/></svg></span>
+      <span class="soc" role="img" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2.5" y="6" width="19" height="12" rx="4"/><path d="M10.5 9.8v4.4L14.5 12z" fill="currentColor" stroke="none"/></svg></span>
+    </div>
+    <div class="foot-copy">© 2026 ApnaShift. All rights reserved.</div>
   </div>
 </footer>
 
@@ -912,7 +1003,8 @@
   if(navMenuBtn&&siteNav){navMenuBtn.addEventListener("click",function(){var open=siteNav.classList.toggle("open");navMenuBtn.setAttribute("aria-expanded",open?"true":"false");navMenuBtn.setAttribute("aria-label",open?"Close menu":"Open menu");});siteNav.addEventListener("click",function(ev){if(ev.target.tagName==="A"&&siteNav.classList.contains("open")){siteNav.classList.remove("open");navMenuBtn.setAttribute("aria-expanded","false");}});}
 })();
 </script>
-<script>window.PAGE_I18N={en:{pg_customer_dashboard_01:"Hello!",pg_customer_dashboard_02:"View your bookings here and book a new vehicle.",pg_customer_dashboard_03:"Book a Vehicle",pg_customer_dashboard_04:"Logout",pg_customer_dashboard_05:"Active booking",pg_customer_dashboard_06:"Booking history",pg_customer_dashboard_07:"No bookings yet",pg_customer_dashboard_08:"You have no bookings yet — book your first shifting easily.",pg_customer_dashboard_09:"Book a Vehicle",pg_customer_dashboard_10:"Need help?",pg_customer_dashboard_11:"Help page",pg_customer_dashboard_12:"Cancel booking?",pg_customer_dashboard_13:"This booking will be cancelled. Choosing a reason is required.",pg_customer_dashboard_14:"Cancellation reason",pg_customer_dashboard_15:"— Choose a reason —",pg_customer_dashboard_16:"Wrong pickup location",pg_customer_dashboard_17:"Wrong drop location",pg_customer_dashboard_18:"Wrong vehicle type",pg_customer_dashboard_19:"Plans changed",pg_customer_dashboard_20:"Duplicate booking",pg_customer_dashboard_21:"Driver issue",pg_customer_dashboard_22:"Other",pg_customer_dashboard_23:"Yes, cancel it",pg_customer_dashboard_24:"Go back",pg_customer_dashboard_25:"Home",pg_customer_dashboard_26:"Help",pg_customer_dashboard_27:"Privacy Policy",pg_customer_dashboard_28:"Terms & Conditions",page_title:"My Dashboard | ApnaShift",meta_desc:"ApnaShift customer dashboard — view your bookings, driver status and ratings in one place."},hi:{pg_customer_dashboard_01:"नमस्ते!",pg_customer_dashboard_02:"यहां अपनी बुकिंग देखें और नई गाड़ी बुक करें।",pg_customer_dashboard_03:"गाड़ी बुक करें",pg_customer_dashboard_04:"लॉगआउट",pg_customer_dashboard_05:"चालू बुकिंग",pg_customer_dashboard_06:"बुकिंग हिस्ट्री",pg_customer_dashboard_07:"अभी कोई बुकिंग नहीं",pg_customer_dashboard_08:"आपकी अभी कोई बुकिंग नहीं है — अपनी पहली शिफ्टिंग आसानी से बुक करें।",pg_customer_dashboard_09:"गाड़ी बुक करें",pg_customer_dashboard_10:"मदद चाहिए?",pg_customer_dashboard_11:"सहायता पेज",pg_customer_dashboard_12:"बुकिंग रद्द करें?",pg_customer_dashboard_13:"यह बुकिंग रद्द हो जाएगी। कारण चुनना ज़रूरी है।",pg_customer_dashboard_14:"रद्द करने का कारण",pg_customer_dashboard_15:"— कारण चुनें —",pg_customer_dashboard_16:"गलत पिकअप लोकेशन",pg_customer_dashboard_17:"गलत ड्रॉप लोकेशन",pg_customer_dashboard_18:"गलत गाड़ी का प्रकार",pg_customer_dashboard_19:"प्लान बदल गया",pg_customer_dashboard_20:"डुप्लिकेट बुकिंग",pg_customer_dashboard_21:"ड्राइवर से समस्या",pg_customer_dashboard_22:"अन्य",pg_customer_dashboard_23:"हां, रद्द करें",pg_customer_dashboard_24:"वापस जाएं",pg_customer_dashboard_25:"होम",pg_customer_dashboard_26:"सहायता",pg_customer_dashboard_27:"प्राइवेसी पॉलिसी",pg_customer_dashboard_28:"नियम व शर्तें",page_title:"मेरा डैशबोर्ड | ApnaShift",meta_desc:"ApnaShift कस्टमर डैशबोर्ड — अपनी बुकिंग, ड्राइवर स्थिति और रेटिंग एक जगह देखें।"}};</script>
+<script>window.PAGE_I18N={en:{pg_customer_dashboard_01:"Hello!",pg_customer_dashboard_02:"View your bookings here and book a new vehicle.",pg_customer_dashboard_03:"Book a Vehicle",pg_customer_dashboard_04:"Logout",nav_getstarted:"Get Started",pg_customer_dashboard_05:"Active booking",pg_customer_dashboard_06:"Booking history",pg_customer_dashboard_07:"No bookings yet",pg_customer_dashboard_08:"You have no bookings yet — book your first shifting easily.",pg_customer_dashboard_09:"Book a Vehicle",pg_customer_dashboard_10:"Need help?",pg_customer_dashboard_11:"Help page",pg_customer_dashboard_12:"Cancel booking?",pg_customer_dashboard_13:"This booking will be cancelled. Choosing a reason is required.",pg_customer_dashboard_14:"Cancellation reason",pg_customer_dashboard_15:"— Choose a reason —",pg_customer_dashboard_16:"Wrong pickup location",pg_customer_dashboard_17:"Wrong drop location",pg_customer_dashboard_18:"Wrong vehicle type",pg_customer_dashboard_19:"Plans changed",pg_customer_dashboard_20:"Duplicate booking",pg_customer_dashboard_21:"Driver issue",pg_customer_dashboard_22:"Other",pg_customer_dashboard_23:"Yes, cancel it",pg_customer_dashboard_24:"Go back",pg_customer_dashboard_25:"Home",pg_customer_dashboard_26:"Help",pg_customer_dashboard_27:"Privacy Policy",pg_customer_dashboard_28:"Terms & Conditions",page_title:"My Dashboard | ApnaShift",meta_desc:"ApnaShift customer dashboard — view your bookings, driver status and ratings in one place."},hi:{pg_customer_dashboard_01:"नमस्ते!",pg_customer_dashboard_02:"यहां अपनी बुकिंग देखें और नई गाड़ी बुक करें।",pg_customer_dashboard_03:"गाड़ी बुक करें",pg_customer_dashboard_04:"लॉगआउट",nav_getstarted:"शुरू करें",pg_customer_dashboard_05:"चालू बुकिंग",pg_customer_dashboard_06:"बुकिंग हिस्ट्री",pg_customer_dashboard_07:"अभी कोई बुकिंग नहीं",pg_customer_dashboard_08:"आपकी अभी कोई बुकिंग नहीं है — अपनी पहली शिफ्टिंग आसानी से बुक करें।",pg_customer_dashboard_09:"गाड़ी बुक करें",pg_customer_dashboard_10:"मदद चाहिए?",pg_customer_dashboard_11:"सहायता पेज",pg_customer_dashboard_12:"बुकिंग रद्द करें?",pg_customer_dashboard_13:"यह बुकिंग रद्द हो जाएगी। कारण चुनना ज़रूरी है।",pg_customer_dashboard_14:"रद्द करने का कारण",pg_customer_dashboard_15:"— कारण चुनें —",pg_customer_dashboard_16:"गलत पिकअप लोकेशन",pg_customer_dashboard_17:"गलत ड्रॉप लोकेशन",pg_customer_dashboard_18:"गलत गाड़ी का प्रकार",pg_customer_dashboard_19:"प्लान बदल गया",pg_customer_dashboard_20:"डुप्लिकेट बुकिंग",pg_customer_dashboard_21:"ड्राइवर से समस्या",pg_customer_dashboard_22:"अन्य",pg_customer_dashboard_23:"हां, रद्द करें",pg_customer_dashboard_24:"वापस जाएं",pg_customer_dashboard_25:"होम",pg_customer_dashboard_26:"सहायता",pg_customer_dashboard_27:"प्राइवेसी पॉलिसी",pg_customer_dashboard_28:"नियम व शर्तें",page_title:"मेरा डैशबोर्ड | ApnaShift",meta_desc:"ApnaShift कस्टमर डैशबोर्ड — अपनी बुकिंग, ड्राइवर स्थिति और रेटिंग एक जगह देखें।"}};</script>
+<script src="theme.js"></script>
 <script src="lang.js"></script>
 </body>
 </html>

@@ -30,7 +30,7 @@ Ubuntu 24 ke default repo me Node 18 hai — app ko **>= 20** chahiye (`package.
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -   # Node 20 ka apt repo jodo (ARM64 supported)
 sudo apt-get install -y nodejs                                       # Node 20 + npm install karo
 node -v && npm -v                                                    # v20+ dikhe tabhi aage badho
-sudo apt-get install -y python3 make g++                             # bcrypt (native module) compile ke liye build tools
+# Note: passwords ke liye bcryptjs (pure JS) hai — native build tools (python3/make/g++) ki zaroorat nahi.
 sudo apt-get install -y postgresql postgresql-contrib               # Postgres 16 + extra utilities
 sudo systemctl enable --now postgresql                               # reboot par Postgres khud start ho
 ```

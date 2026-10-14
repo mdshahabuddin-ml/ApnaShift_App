@@ -14,6 +14,7 @@ import {
 } from '../services/payments.js';
 import { paiseToRs } from '../services/money.js';
 import { logAuditSafe } from '../services/audit.js';
+import { queueNotification } from '../services/notifyCenter.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { requireVerifiedDriver } from '../middleware/driver.js';
 import { driverStatusSchema, disputeSchema, paginationSchema, parseBody, parseQuery } from '../validation/booking.js';
@@ -227,6 +228,13 @@ driverRoutes.patch('/bookings/:id/accept', validateIdParam, async (req, res, nex
         status: 'accepted',
         driver_id: req.user.id,
       });
+      // Customer bell: driver assigned (best-effort, never blocks accept).
+      await queueNotification({
+        role: 'user',
+        recipientId: accepted.rows[0].user_id,
+        bookingId: accepted.rows[0].id,
+        type: 'booking_accepted',
+      });
       return res.json({ ok: true, booking: toPublicBooking(accepted.rows[0]) });
     }
 
@@ -340,6 +348,20 @@ driverRoutes.patch('/bookings/:id/status', validateIdParam, async (req, res, nex
       status: updated.rows[0].status,
       driver_id: updated.rows[0].driver_id,
     });
+
+    // Customer bell per trip milestone (best-effort, never blocks advance).
+    const milestoneNotif =
+      { arrived: 'driver_arrived', in_transit: 'trip_started', delivered: 'trip_completed' }[
+        nextStatus
+      ] ?? null;
+    if (milestoneNotif) {
+      await queueNotification({
+        role: 'user',
+        recipientId: updated.rows[0].user_id,
+        bookingId: updated.rows[0].id,
+        type: milestoneNotif,
+      });
+    }
 
     if (payment) {
       // Best-effort: delivery succeeds even if audit fails. COD stays

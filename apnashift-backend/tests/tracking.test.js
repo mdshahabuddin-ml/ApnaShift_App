@@ -4,7 +4,7 @@
 // lifecycle gating, GPS validation, throttle, stale/offline, SSE fan-out.
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import request from 'supertest';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import pg from 'pg';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

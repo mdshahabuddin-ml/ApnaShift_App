@@ -116,6 +116,30 @@ npx vitest run tests/health.test.js   # + /ready test
 $env:SMOKE_BASE_URL='http://localhost:3000'; $env:SMOKE_MODE='health'; node scripts/smoke.js
 ```
 
+## Notifications (bell + history) + live tracking
+
+- **Bell**: homepage header me 🔔 — logged-in customer/driver ko unread count,
+  recent 8, mark-all-read, `notifications.html` link. Logged-out ko login prompt.
+- **Emit points** (sab best-effort — booking/driver flows kabhi nahi rukte):
+  create → `booking_created` (customer); accept/admin-assign → `booking_accepted`
+  (customer) + `assignment_received` (driver); arrived → `driver_arrived`;
+  in_transit → `trip_started`; delivered → `trip_completed`; user-cancel →
+  `booking_cancelled` (assigned driver). Dedupe: `UNIQUE(booking, recipient, type)`.
+- **Live**: `GET /api/notifications/stream?since=` (SSE + heartbeat, fetch-based
+  taaki Bearer header jaye) + 30s poll fallback + auto-reconnect. GPS tracking
+  purana wala hi hai (`tracking.html`, SSE + 10s poll, `driver_locations` 30d).
+- **Track buttons**: customer-dashboard + my-bookings + booking-detail me
+  `accepted/arrived/in_transit` + assigned driver par hi "Track live".
+- **Retention**: `NOTIF_RETENTION_DAYS` (default 90) — sirf READ rows prune hote
+  hain (`npm run notifications:prune`); unread kabhi nahi.
+- **Push (Phase 2)**: `FCM_PROJECT_ID` + `FCM_CLIENT_EMAIL` + `FCM_PRIVATE_KEY`
+  (Railway Variables, multiline `\n` supported) set hon par device-token
+  registration (`POST /api/notifications/device-tokens`) ke baad push ON;
+  nahi to in-app row hi source of truth. **E2E push test credentials milne
+  tak pending hai — tracking operational declare nahi kiya gaya.**
+- ETA: Geoapify `/route` proxy se real routing par hi; warna tracking page ka
+  purana "no ETA, real location only" copy rehta hai. Koi simulated GPS nahi.
+
 ## Baaki manual steps (abhi automation ke bahar)
 
 1. Upar wale 8 GitHub Secrets + Railway variables (staging/prod alag) set karna.

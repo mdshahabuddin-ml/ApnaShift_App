@@ -177,6 +177,7 @@ CREATE TABLE IF NOT EXISTS admins (
   name TEXT NOT NULL CHECK (char_length(name) >= 2 AND char_length(name) <= 80),
   phone VARCHAR(15) NOT NULL UNIQUE CHECK (phone ~ '^[6-9][0-9]{9}$'),
   password_hash TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'admin' CHECK (role IN ('admin', 'super_admin')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

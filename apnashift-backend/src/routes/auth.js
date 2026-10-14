@@ -1,7 +1,7 @@
 // User auth: register, login (user/driver/admin), me + self-service
 // password reset via zero-cost OTP (generate FREE, SMS paid — dev me console).
 import { Router } from 'express';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { query } from '../db.js';
 import { config } from '../config.js';
 import { signToken } from '../utils/jwt.js';
@@ -152,7 +152,7 @@ authRoutes.get('/me', requireAuth, async (req, res, next) => {
         'SELECT id, name, phone, vehicle_type, vehicle_number, is_verified, email, city, state, application_ref, upi_id FROM drivers WHERE id = $1',
         [id],
       );
-    } else if (role === 'admin') {
+    } else if (role === 'admin' || role === 'super_admin') {
       result = await query('SELECT id, name, phone FROM admins WHERE id = $1', [id]);
     } else {
       return res.status(401).json({ ok: false, error: 'invalid_token' });

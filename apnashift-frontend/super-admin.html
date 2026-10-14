@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Super Admin | ApnaShift</title>
+<meta name="description" content="ApnaShift Super Admin monitoring and management panel.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0a2340;--navy-2:#102e57;--ink:#0b1f3a;--yellow:#ffb200;
+  --blue:#1a73e8;--green:#12a150;--red:#d92d20;--muted:#5b6b82;
+  --line:#e6ebf2;--bg:#f4f6f9;--card:#ffffff;--radius:14px;
+  --shadow:0 10px 30px rgba(10,35,64,.10);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Inter",system-ui,sans-serif;line-height:1.5}
+h1,h2,h3{font-family:"Plus Jakarta Sans",sans-serif}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:6px}
+a{color:var(--blue)}
+.layout{display:flex;min-height:100vh}
+/* Sidebar */
+.sidebar{width:248px;flex:0 0 248px;background:var(--navy);color:#fff;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.brand{padding:20px 18px 14px;font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:1.3rem}
+.brand .y{color:var(--yellow)}
+.brand small{display:block;font-family:"Inter",sans-serif;font-weight:600;font-size:.6rem;letter-spacing:2px;color:#9db0c9;margin-top:2px}
+.snav{display:flex;flex-direction:column;gap:4px;padding:6px 12px;flex:1}
+.snav button{display:flex;gap:10px;align-items:center;background:transparent;border:0;color:#dbe2f0;font:inherit;font-weight:600;font-size:.92rem;padding:11px 12px;border-radius:10px;cursor:pointer;text-align:left;width:100%}
+.snav button:hover{background:rgba(255,255,255,.08)}
+.snav button.active{background:var(--yellow);color:#111;font-weight:800}
+.sfoot{padding:14px 18px;border-top:1px solid #24406b;font-size:.75rem;color:#9db0c9}
+.sfoot button{background:transparent;border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:7px 10px;font:inherit;font-size:.78rem;cursor:pointer;margin-top:8px}
+/* Main */
+.main{flex:1;min-width:0;padding:26px 28px 60px;max-width:1180px}
+.main h1{font-size:1.7rem;margin:0 0 4px;letter-spacing:-.4px}
+.sub{color:var(--muted);font-size:.9rem;margin:0 0 20px}
+.panel{display:none}
+.panel.active{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:18px}
+.card h2{font-size:1.1rem;margin:0 0 12px}
+.cards{display:grid;gap:14px;margin-bottom:18px}
+@media(min-width:760px){.cards{grid-template-columns:repeat(4,1fr)}}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+.stat .k{font-size:.76rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.6px}
+.stat .v{font-size:1.6rem;font-weight:800;margin-top:2px}
+.stat .s{font-size:.78rem;color:var(--muted)}
+.v small{font-size:.85rem;font-weight:600;color:var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:14px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:.78rem;font-weight:700;color:var(--ink)}
+.field input,.field select,.field textarea{font:inherit;font-size:.9rem;padding:9px 11px;border:1.5px solid #cbd5e3;border-radius:10px;background:#fff;color:var(--ink);min-width:0}
+.btn{font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:.88rem;padding:10px 18px;border-radius:10px;border:1.6px solid var(--ink);cursor:pointer;background:var(--yellow);color:#0a1931;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.btn.secondary{background:#fff}
+.btn.danger{background:#fff;border-color:var(--red);color:var(--red)}
+.btn:disabled{opacity:.45;cursor:default}
+table.tbl{width:100%;border-collapse:collapse;font-size:.85rem}
+.tbl th,.tbl td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl th{font-size:.74rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.tbl tr:hover td{background:#f7fafd}
+.tbl button.link{background:none;border:0;color:var(--blue);font:inherit;font-weight:700;cursor:pointer;padding:0}
+.tbl button.link:hover{text-decoration:underline}
+.badge{display:inline-block;font-size:.72rem;font-weight:800;padding:2px 10px;border-radius:999px;background:#eef2f7;color:#33465f;white-space:nowrap}
+.badge.ok{background:#e6f5eb;color:#0d7a3f}
+.badge.warn{background:#fdf3dc;color:#8a6100}
+.badge.bad{background:#fdecec;color:#b42318}
+.badge.info{background:#e9f2fd;color:#1558b0}
+.muted{color:var(--muted);font-size:.84rem}
+.empty,.err,.loading{padding:22px;text-align:center;color:var(--muted);font-size:.9rem}
+.err{color:var(--red)}
+.pager{display:flex;gap:10px;align-items:center;justify-content:flex-end;margin-top:12px;font-size:.85rem}
+.detail{border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:14px;background:#fbfcfe}
+.detail dl{display:grid;grid-template-columns:180px 1fr;gap:6px 12px;margin:0;font-size:.87rem}
+.detail dt{color:var(--muted);font-weight:600}
+.detail dd{margin:0;overflow-wrap:break-word}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.notice{border:1.5px dashed #b9c6d8;border-radius:12px;padding:14px 16px;background:#f7fafd;font-size:.87rem;color:#33465f;margin-bottom:14px}
+.notice strong{color:var(--ink)}
+dialog{border:1px solid var(--line);border-radius:14px;padding:22px;max-width:min(440px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(10,35,64,.5)}
+dialog h3{margin:0 0 8px}
+dialog p{font-size:.88rem;color:#42536b}
+dialog .field{margin:10px 0}
+dialog menu{display:flex;gap:10px;justify-content:flex-end;padding:0;margin:14px 0 0}
+#gate{max-width:560px;margin:8vh auto;padding:0 20px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:11px 20px;border-radius:10px;font-size:.87rem;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.35);z-index:99}
+@media(max-width:860px){
+  .layout{flex-direction:column}
+  .sidebar{width:100%;flex:none;height:auto;position:static}
+  .snav{flex-direction:row;flex-wrap:wrap}
+  .snav button{width:auto;font-size:.82rem;padding:8px 10px}
+  .main{padding:18px 14px 50px}
+  .detail dl{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div id="gate" hidden>
+  <div class="card">
+    <h2>Super Admin — restricted</h2>
+    <p class="muted">Is panel ke liye admin login chahiye (wahi token jo admin dashboard use karta hai). Authorization backend pe enforce hoti hai.</p>
+    <div class="actions">
+      <a class="btn" href="admin-login.html">Admin Login</a>
+      <button class="btn secondary" id="gateRetry" type="button">Token check karo</button>
+    </div>
+    <p class="muted" id="gateMsg"></p>
+  </div>
+</div>
+
+<div class="layout" id="app" hidden>
+  <aside class="sidebar" aria-label="Super Admin navigation">
+    <div class="brand">Apna<span class="y">Shift</span><small>SUPER ADMIN</small></div>
+    <nav class="snav" id="snav">
+      <button type="button" data-sec="overview" class="active" aria-current="page">📊 Overview</button>
+      <button type="button" data-sec="customers">🧑 Customers</button>
+      <button type="button" data-sec="drivers">🚚 Drivers</button>
+      <button type="button" data-sec="finance">💰 Finance</button>
+      <button type="button" data-sec="enterprise">🏢 Enterprise</button>
+      <button type="button" data-sec="audit">🛡️ Security &amp; Audit</button>
+    </nav>
+    <div class="sfoot">
+      <span id="whoLine">admin</span><br>
+      <button type="button" id="logoutBtn">Logout (token bhoolo)</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <h1 id="secTitle">Operations Overview</h1>
+    <p class="sub" id="secSub">Live database se — sample data nahi.</p>
+
+    <!-- OVERVIEW -->
+    <section class="panel active" id="p-overview" aria-label="Operations overview">
+      <div class="card">
+        <h2>Filters</h2>
+        <div class="row">
+          <div class="field"><label for="ovFrom">From</label><input type="date" id="ovFrom"></div>
+          <div class="field"><label for="ovTo">To</label><input type="date" id="ovTo"></div>
+          <div class="field"><label for="ovGroup">Group by</label>
+            <select id="ovGroup"><option value="day">Day</option><option value="week">Week</option><option value="month">Month</option></select>
+          </div>
+          <button class="btn" type="button" id="ovGo">Refresh</button>
+        </div>
+      </div>
+      <div id="ovStats"><p class="loading">Loading…</p></div>
+      <div class="card">
+        <h2>Recent bookings</h2>
+        <div id="ovRecent"><p class="loading">Loading…</p></div>
+      </div>
+    </section>
+
+    <!-- CUSTOMERS -->
+    <section class="panel" id="p-customers" aria-label="Customer management">
+      <div class="card">
+        <h2>Customer search (phone)</h2>
+        <div class="row">
+          <div class="field"><label for="cuPhone">10-digit mobile</label><input type="tel" id="cuPhone" inputmode="numeric" placeholder="9876543210"></div>
+          <button class="btn" type="button" id="cuGo">Search</button>
+        </div>
+        <div id="cuOut"><p class="muted">Phone se account dhoondho. Sirf id/name/phone dikhta hai — hash ya token kabhi nahi.</p></div>
+      </div>
+      <div class="notice"><strong>Note:</strong> customer booking-history <code>GET /api/superadmin/customers/:id</code> se aati hai (super_admin-only). Customer suspend aur complaint workflow ka backend endpoint nahi hai — ye gap documented hai, bina permission ke kuch nahi banaya gaya.</div>
+      <div id="cuDetail"></div>
+    </section>
+
+    <!-- DRIVERS -->
+    <section class="panel" id="p-drivers" aria-label="Driver management">
+      <div class="card">
+        <h2>Applications</h2>
+        <div class="row">
+          <div class="field"><label for="drStatus">Status</label>
+            <select id="ov2Status"><option value="pending">Pending review</option><option value="verified">Verified</option><option value="flagged">Needs review</option></select>
+          </div>
+          <button class="btn" type="button" id="drGo">Load</button>
+        </div>
+        <div id="drOut"><p class="loading">Loading…</p></div>
+        <div class="pager"><button class="btn secondary" type="button" id="drPrev">← Prev</button><span id="drPage"></span><button class="btn secondary" type="button" id="drNext">Next →</button></div>
+        <div id="drDetail"></div>
+      </div>
+    </section>
+
+    <!-- FINANCE -->
+    <section class="panel" id="p-finance" aria-label="Financial monitoring">
+      <div class="card">
+        <h2>Commission report</h2>
+        <div class="row">
+          <div class="field"><label for="fiFrom">From</label><input type="date" id="fiFrom"></div>
+          <div class="field"><label for="fiTo">To</label><input type="date" id="fiTo"></div>
+          <div class="field"><label for="fiGroup">Group by</label>
+            <select id="fiGroup"><option value="day">Day</option><option value="week">Week</option><option value="month">Month</option></select>
+          </div>
+          <button class="btn" type="button" id="fiGo">Load report</button>
+        </div>
+        <div id="fiOut"><p class="muted">Range chuno. Fare / commission / driver earning / settled / pending — sab backend math se, yahan dobara calculate nahi hota.</p></div>
+      </div>
+      <div class="card">
+        <h2>Payment ledger</h2>
+        <div class="row">
+          <div class="field"><label for="lgDriver">Driver id (optional)</label><input type="text" id="lgDriver" placeholder="uuid"></div>
+          <div class="field"><label for="lgStatus">Settlement status</label>
+            <select id="lgStatus"><option value="">All</option><option value="owed">Owed</option><option value="partial">Partial</option><option value="settled">Settled</option></select>
+          </div>
+          <button class="btn" type="button" id="lgGo">Load ledger</button>
+        </div>
+        <div id="lgOut"></div>
+        <div id="lgDetail"></div>
+      </div>
+      <div class="card">
+        <h2>Driver balances (settlement queue)</h2>
+        <div id="balOut"><p class="muted">Load karne pe highest-outstanding order me aata hai.</p></div>
+        <div class="actions"><button class="btn secondary" type="button" id="balGo">Load balances</button></div>
+      </div>
+      <div class="card">
+        <h2>Settlement weeks</h2>
+        <div class="row">
+          <div class="field"><label for="spStatus">Status</label>
+            <select id="spStatus"><option value="">All</option><option value="OPEN">Open</option><option value="PAID">Paid</option><option value="DISPUTED">Disputed</option></select>
+          </div>
+          <button class="btn" type="button" id="spGo">Load weeks</button>
+          <button class="btn secondary" type="button" id="spGen">Generate weeks</button>
+        </div>
+        <div id="spOut"></div>
+        <div id="spDetail"></div>
+      </div>
+    </section>
+
+    <!-- ENTERPRISE -->
+    <section class="panel" id="p-enterprise" aria-label="Enterprise inquiries">
+      <div class="card">
+        <h2>Inquiries</h2>
+        <div class="row">
+          <div class="field"><label for="enStatus">Status</label>
+            <select id="enStatus"><option value="">All</option><option>NEW</option><option>CONTACTED</option><option>IN_DISCUSSION</option><option>CONVERTED</option><option>CLOSED</option></select>
+          </div>
+          <div class="field"><label for="enSearch">Search (company/email/name)</label><input type="search" id="enSearch"></div>
+          <button class="btn" type="button" id="enGo">Load</button>
+        </div>
+        <p class="muted">Valid statuses: NEW, CONTACTED, IN_DISCUSSION, CONVERTED, CLOSED (backend enum — IN_PROGRESS exist nahi karta).</p>
+        <div id="enOut"><p class="muted">Filter lagao.</p></div>
+        <div class="pager"><button class="btn secondary" type="button" id="enPrev">← Prev</button><span id="enPage"></span><button class="btn secondary" type="button" id="enNext">Next →</button></div>
+        <div id="enDetail"></div>
+      </div>
+    </section>
+
+    <!-- AUDIT -->
+    <section class="panel" id="p-audit" aria-label="Security and audit">
+      <div class="card">
+        <h2>Audit trail</h2>
+        <div id="auOut"><p class="loading">Loading…</p></div>
+      </div>
+      <div class="card">
+        <h2>Kya log hota hai (backend guarantee)</h2>
+        <ul class="muted">
+          <li><code>driver.verify</code> / <code>driver.reject</code> (reason ke saath) / deactivate / reactivate</li>
+          <li><code>inquiry.status</code> (enterprise status changes)</li>
+          <li><code>payment.adjust</code> (paise deltas + reason + admin)</li>
+          <li>pricing changes (rate + history + audit ek transaction me)</li>
+          <li>Kabhi phone, password-hash ya token log nahi hota — sirf ids aur changed fields.</li>
+        </ul>
+        <p class="muted">Failed API requests / suspicious-activity ka dedicated table backend me nahi hai — ye gap document hai, naya table bina permission ke nahi banaya gaya.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<dialog id="confirmDlg" aria-labelledby="cdTitle">
+  <h3 id="cdTitle">Confirm</h3>
+  <p id="cdText"></p>
+  <div class="field" id="cdReasonWrap" hidden>
+    <label for="cdReason">Reason (required)</label>
+    <textarea id="cdReason" rows="3"></textarea>
+  </div>
+  <div class="field" id="cdExtraWrap" hidden>
+    <label for="cdExtra" id="cdExtraLabel">Value</label>
+    <input type="text" id="cdExtra">
+  </div>
+  <menu>
+    <button class="btn secondary" value="cancel" formmethod="dialog" id="cdCancel" type="button">Cancel</button>
+    <button class="btn" value="ok" id="cdOk" type="button">Confirm</button>
+  </menu>
+</dialog>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+"use strict";
+var API=(window.location.hostname==="localhost"||window.location.hostname==="127.0.0.1"||window.location.protocol==="file:")?"http://localhost:3000":"https://apnashiftapp-production.up.railway.app";
+var TOKEN_KEY="apnashift_admin_token";
+function token(){try{return localStorage.getItem(TOKEN_KEY);}catch(e){return null;}}
+function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function inr(n){var v=Number(n);if(!isFinite(v))return "—";return "₹"+v.toLocaleString("en-IN",{maximumFractionDigits:2});}
+function dt(s){if(!s)return "—";try{return new Date(s).toLocaleString("en-IN",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});}catch(e){return String(s);}}
+function dOnly(s){if(!s)return "—";try{return new Date(s).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"});}catch(e){return String(s);}}
+function toast(m){var t=document.getElementById("toast");t.textContent=m;t.hidden=false;clearTimeout(t._h);t._h=setTimeout(function(){t.hidden=true;},3500);}
+function badge(st){
+  var m={delivered:"ok",verified:"ok",settled:"ok",CONVERTED:"ok",CLOSED:"info",pending:"warn",NEW:"info",owed:"warn",partial:"warn",cancelled:"bad",DISPUTED:"bad",OPEN:"info",PAID:"ok",CONTACTED:"info",IN_DISCUSSION:"info"};
+  return '<span class="badge '+(m[st]||"")+'">'+esc(st)+'</span>';
+}
+async function api(path,opts){
+  opts=opts||{};
+  var t=token();
+  if(!t){location.reload();throw new Error("no_token");}
+  var res=await fetch(API+path,{method:opts.method||"GET",headers:Object.assign({"Authorization":"Bearer "+t,"Content-Type":"application/json"},opts.headers||{}),body:opts.body});
+  var data=null;try{data=await res.json();}catch(e){}
+  if(res.status===401||res.status===403){toast("Forbidden — admin token chahiye ("+res.status+")");throw new Error("forbidden");}
+  if(!res.ok||!data||data.ok!==true){throw new Error((data&&data.error)||("http_"+res.status));}
+  return data;
+}
+// Confirm dialog with optional reason + extra input. Never resolves true without explicit click.
+function confirmDlg(title,text,needReason,extraLabel){
+  return new Promise(function(resolve){
+    var d=document.getElementById("confirmDlg");
+    document.getElementById("cdTitle").textContent=title;
+    document.getElementById("cdText").textContent=text;
+    var rw=document.getElementById("cdReasonWrap"),r=document.getElementById("cdReason");
+    var ew=document.getElementById("cdExtraWrap"),e=document.getElementById("cdExtra");
+    r.value="";e.value="";rw.hidden=!needReason;ew.hidden=!extraLabel;
+    if(extraLabel)document.getElementById("cdExtraLabel").textContent=extraLabel;
+    function done(v){d.close();cleanup();resolve(v);}
+    function cleanup(){
+      document.getElementById("cdOk").removeEventListener("click",onOk);
+      document.getElementById("cdCancel").removeEventListener("click",onCancel);
+      d.removeEventListener("cancel",onCancel);
+    }
+    function onOk(){
+      if(needReason&&r.value.trim().length<3){r.focus();toast("Reason kam se kam 3 characters");return;}
+      done({reason:r.value.trim(),extra:e.value.trim()});
+    }
+    function onCancel(){done(null);}
+    document.getElementById("cdOk").addEventListener("click",onOk);
+    document.getElementById("cdCancel").addEventListener("click",onCancel);
+    d.addEventListener("cancel",onCancel);
+    d.showModal();
+  });
+}
+// Section router
+var TITLES={overview:["Operations Overview","Live database se — sample data nahi."],customers:["Customers","Search + authorized actions only."],drivers:["Drivers","Applications, verification, activity."],finance:["Finance","Read-only by default; actions need confirm + reason."],enterprise:["Enterprise Inquiries","Status wahi jo backend enum me hai."],audit:["Security & Audit","Audit trail + gap documentation."]};
+document.getElementById("snav").addEventListener("click",function(ev){
+  var b=ev.target.closest("[data-sec]");if(!b)return;
+  document.querySelectorAll("#snav button").forEach(function(x){x.classList.remove("active");x.removeAttribute("aria-current");});
+  b.classList.add("active");b.setAttribute("aria-current","page");
+  document.querySelectorAll(".panel").forEach(function(p){p.classList.remove("active");});
+  document.getElementById("p-"+b.getAttribute("data-sec")).classList.add("active");
+  document.getElementById("secTitle").textContent=TITLES[b.getAttribute("data-sec")][0];
+  document.getElementById("secSub").textContent=TITLES[b.getAttribute("data-sec")][1];
+  loaders[b.getAttribute("data-sec")]();
+});
+document.getElementById("logoutBtn").addEventListener("click",function(){try{localStorage.removeItem(TOKEN_KEY);}catch(e){}location.reload();});
+document.getElementById("gateRetry").addEventListener("click",boot);
+function authed(){return !!token();}
+function boot(){
+  if(!authed()){
+    document.getElementById("gate").hidden=false;
+    document.getElementById("app").hidden=true;
+    document.getElementById("gateMsg").textContent="Koi admin token nahi mila. Pehle Admin Login karo (wahi token yahan chalega).";
+    return;
+  }
+  document.getElementById("gate").hidden=true;
+  document.getElementById("app").hidden=false;
+  try{
+    var me=JSON.parse(localStorage.getItem("apnashift_admin_user")||"null");
+    if(me&&me.name)document.getElementById("whoLine").textContent=me.name+" (admin)";
+  }catch(e){}
+  loaders.overview();
+}
+// ---------- OVERVIEW ----------
+function defaultRange(){
+  var to=new Date(),from=new Date(Date.now()-29*86400000);
+  function iso(d){return d.toISOString().slice(0,10);}
+  document.getElementById("ovFrom").value=iso(from);
+  document.getElementById("ovTo").value=iso(to);
+  document.getElementById("fiFrom").value=iso(from);
+  document.getElementById("fiTo").value=iso(to);
+}
+function statCard(k,v,s){return '<div class="stat"><div class="k">'+k+'</div><div class="v">'+v+'</div><div class="s">'+s+'</div></div>';}
+async function loadOverview(){
+  var box=document.getElementById("ovStats");box.innerHTML='<p class="loading">Loading…</p>';
+  try{
+    var s=await api("/api/admin/stats");
+    var cancelPct=s.total.bookings>0?Math.round(s.total.cancelled/s.total.bookings*10000)/100:0;
+    var drv={pending:"—",verified:"—"};
+    try{
+      var dp=await api("/api/admin/drivers?status=pending&limit=1");
+      var dv=await api("/api/admin/drivers?status=verified&limit=1");
+      drv.pending=dp.total;drv.verified=dv.total;
+    }catch(e){/* counts optional — cards still render */}
+    var h='<div class="cards">';
+    h+=statCard("Bookings — today",s.today.bookings,"completed "+s.today.completed+" • cancelled "+s.today.cancelled);
+    h+=statCard("Revenue — today",inr(s.today.revenue_rs),"delivered, by delivered_at");
+    h+=statCard("Bookings — all time",s.total.bookings,"completed "+s.total.completed+" • cancelled "+s.total.cancelled);
+    h+=statCard("Cancel rate",cancelPct+"%","cancelled ÷ total");
+    h+='</div><div class="cards">';
+    h+=statCard("Revenue — all time",inr(s.total.revenue_rs),"sum of delivered price_rs");
+    h+=statCard("This week",s.week.bookings,"completed "+s.week.completed+" • "+inr(s.week.revenue_rs));
+    h+=statCard("Verified active drivers",s.drivers.verified_active,"is_verified + is_active");
+    h+=statCard("Pending applications",drv.pending,"verified total: "+drv.verified);
+    h+='</div>';
+    var f=document.getElementById("ovFrom").value,t=document.getElementById("ovTo").value,g=document.getElementById("ovGroup").value;
+    if(f&&t&&f>t){document.getElementById("ovFrom").value=t;document.getElementById("ovTo").value=f;var tmp=f;f=t;t=tmp;toast("Dates ulti thin — swap kar diya");}
+    var r=null;
+    try{
+      r=await api("/api/admin/reports/summary?from="+encodeURIComponent(f)+"&to="+encodeURIComponent(t)+"&group_by="+encodeURIComponent(g));
+      h+='<div class="card"><h2>Commission ('+esc(f)+' → '+esc(t)+')</h2><div class="cards">'
+        +statCard("Delivered trips",r.totals.delivered_trips,"range me")
+        +statCard("Commission",inr(r.totals.commission_rs),"base + adjustments")
+        +statCard("Settled",inr(r.totals.settled_rs),"paid out")
+        +statCard("Pending",inr(r.totals.pending_rs),"commission − settled")
+        +'</div></div>';
+    }catch(e){h+='<div class="notice"><strong>Report load nahi hua:</strong> '+esc(e.message)+'</div>';}
+    box.innerHTML=h;
+  }catch(e){box.innerHTML='<p class="err">Load fail: '+esc(e.message)+' <button class="btn secondary" type="button" onclick="document.getElementById(\'ovGo\').click()">Retry</button></p>';}
+  var rb=document.getElementById("ovRecent");rb.innerHTML='<p class="loading">Loading…</p>';
+  try{
+    var bl=await api("/api/admin/bookings?limit=10");
+    var rows=bl.bookings||bl.items||[];
+    if(!rows.length){rb.innerHTML='<p class="empty">Koi booking nahi.</p>';return;}
+    var t='<table class="tbl"><thead><tr><th>ID</th><th>Status</th><th>Vehicle</th><th>Fare</th><th>Created</th></tr></thead><tbody>';
+    rows.forEach(function(x){
+      t+='<tr><td><code>'+esc(String(x.id).slice(0,8))+'</code></td><td>'+badge(x.status)+'</td><td>'+esc(x.vehicle_type||"—")+'</td><td>'+(x.price_rs!=null?inr(x.price_rs):"—")+'</td><td>'+dt(x.created_at)+'</td></tr>';
+    });
+    rb.innerHTML=t+'</tbody></table>';
+  }catch(e){rb.innerHTML='<p class="err">Recent bookings: '+esc(e.message)+'</p>';}
+}
+document.getElementById("ovGo").addEventListener("click",loadOverview);
+// ---------- CUSTOMERS ----------
+document.getElementById("cuGo").addEventListener("click",async function(){
+  var ph=document.getElementById("cuPhone").value.replace(/\D/g,"").replace(/^91/,"").replace(/^0/,"");
+  var box=document.getElementById("cuOut");document.getElementById("cuDetail").innerHTML="";
+  if(!/^[6-9][0-9]{9}$/.test(ph)){box.innerHTML='<p class="err">10-digit mobile do (6-9 se shuru).</p>';return;}
+  box.innerHTML='<p class="loading">Loading…</p>';
+  try{
+    var d=await api("/api/admin/accounts/lookup?phone="+encodeURIComponent(ph));
+    if(!d.accounts||!d.accounts.length){box.innerHTML='<p class="empty">Koi account nahi mila.</p>';return;}
+    var h='<table class="tbl"><thead><tr><th>Kind</th><th>Name</th><th>Phone</th><th></th></tr></thead><tbody>';
+    d.accounts.forEach(function(a,i){
+      h+='<tr><td>'+esc(a.kind)+'</td><td>'+esc(a.name)+'</td><td>'+esc(a.phone)+'</td><td><button class="link" type="button" data-cu="'+i+'">Open</button></td></tr>';
+    });
+    box.innerHTML=h+'</tbody></table>';
+    box.querySelectorAll("[data-cu]").forEach(function(b){
+      b.addEventListener("click",function(){openCustomer(d.accounts[Number(b.getAttribute("data-cu"))]);});
+    });
+  }catch(e){box.innerHTML='<p class="err">Search fail: '+esc(e.message)+'</p>';}
+});
+async function openCustomer(a){
+  var box=document.getElementById("cuDetail");
+  var h='<div class="detail"><h3>'+esc(a.name)+' ('+esc(a.kind)+')</h3><dl>'
+    +'<dt>ID</dt><dd><code>'+esc(a.id)+'</code></dd>'
+    +'<dt>Phone</dt><dd>'+esc(a.phone)+'</dd>'
+    +(a.vehicle_type?'<dt>Vehicle</dt><dd>'+esc(a.vehicle_type)+'</dd>':"")
+    +'</dl><div class="actions">';
+  h+='<button class="btn secondary" type="button" id="cuHist">Booking history</button>';
+  h+='<button class="btn secondary" type="button" id="cuReset">Reset password</button></div><div id="cuHistOut" style="margin-top:12px"></div></div>';
+  box.innerHTML=h;
+  document.getElementById("cuReset").addEventListener("click",async function(){
+    var r=await confirmDlg("Reset password","Naya password set hoga ("+a.kind+"). Purana turant invalid.",false,"New password (min 8)");
+    if(!r||r.extra.trim().length<8){if(r)toast("Password min 8 characters");return;}
+    try{
+      var path=a.kind==="user"?"/api/admin/users/"+a.id+"/reset-password":"/api/admin/drivers/"+a.id+"/reset-password";
+      await api(path,{method:"PATCH",body:JSON.stringify({new_password:r.extra})});
+      toast("Password reset ho gaya");
+    }catch(e){toast("Reset fail: "+e.message);}
+  });
+  document.getElementById("cuHist").addEventListener("click",async function(){
+    var out=document.getElementById("cuHistOut");out.innerHTML='<p class="loading">Loading…</p>';
+    if(a.kind==="user"){
+      try{
+        var d=await api("/api/superadmin/customers/"+encodeURIComponent(a.id));
+        var rows=d.bookings||[];
+        if(!rows.length){out.innerHTML='<p class="empty">Koi booking nahi. Lifetime: '+inr(d.lifetime.spent_rs)+' ('+d.lifetime.delivered_trips+' trips)</p>';return;}
+        var t='<table class="tbl"><thead><tr><th>ID</th><th>Status</th><th>Vehicle</th><th>Fare</th><th>Created</th></tr></thead><tbody>';
+        rows.forEach(function(x){t+='<tr><td><code>'+esc(String(x.id).slice(0,8))+'</code></td><td>'+badge(x.status)+'</td><td>'+esc(x.vehicle_type||"—")+'</td><td>'+(x.price_rs!=null?inr(x.price_rs):"—")+'</td><td>'+dt(x.created_at)+'</td></tr>';});
+        out.innerHTML=t+'</tbody></table><p class="muted">Lifetime: '+inr(d.lifetime.spent_rs)+' • '+d.lifetime.delivered_trips+' delivered</p>';
+      }catch(e){
+        if(e.message==="forbidden"){
+          out.innerHTML='<div class="notice"><strong>Super admin login chahiye.</strong> Customer history <code>requireRole(\'super_admin\')</code> se guarded hai — plain admin token pe 403 aata hai.</div>';
+        }else{
+          out.innerHTML='<div class="notice"><strong>History load nahi hui.</strong> Error: '+esc(e.message)+'</div>';
+        }
+      }
+    }else{
+      try{
+        var l=await api("/api/admin/ledger?driver_id="+encodeURIComponent(a.id)+"&limit=10");
+        var ps=l.payments||[];
+        out.innerHTML=ps.length?('<table class="tbl"><thead><tr><th>Booking</th><th>Gross</th><th>Earning</th><th>Status</th></tr></thead><tbody>'+ps.map(function(x){return '<tr><td><code>'+esc(String(x.booking_id).slice(0,8))+'</code></td><td>'+inr(x.gross_rs)+'</td><td>'+inr(x.driver_earning_rs)+'</td><td>'+badge(x.settlement_status)+'</td></tr>';}).join("")+'</tbody></table>'):'<p class="empty">Koi payment nahi.</p>';
+      }catch(e){out.innerHTML='<p class="err">'+esc(e.message)+'</p>';}
+    }
+  });
+}
+// ---------- DRIVERS ----------
+var drPage=1,drLimit=10;
+function drStatus(){return document.getElementById("ov2Status").value;}
+document.getElementById("drGo").addEventListener("click",function(){drPage=1;loadDrivers();});
+document.getElementById("drPrev").addEventListener("click",function(){if(drPage>1){drPage--;loadDrivers();}});
+document.getElementById("drNext").addEventListener("click",function(){drPage++;loadDrivers();});
+async function loadDrivers(){
+  var box=document.getElementById("drOut");document.getElementById("drDetail").innerHTML="";
+  box.innerHTML='<p class="loading">Loading…</p>';
+  try{
+    var d=await api("/api/admin/drivers?status="+encodeURIComponent(drStatus())+"&page="+drPage+"&limit="+drLimit);
+    document.getElementById("drPage").textContent="Page "+d.page+" / "+Math.max(1,Math.ceil(d.total/drLimit))+" ("+d.total+")";
+    if(!d.drivers.length){box.innerHTML='<p class="empty">Koi driver nahi.</p>';return;}
+    var h='<table class="tbl"><thead><tr><th>Name</th><th>Phone</th><th>Vehicle</th><th>Status</th><th></th></tr></thead><tbody>';
+    d.drivers.forEach(function(x,i){
+      var st=x.is_active?(x.is_verified?"verified":"pending"):"inactive";
+      h+='<tr><td>'+esc(x.name)+'</td><td>'+esc(x.phone)+'</td><td>'+esc(x.vehicle_type||"—")+'</td><td>'+badge(st)+'</td><td><button class="link" type="button" data-dr="'+i+'">Review</button></td></tr>';
+    });
+    box.innerHTML=h+'</tbody></table>';
+    box.querySelectorAll("[data-dr]").forEach(function(b){
+      b.addEventListener("click",function(){openDriver(d.drivers[Number(b.getAttribute("data-dr"))]);});
+    });
+  }catch(e){box.innerHTML='<p class="err">Load fail: '+esc(e.message)+'</p>';}
+}
+function kv(k,v){return '<dt>'+k+'</dt><dd>'+(v==null||v===""?"—":esc(v))+'</dd>';}
+async function openDriver(x){
+  var box=document.getElementById("drDetail");
+  var h='<div class="detail"><h3>'+esc(x.name)+' '+badge(x.is_active?(x.is_verified?"verified":"pending"):"inactive")+'</h3><dl>'
+    +kv("ID",x.id)+kv("Phone",x.phone)+kv("Vehicle",x.vehicle_type+" • "+x.vehicle_number)
+    +kv("Email",x.email)+kv("City",[x.city,x.state].filter(Boolean).join(", "))
+    +kv("License",x.license_number+" ("+x.license_type+")")+kv("License expiry",x.license_expiry)
+    +kv("Trips / rating",x.total_trips+" • "+x.avg_rating)+kv("Rejection reason",x.rejection_reason)
+    +kv("UPI",x.upi_id)+kv("Application ref",x.application_ref)
+    +'</dl><div class="actions">'
+    +'<button class="btn" type="button" data-act="verify">Approve</button>'
+    +'<button class="btn danger" type="button" data-act="reject">Reject</button>'
+    +'<button class="btn secondary" type="button" data-act="deactivate">Suspend</button>'
+    +'<button class="btn secondary" type="button" data-act="reactivate">Reactivate</button>'
+    +'<button class="btn secondary" type="button" data-act="reset">Reset password</button>'
+    +'<button class="btn secondary" type="button" data-act="ledger">Ledger + settlements</button>'
+    +'</div><div id="drLedgerOut" style="margin-top:12px"></div></div>';
+  box.innerHTML=h;
+  box.querySelectorAll("[data-act]").forEach(function(b){
+    b.addEventListener("click",function(){driverAction(x,b.getAttribute("data-act"));});
+  });
+}
+async function driverAction(x,act){
+  if(act==="ledger"){
+    var out=document.getElementById("drLedgerOut");out.innerHTML='<p class="loading">Loading…</p>';
+    try{
+      var l=await api("/api/admin/ledger?driver_id="+encodeURIComponent(x.id)+"&limit=10");
+      var st=await api("/api/admin/settlements?driver_id="+encodeURIComponent(x.id)+"&limit=10");
+      out.innerHTML='<p class="muted">Recent payments: '+(l.payments||[]).length+' • Settlements: '+(st.settlements||[]).length+'</p>'
+        +'<table class="tbl"><thead><tr><th>When</th><th>Gross</th><th>Commission</th><th>Status</th></tr></thead><tbody>'
+        +((l.payments||[]).map(function(p){return '<tr><td>'+dt(p.collected_at)+'</td><td>'+inr(p.gross_rs)+'</td><td>'+inr(p.platform_commission_rs)+'</td><td>'+badge(p.settlement_status)+'</td></tr>';}).join("")||'<tr><td colspan="4" class="empty">Koi payment nahi</td></tr>')+'</tbody></table>';
+    }catch(e){out.innerHTML='<p class="err">'+esc(e.message)+'</p>';}
+    return;
+  }
+  var needReason=(act==="reject"),needPw=(act==="reset");
+  var label={verify:"Approve driver",reject:"Reject application",deactivate:"Suspend account",reactivate:"Reactivate account",reset:"Reset password"}[act];
+  var r=await confirmDlg(label,x.name+" ("+x.phone+") — "+label+"?",needReason,needPw?"New password (min 8)":null);
+  if(!r)return;
+  try{
+    if(act==="verify")await api("/api/admin/drivers/"+x.id+"/verify",{method:"PATCH",body:"{}"});
+    else if(act==="reject")await api("/api/admin/drivers/"+x.id+"/reject",{method:"PATCH",body:JSON.stringify({reason:r.reason})});
+    else if(act==="deactivate")await api("/api/admin/drivers/"+x.id+"/deactivate",{method:"PATCH",body:"{}"});
+    else if(act==="reactivate")await api("/api/admin/drivers/"+x.id+"/reactivate",{method:"PATCH",body:"{}"});
+    else if(act==="reset"){
+      if(r.extra.trim().length<8){toast("Password min 8 characters");return;}
+      await api("/api/admin/drivers/"+x.id+"/reset-password",{method:"PATCH",body:JSON.stringify({new_password:r.extra})});
+    }
+    toast(label+" — done");loadDrivers();
+  }catch(e){toast("Fail: "+e.message);}
+}
+// ---------- FINANCE ----------
+document.getElementById("fiGo").addEventListener("click",async function(){
+  var box=document.getElementById("fiOut");box.innerHTML='<p class="loading">Loading…</p>';
+  try{
+    var f=document.getElementById("fiFrom").value,t=document.getElementById("fiTo").value,g=document.getElementById("fiGroup").value;
+    if(f&&t&&f>t){document.getElementById("fiFrom").value=t;document.getElementById("fiTo").value=f;var tmp=f;f=t;t=tmp;toast("Dates ulti thin — swap kar diya");}
+    var r=await api("/api/admin/reports/summary?from="+encodeURIComponent(f)+"&to="+encodeURIComponent(t)+"&group_by="+encodeURIComponent(g));
+    var h='<div class="cards">'+statCard("Delivered trips",r.totals.delivered_trips,"")+statCard("Commission",inr(r.totals.commission_rs),"")+statCard("Settled",inr(r.totals.settled_rs),"")+statCard("Pending",inr(r.totals.pending_rs),"")+'</div>';
+    h+='<table class="tbl"><thead><tr><th>Vehicle</th><th>Trips</th><th>Commission</th></tr></thead><tbody>'
+      +((r.by_vehicle||[]).map(function(v){return '<tr><td>'+esc(v.vehicle_type)+'</td><td>'+v.trips+'</td><td>'+inr(v.commission_rs)+'</td></tr>';}).join("")||'<tr><td colspan="3" class="empty">No data</td></tr>')+'</tbody></table>';
+    h+='<table class="tbl" style="margin-top:12px"><thead><tr><th>Period</th><th>Trips</th><th>Commission</th></tr></thead><tbody>'
+      +((r.series||[]).map(function(s){return '<tr><td>'+esc(s.period)+'</td><td>'+s.trips+'</td><td>'+inr(s.commission_rs)+'</td></tr>';}).join(""))+'</tbody></table>';
+    box.innerHTML=h;
+  }catch(e){box.innerHTML='<p class="err">Report fail: '+esc(e.message)+'</p>';}
+});
+document.getElementById("lgGo").addEventListener("click",async function(){
+  var box=document.getElementById("lgOut");document.getElementById("lgDetail").innerHTML="";
+  box.innerHTML='<p class="loading">Loading…</p>';
+  try{
+    var q="/api/admin/ledger?limit=15";
+    var dd=document.getElementById("lgDriver").value.trim(),ss=document.getElementById("lgStatus").value;
+    if(dd)q+="&driver_id="+encodeURIComponent(dd);
+    if(ss)q+="&status="+encodeURIComponent(ss);
+    var l=await api(q);
+    var ps=l.payments||[];
+    if(!ps.length){box.innerHTML='<p class="empty">Koi payment nahi.</p>';return;}
+    var h='<table class="tbl"><thead><tr><th>Booking</th><th>Driver</th><th>Method</th><th>Gross</th><th>Comm.</th><th>Status</th><th></th></tr></thead><tbody>';
+    ps.forEach(function(p,i){
+      h+='<tr><td><code>'+esc(String(p.booking_id).slice(0,8))+'</code></td><td>'+esc(p.driver_name||"—")+'</td><td>'+esc(p.payment_method)+'</td><td>'+inr(p.gross_rs)+'</td><td>'+inr(p.platform_commission_rs)+'</td><td>'+badge(p.settlement_status)+'</td><td><button class="link" type="button" data-py="'+i+'">Trail</button></td></tr>';
+    });
+    box.innerHTML=h+'</tbody></table><p class="muted">Total: '+l.total+'</p>';
+    box.querySelectorAll("[data-py]").forEach(function(b){
+      b.addEventListener("click",function(){openPayment(ps[Number(b.getAttribute("data-py"))]);});
+    });
+  }catch(e){box.innerHTML='<p class="err">'+esc(e.message)+'</p>';}
+});
+async function openPayment(p){
+  var box=document.getElementById("lgDetail");
+  try{
+    var d=await api("/api/admin/payments/"+encodeURIComponent(p.id));
+    var ad=d.adjustments||[];
+    var h='<div class="detail"><h3>Transaction trail</h3><dl>'
+      +kv("Payment",d.payment.id)+kv("Booking",d.payment.booking_id+" ("+d.payment.booking_status+")")
+      +kv("Method / status",d.payment.payment_method+" / "+d.payment.payment_status)
+      +kv("Gross / earning / commission",inr(d.payment.gross_rs)+" / "+inr(d.payment.driver_earning_rs)+" / "+inr(d.payment.platform_commission_rs))
+      +kv("Settled",inr(d.payment.settled_rs)+" ("+d.payment.settlement_status+")")+'</dl>';
+    h+='<h3 style="margin-top:12px">Adjustments ('+ad.length+')</h3>';
+    h+=ad.length?('<table class="tbl"><thead><tr><th>Comm Δ (paise)</th><th>Earn Δ (paise)</th><th>Reason</th><th>At</th></tr></thead><tbody>'+ad.map(function(a){return '<tr><td>'+a.commission_delta_paise+'</td><td>'+a.earning_delta_paise+'</td><td>'+esc(a.reason)+'</td><td>'+dt(a.created_at)+'</td></tr>';}).join("")+'</tbody></table>'):'<p class="muted">Koi adjustment nahi.</p>';
+    h+='<div class="actions"><button class="btn secondary" type="button" id="adjNew">New adjustment</button></div><div id="adjOut"></div></div>';
+    box.innerHTML=h;
+    document.getElementById("adjNew").addEventListener("click",async function(){
+      var r=await confirmDlg("New adjustment","Append-only correction. Frozen weeks (PAID/DISPUTED) 409 denge. Dono me se ek delta non-zero hona chahiye.",true,"Commission delta paise (e.g. -250 ya 0)");
+      if(!r)return;
+      var r2=await confirmDlg("Earning delta","Earning delta paise likho (0 chalega).",false,"Earning delta paise");
+      if(!r2&&r2!==null)return;
+      try{
+        await api("/api/admin/adjustments",{method:"POST",body:JSON.stringify({payment_id:d.payment.id,commission_delta_paise:Number(r.extra)||0,earning_delta_paise:Number((r2&&r2.extra)||0),reason:r.reason})});
+        toast("Adjustment recorded");openPayment(p);
+      }catch(e){toast("Fail: "+e.message);}
+    });
+  }catch(e){box.innerHTML='<p class="err">'+esc(e.message)+'</p>';}
+}
+document.getElementById("balGo").addEventListener("click",async function(){
+  var box=document.getElementById("balOut");box.innerHTML='<p class="loading">Loading…</p>';
+  try{
+    var d=await api("/api/admin/driver-balances?limit=50");
+    var rows=d.balances||[];
+    if(!rows.length){box.innerHTML='<p class="empty">Koi balance nahi.</p>';return;}
+    box.innerHTML='<table class="tbl"><thead><tr><th>Driver</th><th>Trips</th><th>Collected</th><th>Commission</th><th>Settled</th><th>Outstanding</th><th></th></tr></thead><tbody>'
+      +rows.map(function(x,i){return '<tr><td>'+esc(x.driver_name)+'<br><span class="muted">'+esc(x.phone||"")+'</span></td><td>'+x.completed_cash_bookings+'</td><td>'+inr(x.cash_collected_rs)+'</td><td>'+inr(x.commission_rs)+'</td><td>'+inr(x.settled_rs)+'</td><td><strong>'+inr(x.outstanding_rs)+'</strong></td><td><button class="link" type="button" data-st="'+i+'">Settle</button></td></tr>';}).join("")+'</tbody></table>';
+    box.querySelectorAll("[data-st]").forEach(function(b){
+      b.addEventListener("click",async function(){
+        var x=rows[Number(b.getAttribute("data-st"))];
+        var r=await confirmDlg("Record settlement",x.driver_name+" — outstanding "+inr(x.outstanding_rs)+". FIFO allocate hoga.",false,"Amount Rs (max outstanding)");
+        if(!r||!(Number(r.extra)>0)){if(r)toast("Amount > 0 do");return;}
+        var r2=await confirmDlg("Method","cash / bank_transfer / upi me se likho.",false,"Method");
+        if(!r2)return;
+        try{
+          await api("/api/admin/settlements",{method:"POST",body:JSON.stringify({driver_id:x.driver_id,amount_rs:Number(r.extra),method:(r2.extra||"cash"),notes:"super-admin panel"})});
+          toast("Settlement recorded");document.getElementById("balGo").click();
+        }catch(e){toast("Fail: "+e.message);}
+      });
+    });
+  }catch(e){box.innerHTML='<p class="err">'+esc(e.message)+'</p>';}
+});
+document.getElementById("spGo").addEventListener("click",async function(){
+  var box=document.getElementById("spOut");document.getElementById("spDetail").innerHTML="";
+  box.innerHTML='<p class="loading">Loading…</p>';
+  try{
+    var q="/api/admin/settlement-periods?limit=15";
+    var s=document.getElementById("spStatus").value;
+    if(s)q+="&status="+encodeURIComponent(s);
+    var d=await api(q);
+    var rows=d.periods||[];
+    if(!rows.length){box.innerHTML='<p class="empty">Koi week nahi — Generate dabao.</p>';return;}
+    box.innerHTML='<table class="tbl"><thead><tr><th>Week</th><th>Driver</th><th>Status</th><th>Commission</th><th>Settled</th><th></th></tr></thead><tbody>'
+      +rows.map(function(x,i){return '<tr><td>'+esc(x.week_start||x.id.slice(0,8))+'</td><td>'+esc(x.driver_name||x.driver_id)+'</td><td>'+badge(x.status)+'</td><td>'+inr(x.commission_rs)+'</td><td>'+inr(x.settled_rs)+'</td><td><button class="link" type="button" data-sp="'+i+'">Open</button></td></tr>';}).join("")+'</tbody></table>';
+    box.querySelectorAll("[data-sp]").forEach(function(b){
+      b.addEventListener("click",function(){openPeriod(rows[Number(b.getAttribute("data-sp"))]);});
+    });
+  }catch(e){box.innerHTML='<p class="err">'+esc(e.message)+'</p>';}
+});
+document.getElementById("spGen").addEventListener("click",async function(){
+  var r=await confirmDlg("Generate weeks","Idempotent hai — existing weeks skip honge, double nahi honge.",false,null);
+  if(!r)return;
+  try{var d=await api("/api/admin/settlement-periods/generate",{method:"POST",body:"{}"});toast("Generated: "+JSON.stringify(d.created??d));document.getElementById("spGo").click();}
+  catch(e){toast("Fail: "+e.message);}
+});
+async function openPeriod(x){
+  var box=document.getElementById("spDetail");box.innerHTML='<p class="loading">Loading…</p>';
+  try{
+    var d=await api("/api/admin/settlement-periods/"+encodeURIComponent(x.id));
+    var p=d.period;
+    var h='<div class="detail"><h3>Week '+esc(p.week_start||p.id)+' '+badge(p.status)+'</h3><dl>'
+      +kv("Driver",(p.driver_name||"")+" "+(p.driver_phone||""))+kv("Commission",inr(p.commission_rs))+kv("Settled",inr(p.settled_rs))
+      +kv("By method",Object.keys(d.by_method||{}).map(function(m){return m+": "+(d.by_method[m].count||0);}).join(", ")||"—")
+      +'</dl><div class="actions">'
+      +'<button class="btn" type="button" data-pa="pay">Record payment</button>'
+      +'<button class="btn danger" type="button" data-pa="dispute">Dispute</button>'
+      +'<button class="btn secondary" type="button" data-pa="resolve">Resolve</button>'
+      +'</div></div>';
+    box.innerHTML=h;
+    box.querySelectorAll("[data-pa]").forEach(function(b){
+      b.addEventListener("click",async function(){await periodAction(p,b.getAttribute("data-pa"));});
+    });
+  }catch(e){box.innerHTML='<p class="err">'+esc(e.message)+'</p>';}
+}
+async function periodAction(p,act){
+  try{
+    if(act==="pay"){
+      var r=await confirmDlg("Record payment","FIFO inside week. Receipt week se link hogi.",false,"Amount Rs");
+      if(!r||!(Number(r.extra)>0)){if(r)toast("Amount > 0 do");return;}
+      var m=await confirmDlg("Method","cash / bank_transfer / upi.",false,"Method");
+      if(!m)return;
+      await api("/api/admin/settlement-periods/"+p.id+"/payments",{method:"POST",body:JSON.stringify({amount_rs:Number(r.extra),method:(m.extra||"cash")})});
+    }else if(act==="dispute"){
+      var d2=await confirmDlg("Dispute week","Pay freeze ho jayega jab tak resolve na ho.",true,null);
+      if(!d2)return;
+      await api("/api/admin/settlement-periods/"+p.id+"/dispute",{method:"PATCH",body:JSON.stringify({reason:d2.reason})});
+    }else{
+      var d3=await confirmDlg("Resolve dispute","DISPUTED → payable.",false,null);
+      if(!d3)return;
+      await api("/api/admin/settlement-periods/"+p.id+"/resolve",{method:"PATCH",body:"{}"});
+    }
+    toast("Done");document.getElementById("spGo").click();boxClear();
+    function boxClear(){document.getElementById("spDetail").innerHTML="";}
+  }catch(e){toast("Fail: "+e.message);}
+}
+// ---------- ENTERPRISE ----------
+var enPage=1,enLimit=10;
+document.getElementById("enGo").addEventListener("click",function(){enPage=1;loadInq();});
+document.getElementById("enPrev").addEventListener("click",function(){if(enPage>1){enPage--;loadInq();}});
+document.getElementById("enNext").addEventListener("click",function(){enPage++;loadInq();});
+async function loadInq(){
+  var box=document.getElementById("enOut");document.getElementById("enDetail").innerHTML="";
+  box.innerHTML='<p class="loading">Loading…</p>';
+  try{
+    var q="/api/enterprise/inquiries?page="+enPage+"&limit="+enLimit;
+    var s=document.getElementById("enStatus").value,se=document.getElementById("enSearch").value.trim();
+    if(s)q+="&status="+encodeURIComponent(s);
+    if(se)q+="&search="+encodeURIComponent(se);
+    var d=await api(q);
+    document.getElementById("enPage").textContent="Page "+d.page+" / "+Math.max(1,Math.ceil(d.total/enLimit))+" ("+d.total+")";
+    if(!d.inquiries.length){box.innerHTML='<p class="empty">Koi inquiry nahi.</p>';return;}
+    box.innerHTML='<table class="tbl"><thead><tr><th>Company</th><th>Contact</th><th>Status</th><th>Submitted</th><th></th></tr></thead><tbody>'
+      +d.inquiries.map(function(x,i){return '<tr><td>'+esc(x.company_name)+'</td><td>'+esc(x.full_name)+'<br><span class="muted">'+esc(x.email)+'</span></td><td>'+badge(x.status)+'</td><td>'+dOnly(x.created_at)+'</td><td><button class="link" type="button" data-iq="'+i+'">Open</button></td></tr>';}).join("")+'</tbody></table>';
+    box.querySelectorAll("[data-iq]").forEach(function(b){
+      b.addEventListener("click",function(){openInq(d.inquiries[Number(b.getAttribute("data-iq"))]);});
+    });
+  }catch(e){box.innerHTML='<p class="err">'+esc(e.message)+'</p>';}
+}
+function openInq(x){
+  var box=document.getElementById("enDetail");
+  var h='<div class="detail"><h3>'+esc(x.company_name)+' '+badge(x.status)+'</h3><dl>'
+    +kv("Contact",x.full_name+" • "+x.designation)+kv("Email",x.email)+kv("Phone",x.phone)
+    +kv("Website",x.website)+kv("Business",x.business_type+" • "+x.company_size)
+    +kv("Cities",x.cities)+kv("Fleet",x.fleet_size+" • "+x.monthly_trips+" trips/mo")
+    +kv("Requirements",x.requirements)+kv("Submitted",dOnly(x.created_at))
+    +'</dl><div class="actions">'
+    +'<a class="btn secondary" href="mailto:'+esc(x.email)+'">Email</a>'
+    +'<a class="btn secondary" href="tel:+91'+esc(x.phone)+'">Call</a>'
+    +'<button class="btn" type="button" id="iqSt">Update status</button></div></div>';
+  box.innerHTML=h;
+  document.getElementById("iqSt").addEventListener("click",async function(){
+    var r=await confirmDlg("Update status","Sirf backend enum values allowed.",false,"NEW / CONTACTED / IN_DISCUSSION / CONVERTED / CLOSED");
+    if(!r||!r.extra.trim())return;
+    var st=r.extra.trim().toUpperCase().replace(/-/g,"_");
+    if(["NEW","CONTACTED","IN_DISCUSSION","CONVERTED","CLOSED"].indexOf(st)<0){toast("Invalid status");return;}
+    try{
+      await api("/api/enterprise/inquiries/"+x.id+"/status",{method:"PATCH",body:JSON.stringify({status:st})});
+      toast("Status → "+st);loadInq();box.innerHTML="";
+    }catch(e){toast("Fail: "+e.message);}
+  });
+}
+// ---------- AUDIT ----------
+async function loadAudit(){
+  var box=document.getElementById("auOut");box.innerHTML='<p class="loading">Loading…</p>';
+  try{
+    var d=await api("/api/superadmin/audit-logs?limit=20");
+    var rows=d.logs||[];
+    if(!rows.length){box.innerHTML='<p class="empty">Koi audit row nahi.</p>';return;}
+    box.innerHTML='<table class="tbl"><thead><tr><th>When</th><th>Admin</th><th>Action</th><th>Target</th><th>Reason/detail</th></tr></thead><tbody>'
+      +rows.map(function(l){
+        var det=l.details||{};
+        return '<tr><td>'+dt(l.created_at)+'</td><td>'+esc(l.admin_name||l.admin_id||"—")+'</td><td><code>'+esc(l.action)+'</code></td><td><code>'+esc(l.entity+" "+String(l.entity_id||"").slice(0,8))+'</code></td><td>'+esc(det.reason||det.status||JSON.stringify(det).slice(0,80))+'</td></tr>';
+      }).join("")+'</tbody></table><p class="muted">Total: '+d.total+' • read-only, history immutable.</p>';
+  }catch(e){
+    if(e.message==="forbidden"){
+      box.innerHTML='<div class="notice"><strong>Super admin login chahiye.</strong> Audit viewer <code>requireRole(\'super_admin\')</code> se guarded hai — plain admin token pe 403 aata hai. Promote ke baad super_admin se login karo.</div>';
+    }else{
+      box.innerHTML='<div class="notice"><strong>Audit load nahi hua.</strong> Error: '+esc(e.message)+'</div>';
+    }
+  }
+}
+var loaders={overview:loadOverview,customers:function(){},drivers:loadDrivers,finance:function(){},enterprise:loadInq,audit:loadAudit};
+defaultRange();
+boot();
+})();
+</script>
+</body>
+</html>

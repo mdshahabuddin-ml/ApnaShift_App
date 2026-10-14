@@ -25,6 +25,11 @@ export function requireRole(...roles) {
     if (!req.user) {
       return res.status(401).json({ ok: false, error: 'missing_token' });
     }
+    // super_admin tier (022): a super admin passes every admin gate.
+    // Single point — existing routes need no per-route edits.
+    if (req.user.role === 'super_admin') {
+      return next();
+    }
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({ ok: false, error: 'forbidden' });
     }

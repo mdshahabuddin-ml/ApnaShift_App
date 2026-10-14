@@ -12,12 +12,18 @@ import 'dotenv/config';
 function mssqlConfig() {
   const server = process.env.MSSQL_SERVER ?? 'localhost';
   const instance = process.env.MSSQL_INSTANCE ?? '';
+  // Static TCP port wins over instance name (no SQL Browser needed) —
+  // src/mssql/config.js ke same rule se match karta hai.
+  const portRaw = process.env.MSSQL_PORT ?? '';
+  const port = portRaw === '' ? undefined : Number(portRaw);
   const cfg = {
     user: process.env.MSSQL_USER,
     password: process.env.MSSQL_PASSWORD,
+    server,
+    ...(port ? { port } : {}),
     database: process.env.MSSQL_DATABASE ?? 'ApnaShift',
     options: {
-      instanceName: instance || undefined,
+      instanceName: port ? undefined : instance || undefined,
       encrypt: (process.env.MSSQL_ENCRYPT ?? 'false') === 'true',
       trustServerCertificate: true,
       connectTimeout: 10000,
@@ -28,7 +34,7 @@ function mssqlConfig() {
     console.error('[migrate:mssql] MSSQL_USER / MSSQL_PASSWORD khaali hai. .env me set karo (.env.example dekho).');
     process.exit(1);
   }
-  cfg.server = instance ? server : server;
+  cfg.server = server;
   return cfg;
 }
 

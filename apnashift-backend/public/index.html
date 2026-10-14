@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<script>try{var __t=localStorage.getItem("apnashift-theme")||"system";var __d=__t;if(__t==="system"){__d=(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";}document.documentElement.setAttribute("data-theme",__d);document.documentElement.style.colorScheme=__d;}catch(__e){}</script>
+<script>try{var __t=localStorage.getItem("apnashift-theme")||"system";var __d=__t;if(__t==="system"){__d=(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";}document.documentElement.setAttribute("data-theme",__d);document.documentElement.style.colorScheme=__d;}catch(__e){}try{var __p=parseInt(localStorage.getItem("apnashift-text-px"),10);if(isNaN(__p))__p=0;__p=Math.max(-4,Math.min(8,__p));document.documentElement.setAttribute("data-textpx",__p);}catch(__e2){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ApnaShift — Move Smarter</title>
-<meta name="description" content="Reliable vehicle booking and logistics solutions for customers, drivers, and businesses.">
+<meta name="description" content="Reliable vehicle booking and logistics solutions for customers, drivers, and businesses across India.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@500;600;700;800&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --navy:#0a2340;
@@ -17,6 +17,7 @@
   --yellow:#ffb200;
   --yellow-2:#f59e0b;
   --orange:#f59e0b;
+  --accent:#f5a301;
   --blue:#1a73e8;
   --green:#12a150;
   --muted:#5b6b82;
@@ -38,7 +39,9 @@ a{color:inherit}
 .site-header-inner{max-width:1360px;margin:0 auto;display:flex;align-items:center;gap:18px;padding:12px 28px}
 .site-brand{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none;flex:0 0 auto}
 .logo-mark{width:52px;height:34px;flex:0 0 52px}
-.logo-text{font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:1.55rem;line-height:1;letter-spacing:-.5px;color:var(--yellow)}
+.logo-text{font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:1.55rem;line-height:1;letter-spacing:-.5px}
+.logo-text .w{color:#fff}
+.logo-text .y{color:var(--yellow)}
 .logo-text small{display:block;font-family:"Inter",sans-serif;font-weight:600;font-size:.58rem;letter-spacing:2.2px;color:#fff;margin-top:2px}
 .site-nav{display:flex;gap:10px;margin:0 auto;align-items:center;justify-content:center;flex-wrap:nowrap}
 .site-nav>a,.nav-drop summary{
@@ -49,7 +52,7 @@ a{color:inherit}
   transition:.15s;
 }
 .site-nav>a:hover,.nav-drop summary:hover{background:rgba(255,255,255,.10);border-color:#fff;color:#fff}
-.site-nav>a.active{border-color:var(--yellow);color:var(--yellow);background:rgba(255,178,0,.06)}
+.site-nav>a.active{background:var(--yellow);border-color:var(--yellow);color:#111;font-weight:700}
 .nav-drop{position:relative}
 .nav-drop summary{cursor:pointer;list-style:none}
 .nav-drop summary::-webkit-details-marker{display:none}
@@ -71,6 +74,50 @@ a{color:inherit}
 .lang-menu button.active .tick{visibility:visible}
 .btn-getstarted{font-family:"Plus Jakarta Sans","Noto Sans Devanagari",sans-serif;font-weight:800;font-size:.92rem;background:var(--yellow);color:#111;border:0;border-radius:10px;padding:10px 20px;text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center;gap:8px;box-shadow:0 2px 0 rgba(0,0,0,.25)}
 .btn-getstarted:hover{background:#ffbe26}
+/* ===== Text size control (A- / A / A+) ===== */
+.ts-group{display:inline-flex;align-items:center;border:1.2px solid rgba(255,255,255,.28);border-radius:10px;overflow:hidden;background:rgba(255,255,255,.03);flex:0 0 auto;position:relative}
+.ts-group button{border:0;background:transparent;font-family:"Plus Jakarta Sans","Noto Sans Devanagari",sans-serif;font-weight:800;font-size:.8rem;padding:9px 10px;cursor:pointer;line-height:1;min-width:36px;color:#fff;transition:.15s}
+.ts-group button+button{border-left:1px solid rgba(255,255,255,.18)}
+.ts-group button:hover{background:rgba(255,178,0,.20)}
+.ts-group button:focus-visible{outline:2px solid var(--yellow);outline-offset:-2px}
+.ts-group button:disabled{opacity:.32;cursor:default}
+.ts-group button:disabled:hover{background:transparent}
+.ts-dec{color:#9fc0e4}
+.ts-reset{color:#34d17b}
+.ts-inc{color:#fff;font-size:.86rem}
+.ts-status{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media(max-width:640px){.ts-group button{padding:8px 8px;min-width:32px;font-size:.76rem}}
+/* ===== Notification bell ===== */
+.nb-wrap{position:relative;flex:0 0 auto}
+.nb-bell{position:relative;border:1.2px solid rgba(255,255,255,.28);background:rgba(255,255,255,.03);color:#fff;border-radius:10px;font-size:1.05rem;padding:8px 12px;cursor:pointer;line-height:1;transition:.15s}
+.nb-bell:hover{background:rgba(255,178,0,.20)}
+.nb-bell:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
+.nb-badge{position:absolute;top:-8px;right:-8px;min-width:20px;height:20px;border-radius:999px;background:#e02424;color:#fff;font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:.68rem;display:grid;place-items:center;padding:0 5px;box-shadow:0 1px 6px rgba(0,0,0,.4)}
+.nb-panel{position:absolute;top:calc(100% + 10px);right:0;width:min(340px,86vw);max-height:min(420px,70vh);overflow:auto;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 50px rgba(10,35,64,.25);z-index:80}
+.nb-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff}
+.nb-head strong{font-size:.92rem}
+.nb-link{border:0;background:none;color:var(--blue);font:inherit;font-weight:700;font-size:.78rem;cursor:pointer;padding:4px}
+.nb-link:hover{text-decoration:underline}
+.nb-list{padding:6px}
+.nb-item{display:block;padding:10px 12px;border-radius:10px;text-decoration:none;color:inherit}
+.nb-item:hover{background:#f4f7fc}
+.nb-item .t,.nb-item .b,.nb-item .m{display:block}
+.nb-item .t{font-weight:700;font-size:.85rem;display:flex;gap:8px;align-items:center}
+.nb-dot{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:var(--blue)}
+.nb-dot.read{background:#c3ccd9}
+.nb-item .b{font-size:.78rem;color:#5b6b82;margin:2px 0}
+.nb-item .m{font-size:.7rem;color:#8a96a8}
+.nb-empty,.nb-err{padding:18px 14px;text-align:center;font-size:.85rem;color:#5b6b82}
+.nb-empty a,.nb-err a{color:var(--blue);font-weight:700}
+.nb-foot{padding:10px 14px;border-top:1px solid var(--line);text-align:center;position:sticky;bottom:0;background:#fff}
+.nb-foot a{color:var(--blue);font-weight:800;font-size:.85rem;text-decoration:none}
+.nb-foot a:hover{text-decoration:underline}
+html[data-theme="dark"] .nb-panel{background:#111f36;border-color:#26395e;color:#e9eff8}
+html[data-theme="dark"] .nb-head,html[data-theme="dark"] .nb-foot{background:#111f36;border-color:#26395e}
+html[data-theme="dark"] .nb-item:hover{background:#16263f}
+html[data-theme="dark"] .nb-item .b{color:#9db0c9}
+html[data-theme="dark"] .nb-item .m{color:#7d8fa8}
+@media(max-width:640px){.nb-bell{padding:7px 10px}}
 #navMenuBtn{display:none;background:transparent;border:1.5px solid var(--yellow);border-radius:10px;color:var(--yellow);font:inherit;font-weight:800;padding:8px 14px;cursor:pointer}
 @media(max-width:900px){
   #navMenuBtn{display:block}
@@ -79,58 +126,53 @@ a{color:inherit}
   .site-nav.open{display:flex}
 }
 
-/* ===== Hero ===== */
-.hero{background:#fff;overflow:hidden;border-bottom:1px solid #eef1f6}
-.hero-inner{max-width:1360px;margin:0 auto;display:grid;grid-template-columns:500px 1fr;align-items:stretch;min-height:560px}
-.hero-copy{padding:62px 10px 30px 48px;display:flex;flex-direction:column;justify-content:center}
-.hero-copy h1{font-size:4.05rem;line-height:.98;margin:0 0 14px;letter-spacing:-2px;font-weight:800;color:#0a1931}
-.hero-copy h1 .accent{color:#f5a301}
-.hero-sub{margin:0 0 26px;color:#56677e;font-size:1.08rem;line-height:1.5;max-width:430px}
-.cta-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:22px}
+/* ===== Hero (reference match) ===== */
+.hero{position:relative;overflow:hidden;background:#dfe9f4;border-bottom:1px solid #eef1f6}
+.hero-bg{position:absolute;inset:0}
+.hero-bg img{width:100%;height:100%;object-fit:cover;object-position:center 38%;display:block}
+.hero-shade{position:absolute;inset:0;background:linear-gradient(90deg,#ffffff 0%,#ffffff 28%,rgba(255,255,255,.94) 40%,rgba(255,255,255,.62) 56%,rgba(255,255,255,.12) 76%,rgba(255,255,255,0) 100%)}
+.hero-inner{position:relative;max-width:1360px;margin:0 auto;padding:66px 28px 104px;min-height:600px;display:flex;align-items:center}
+.hero-copy{max-width:580px;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:2}
+.eyebrow{font-weight:700;font-size:.78rem;letter-spacing:3.2px;color:#33465f;margin:0 0 14px;text-transform:uppercase}
+.hero-copy h1{font-size:4rem;line-height:1.02;margin:0 0 14px;letter-spacing:-2px;font-weight:800;color:#0a1931}
+.hero-copy h1 .accent{color:var(--accent)}
+.hero-sub{margin:0 0 6px;color:#56677e;font-size:1.04rem;line-height:1.5;max-width:440px}
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin:24px 0 26px;max-width:560px}
+.feat{display:flex;gap:10px;align-items:flex-start}
+.feat-ic{width:46px;height:46px;flex:0 0 46px;border-radius:50%;background:#fdf3dc;display:grid;place-items:center;font-size:1.3rem;color:#0a1931;border:1px solid #f3dfae}
+.feat b{display:block;font-size:.9rem;color:#0a1931;line-height:1.25}
+.feat small{color:#5b6b82;font-size:.78rem}
+.cta-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:6px}
 .btn{display:inline-flex;align-items:center;gap:10px;font-family:"Plus Jakarta Sans","Noto Sans Devanagari",sans-serif;font-weight:800;font-size:.92rem;padding:13px 20px;border-radius:12px;border:1.6px solid var(--ink);text-decoration:none;cursor:pointer;transition:.15s;white-space:nowrap}
 .btn.primary{background:var(--yellow);color:#0a1931;border-color:#0a1931;box-shadow:0 3px 0 #0a1931}
 .btn.primary:hover{background:#ffbe26}
 .btn.ghost{background:#fff;color:#0a1931;box-shadow:0 2px 0 rgba(10,25,49,.12)}
 .btn.ghost:hover{background:#fff7dd}
 .btn .bic{width:22px;height:22px;display:grid;place-items:center;font-size:1.1rem}
-.trust-row{display:flex;gap:20px;flex-wrap:wrap;margin-top:4px}
-.trust-row span{display:inline-flex;align-items:center;gap:7px;font-size:.80rem;font-weight:700;color:#0a1931}
-.trust-ic{width:24px;height:24px;display:grid;place-items:center;border-radius:50%;font-size:.9rem}
 
-/* hero visual */
-.hero-visual{position:relative;overflow:hidden;min-height:560px;background:linear-gradient(90deg,#fff 0%,#fff 8%,rgba(255,255,255,.65) 22%,rgba(255,255,255,0) 48%),url('https://images.unsplash.com/photo-1449824913935-59a10b8d2000?q=80&w=1400&auto=format&fit=crop') center 20%/cover no-repeat,linear-gradient(180deg,#e8f0f9,#f6f9fd)}
-.hero-road{position:absolute;left:0;right:0;bottom:0;height:108px;background:#606a7a;background-image:linear-gradient(180deg,#767f8f 0 10px,#606a7a 10px);z-index:1}
-.hero-road::before{content:"";position:absolute;top:48px;left:0;right:0;height:6px;background:repeating-linear-gradient(90deg,#f7c948 0 46px,transparent 46px 92px);opacity:.9}
-.hero-city{position:absolute;inset:0;background:linear-gradient(90deg,#fff 0%,rgba(255,255,255,.92) 18%,rgba(255,255,255,.25) 42%,rgba(255,255,255,0) 62%);z-index:1;pointer-events:none}
-.veh{position:absolute;z-index:3;filter:drop-shadow(0 14px 18px rgba(0,0,0,.25))}
-.veh.truck{left:2%;bottom:96px;width:46%;max-width:430px;border-radius:10px}
-.veh.truck img,.veh.car img,.veh.bike img{width:100%;height:auto;display:block;object-fit:cover;border-radius:10px}
-.veh.truck img{height:210px;object-fit:cover}
-.veh.car{left:32%;bottom:96px;width:42%;max-width:390px;z-index:4}
-.veh.car img{height:150px;border-radius:12px}
-.veh.bike{right:1%;bottom:86px;width:30%;max-width:300px;z-index:5}
-.veh.bike img{height:220px;object-fit:cover;object-position:center}
-.phone{position:absolute;right:30%;top:26px;width:172px;height:352px;background:#0d1526;border-radius:28px;padding:8px;z-index:2;box-shadow:0 18px 40px rgba(0,0,0,.35)}
-.phone-screen{background:#eef3f8;border-radius:20px;height:100%;overflow:hidden;position:relative}
-.phone-screen .map{position:absolute;inset:0;background:linear-gradient(#e2e8f0 1px,transparent 1px) 0 0/28px 28px,linear-gradient(90deg,#e2e8f0 1px,transparent 1px) 0 0/28px 28px,#f1f5f3}
-.phone-screen .park{position:absolute;left:12px;top:60px;width:56px;height:80px;background:#c8e6c9;border-radius:8px}
-.phone-screen .route{position:absolute;inset:0}
-.phone-notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:64px;height:16px;background:#0d1526;border-radius:0 0 10px 10px;z-index:2}
-.live-bubble{position:absolute;left:-96px;top:44px;background:#fff;border-radius:12px;box-shadow:var(--shadow);padding:8px 12px;display:flex;gap:8px;align-items:center;z-index:6;white-space:nowrap}
-.live-bubble .fic{width:32px;height:32px;border-radius:8px;background:#22c55e;display:grid;place-items:center;color:#fff;font-size:1rem}
-.live-bubble b{font-size:.8rem;color:#0a1931;display:block;line-height:1.1}
-.live-bubble small{font-size:.68rem;color:#6b7a90}
-.side-cards{position:absolute;right:18px;top:28px;display:flex;flex-direction:column;gap:12px;z-index:6;width:212px}
-.mini-card{background:#fff;border:1px solid #e6ebf2;border-radius:12px;box-shadow:var(--shadow-sm);padding:10px 12px;display:flex;gap:10px;align-items:flex-start}
-.mini-card .mic{width:30px;height:30px;flex:0 0 30px;border-radius:50%;display:grid;place-items:center;font-size:1rem;border:1.5px solid #1a73e8;color:#1a73e8;background:#eaf2fe}
-.mini-card .mic.dark{border-color:#0a1931;color:#0a1931;background:#fff}
-.mini-card b{font-size:.82rem;color:#0a1931;display:block;line-height:1.2}
-.mini-card small{font-size:.72rem;color:#6b7a90}
+/* hero photo fallback (image blocked/offline) */
+.hero-bg{background:linear-gradient(180deg,#bcd8f2 0%,#e8f0f8 55%,#f4ede0 100%)}
+
+/* ===== Chooser strip (reference match) ===== */
+.chooser-wrap{max-width:1360px;margin:-56px auto 0;padding:0 28px;position:relative;z-index:10}
+.chooser{background:#fff;border-radius:22px;box-shadow:0 18px 50px rgba(10,35,64,.14);border:1px solid #edf1f6;padding:22px 24px;display:grid;grid-template-columns:1.08fr 1fr 1fr 1fr 1fr;gap:16px;align-items:stretch}
+.chooser-text{padding:6px 4px;display:flex;flex-direction:column;justify-content:center}
+.chooser-text h2{font-size:1.62rem;line-height:1.16;margin:0 0 10px;letter-spacing:-.5px;color:#0a1931;font-weight:800}
+.chooser-text p{color:#5b6b82;font-size:.88rem;margin:0 0 12px;line-height:1.55}
+.link-explore{color:var(--blue);font-weight:800;text-decoration:none;font-size:.9rem}
+.link-explore:hover{text-decoration:underline}
+.vcard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px 12px 14px;display:flex;flex-direction:column;min-height:230px;box-shadow:0 4px 14px rgba(10,35,64,.06)}
+.vcard img{width:100%;height:148px;object-fit:cover;border-radius:10px;display:block;background:#eef2f7}
+.vrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px}
+.vcard b{font-size:.95rem;color:#0a1931}
+.vcard small{color:#5b6b82;font-size:.78rem;margin-top:2px}
+.vcard .go{color:#0a1931;font-weight:800;font-size:1.2rem;text-decoration:none;line-height:1;padding:2px 4px;border-radius:6px}
+.vcard .go:hover{color:var(--blue)}
 
 /* ===== Sections ===== */
 .wrap{max-width:1280px;margin:0 auto;padding:0 28px}
 .section-title{font-size:2.05rem;margin:34px 0 4px;text-align:center;font-weight:800;letter-spacing:-.6px;color:#0a1931}
-.section-title .y{color:#f5a301}
+.section-title .y{color:var(--accent)}
 .section-sub{text-align:center;color:#6b7a90;font-size:.95rem;margin:0 0 22px}
 
 /* audience */
@@ -148,7 +190,7 @@ a{color:inherit}
 .check-list{margin:6px 0 0;padding:0;list-style:none;display:grid;gap:8px}
 .check-list li{display:flex;gap:9px;align-items:center;font-size:.87rem;font-weight:500;color:#1f2f49}
 .ck{width:20px;height:20px;flex:0 0 20px;display:grid;place-items:center;border-radius:50%;color:#fff;font-size:.7rem;font-weight:800}
-.yellow .ck{background:#f5a301}
+.yellow .ck{background:var(--accent)}
 .blue .ck{background:var(--blue)}
 .green .ck{background:var(--green)}
 .aud-cta{margin-top:auto;font-family:"Plus Jakarta Sans","Noto Sans Devanagari",sans-serif;font-weight:800;font-size:.92rem;text-align:center;padding:12px;border-radius:12px;text-decoration:none;color:#0a1931;display:flex;align-items:center;justify-content:center;gap:8px;border:0}
@@ -176,15 +218,16 @@ a{color:inherit}
 .how-step h3{margin:0;color:#0a1931;font-size:.98rem;font-weight:800}
 .how-step p{margin:4px 0 0;color:#6b7a90;font-size:.80rem;line-height:1.45;max-width:200px;margin-left:auto;margin-right:auto}
 .center-cta{text-align:center;margin-top:20px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.center-cta .btn.ghost{border:1.6px solid var(--ink);box-shadow:0 3px 0 var(--ink)}
 
 /* lower sections */
 .cards{display:grid;gap:16px}
-@media(min-width:760px){.cards{grid-template-columns:1fr 1fr 1fr}}
+@media(min-width:760px){.cards{grid-template-columns:1fr 1fr 1fr 1fr}}
 .svc{background:#fff;border:1.5px solid #0a1931;border-radius:16px;padding:22px 18px;box-shadow:5px 5px 0 var(--yellow);display:flex;flex-direction:column;gap:8px}
-.svc h3{color:#0a1931;font-size:1.1rem;margin:0}
-.svc p{margin:0;color:#5b6b82;font-size:.9rem;flex:1}
+.svc h3{color:#0a1931;font-size:1.05rem;margin:0}
+.svc p{margin:0;color:#5b6b82;font-size:.87rem;flex:1}
 .svc .icon{width:46px;height:46px;display:grid;place-items:center;background:#0a1931;color:var(--yellow);border-radius:12px;font-size:1.4rem}
-.svc .btn{align-self:flex-start;font-size:.88rem;padding:10px 18px}
+.svc .btn{align-self:flex-start;font-size:.86rem;padding:10px 16px}
 .duo{display:grid;gap:16px;margin-top:16px}
 @media(min-width:860px){.duo{grid-template-columns:1fr 1fr}}
 .panel-card{background:#fff;border:1.5px solid #0a1931;border-radius:16px;padding:22px 20px;box-shadow:5px 5px 0 var(--yellow)}
@@ -193,50 +236,73 @@ a{color:inherit}
 .tick-list{margin:0;padding:0;list-style:none;display:grid;gap:10px}
 .tick-list li{display:flex;gap:10px;align-items:flex-start;font-size:.9rem}
 .tick-list .tick{flex:0 0 24px;width:24px;height:24px;display:grid;place-items:center;background:var(--yellow);border-radius:50%;font-weight:800;color:#0a1931;font-size:.78rem}
-.faq{margin-top:16px;display:grid;gap:10px}
-.faq details{border:1.5px solid #c9d0de;border-radius:12px;background:#fff;overflow:hidden}
+.faq{margin-top:14px;display:grid;gap:12px}
+.faq details{border:1.5px solid #d9e2ec;border-radius:14px;background:#fff;overflow:hidden;box-shadow:none}
 .faq details[open]{border-color:var(--navy)}
-.faq summary{font-weight:600;color:var(--navy);padding:12px 14px;cursor:pointer;list-style:none;display:flex;gap:10px;align-items:center}
+.faq summary{font-weight:700;color:var(--navy);padding:15px 20px;cursor:pointer;list-style:none;display:flex;gap:10px;align-items:center;justify-content:space-between;font-size:.98rem}
 .faq summary::-webkit-details-marker{display:none}
-.faq .answer{padding:0 14px 14px 48px;font-size:.9rem}
-.site-footer{background:var(--navy);color:#dbe2f0;padding:22px 18px 28px;margin-top:34px}
-.site-foot-inner{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
-.site-foot-brand{font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;color:#fff;font-size:1.05rem}
-.site-foot-links{display:flex;gap:16px;flex-wrap:wrap}
-.site-foot-links a{color:var(--yellow);font-size:.86rem;font-weight:600;text-decoration:none}
+.faq summary::after{content:"";flex:0 0 auto;width:11px;height:11px;border-right:2.6px solid var(--navy);border-bottom:2.6px solid var(--navy);transform:rotate(45deg) translateY(-2px);transition:transform .18s ease;margin-left:14px}
+.faq details[open] summary::after{transform:rotate(225deg) translateY(0)}
+.faq .answer{padding:0 20px 16px;font-size:.9rem;color:#42536b;line-height:1.55}
+.center-cta.text-center{margin-top:22px}
+.site-footer{background:var(--navy);color:#dbe2f0;padding:16px 18px;margin-top:24px}
+.site-foot-inner{max-width:1360px;margin:0 auto;display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.site-foot-brand{font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;color:#fff;font-size:1.5rem;line-height:1.05}
+.site-foot-brand .y{color:var(--yellow)}
+.site-foot-brand small{display:block;font-family:"Inter",sans-serif;font-weight:600;font-size:.58rem;letter-spacing:2.2px;color:#fff;margin-top:3px}
+.site-foot-links{display:flex;gap:26px;flex-wrap:wrap;align-items:center;flex:1}
+.site-foot-links a{color:var(--yellow);font-size:.92rem;font-weight:700;text-decoration:none;white-space:nowrap}
 .site-foot-links a:hover{text-decoration:underline}
+.site-foot-links a.mail{font-weight:700}
+.foot-social{display:flex;gap:12px;align-items:center}
+.soc{width:42px;height:42px;border-radius:50%;border:1.3px solid rgba(255,255,255,.35);display:grid;place-items:center;color:#fff;font-weight:800;font-size:1rem}
+.soc svg{width:17px;height:17px;display:block}
+.foot-copy{border-left:1px solid rgba(255,255,255,.22);padding-left:22px;color:#e8eef7;font-size:.85rem;white-space:nowrap}
+@media(max-width:900px){.site-foot-inner{justify-content:center;text-align:center}.site-foot-links{justify-content:center}.foot-copy{border-left:0;padding-left:0;width:100%}}
+
+/* dark theme for new hero/chooser */
+html[data-theme="dark"] .hero{background:#0b1526;border-color:#1c2f55}
+html[data-theme="dark"] .hero-shade{background:linear-gradient(90deg,#0b1526 0%,#0b1526 30%,rgba(11,21,38,.94) 42%,rgba(11,21,38,.62) 58%,rgba(11,21,38,.12) 78%,rgba(11,21,38,0) 100%)}
+html[data-theme="dark"] .eyebrow{color:#9db0c9}
+html[data-theme="dark"] .hero-copy h1{color:#f2f6fc}
+html[data-theme="dark"] .hero-sub{color:#a9b8cf}
+html[data-theme="dark"] .feat b{color:#eef3fa}
+html[data-theme="dark"] .feat small{color:#9db0c9}
+html[data-theme="dark"] .feat-ic{background:#2a2317;border-color:#5a4d1f;color:#ffbe26}
+html[data-theme="dark"] .hero-bg img{filter:brightness(.72)}
+html[data-theme="dark"] .chooser{background:#111f36;border-color:#26395e}
+html[data-theme="dark"] .chooser-text h2{color:#f2f6fc}
+html[data-theme="dark"] .chooser-text p{color:#9db0c9}
+html[data-theme="dark"] .vcard{background:#16263f;border-color:#26395e;box-shadow:none}
+html[data-theme="dark"] .vcard b{color:#eef3fa}
+html[data-theme="dark"] .vcard small{color:#9db0c9}
+html[data-theme="dark"] .vcard img{filter:brightness(.92)}
+html[data-theme="dark"] .vcard .go{color:#eef3fa}
 
 @media(max-width:1080px){
-  .hero-inner{grid-template-columns:1fr;min-height:auto}
-  .hero-copy{padding:36px 24px 10px}
+  .hero-inner{padding:48px 24px 90px;min-height:auto}
+  .hero-copy{padding:0;max-width:600px}
   .hero-copy h1{font-size:3rem}
-  .hero-visual{min-height:460px}
-  .phone{right:34%}
+  .chooser{grid-template-columns:1fr 1fr;}
+  .chooser-text{grid-column:1/-1}
 }
 @media(max-width:640px){
   .site-header-inner{padding:10px 14px;gap:10px}
   .logo-text{font-size:1.25rem}
   .btn-getstarted{padding:9px 14px;font-size:.85rem}
-  .hero-copy{padding:28px 18px 6px}
-  .hero-copy h1{font-size:2.45rem;letter-spacing:-1px}
+  .hero-inner{padding:36px 18px 84px;min-height:520px;align-items:flex-end}
+  .hero-copy{padding:0;max-width:100%}
+  .hero-copy h1{font-size:2.5rem;letter-spacing:-1px}
   .hero-sub{font-size:.98rem}
+  .feat-grid{grid-template-columns:1fr 1fr;gap:14px;max-width:100%}
   .btn{padding:12px 16px;font-size:.86rem}
-  .hero-visual{min-height:400px}
-  .side-cards{width:172px;right:10px;top:14px}
-  .mini-card{padding:8px 10px}
-  .mini-card b{font-size:.74rem}
-  .mini-card small{font-size:.64rem}
-  .phone{right:auto;left:44%;width:138px;height:280px;top:18px}
-  .live-bubble{left:-74px}
-  .veh.truck{left:2%;width:58%}
-  .veh.truck img{height:150px}
-  .veh.car{left:30%;width:52%}
-  .veh.car img{height:110px}
-  .veh.bike{width:42%}
-  .veh.bike img{height:160px}
-  .aud-card{flex-direction:column;min-height:auto}
-  .aud-img{min-height:220px}
-  .aud-img img{position:relative;height:220px}
+  .hero-bg img{object-position:center 20%}
+  .chooser-wrap{padding:0 14px;margin-top:-40px}
+  .chooser{grid-template-columns:1fr 1fr;padding:16px;gap:12px}
+  .chooser-text{grid-column:1/-1}
+  .chooser-text h2{font-size:1.35rem}
+  .vcard{min-height:190px;padding:10px}
+  .vcard img{height:110px}
   .wrap{padding:0 16px}
   .section-title{font-size:1.6rem}
   .how-wrap{padding:0 16px}
@@ -249,7 +315,7 @@ a{color:inherit}
   <div class="site-header-inner">
     <a class="site-brand" href="index.html" aria-label="ApnaShift home">
       <svg class="logo-mark" viewBox="0 0 52 34" aria-hidden="true"><path d="M4 30 L18 4 L24 4 L10 30 Z" fill="#fff"/><path d="M14 30 L28 4 L34 4 L20 30 Z" fill="#ffb200"/><path d="M26 30 L38 4 L42 4 L30 30 Z" fill="#fff" opacity=".85"/><rect x="2" y="28" width="34" height="3" rx="1.5" fill="#ffb200"/></svg>
-      <span class="logo-text">ApnaShift<small>SHIFTING • TRANSPORT</small></span>
+      <span class="logo-text"><span class="w">Apna</span><span class="y">Shift</span><small>SHIFTING • TRANSPORT</small></span>
     </a>
     <nav class="site-nav" id="siteNav" aria-label="Main navigation">
       <a href="index.html" class="active" aria-current="page" data-i18n="nav_home">Home</a>
@@ -273,53 +339,81 @@ a{color:inherit}
           <button type="button" data-setlang="hi"><span data-i18n="lang_hi">हिन्दी</span><span class="tick">✓</span></button>
         </div>
       </details>
+      <div class="nb-wrap">
+        <button type="button" id="nbBell" class="nb-bell" data-i18n-aria="nb_bell" aria-label="Notifications" aria-haspopup="true" aria-expanded="false" title="Notifications">🔔<span class="nb-badge" id="nbBadge" hidden>0</span></button>
+        <div class="nb-panel" id="nbPanel" role="dialog" aria-label="Notifications" hidden>
+          <div class="nb-head"><strong data-i18n="nb_title">Notifications</strong><button type="button" id="nbMarkAll" class="nb-link" data-i18n="nb_markall">Mark all as read</button></div>
+          <div class="nb-list" id="nbList"><p class="nb-empty">Loading…</p></div>
+          <div class="nb-foot"><a href="notifications.html" data-i18n="nb_viewall">View all notifications →</a></div>
+        </div>
+      </div>
+      <div class="ts-group" role="group" data-i18n-aria="ts_group" aria-label="Text size">
+        <button type="button" class="ts-dec" data-tsbtn="dec" data-i18n-aria="ts_dec" aria-label="Decrease text size" title="Decrease text size">A−</button>
+        <button type="button" class="ts-reset" data-tsbtn="reset" data-i18n-aria="ts_reset" aria-label="Reset text size" aria-pressed="true" title="Reset text size">A</button>
+        <button type="button" class="ts-inc" data-tsbtn="inc" data-i18n-aria="ts_inc" aria-label="Increase text size" title="Increase text size">A+</button>
+        <span class="ts-status" data-ts-status aria-live="polite"></span>
+      </div>
       <a class="btn-getstarted" href="user-auth.html"><span data-i18n="nav_getstarted">Get Started</span> <span aria-hidden="true">→</span></a>
       <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">☰</button>
     </div>
   </div>
 </header>
 
-<!-- HERO -->
+<!-- HERO — reference match -->
 <section class="hero" aria-labelledby="heroTitle">
+  <div class="hero-bg" aria-hidden="true">
+    <img src="https://images.unsplash.com/photo-1753806901308-3acec5e91103?q=80&w=1600&auto=format&fit=crop" alt="" fetchpriority="high" onerror="this.style.display='none'">
+    <div class="hero-shade"></div>
+  </div>
   <div class="hero-inner">
     <div class="hero-copy">
-      <h1 id="heroTitle"><span data-i18n="hero_title">Move Smarter with</span> <span class="accent">ApnaShift</span></h1>
-      <p class="hero-sub" data-i18n="hero_sub">Reliable vehicle booking and logistics solutions for customers, drivers, and businesses.</p>
+      <p class="eyebrow" data-i18n="hero_badge">Safe • Reliable • Affordable</p>
+      <h1 id="heroTitle"><span data-i18n="hero_title">Move smarter</span><br><span data-i18n="hero_title2">with</span> <span class="accent" data-i18n="hero_brand">ApnaShift</span></h1>
+      <p class="hero-sub" data-i18n="hero_sub">Reliable vehicle booking and logistics solutions for customers, drivers, and businesses across India.</p>
+      <div class="feat-grid">
+        <div class="feat"><span class="feat-ic">🚚</span><div><b data-i18n="feat1_t">Quick Booking</b><small data-i18n="feat1_s">Simple and fast process</small></div></div>
+        <div class="feat"><span class="feat-ic">🛡️</span><div><b data-i18n="feat2_t">Verified Drivers</b><small data-i18n="feat2_s">Safe &amp; secure rides</small></div></div>
+        <div class="feat"><span class="feat-ic">📍</span><div><b data-i18n="feat3_t">Live Tracking</b><small data-i18n="feat3_s">Know where your vehicle is</small></div></div>
+      </div>
       <div class="cta-row">
-        <a class="btn primary" href="user-auth.html"><span class="bic">🚗</span> <span data-i18n="hero_book">Book a Vehicle</span> <span aria-hidden="true">→</span></a>
-        <a class="btn ghost" href="driver-register.html"><span class="bic">👤</span> <span data-i18n="hero_driver">Become a Driver Partner</span></a>
-        <a class="btn ghost" href="enterprise.html"><span class="bic">🏢</span> <span data-i18n="hero_enterprise">Enterprise Solutions</span></a>
+        <a class="btn primary" href="user-auth.html"><span class="bic">🚚</span> <span data-i18n="hero_book">Book a Vehicle</span> <span aria-hidden="true">→</span></a>
+        <a class="btn ghost" href="driver-register.html"><span class="bic" style="color:#6d28d9">👤</span> <span data-i18n="hero_driver">Become a Driver</span></a>
       </div>
-      <div class="trust-row">
-        <span><span class="trust-ic">🛡️</span><span data-i18n="trust_safe">Safe &amp; Reliable</span></span>
-        <span><span class="trust-ic">⚡</span><span data-i18n="trust_quick">Quick Booking</span></span>
-        <span><span class="trust-ic">📍</span><span data-i18n="trust_live">Live Tracking</span></span>
-        <span><span class="trust-ic">👥</span><span data-i18n="trust_all">For Individuals &amp; Businesses</span></span>
-      </div>
-    </div>
-    <div class="hero-visual" aria-hidden="true">
-      <div class="hero-city"></div>
-      <div class="phone">
-        <div class="phone-screen">
-          <div class="map"></div>
-          <div class="park"></div>
-          <svg class="route" viewBox="0 0 156 336"><path d="M40 260 C 60 220, 30 200, 70 170 S 90 120, 110 90" stroke="#1a73e8" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="40" cy="260" r="8" fill="#1a73e8"/><circle cx="40" cy="260" r="3" fill="#fff"/><g transform="translate(110,62)"><path d="M0 -14 c-8 0 -13 5.5 -13 13 0 10 13 22 13 22 s13 -12 13 -22 c0 -7.5 -5 -13 -13 -13z" fill="#f59e0b"/><circle cx="0" cy="-1" r="5" fill="#fff"/></g></svg>
-          <div class="phone-notch"></div>
-          <div class="live-bubble"><span class="fic">🚚</span><div><b data-i18n="live_title">Live Tracking</b><small data-i18n="live_sub">Your ride is on the way</small></div></div>
-        </div>
-      </div>
-      <div class="veh truck"><img src="https://images.unsplash.com/photo-1519003722824-194d4455a60c?q=80&w=800&auto=format&fit=crop" alt="" loading="eager" onerror="this.style.display='none'"></div>
-      <div class="veh car"><img src="https://images.unsplash.com/photo-1580273916550-e323be2ae537?q=80&w=800&auto=format&fit=crop" alt="" loading="eager" onerror="this.style.display='none'"></div>
-      <div class="veh bike"><img src="https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=600&auto=format&fit=crop" alt="" loading="eager" onerror="this.style.display='none'"></div>
-      <div class="side-cards">
-        <div class="mini-card"><span class="mic">◷</span><div><b data-i18n="side_book_t">Book in Minutes</b><small data-i18n="side_book_s">Fast &amp; Easy Booking</small></div></div>
-        <div class="mini-card"><span class="mic">📍</span><div><b data-i18n="side_track_t">Real-time Tracking</b><small data-i18n="side_track_s">Know your vehicle location</small></div></div>
-        <div class="mini-card"><span class="mic dark">🛡️</span><div><b data-i18n="side_trust_t">Trusted Services</b><small data-i18n="side_trust_s">Safe and Secure</small></div></div>
-      </div>
-      <div class="hero-road"></div>
     </div>
   </div>
 </section>
+
+<!-- CHOOSER STRIP — reference match -->
+<div class="chooser-wrap">
+  <section class="chooser" aria-label="Choose vehicle">
+    <div class="chooser-text">
+      <h2 data-i18n="choose_t">Choose the Right Vehicle for Your Needs</h2>
+      <p data-i18n="choose_s">From small deliveries to bulk transport — ApnaShift has the right vehicle for every journey.</p>
+      <a class="link-explore" href="booking.html"><span data-i18n="choose_l">Explore All Vehicles</span> →</a>
+    </div>
+    <div class="vcard">
+      <!-- Mini Truck photo: Tata Ace, SnapMeUp, CC BY-SA 4.0, via Wikimedia Commons -->
+      <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f3/Tata_Ace_Mini_Truck_%281%29.JPG/960px-Tata_Ace_Mini_Truck_%281%29.JPG" alt="Mini Truck" loading="lazy" title="Photo: SnapMeUp, CC BY-SA 4.0, via Wikimedia Commons" onerror="this.style.display='none'">
+      <div class="vrow"><b data-i18n="hv1_t">Mini Truck</b><a class="go" href="booking.html" aria-label="Book Mini Truck">→</a></div>
+      <small data-i18n="hv1_s">For small loads &amp; local shifting</small>
+    </div>
+    <div class="vcard">
+      <img src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=80&w=800&auto=format&fit=crop" alt="Pickup" loading="lazy" onerror="this.style.display='none'">
+      <div class="vrow"><b data-i18n="hv2_t">Pickup</b><a class="go" href="booking.html" aria-label="Book Pickup">→</a></div>
+      <small data-i18n="hv2_s">For medium loads</small>
+    </div>
+    <div class="vcard">
+      <img src="https://images.unsplash.com/photo-1589922584560-31d8667e680d?q=80&w=800&auto=format&fit=crop" alt="Mini Tractor" loading="lazy" onerror="this.style.display='none'">
+      <div class="vrow"><b data-i18n="hv3_t">Mini Tractor</b><a class="go" href="booking.html" aria-label="Book Mini Tractor">→</a></div>
+      <small data-i18n="hv3_s">For agri &amp; heavy loads</small>
+    </div>
+    <div class="vcard">
+      <img src="https://images.unsplash.com/photo-1617347454431-f49d7ff5c3b1?q=80&w=800&auto=format&fit=crop" alt="Motorbike" loading="lazy" onerror="this.style.display='none'">
+      <div class="vrow"><b data-i18n="hv4_t">Motorbike</b><a class="go" href="booking.html" aria-label="Book Motorbike">→</a></div>
+      <small data-i18n="hv4_s">For small &amp; fast deliveries</small>
+    </div>
+  </section>
+</div>
 
 <!-- AUDIENCE -->
 <div class="wrap">
@@ -394,13 +488,14 @@ a{color:inherit}
 </div>
 
 <div class="wrap">
-  <!-- VEHICLES -->
+  <!-- VEHICLES (exactly four) -->
   <h2 class="section-title" data-i18n="veh_title">Vehicles</h2>
   <p class="section-sub" data-i18n="veh_sub">Choose a vehicle for the job.</p>
   <section class="cards" aria-label="Vehicles">
-    <div class="svc"><div class="icon" aria-hidden="true">🛻</div><h3 data-i18n="veh1_t">Pickup Truck</h3><p data-i18n="veh1_d">Right for home shifting and heavy goods.</p><a class="btn primary" href="user-auth.html" data-i18n="veh1_b">Book Pickup</a></div>
     <div class="svc"><div class="icon" aria-hidden="true">🚚</div><h3 data-i18n="veh2_t">Mini Truck</h3><p data-i18n="veh2_d">For small loads or shifting within the city.</p><a class="btn primary" href="user-auth.html" data-i18n="veh2_b">Book Mini Truck</a></div>
+    <div class="svc"><div class="icon" aria-hidden="true">🛻</div><h3 data-i18n="veh1_t">Pickup</h3><p data-i18n="veh1_d">Right for medium loads and city goods.</p><a class="btn primary" href="user-auth.html" data-i18n="veh1_b">Book Pickup</a></div>
     <div class="svc"><div class="icon" aria-hidden="true">🚜</div><h3 data-i18n="veh3_t">Mini Tractor</h3><p data-i18n="veh3_d">Useful for towns, villages, and open goods.</p><a class="btn primary" href="user-auth.html" data-i18n="veh3_b">Book Mini Tractor</a></div>
+    <div class="svc"><div class="icon" aria-hidden="true">🏍️</div><h3 data-i18n="veh4_t">Motorbike</h3><p data-i18n="veh4_d">For small &amp; fast deliveries across the city.</p><a class="btn primary" href="user-auth.html" data-i18n="veh4_b">Book Motorbike</a></div>
   </section>
 
   <!-- WHY + SAFETY -->
@@ -445,14 +540,21 @@ a{color:inherit}
 
 <footer class="site-footer">
   <div class="site-foot-inner">
-    <div class="site-foot-brand">ApnaShift</div>
+    <div class="site-foot-brand">Apna<span class="y">Shift</span><small>SHIFTING • TRANSPORT</small></div>
     <div class="site-foot-links">
       <a href="index.html" data-i18n="foot_home">Home</a>
       <a href="help.html" data-i18n="foot_help">Help</a>
       <a href="privacy.html" data-i18n="foot_privacy">Privacy Policy</a>
       <a href="terms.html" data-i18n="foot_terms">Terms &amp; Conditions</a>
-      <a href="mailto:support@apnashift.in?subject=ApnaShift%20Support%20Request">support@apnashift.in</a>
+      <a class="mail" href="mailto:support@apnashift.in?subject=ApnaShift%20Support%20Request">support@apnashift.in</a>
     </div>
+    <div class="foot-social" aria-label="Social links">
+      <span class="soc" role="img" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 22v-8h2.7l.4-3.2h-3.1V8.7c0-.9.3-1.6 1.7-1.6h1.5V4.2c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.7H7.8V14h2.7v8z"/></svg></span>
+      <span class="soc" role="img" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1.3" fill="currentColor" stroke="none"/></svg></span>
+      <span class="soc" role="img" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.9 8.6H3.6V21h3.3zM5.2 3.5a1.9 1.9 0 1 0 0 3.9 1.9 1.9 0 0 0 0-3.9zM12 13.4c0-1.1.9-2 2.1-2 1.1 0 1.9.8 1.9 2V21h3.3v-4.1c0-2.9-1.6-4.3-3.7-4.3-1.7 0-2.6 1-3 1.7V8.6H9.3c0 .9 0 12.4 0 12.4H12z"/></svg></span>
+      <span class="soc" role="img" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2.5" y="6" width="19" height="12" rx="4"/><path d="M10.5 9.8v4.4L14.5 12z" fill="currentColor" stroke="none"/></svg></span>
+    </div>
+    <div class="foot-copy">© 2026 ApnaShift. All rights reserved.</div>
   </div>
 </footer>
 
@@ -464,40 +566,42 @@ a{color:inherit}
 
   var I18N={
     en:{
-      nav_home:"Home",nav_book:"Book",nav_login:"Login",nav_driver:"Driver",nav_join:"Join as Driver",nav_driver_login:"Driver Login",nav_enterprise:"Enterprise",nav_help:"Help",nav_getstarted:"Get Started",lang_en:"English",lang_hi:"हिन्दी",
-      hero_title:"Move Smarter with",hero_sub:"Reliable vehicle booking and logistics solutions for customers, drivers, and businesses.",hero_book:"Book a Vehicle",hero_driver:"Become a Driver Partner",hero_enterprise:"Enterprise Solutions",
-      trust_safe:"Safe & Reliable",trust_quick:"Quick Booking",trust_live:"Live Tracking",trust_all:"For Individuals & Businesses",
-      live_title:"Live Tracking",live_sub:"Your ride is on the way",
-      side_book_t:"Book in Minutes",side_book_s:"Fast & Easy Booking",side_track_t:"Real-time Tracking",side_track_s:"Know your vehicle location",side_trust_t:"Trusted Services",side_trust_s:"Safe and Secure",
+      nav_home:"Home",nav_book:"Book",nav_login:"Login",nav_driver:"Driver",nav_join:"Join as Driver",nav_driver_login:"Driver Login",nav_enterprise:"Enterprise",nav_help:"Help",nav_admin:"Admin",nav_superadmin:"Super Admin",nav_getstarted:"Get Started",lang_en:"English",lang_hi:"हिन्दी",ts_group:"Text size",ts_dec:"Decrease text size",ts_reset:"Reset text size",ts_inc:"Increase text size",nb_title:"Notifications",nb_markall:"Mark all as read",nb_viewall:"View all notifications",nb_bell:"Notifications",
+      hero_badge:"Safe • Reliable • Affordable",
+      hero_title:"Move smarter",hero_title2:"with",hero_brand:"ApnaShift",hero_sub:"Reliable vehicle booking and logistics solutions for customers, drivers, and businesses across India.",hero_book:"Book a Vehicle",hero_driver:"Become a Driver",
+      feat1_t:"Quick Booking",feat1_s:"Simple and fast process",feat2_t:"Verified Drivers",feat2_s:"Safe & secure rides",feat3_t:"Live Tracking",feat3_s:"Know where your vehicle is",
+      hv1_t:"Mini Truck",hv1_s:"For small loads & local shifting",hv2_t:"Pickup",hv2_s:"For medium loads",hv3_t:"Mini Tractor",hv3_s:"For agri & heavy loads",hv4_t:"Motorbike",hv4_s:"For small & fast deliveries",
+      choose_t:"Choose the Right Vehicle for Your Needs",choose_s:"From small deliveries to bulk transport — ApnaShift has the right vehicle for every journey.",choose_l:"Explore All Vehicles",
       plat_title1:"One Platform for",plat_title2:"Everyone",plat_sub:"Customer, driver, or business — choose your section.",
       cust_title:"Customer Booking",cust_desc:"Book reliable vehicles for your transportation needs.",cust_f1:"Multiple vehicle options",cust_f2:"Easy & quick booking",cust_f3:"Live tracking",cust_cta:"Book Now",
       drv_title:"Driver Partner",drv_desc:"Join ApnaShift and grow your earning opportunities.",drv_f1:"Flexible working hours",drv_f2:"Get nearby bookings",drv_f3:"Daily earnings & incentives",drv_cta:"Join as Driver",drv_alt1:"Already registered?",drv_alt2:"Driver Login",
       ent_title:"Enterprise",ent_desc:"Flexible transportation and logistics solutions for businesses.",ent_f1:"Corporate transport",ent_f2:"Bulk & scheduled bookings",ent_f3:"Dedicated support",ent_cta:"Explore Enterprise",
       how_title1:"How ApnaShift",how_title2:"Works",how_sub:"Get your shifting done in 4 simple steps.",how1_t:"Book",how1_d:"Choose your vehicle and pickup location.",how2_t:"Get Assigned",how2_d:"We find the best driver for you.",how3_t:"Track Live",how3_d:"Follow your vehicle in real-time.",how4_t:"Reach Safely",how4_d:"Complete your trip with peace of mind.",
-      veh_title:"Vehicles",veh_sub:"Choose a vehicle for the job.",veh1_t:"Pickup Truck",veh1_d:"Right for home shifting and heavy goods.",veh1_b:"Book Pickup",veh2_t:"Mini Truck",veh2_d:"For small loads or shifting within the city.",veh2_b:"Book Mini Truck",veh3_t:"Mini Tractor",veh3_d:"Useful for towns, villages, and open goods.",veh3_b:"Book Mini Tractor",
+      veh_title:"Vehicles",veh_sub:"Choose a vehicle for the job.",veh1_t:"Pickup",veh1_d:"Right for medium loads and city goods.",veh1_b:"Book Pickup",veh2_t:"Mini Truck",veh2_d:"For small loads or shifting within the city.",veh2_b:"Book Mini Truck",veh3_t:"Mini Tractor",veh3_d:"Useful for towns, villages, and open goods.",veh3_b:"Book Mini Tractor",veh4_t:"Motorbike",veh4_d:"For small & fast deliveries across the city.",veh4_b:"Book Motorbike",
       why_title1:"Why",why_title2:"ApnaShift",why_sub:"Simple and transparent.",why1_t:"Built for trust",why1_s:"Local transport, minus the headache.",why1_l1:"Local drivers who know the routes.",why1_l2:"Clear price estimate before booking.",why1_l3:"Phone support in Hindi.",why1_l4:"Customers, drivers, and businesses — all in one place.",why1_cta:"Want to drive? Join us",
       why2_t:"Safety, the simple way",why2_s:"No advance. No surprises.",why2_l1:"Pay the driver directly — by cash or UPI.",why2_l2:"Verified drivers — checked license and vehicle details.",why2_l3:"Facing an issue? Contact support on the Help page.",why2_cta:"Help & Support",
       faq_title:"Frequently Asked Questions",faq_sub:"Tap for answers.",faq1_q:"How do I book?",faq1_a:"Log in, enter pickup and drop, choose a vehicle, and confirm. You will get an update once a driver is assigned.",faq2_q:"How will I get a driver?",faq2_a:"After booking, a nearby verified driver is assigned. You will see the driver's name and phone.",faq3_q:"How do I cancel?",faq3_a:"Cancel for free before confirmation. To cancel after confirmation, talk to the driver and write to us on the Help page.",faq4_q:"How do I pay?",faq4_a:"Pay the driver directly by cash or UPI. The app has no online payment yet.",faq5_q:"Where do I complain?",faq5_a:"Fill the form on the Help page and mention your booking ID so we can help quickly.",faq_cta1:"Start Booking",faq_cta2:"More questions? Visit Help",
       foot_home:"Home",foot_help:"Help",foot_privacy:"Privacy Policy",foot_terms:"Terms & Conditions",
-      page_title:"ApnaShift — Move Smarter",meta_desc:"Reliable vehicle booking and logistics solutions for customers, drivers, and businesses."
+      page_title:"ApnaShift — Move Smarter",meta_desc:"Reliable vehicle booking and logistics solutions for customers, drivers, and businesses across India."
     },
     hi:{
-      nav_home:"होम",nav_book:"बुक करें",nav_login:"लॉगिन",nav_driver:"ड्राइवर",nav_join:"ड्राइवर बनें",nav_driver_login:"ड्राइवर लॉगिन",nav_enterprise:"एंटरप्राइज़",nav_help:"सहायता",nav_getstarted:"शुरू करें",lang_en:"English",lang_hi:"हिन्दी",
-      hero_title:"समझदारी से शिफ्ट करें",hero_sub:"ग्राहकों, ड्राइवरों और व्यवसायों के लिए भरोसेमंद वाहन बुकिंग और लॉजिस्टिक्स समाधान।",hero_book:"वाहन बुक करें",hero_driver:"ड्राइवर पार्टनर बनें",hero_enterprise:"एंटरप्राइज़ समाधान",
-      trust_safe:"सुरक्षित और भरोसेमंद",trust_quick:"तुरंत बुकिंग",trust_live:"लाइव ट्रैकिंग",trust_all:"व्यक्तियों और व्यवसायों के लिए",
-      live_title:"लाइव ट्रैकिंग",live_sub:"आपकी राइड आ रही है",
-      side_book_t:"मिनटों में बुक करें",side_book_s:"तेज़ और आसान बुकिंग",side_track_t:"रियल-टाइम ट्रैकिंग",side_track_s:"अपने वाहन की लोकेशन जानें",side_trust_t:"भरोसेमंद सेवाएं",side_trust_s:"सुरक्षित और संरक्षित",
+      nav_home:"होम",nav_book:"बुक करें",nav_login:"लॉगिन",nav_driver:"ड्राइवर",nav_join:"ड्राइवर बनें",nav_driver_login:"ड्राइवर लॉगिन",nav_enterprise:"एंटरप्राइज़",nav_help:"सहायता",nav_admin:"एडमिन",nav_superadmin:"सुपर एडमिन",nav_getstarted:"शुरू करें",lang_en:"English",lang_hi:"हिन्दी",ts_group:"पाठ आकार",ts_dec:"पाठ छोटा करें",ts_reset:"पाठ आकार डिफ़ॉल्ट करें",ts_inc:"पाठ बड़ा करें",nb_title:"सूचनाएं",nb_markall:"सभी को पढ़ा चिह्नित करें",nb_viewall:"सभी सूचनाएं देखें",nb_bell:"सूचनाएं",
+      hero_badge:"सुरक्षित • भरोसेमंद • किफायती",
+      hero_title:"समझदारी से शिफ्ट करें",hero_title2:"",hero_brand:"ApnaShift",hero_sub:"ग्राहकों, ड्राइवरों और व्यवसायों के लिए पूरे भारत में भरोसेमंद वाहन बुकिंग और लॉजिस्टिक्स समाधान।",hero_book:"वाहन बुक करें",hero_driver:"ड्राइवर बनें",
+      feat1_t:"तुरंत बुकिंग",feat1_s:"सरल और तेज़ प्रक्रिया",feat2_t:"वेरिफाइड ड्राइवर",feat2_s:"सुरक्षित राइड",feat3_t:"लाइव ट्रैकिंग",feat3_s:"जानें वाहन कहां है",
+      hv1_t:"मिनी ट्रक",hv1_s:"छोटे सामान व लोकल शिफ्टिंग हेतु",hv2_t:"पिकअप",hv2_s:"मध्यम सामान के लिए",hv3_t:"मिनी ट्रैक्टर",hv3_s:"खेती व भारी सामान हेतु",hv4_t:"मोटरबाइक",hv4_s:"छोटी व तेज़ डिलीवरी हेतु",
+      choose_t:"अपनी ज़रूरत का सही वाहन चुनें",choose_s:"छोटी डिलीवरी से बल्क ट्रांसपोर्ट तक — हर सफर के लिए सही वाहन।",choose_l:"सभी वाहन देखें",
       plat_title1:"सभी के लिए",plat_title2:"एक ही प्लेटफॉर्म",plat_sub:"ग्राहक, ड्राइवर या बिज़नेस — अपना सेक्शन चुनें।",
       cust_title:"ग्राहक बुकिंग",cust_desc:"अपनी परिवहन ज़रूरतों के लिए भरोसेमंद वाहन बुक करें।",cust_f1:"कई वाहन विकल्प",cust_f2:"आसान और तेज़ बुकिंग",cust_f3:"लाइव ट्रैकिंग",cust_cta:"अभी बुक करें",
       drv_title:"ड्राइवर पार्टनर",drv_desc:"ApnaShift से जुड़ें और कमाई के अवसर बढ़ाएं।",drv_f1:"लचीले काम के घंटे",drv_f2:"नज़दीकी बुकिंग पाएं",drv_f3:"रोज़ कमाई और इंसेंटिव",drv_cta:"ड्राइवर बनें",drv_alt1:"पहले से रजिस्टर्ड हैं?",drv_alt2:"ड्राइवर लॉगिन",
       ent_title:"एंटरप्राइज़",ent_desc:"व्यवसायों के लिए लचीले परिवहन और लॉजिस्टिक्स समाधान।",ent_f1:"कॉर्पोरेट परिवहन",ent_f2:"बल्क और शेड्यूल्ड बुकिंग",ent_f3:"समर्पित सहायता",ent_cta:"एंटरप्राइज़ देखें",
       how_title1:"ApnaShift",how_title2:"कैसे काम करता है",how_sub:"सिर्फ 4 आसान स्टेप्स में शिफ्टिंग पूरी करें।",how1_t:"बुक करें",how1_d:"अपना वाहन और पिकअप लोकेशन चुनें।",how2_t:"ड्राइवर पाएं",how2_d:"आपके लिए सबसे अच्छा ड्राइवर ढूंढते हैं।",how3_t:"लाइव ट्रैक करें",how3_d:"अपने वाहन को रियल-टाइम में फॉलो करें।",how4_t:"सुरक्षित पहुंचें",how4_d:"निश्चिंत होकर अपनी यात्रा पूरी करें।",
-      veh_title:"वाहन",veh_sub:"काम के लिए सही वाहन चुनें।",veh1_t:"पिकअप ट्रक",veh1_d:"घर शिफ्टिंग और भारी सामान के लिए सही।",veh1_b:"पिकअप बुक करें",veh2_t:"मिनी ट्रक",veh2_d:"छोटे सामान या शहर के अंदर शिफ्टिंग के लिए।",veh2_b:"मिनी ट्रक बुक करें",veh3_t:"मिनी ट्रैक्टर",veh3_d:"कस्बों, गांवों और खुले सामान के लिए उपयोगी।",veh3_b:"मिनी ट्रैक्टर बुक करें",
+      veh_title:"वाहन",veh_sub:"काम के लिए सही वाहन चुनें।",veh1_t:"पिकअप",veh1_d:"मध्यम सामान और शहर के सामान हेतु।",veh1_b:"पिकअप बुक करें",veh2_t:"मिनी ट्रक",veh2_d:"छोटे सामान या शहर के अंदर शिफ्टिंग के लिए।",veh2_b:"मिनी ट्रक बुक करें",veh3_t:"मिनी ट्रैक्टर",veh3_d:"कस्बों, गांवों और खुले सामान के लिए उपयोगी।",veh3_b:"मिनी ट्रैक्टर बुक करें",veh4_t:"मोटरबाइक",veh4_d:"शहर में छोटी व तेज़ डिलीवरी हेतु।",veh4_b:"मोटरबाइक बुक करें",
       why_title1:"ApnaShift",why_title2:"क्यों",why_sub:"सरल और पारदर्शी।",why1_t:"भरोसे के लिए बना",why1_s:"लोकल ट्रांसपोर्ट, बिना झंझट।",why1_l1:"रूट जानने वाले लोकल ड्राइवर।",why1_l2:"बुकिंग से पहले साफ कीमत अनुमान।",why1_l3:"हिंदी में फोन सहायता।",why1_l4:"ग्राहक, ड्राइवर और बिज़नेस — सब एक जगह।",why1_cta:"ड्राइव करना है? जुड़ें",
       why2_t:"सुरक्षा, आसान तरीके से",why2_s:"कोई एडवांस नहीं। कोई छिपा खर्च नहीं।",why2_l1:"ड्राइवर को सीधे भुगतान करें — नकद या UPI से।",why2_l2:"वेरिफाइड ड्राइवर — लाइसेंस और वाहन जांचे हुए।",why2_l3:"कोई समस्या? हेल्प पेज पर सहायता से संपर्क करें।",why2_cta:"सहायता और समर्थन",
       faq_title:"अक्सर पूछे जाने वाले प्रश्न",faq_sub:"उत्तर के लिए टैप करें।",faq1_q:"बुकिंग कैसे करूं?",faq1_a:"लॉगिन करें, पिकअप और ड्रॉप डालें, वाहन चुनें और कन्फर्म करें। ड्राइवर असाइन होते ही अपडेट मिलेगा।",faq2_q:"ड्राइवर कैसे मिलेगा?",faq2_a:"बुकिंग के बाद नज़दीकी वेरिफाइड ड्राइवर असाइन होता है। आपको ड्राइवर का नाम और फोन दिखेगा।",faq3_q:"कैंसिल कैसे करूं?",faq3_a:"कन्फर्मेशन से पहले मुफ्त कैंसिल करें। कन्फर्मेशन के बाद कैंसिल के लिए ड्राइवर से बात करें और हेल्प पेज पर लिखें।",faq4_q:"भुगतान कैसे करूं?",faq4_a:"ड्राइवर को सीधे नकद या UPI से भुगतान करें। ऐप में अभी ऑनलाइन पेमेंट नहीं है।",faq5_q:"शिकायत कहां करूं?",faq5_a:"हेल्प पेज पर फॉर्म भरें और बुकिंग ID लिखें ताकि हम जल्दी मदद कर सकें।",faq_cta1:"बुकिंग शुरू करें",faq_cta2:"और सवाल? हेल्प देखें",
       foot_home:"होम",foot_help:"सहायता",foot_privacy:"प्राइवेसी पॉलिसी",foot_terms:"नियम और शर्तें",
-      page_title:"ApnaShift — समझदारी से शिफ्ट करें",meta_desc:"ग्राहकों, ड्राइवरों और व्यवसायों के लिए भरोसेमंद वाहन बुकिंग और लॉजिस्टिक्स समाधान।"
+      page_title:"ApnaShift — समझदारी से शिफ्ट करें",meta_desc:"ग्राहकों, ड्राइवरों और व्यवसायों के लिए पूरे भारत में भरोसेमंद वाहन बुकिंग और लॉजिस्टिक्स समाधान।"
     }
   };
 
@@ -514,6 +618,10 @@ a{color:inherit}
       var k=el.getAttribute("data-i18n");
       if(dict[k]!==undefined)el.textContent=dict[k];
     });
+    document.querySelectorAll("[data-i18n-aria]").forEach(function(el){
+      var ka=el.getAttribute("data-i18n-aria");
+      if(dict[ka]!==undefined)el.setAttribute("aria-label",dict[ka]);
+    });
     if(langLabel)langLabel.textContent=(l==="hi")?"हिन्दी":"English";
     document.querySelectorAll("[data-setlang]").forEach(function(b){
       b.classList.toggle("active",b.getAttribute("data-setlang")===l);
@@ -528,6 +636,103 @@ a{color:inherit}
   setLang(init);
 })();
 </script>
+<script>
+(function(){
+  "use strict";
+  var API=(window.location.hostname==="localhost"||window.location.hostname==="127.0.0.1"||window.location.protocol==="file:")?"http://localhost:3000":"https://apnashiftapp-production.up.railway.app";
+  var bell=document.getElementById("nbBell"),badge=document.getElementById("nbBadge"),
+      panel=document.getElementById("nbPanel"),list=document.getElementById("nbList"),
+      markAll=document.getElementById("nbMarkAll");
+  if(!bell||!panel||!list) return;
+  function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+  function L(en,hi){return document.documentElement.lang==="hi"?hi:en;}
+  function auth(){try{var u=localStorage.getItem("apnashift_user_token");if(u)return "Bearer "+u;var d=localStorage.getItem("apnashift_driver_token");if(d)return "Bearer "+d;}catch(e){}return null;}
+  function ago(iso){var t=new Date(iso).getTime();if(!isFinite(t))return "";var s=Math.max(0,Math.floor((Date.now()-t)/1000));if(s<60)return L("just now","अभी");if(s<3600)return Math.floor(s/60)+L("m ago"," मि. पहले");if(s<86400)return Math.floor(s/3600)+L("h ago"," घं. पहले");try{return new Date(iso).toLocaleDateString("en-IN",{day:"numeric",month:"short"});}catch(e){return "";}}
+  function setBadge(n){if(n>0){badge.hidden=false;badge.textContent=n>99?"99+":String(n);}else{badge.hidden=true;badge.textContent="0";}}
+  function loginHtml(){return '<p class="nb-empty">'+esc(L("Log in to see your trip updates.","अपडेट देखने के लिए लॉगिन करें."))+' <a href="user-auth.html">'+esc(L("Login","लॉगिन"))+'</a></p>';}
+  function rowHtml(n){return '<a class="nb-item" href="notifications.html" data-nid="'+esc(n.id)+'"><span class="t"><span class="nb-dot'+(n.read_at?" read":"")+'"></span>'+esc(n.title)+'</span><span class="b">'+esc(n.body)+'</span><span class="m">'+esc(ago(n.created_at))+' • #'+esc(String(n.booking_id).slice(0,8))+'</span></a>';}
+  var lastTs=null;
+  function parseRes(res){return res.json().then(function(d){return{status:res.status,body:d};}).catch(function(){return{status:res.status,body:null};});}
+  function loadCount(){var a=auth();if(!a){setBadge(0);return;}fetch(API+"/api/notifications/unread-count",{headers:{"Authorization":a}}).then(parseRes).then(function(x){if(x.status===200&&x.body&&x.body.ok===true)setBadge(x.body.unread);else if(x.status===401||x.status===403)setBadge(0);}).catch(function(){});}
+  function loadList(){
+    var a=auth();
+    if(!a){list.innerHTML=loginHtml();return;}
+    list.innerHTML='<p class="nb-empty">'+esc(L("Loading…","लोड हो रहा…"))+'</p>';
+    fetch(API+"/api/notifications?limit=8",{headers:{"Authorization":a}}).then(parseRes).then(function(x){
+      if(x.status===401||x.status===403){list.innerHTML=loginHtml();setBadge(0);return;}
+      if(x.status!==200||!x.body||x.body.ok!==true||!Array.isArray(x.body.items))throw new Error("load");
+      if(x.body.items.length===0){list.innerHTML='<p class="nb-empty">'+esc(L("No updates yet — booking news will appear here.","अभी कोई अपडेट नहीं — बुकिंग खबर यहीं दिखेगी."))+'</p>';return;}
+      if(x.body.items[0]&&x.body.items[0].created_at)lastTs=x.body.items[0].created_at;
+      list.innerHTML=x.body.items.map(rowHtml).join("");
+    }).catch(function(){list.innerHTML='<p class="nb-err">'+esc(L("Could not load updates — check connection and retry.","अपडेट लोड नहीं हुए — कनेक्शन जांचकर दोबारा कोशिश करें."))+'</p>';});
+  }
+  function setOpen(open){panel.hidden=!open;bell.setAttribute("aria-expanded",open?"true":"false");if(open)loadList();}
+  bell.addEventListener("click",function(ev){ev.stopPropagation();setOpen(panel.hidden);});
+  document.addEventListener("click",function(ev){if(!panel.hidden&&!ev.target.closest(".nb-wrap"))setOpen(false);});
+  document.addEventListener("keydown",function(ev){if(ev.key==="Escape"&&!panel.hidden){setOpen(false);bell.focus();}});
+  markAll.addEventListener("click",function(){var a=auth();if(!a)return;markAll.disabled=true;fetch(API+"/api/notifications/read-all",{method:"POST",headers:{"Authorization":a}}).then(parseRes).then(function(){loadCount();loadList();}).catch(function(){}).finally(function(){markAll.disabled=false;});});
+  list.addEventListener("click",function(ev){var a=ev.target.closest("[data-nid]");if(!a)return;var t=auth();if(!t)return;fetch(API+"/api/notifications/"+encodeURIComponent(a.getAttribute("data-nid"))+"/read",{method:"PATCH",headers:{"Authorization":t}}).then(function(){loadCount();}).catch(function(){});});
+  // Live stream (fetch-based so the Bearer header travels with it).
+  // Missed rows replay via ?since=, reconnects back off, 30s poll covers gaps.
+  var streaming=false,retryMs=5000,streamTimer=null;
+  function stream(){
+    var a=auth();if(!a||streaming)return;streaming=true;
+    var url=API+"/api/notifications/stream"+(lastTs?"?since="+encodeURIComponent(lastTs):"");
+    fetch(url,{headers:{"Authorization":a}}).then(function(res){
+      if(!res.ok||!res.body)throw new Error("stream "+res.status);
+      retryMs=5000;
+      var reader=res.body.getReader(),dec=new TextDecoder(),buf="";
+      function pump(){return reader.read().then(function(r){
+        if(r.done)throw new Error("closed");
+        buf+=dec.decode(r.value,{stream:true});
+        var parts=buf.split("\n\n");buf=parts.pop();
+        parts.forEach(function(chunk){
+          var evName="message",data="";
+          chunk.split("\n").forEach(function(line){
+            if(line.indexOf("event:")===0)evName=line.slice(6).trim();
+            else if(line.indexOf("data:")===0)data+=line.slice(5).trim();
+          });
+          if(evName==="notification"&&data){try{var n=JSON.parse(data);if(n.created_at)lastTs=n.created_at;}catch(e){}loadCount();if(!panel.hidden)loadList();}
+        });
+        return pump();
+      });}
+      return pump();
+    }).catch(function(){streaming=false;clearTimeout(streamTimer);streamTimer=setTimeout(function(){retryMs=Math.min(retryMs*2,30000);stream();},retryMs);});
+  }
+  loadCount();loadListQuietInit();
+  function loadListQuietInit(){var a=auth();if(!a){list.innerHTML=loginHtml();return;}fetch(API+"/api/notifications?limit=1",{headers:{"Authorization":a}}).then(parseRes).then(function(x){if(x.status===200&&x.body&&x.body.ok===true&&x.body.items.length>0&&x.body.items[0].created_at)lastTs=x.body.items[0].created_at;}).catch(function(){}).finally(function(){stream();});}
+  setInterval(function(){if(auth())loadCount();},30000);
+})();
+</script>
 <script src="theme.js"></script>
+<script src="text-size.js?v=2"></script>
+<script>
+/* Admin shortcut on homepage: shown ONLY when an admin token exists in this
+ * browser (public visitors see nothing — backend still enforces everything).
+ * Super Admin link appears only for role=super_admin (display only). */
+(function(){
+  "use strict";
+  var token=null;
+  try{token=localStorage.getItem("apnashift_admin_token");}catch(e){}
+  if(!token)return;
+  var nav=document.getElementById("siteNav");
+  if(!nav||document.getElementById("navAdminLink"))return;
+  var role=null;
+  try{
+    var payload=JSON.parse(atob(token.split(".")[1].replace(/-/g,"+").replace(/_/g,"/")));
+    if(payload&&typeof payload.role==="string")role=payload.role;
+  }catch(e){}
+  var hi=document.documentElement.lang==="hi";
+  function mk(id,href,key,en,hiT){
+    var a=document.createElement("a");
+    a.id=id;a.href=href;a.setAttribute("data-i18n",key);
+    a.textContent=hi?hiT:en;return a;
+  }
+  nav.appendChild(mk("navAdminLink","admin-dashboard.html","nav_admin","Admin","एडमिन"));
+  if(role==="super_admin"){
+    nav.appendChild(mk("navSuperAdminLink","super-admin.html","nav_superadmin","Super Admin","सुपर एडमिन"));
+  }
+})();
+</script>
 </body>
 </html>

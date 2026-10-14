@@ -18,6 +18,8 @@ import { geoRoutes } from './routes/geo.js';
 import { whatsappRoutes } from './routes/whatsapp.js';
 import { driverSettlementRoutes, adminSettlementRoutes } from './routes/settlements.js';
 import { mssqlRoutes } from './routes/mssql.js';
+import { notificationsRoutes } from './routes/notifications.js';
+import { superAdminRoutes } from '../../super-admin-module/backend/superAdminRoutes.js';
 
 export function createApp() {
   const app = express();
@@ -102,6 +104,10 @@ export function createApp() {
   app.use('/api/whatsapp', whatsappRoutes);
   // MS SQL Server verification (read-only; PostgreSQL flows untouched).
   app.use('/api/mssql', mssqlRoutes);
+  // In-app notifications (customer/driver, owner-scoped; admin role 403).
+  app.use('/api/notifications', notificationsRoutes);
+  // Super Admin read-only panel (SELECT-only router from super-admin-module/).
+  app.use('/api/superadmin', superAdminRoutes);
 
   // 404 — unknown routes.
   app.use((req, res) => {

@@ -647,6 +647,45 @@ paths:
                     type: object
                     properties:
                       verified_active: { type: integer }
+  /api/notifications:
+    get:
+      summary: Own notifications, newest first (user/driver JWT; admin 403)
+      parameters:
+        - { name: limit, in: query, schema: { type: integer, default: 20 }, description: '1-50' }
+        - { name: before, in: query, schema: { type: string, format: date-time }, description: 'cursor: rows older than this' }
+      responses:
+        '200': { description: '{ ok, items[] }' }
+        '401': { description: missing/invalid token }
+        '403': { description: admin role not served here }
+  /api/notifications/unread-count:
+    get:
+      summary: Unread count for the bell badge (user/driver JWT)
+      responses:
+        '200': { description: '{ ok, unread }' }
+  /api/notifications/stream:
+    get:
+      summary: SSE live feed of own notifications + ?since= replay (user/driver JWT)
+      responses:
+        '200': { description: 'text/event-stream: notification events + : ping heartbeat' }
+  /api/notifications/{id}/read:
+    patch:
+      summary: Mark own notification read (cross-user -> 404)
+      responses:
+        '200': { description: '{ ok }' }
+  /api/notifications/read-all:
+    post:
+      summary: Mark all own notifications read
+      responses:
+        '200': { description: '{ ok, updated }' }
+  /api/notifications/device-tokens:
+    post:
+      summary: Register FCM/WebPush token (Phase 2; upsert per owner+token)
+      responses:
+        '201': { description: '{ ok }' }
+    delete:
+      summary: Unregister a device token
+      responses:
+        '200': { description: '{ ok }' }
   /api/admin/reports/summary:
     get:
       summary: Earnings report (admin; delivered trips + commission by delivered_at)

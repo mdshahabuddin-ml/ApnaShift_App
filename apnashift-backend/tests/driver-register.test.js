@@ -181,7 +181,7 @@ describeDb('driver partner registration (DB)', () => {
     const reg = await request(app).post('/api/drivers/register').send(payload);
     expect(reg.status).toBe(201);
 
-    const hash = await import('bcrypt').then((m) => m.default.hash('admin-pass-123', 4));
+    const hash = await import('bcryptjs').then((m) => m.default.hash('admin-pass-123', 4));
     const adminPhone = nextPhone();
     await client.query('INSERT INTO admins (name, phone, password_hash) VALUES ($1, $2, $3)', [
       'Staff',

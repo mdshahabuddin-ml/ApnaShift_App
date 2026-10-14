@@ -41,13 +41,13 @@ a{color:inherit}
 .logo-text{font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:1.55rem;line-height:1;letter-spacing:-.5px;color:var(--yellow)}
 .logo-text small{display:block;font-family:"Inter",sans-serif;font-weight:600;font-size:.58rem;letter-spacing:2.2px;color:#fff;margin-top:2px}
 .site-nav{display:flex;gap:10px;margin:0 auto;align-items:center;justify-content:center;flex-wrap:nowrap}
-.site-nav>a,.nav-drop summary{color:#e8eef7;text-decoration:none;font-weight:600;font-size:.92rem;padding:8px 22px;border-radius:10px;background:transparent;border:1.5px solid var(--yellow);display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;transition:.15s}
+.site-nav>a,.nav-drop summary{color:#e8eef7;text-decoration:none;font-weight:600;font-size:.92rem;padding:8px 22px;border-radius:10px;background:transparent;border:1.5px solid rgba(255,255,255,.28);display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;transition:.15s}
 .site-nav>a:hover,.nav-drop summary:hover{background:rgba(255,178,0,.14);border-color:var(--yellow);color:var(--yellow)}
 .site-nav>a.active{background:var(--yellow);border-color:var(--yellow);color:var(--navy);font-weight:800}
 .nav-drop{position:relative}
 .nav-drop summary{cursor:pointer;list-style:none}
 .nav-drop summary::-webkit-details-marker{display:none}
-.nav-drop summary.active{background:var(--yellow);border-color:var(--yellow);color:var(--navy);font-weight:800}
+.nav-drop summary.active{background:transparent;border-color:var(--yellow);color:#fff;font-weight:800}
 .drop-menu{display:flex;flex-direction:column;gap:2px}
 .drop-menu a{color:#fff;text-decoration:none;font-weight:600;font-size:.88rem;padding:10px 14px;border-radius:8px;white-space:nowrap}
 .drop-menu a:hover{background:var(--yellow);color:var(--navy)}
@@ -63,6 +63,8 @@ a{color:inherit}
 .lang-menu .tick{margin-left:auto;color:var(--yellow);font-weight:800;visibility:hidden}
 .lang-menu button.active .tick{visibility:visible}
 #navMenuBtn{display:none;background:transparent;border:1.5px solid var(--yellow);border-radius:10px;color:var(--yellow);font:inherit;font-weight:800;padding:8px 14px;cursor:pointer}
+.btn-getstarted{font-family:"Plus Jakarta Sans","Noto Sans Devanagari",sans-serif;font-weight:800;font-size:.92rem;background:var(--yellow);color:#0a1931;border:0;border-radius:10px;padding:10px 20px;text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center;gap:8px}
+.btn-getstarted:hover{background:#ffbe26}
 @media(max-width:900px){
   #navMenuBtn{display:block}
   .site-header-inner{flex-wrap:wrap;padding:10px 16px}
@@ -71,10 +73,11 @@ a{color:inherit}
 }
 
 /* ===== Layout ===== */
-.reg-wrap{max-width:1200px;margin:0 auto;padding:28px;display:grid;grid-template-columns:1.08fr .92fr;gap:24px;align-items:start}
+.reg-wrap{max-width:1440px;margin:0 auto;padding:14px;display:grid;grid-template-columns:1.12fr .88fr;gap:14px;align-items:start}
 
 /* ===== Left hero panel ===== */
-.hero-panel{background:linear-gradient(135deg,#e2ecfa 0%,#edf2fa 42%,#f8edd6 100%);border-radius:20px;padding:44px 40px 0;position:relative;overflow:hidden;display:flex;flex-direction:column;min-height:700px}
+.hero-panel{background:#fff;border-radius:20px;position:relative;overflow:hidden;display:flex;flex-direction:column;min-height:700px}
+.hero-top{display:grid;grid-template-columns:minmax(270px,37%) 1fr;gap:18px;padding:34px 30px 0}
 .hero-content{position:relative;z-index:2;max-width:420px}
 .badge{display:inline-flex;align-items:center;gap:8px;background:#d9e8fb;color:#0b1f3a;font-weight:700;font-size:.85rem;padding:8px 18px;border-radius:999px}
 .hero-panel h1{font-size:3rem;line-height:1.08;margin:20px 0 12px;letter-spacing:-1.5px;font-weight:800;color:#0a1931}
@@ -86,14 +89,22 @@ a{color:inherit}
 .feat-ic svg{width:26px;height:26px;display:block}
 .feat b{display:block;font-size:.95rem;color:#0a1931}
 .feat small{font-size:.83rem;color:#5b6b82}
-.hero-sun{position:absolute;top:10%;right:3%;width:250px;height:250px;border-radius:50%;background:radial-gradient(circle at 50% 50%,#ffedbe 0%,#f9dd9a 55%,rgba(249,221,154,0) 72%);z-index:0}
-.hero-city{position:absolute;top:0;right:0;width:74%;height:58%;object-fit:cover;object-position:center 20%;z-index:0;opacity:.95;-webkit-mask-image:linear-gradient(100deg,transparent 0,#000 32%);mask-image:linear-gradient(100deg,transparent 0,#000 32%)}
+/* ===== City collage (Bengaluru • Kolkata • Gurugram • Jaipur) ===== */
+.collage{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;align-content:start;position:relative;z-index:1}
+.cell{position:relative;border-radius:14px;overflow:hidden;min-height:148px;background:linear-gradient(180deg,#9ec7ee 0%,#cfd9e8 55%,#e8ddc4 100%);display:grid;place-items:center}
+.cell.s2{grid-column:span 2}
+.cell.s3{grid-column:span 3}
+.cell .lm{font-size:2.6rem;line-height:1;filter:drop-shadow(0 4px 6px rgba(0,0,0,.25))}
+.cell img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.cell .mk{position:absolute;top:6px;left:50%;transform:translateX(-50%);font-size:1.15rem;filter:drop-shadow(0 2px 3px rgba(0,0,0,.4))}
+.cell .tag{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.96);border-radius:8px;padding:3px 14px;font-weight:800;font-size:.8rem;color:#0a1931;box-shadow:0 2px 8px rgba(0,0,0,.25);white-space:nowrap}
+.hero-bottom{display:grid;grid-template-columns:250px 1fr;gap:10px;padding:10px 30px 0;margin-top:auto;align-items:end}
+.hero-driver{width:100%;height:250px;object-fit:cover;object-position:top center;border-radius:14px 14px 0 0;display:block;background:#dfe7f2}
+.hero-truck{width:100%;height:190px;object-fit:cover;object-position:center;border-radius:14px;display:block;background:#e8edf4}
 .pin{position:absolute;width:34px;z-index:2;filter:drop-shadow(0 3px 5px rgba(0,0,0,.25))}
 .pin.p1{top:44%;right:24%}
 .bird{position:absolute;z-index:1;opacity:.65}
 .bird.b1{top:26%;right:15%;width:36px}
-.hero-truck{position:absolute;right:-30px;bottom:0;width:60%;height:42%;object-fit:cover;object-position:left center;z-index:1;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 22%);mask-image:linear-gradient(90deg,transparent 0,#000 22%)}
-.hero-driver{position:absolute;left:24px;bottom:0;width:46%;height:56%;object-fit:cover;object-position:top center;z-index:2;-webkit-mask-image:radial-gradient(ellipse 90% 92% at 50% 100%,#000 62%,transparent 98%);mask-image:radial-gradient(ellipse 90% 92% at 50% 100%,#000 62%,transparent 98%)}
 
 /* ===== Right wizard card ===== */
 .reg-card{background:var(--card);border-radius:20px;padding:30px 28px;box-shadow:var(--shadow);width:100%}
@@ -146,7 +157,7 @@ a{color:inherit}
 .nav-row .spacer{flex:1}
 .btn{font-family:"Plus Jakarta Sans","Noto Sans Devanagari",sans-serif;font-weight:800;font-size:.95rem;padding:12px 26px;border-radius:12px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:.15s}
 .btn.next{background:var(--yellow);color:#0a1931;border:1.5px solid var(--navy);box-shadow:0 3px 0 var(--navy)}
-.btn.next::after{content:" \2192"}
+.btn.next::after{content:" \2192 \2192"}
 .btn.next:active{transform:translateY(2px);box-shadow:none}
 .btn.back{background:#fff;color:#0a1931;border:1.5px solid var(--line)}
 .btn.back::before{content:"\2190  "}
@@ -165,31 +176,37 @@ a{color:inherit}
 #success a{color:var(--yellow);font-weight:600}
 
 /* ===== Footer ===== */
-.site-footer{background:var(--navy);color:#dbe2f0;padding:26px 28px 30px;margin-top:28px}
-.site-foot-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.site-footer{background:var(--navy);color:#dbe2f0;padding:18px 28px;margin-top:14px}
+.site-foot-inner{max-width:1440px;margin:0 auto;display:flex;align-items:center;gap:22px;flex-wrap:wrap}
 .foot-brand{font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:1.5rem;line-height:1;color:#fff}
 .foot-brand .y{color:var(--yellow)}
 .foot-brand small{display:block;font-family:"Inter",sans-serif;font-weight:500;font-size:.62rem;letter-spacing:2.4px;color:#cfd8e6;margin-top:4px}
-.foot-mid{flex:1;text-align:center}
-.site-foot-links{display:flex;gap:26px;flex-wrap:wrap;justify-content:center}
-.site-foot-links a{color:#e8eef7;font-size:.92rem;font-weight:500;text-decoration:none}
+.foot-mid{flex:1;display:flex;align-items:center;flex-wrap:wrap}
+.site-foot-links{display:flex;gap:0;flex-wrap:wrap;align-items:center}
+.site-foot-links a{color:var(--yellow);font-size:.9rem;font-weight:600;text-decoration:none;padding:0 22px;white-space:nowrap}
+.site-foot-links a:first-child{padding-left:0}
+.site-foot-links a+a{border-left:1px solid #3a4f6b}
 .site-foot-links a:hover{text-decoration:underline}
-.foot-mail{margin-top:8px;font-size:.88rem}
-.foot-mail a{color:var(--yellow);font-weight:600;text-decoration:none}
+.foot-mail{margin-top:0;font-size:.88rem}
+.foot-mail a{color:var(--yellow);font-weight:600;text-decoration:none;padding-left:22px;border-left:1px solid #3a4f6b}
 .soc-row{display:flex;gap:12px}
-.soc{width:40px;height:40px;border-radius:10px;border:1.2px solid rgba(255,255,255,.3);display:grid;place-items:center;color:#fff}
+.soc{width:40px;height:40px;border-radius:50%;border:1.2px solid rgba(255,255,255,.3);display:grid;place-items:center;color:#fff}
 .soc svg{width:18px;height:18px;display:block}
+.foot-copy{border-left:1px solid #3a4f6b;padding-left:22px;color:#cfd8e6;font-size:.82rem;white-space:nowrap}
 
 @media(max-width:980px){
-  .reg-wrap{grid-template-columns:1fr;padding:18px}
-  .hero-panel{min-height:0;padding:32px 24px 0}
+  .reg-wrap{grid-template-columns:1fr;padding:12px}
+  .hero-panel{min-height:0}
+  .hero-top{grid-template-columns:1fr;padding:26px 20px 0}
   .hero-panel h1{font-size:2.2rem}
-  .hero-truck{position:relative;right:auto;width:calc(100% + 48px);height:220px;margin:24px -24px 0;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 18%);mask-image:linear-gradient(90deg,transparent 0,#000 18%)}
-  .hero-driver{position:relative;left:auto;width:70%;height:260px;margin:-180px 0 0 8px}
-  .hero-sun{width:170px;height:170px;top:8%}
+  .cell{min-height:120px}
+  .hero-bottom{grid-template-columns:1fr 1fr;padding:10px 20px 0}
+  .hero-driver{height:210px}
+  .hero-truck{height:150px}
   .reg-card{padding:24px 18px}
   .site-foot-inner{flex-direction:column;text-align:center}
-  .foot-mid{order:3;width:100%}
+  .foot-mid{order:3;width:100%;justify-content:center}
+  .foot-copy{border-left:0;padding-left:0;text-align:center;width:100%}
 }
 @media(max-width:900px){
   .site-header-inner{padding:10px 16px}
@@ -206,7 +223,7 @@ a{color:inherit}
       <span class="logo-text">ApnaShift<small>SHIFTING • TRANSPORT</small></span>
     </a>
     <nav class="site-nav" id="siteNav" aria-label="Main navigation">
-      <a href="index.html">Home</a>
+      <a href="index.html" class="active" aria-current="page">Home</a>
       <a href="booking.html">Book</a>
       <a href="user-auth.html">Login</a>
       <details class="nav-drop" open>
@@ -227,6 +244,7 @@ a{color:inherit}
           <button type="button" data-setlang="hi"><span>हिन्दी</span><span class="tick">✓</span></button>
         </div>
       </details>
+      <a class="btn-getstarted" href="user-auth.html">Get Started <span aria-hidden="true">→</span></a>
       <button id="navMenuBtn" aria-expanded="false" aria-controls="siteNav" aria-label="Open menu">☰</button>
     </div>
   </div>
@@ -236,6 +254,7 @@ a{color:inherit}
 <div class="reg-wrap">
   <!-- LEFT: hero -->
   <section class="hero-panel" aria-labelledby="heroTitle">
+   <div class="hero-top">
     <div class="hero-content">
       <span class="badge"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="#1a73e8"><path d="M12 2.5l7.5 2.8v5.4c0 4.6-3.2 7.9-7.5 10.3-4.3-2.4-7.5-5.7-7.5-10.3V5.3z"/><path d="M8.8 12.2l2.3 2.3 4.2-4.4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pg_driver_register_57">Flexible Earning • Verified Platform • Safe &amp; Secure</span></span>
       <h1 id="heroTitle"><span data-i18n="pg_driver_register_58">Become an</span><br><span class="accent" data-i18n="pg_driver_register_59">ApnaShift</span><br><span data-i18n="pg_driver_register_60">Driver Partner</span></h1>
@@ -243,22 +262,27 @@ a{color:inherit}
       <ul class="features">
         <li class="feat"><span class="feat-ic"><span class="rupee" style="font-size:1.6rem;font-weight:800;line-height:1">₹</span></span><div><b data-i18n="pg_driver_register_62">Flexible Earnings</b><small data-i18n="pg_driver_register_63">Earn on your own schedule</small></div></li>
         <li class="feat"><span class="feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l7.5 2.8v5.4c0 4.6-3.2 7.9-7.5 10.3-4.3-2.4-7.5-5.7-7.5-10.3V5.3z"/><path d="M8.8 12l2.3 2.3 4.2-4.2"/></svg></span><div><b data-i18n="pg_driver_register_64">Verified &amp; Secure</b><small data-i18n="pg_driver_register_65">Trusted platform for drivers</small></div></li>
-        <li class="feat"><span class="feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span><div><b data-i18n="pg_driver_register_66">Be Your Own Boss</b><small data-i18n="pg_driver_register_67">Drive when you want</small></div></li>
-        <li class="feat"><span class="feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3 2.9-4.5 5.5-4.5S13.9 16 14.5 19"/><circle cx="16.5" cy="9" r="2.6"/><path d="M15.5 14.6c2.3.2 4.2 1.6 4.9 4.4"/></svg></span><div><b data-i18n="pg_driver_register_68">Dedicated Support</b><small data-i18n="pg_driver_register_69">24/7 driver assistance</small></div></li>
+        <li class="feat"><span class="feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span><div><b data-i18n="pg_driver_register_66">Steady Opportunities</b><small data-i18n="pg_driver_register_67">Regular bookings across India</small></div></li>
       </ul>
     </div>
-    <div class="hero-sun" aria-hidden="true"></div>
-    <img class="hero-city" src="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?q=80&w=1000&auto=format&fit=crop" alt="" aria-hidden="true" loading="lazy" onerror="this.style.display='none'">
-    <svg class="pin p1" viewBox="0 0 24 24" aria-hidden="true" fill="#f5a301"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
-    <svg class="bird b1" viewBox="0 0 40 16" aria-hidden="true" fill="none" stroke="#5b6b82" stroke-width="2.2" stroke-linecap="round"><path d="M3 13 Q11 4 19 12 Q27 4 37 10"/></svg>
-    <img class="hero-truck" src="https://images.unsplash.com/photo-1519003722824-194d4455a60c?q=80&w=1000&auto=format&fit=crop" alt="" aria-hidden="true" loading="eager" onerror="this.style.display='none'">
-    <img class="hero-driver" src="https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=600&auto=format&fit=crop" alt="" aria-hidden="true" loading="eager" onerror="this.style.display='none'">
+    <div class="collage" aria-label="Indian cities served by ApnaShift">
+      <div class="cell s2"><span class="lm" aria-hidden="true">🏛️</span><img src="https://images.unsplash.com/photo-1596176530529-78163a4f936c?q=80&w=600&auto=format&fit=crop" alt="" loading="lazy" onerror="this.style.display='none'"><span class="mk" aria-hidden="true">📍</span><span class="tag">Bengaluru</span></div>
+      <div class="cell s2"><span class="lm" aria-hidden="true">🏰</span><img src="https://images.unsplash.com/photo-1600112356915-089abb8fc71a?q=80&w=600&auto=format&fit=crop" alt="" loading="lazy" onerror="this.style.display='none'"><span class="mk" aria-hidden="true">📍</span><span class="tag">Mysuru</span></div>
+      <div class="cell s2"><span class="lm" aria-hidden="true">🌉</span><img src="https://images.unsplash.com/photo-1536421469767-80559bb6f5e1?q=80&w=600&auto=format&fit=crop" alt="" loading="lazy" onerror="this.style.display='none'"><span class="mk" aria-hidden="true">📍</span><span class="tag">Kolkata</span></div>
+      <div class="cell s3"><span class="lm" aria-hidden="true">🏙️</span><img src="https://images.unsplash.com/photo-1567443024551-f3e3cc2be870?q=80&w=800&auto=format&fit=crop" alt="" loading="lazy" onerror="this.style.display='none'"><span class="mk" aria-hidden="true">📍</span><span class="tag">Gurugram</span></div>
+      <div class="cell s3"><span class="lm" aria-hidden="true">🕌</span><img src="https://images.unsplash.com/photo-1599661046289-e31897846e41?q=80&w=800&auto=format&fit=crop" alt="" loading="lazy" onerror="this.style.display='none'"><span class="mk" aria-hidden="true">📍</span><span class="tag">Jaipur</span></div>
+    </div>
+   </div>
+   <div class="hero-bottom">
+    <img class="hero-driver" src="https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=600&auto=format&fit=crop" alt="ApnaShift driver partner" loading="eager" onerror="this.style.display='none'">
+    <img class="hero-truck" src="https://images.unsplash.com/photo-1519003722824-194d4455a60c?q=80&w=1000&auto=format&fit=crop" alt="ApnaShift delivery trucks" loading="eager" onerror="this.style.display='none'">
+   </div>
   </section>
 
   <!-- RIGHT: wizard card -->
   <section class="reg-card" id="wizard" aria-labelledby="pageTitle">
     <div class="title-row">
-      <span class="title-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1-3.8 3.8-5.5 7-5.5s6 1.7 7 5.5"/></svg></span>
+      <span class="title-ic" aria-hidden="true"><span style="font-size:1.7rem;line-height:1">🚚</span></span>
       <div>
         <h1 id="pageTitle" data-i18n="pg_driver_register_01">Become an ApnaShift Driver Partner</h1>
         <p class="card-sub" data-i18n="pg_driver_register_02">Join ApnaShift and grow your earning opportunities with flexible vehicle and logistics services.</p>
@@ -394,6 +418,7 @@ a{color:inherit}
       <span class="soc" role="img" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.9 8.6H3.6V21h3.3zM5.2 3.5a1.9 1.9 0 1 0 0 3.9 1.9 1.9 0 0 0 0-3.9zM12 13.4c0-1.1.9-2 2.1-2 1.1 0 1.9.8 1.9 2V21h3.3v-4.1c0-2.9-1.6-4.3-3.7-4.3-1.7 0-2.6 1-3 1.7V8.6H9.3c0 .9 0 12.4 0 12.4H12z"/></svg></span>
       <span class="soc" role="img" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2.5" y="6" width="19" height="12" rx="4"/><path d="M10.5 9.8v4.4L14.5 12z" fill="currentColor" stroke="none"/></svg></span>
     </div>
+    <div class="foot-copy">© 2026 ApnaShift. All rights reserved.</div>
   </div>
 </footer>
 
@@ -590,9 +615,10 @@ a{color:inherit}
 })();
 </script>
 
-<script>window.PAGE_I18N={en:{"page_title":"Become an ApnaShift Driver Partner | ApnaShift","meta_desc":"Join ApnaShift and grow your earning opportunities with flexible vehicle and logistics services.","pg_driver_register_01":"Become an ApnaShift Driver Partner","pg_driver_register_02":"Join ApnaShift and grow your earning opportunities with flexible vehicle and logistics services.","pg_driver_register_03":"Step 1 of 5 — Personal","pg_driver_register_04":"Step 1 — Personal Details","pg_driver_register_05":"Full Name *","pg_driver_register_06":"Mobile Number *","pg_driver_register_07":"Email *","pg_driver_register_08":"City *","pg_driver_register_09":"Password *","pg_driver_register_10":"UPI ID (you can add this now or later)","pg_driver_register_11":"A password is required for login — use at least 8 characters. You can also add your UPI ID later from the dashboard.","pg_driver_register_12":"Step 2 — Vehicle Details","pg_driver_register_13":"Vehicle Type *","pg_driver_register_14":"Pickup Truck","pg_driver_register_15":"Mini Truck","pg_driver_register_16":"Mini Tractor","pg_driver_register_17":"Vehicle Registration Number *","pg_driver_register_18":"Vehicle Model","pg_driver_register_19":"Vehicle Year","pg_driver_register_20":"Vehicle Capacity (kg)","pg_driver_register_21":"Step 3 — Driver Details","pg_driver_register_22":"Driving License Number *","pg_driver_register_23":"License Expiry Date *","pg_driver_register_24":"Applications with an expired license will be rejected.","pg_driver_register_25":"Operating City *","pg_driver_register_26":"Step 4 — Documents","pg_driver_register_27":"Photo upload is not supported yet — enter the number and expiry date; the owner will request documents later.","pg_driver_register_28":"Vehicle RC Number","pg_driver_register_29":"Insurance Expiry Date","pg_driver_register_30":"Step 5 — Review & Submit","pg_driver_register_31":"Review everything, then give consent and press Submit.","pg_driver_register_32":"I have entered the correct details. *","pg_driver_register_33":"Terms","pg_driver_register_34":"Privacy Policy","pg_driver_register_35":"← Previous","pg_driver_register_36":"Next →","pg_driver_register_37":"Submit Application","pg_driver_register_38":"Application Submitted Successfully","pg_driver_register_39":"log in as a driver","pg_driver_register_40":"Home","pg_driver_register_41":"Help","pg_driver_register_42":"Privacy Policy","pg_driver_register_43":"Terms & Conditions","pg_driver_register_44":"Example: Raju Yadav","pg_driver_register_45":"98765 43210","pg_driver_register_46":"raju@example.com","pg_driver_register_47":"Example: Indore","pg_driver_register_48":"Min. 8 characters","pg_driver_register_49":"yourname@upi","pg_driver_register_50":"MP09AB1234","pg_driver_register_51":"Tata Ace / Bolero Pickup","pg_driver_register_52":"2021","pg_driver_register_53":"750","pg_driver_register_54":"MP09 20190012345","pg_driver_register_55":"Example: Indore","pg_driver_register_56":"RC number","pg_driver_register_57":"Flexible Earning • Verified Platform • Safe & Secure","pg_driver_register_58":"Become an","pg_driver_register_59":"ApnaShift","pg_driver_register_60":"Driver Partner","pg_driver_register_61":"Join ApnaShift and grow your earning opportunities with flexible vehicle and logistics services.","pg_driver_register_62":"Flexible Earnings","pg_driver_register_63":"Earn on your own schedule","pg_driver_register_64":"Verified & Secure","pg_driver_register_65":"Trusted platform for drivers","pg_driver_register_66":"Be Your Own Boss","pg_driver_register_67":"Drive when you want","pg_driver_register_68":"Dedicated Support","pg_driver_register_69":"24/7 driver assistance","pg_driver_register_70":"Personal","pg_driver_register_71":"Vehicle","pg_driver_register_72":"Driver","pg_driver_register_73":"Documents","pg_driver_register_74":"Review"},hi:{"page_title":"ApnaShift ड्राइवर पार्टनर बनें | ApnaShift","meta_desc":"ApnaShift से जुड़ें और लचीली गाड़ी व लॉजिस्टिक्स सेवाओं से कमाई बढ़ाएं।","pg_driver_register_01":"ApnaShift ड्राइवर पार्टनर बनें","pg_driver_register_02":"ApnaShift से जुड़ें और लचीली गाड़ी व लॉजिस्टिक्स सेवाओं से कमाई बढ़ाएं।","pg_driver_register_03":"5 में से चरण 1 — व्यक्तिगत जानकारी","pg_driver_register_04":"चरण 1 — व्यक्तिगत जानकारी","pg_driver_register_05":"पूरा नाम *","pg_driver_register_06":"मोबाइल नंबर *","pg_driver_register_07":"ईमेल *","pg_driver_register_08":"शहर *","pg_driver_register_09":"पासवर्ड *","pg_driver_register_10":"UPI ID (अभी या बाद में जोड़ सकते हैं)","pg_driver_register_11":"लॉगिन के लिए पासवर्ड ज़रूरी है — कम से कम 8 अक्षर रखें। UPI ID बाद में डैशबोर्ड से भी जोड़ सकते हैं।","pg_driver_register_12":"चरण 2 — गाड़ी की जानकारी","pg_driver_register_13":"गाड़ी का प्रकार *","pg_driver_register_14":"पिकअप ट्रक","pg_driver_register_15":"मिनी ट्रक","pg_driver_register_16":"मिनी ट्रैक्टर","pg_driver_register_17":"गाड़ी का रजिस्ट्रेशन नंबर *","pg_driver_register_18":"गाड़ी का मॉडल","pg_driver_register_19":"गाड़ी का साल","pg_driver_register_20":"गाड़ी की क्षमता (kg)","pg_driver_register_21":"चरण 3 — ड्राइवर की जानकारी","pg_driver_register_22":"ड्राइविंग लाइसेंस नंबर *","pg_driver_register_23":"लाइसेंस समाप्ति तिथि *","pg_driver_register_24":"समाप्त लाइसेंस वाले आवेदन अस्वीकार कर दिए जाएंगे।","pg_driver_register_25":"कार्य शहर *","pg_driver_register_26":"चरण 4 — दस्तावेज़","pg_driver_register_27":"फ़ोटो अपलोड अभी उपलब्ध नहीं है — नंबर और समाप्ति तिथि दर्ज करें; मालिक बाद में दस्तावेज़ मांगेंगे।","pg_driver_register_28":"गाड़ी का RC नंबर","pg_driver_register_29":"बीमा समाप्ति तिथि","pg_driver_register_30":"चरण 5 — जांचें व सबमिट करें","pg_driver_register_31":"सब कुछ जांचें, फिर सहमति दें और सबमिट दबाएं।","pg_driver_register_32":"मैंने सही जानकारी दर्ज की है। *","pg_driver_register_33":"नियम","pg_driver_register_34":"प्राइवेसी पॉलिसी","pg_driver_register_35":"← पिछला","pg_driver_register_36":"आगे →","pg_driver_register_37":"आवेदन सबमिट करें","pg_driver_register_38":"आवेदन सफलतापूर्वक सबमिट हुआ","pg_driver_register_39":"ड्राइवर के रूप में लॉग इन करें","pg_driver_register_40":"होम","pg_driver_register_41":"सहायता","pg_driver_register_42":"प्राइवेसी पॉलिसी","pg_driver_register_43":"नियम व शर्तें","pg_driver_register_44":"उदाहरण: राजू यादव","pg_driver_register_45":"98765 43210","pg_driver_register_46":"raju@example.com","pg_driver_register_47":"उदाहरण: इंदौर","pg_driver_register_48":"कम से कम 8 अक्षर","pg_driver_register_49":"yourname@upi","pg_driver_register_50":"MP09AB1234","pg_driver_register_51":"Tata Ace / Bolero Pickup","pg_driver_register_52":"2021","pg_driver_register_53":"750","pg_driver_register_54":"MP09 20190012345","pg_driver_register_55":"उदाहरण: इंदौर","pg_driver_register_56":"RC नंबर","pg_driver_register_57":"लचीली कमाई • वेरिफाइड प्लेटफॉर्म • सुरक्षित","pg_driver_register_58":"ApnaShift","pg_driver_register_59":"ड्राइवर पार्टनर","pg_driver_register_60":"बनें","pg_driver_register_61":"एपनाशिफ्ट से जुड़ें और लचीले वाहन और लॉजिस्टिक्स सेवाओं के साथ कमाई के अवसर बढ़ाएं।","pg_driver_register_62":"लचीली कमाई","pg_driver_register_63":"अपने शेड्यूल पर कमाएं","pg_driver_register_64":"वेरिफाइड और सुरक्षित","pg_driver_register_65":"ड्राइवरों के लिए भरोसेमंद प्लेटफॉर्म","pg_driver_register_66":"खुद के बॉस बनें","pg_driver_register_67":"जब चाहें ड्राइव करें","pg_driver_register_68":"समर्पित सहायता","pg_driver_register_69":"24/7 ड्राइवर सहायता","pg_driver_register_70":"व्यक्तिगत","pg_driver_register_71":"वाहन","pg_driver_register_72":"ड्राइवर","pg_driver_register_73":"दस्तावेज़","pg_driver_register_74":"समीक्षा"}};</script>
+<script>window.PAGE_I18N={en:{"page_title":"Become an ApnaShift Driver Partner | ApnaShift","meta_desc":"Join ApnaShift and grow your earning opportunities with flexible vehicle and logistics services.","pg_driver_register_01":"Become an ApnaShift Driver Partner","pg_driver_register_02":"Join ApnaShift and grow your earning opportunities with flexible vehicle and logistics services.","pg_driver_register_03":"Step 1 of 5 — Personal","pg_driver_register_04":"Step 1 — Personal Details","pg_driver_register_05":"Full Name *","pg_driver_register_06":"Mobile Number *","pg_driver_register_07":"Email *","pg_driver_register_08":"City *","pg_driver_register_09":"Password *","pg_driver_register_10":"UPI ID (you can add this now or later)","pg_driver_register_11":"A password is required for login — use at least 8 characters. You can also add your UPI ID later from the dashboard.","pg_driver_register_12":"Step 2 — Vehicle Details","pg_driver_register_13":"Vehicle Type *","pg_driver_register_14":"Pickup Truck","pg_driver_register_15":"Mini Truck","pg_driver_register_16":"Mini Tractor","pg_driver_register_17":"Vehicle Registration Number *","pg_driver_register_18":"Vehicle Model","pg_driver_register_19":"Vehicle Year","pg_driver_register_20":"Vehicle Capacity (kg)","pg_driver_register_21":"Step 3 — Driver Details","pg_driver_register_22":"Driving License Number *","pg_driver_register_23":"License Expiry Date *","pg_driver_register_24":"Applications with an expired license will be rejected.","pg_driver_register_25":"Operating City *","pg_driver_register_26":"Step 4 — Documents","pg_driver_register_27":"Photo upload is not supported yet — enter the number and expiry date; the owner will request documents later.","pg_driver_register_28":"Vehicle RC Number","pg_driver_register_29":"Insurance Expiry Date","pg_driver_register_30":"Step 5 — Review & Submit","pg_driver_register_31":"Review everything, then give consent and press Submit.","pg_driver_register_32":"I have entered the correct details. *","pg_driver_register_33":"Terms","pg_driver_register_34":"Privacy Policy","pg_driver_register_35":"← Previous","pg_driver_register_36":"Next →","pg_driver_register_37":"Submit Application","pg_driver_register_38":"Application Submitted Successfully","pg_driver_register_39":"log in as a driver","pg_driver_register_40":"Home","pg_driver_register_41":"Help","pg_driver_register_42":"Privacy Policy","pg_driver_register_43":"Terms & Conditions","pg_driver_register_44":"Example: Raju Yadav","pg_driver_register_45":"98765 43210","pg_driver_register_46":"raju@example.com","pg_driver_register_47":"Example: Indore","pg_driver_register_48":"Min. 8 characters","pg_driver_register_49":"yourname@upi","pg_driver_register_50":"MP09AB1234","pg_driver_register_51":"Tata Ace / Bolero Pickup","pg_driver_register_52":"2021","pg_driver_register_53":"750","pg_driver_register_54":"MP09 20190012345","pg_driver_register_55":"Example: Indore","pg_driver_register_56":"RC number","pg_driver_register_57":"Flexible Earning • Verified Platform • Safe & Secure","pg_driver_register_58":"Become an","pg_driver_register_59":"ApnaShift","pg_driver_register_60":"Driver Partner","pg_driver_register_61":"Join ApnaShift and grow your earning opportunities with flexible vehicle and logistics services.","pg_driver_register_62":"Flexible Earnings","pg_driver_register_63":"Earn on your own schedule","pg_driver_register_64":"Verified & Secure","pg_driver_register_65":"Trusted platform for drivers","pg_driver_register_66":"Steady Opportunities","pg_driver_register_67":"Regular bookings across India","pg_driver_register_68":"Dedicated Support","pg_driver_register_69":"24/7 driver assistance","pg_driver_register_70":"Personal","pg_driver_register_71":"Vehicle","pg_driver_register_72":"Driver","pg_driver_register_73":"Documents","pg_driver_register_74":"Review"},hi:{"page_title":"ApnaShift ड्राइवर पार्टनर बनें | ApnaShift","meta_desc":"ApnaShift से जुड़ें और लचीली गाड़ी व लॉजिस्टिक्स सेवाओं से कमाई बढ़ाएं।","pg_driver_register_01":"ApnaShift ड्राइवर पार्टनर बनें","pg_driver_register_02":"ApnaShift से जुड़ें और लचीली गाड़ी व लॉजिस्टिक्स सेवाओं से कमाई बढ़ाएं।","pg_driver_register_03":"5 में से चरण 1 — व्यक्तिगत जानकारी","pg_driver_register_04":"चरण 1 — व्यक्तिगत जानकारी","pg_driver_register_05":"पूरा नाम *","pg_driver_register_06":"मोबाइल नंबर *","pg_driver_register_07":"ईमेल *","pg_driver_register_08":"शहर *","pg_driver_register_09":"पासवर्ड *","pg_driver_register_10":"UPI ID (अभी या बाद में जोड़ सकते हैं)","pg_driver_register_11":"लॉगिन के लिए पासवर्ड ज़रूरी है — कम से कम 8 अक्षर रखें। UPI ID बाद में डैशबोर्ड से भी जोड़ सकते हैं।","pg_driver_register_12":"चरण 2 — गाड़ी की जानकारी","pg_driver_register_13":"गाड़ी का प्रकार *","pg_driver_register_14":"पिकअप ट्रक","pg_driver_register_15":"मिनी ट्रक","pg_driver_register_16":"मिनी ट्रैक्टर","pg_driver_register_17":"गाड़ी का रजिस्ट्रेशन नंबर *","pg_driver_register_18":"गाड़ी का मॉडल","pg_driver_register_19":"गाड़ी का साल","pg_driver_register_20":"गाड़ी की क्षमता (kg)","pg_driver_register_21":"चरण 3 — ड्राइवर की जानकारी","pg_driver_register_22":"ड्राइविंग लाइसेंस नंबर *","pg_driver_register_23":"लाइसेंस समाप्ति तिथि *","pg_driver_register_24":"समाप्त लाइसेंस वाले आवेदन अस्वीकार कर दिए जाएंगे।","pg_driver_register_25":"कार्य शहर *","pg_driver_register_26":"चरण 4 — दस्तावेज़","pg_driver_register_27":"फ़ोटो अपलोड अभी उपलब्ध नहीं है — नंबर और समाप्ति तिथि दर्ज करें; मालिक बाद में दस्तावेज़ मांगेंगे।","pg_driver_register_28":"गाड़ी का RC नंबर","pg_driver_register_29":"बीमा समाप्ति तिथि","pg_driver_register_30":"चरण 5 — जांचें व सबमिट करें","pg_driver_register_31":"सब कुछ जांचें, फिर सहमति दें और सबमिट दबाएं।","pg_driver_register_32":"मैंने सही जानकारी दर्ज की है। *","pg_driver_register_33":"नियम","pg_driver_register_34":"प्राइवेसी पॉलिसी","pg_driver_register_35":"← पिछला","pg_driver_register_36":"आगे →","pg_driver_register_37":"आवेदन सबमिट करें","pg_driver_register_38":"आवेदन सफलतापूर्वक सबमिट हुआ","pg_driver_register_39":"ड्राइवर के रूप में लॉग इन करें","pg_driver_register_40":"होम","pg_driver_register_41":"सहायता","pg_driver_register_42":"प्राइवेसी पॉलिसी","pg_driver_register_43":"नियम व शर्तें","pg_driver_register_44":"उदाहरण: राजू यादव","pg_driver_register_45":"98765 43210","pg_driver_register_46":"raju@example.com","pg_driver_register_47":"उदाहरण: इंदौर","pg_driver_register_48":"कम से कम 8 अक्षर","pg_driver_register_49":"yourname@upi","pg_driver_register_50":"MP09AB1234","pg_driver_register_51":"Tata Ace / Bolero Pickup","pg_driver_register_52":"2021","pg_driver_register_53":"750","pg_driver_register_54":"MP09 20190012345","pg_driver_register_55":"उदाहरण: इंदौर","pg_driver_register_56":"RC नंबर","pg_driver_register_57":"लचीली कमाई • वेरिफाइड प्लेटफॉर्म • सुरक्षित","pg_driver_register_58":"ApnaShift","pg_driver_register_59":"ड्राइवर पार्टनर","pg_driver_register_60":"बनें","pg_driver_register_61":"एपनाशिफ्ट से जुड़ें और लचीले वाहन और लॉजिस्टिक्स सेवाओं के साथ कमाई के अवसर बढ़ाएं।","pg_driver_register_62":"लचीली कमाई","pg_driver_register_63":"अपने शेड्यूल पर कमाएं","pg_driver_register_64":"वेरिफाइड और सुरक्षित","pg_driver_register_65":"ड्राइवरों के लिए भरोसेमंद प्लेटफॉर्म","pg_driver_register_66":"स्थिर अवसर","pg_driver_register_67":"पूरे भारत में नियमित बुकिंग","pg_driver_register_68":"समर्पित सहायता","pg_driver_register_69":"24/7 ड्राइवर सहायता","pg_driver_register_70":"व्यक्तिगत","pg_driver_register_71":"वाहन","pg_driver_register_72":"ड्राइवर","pg_driver_register_73":"दस्तावेज़","pg_driver_register_74":"समीक्षा"}};</script>
 <script>(function(){"use strict";var label=document.getElementById("stepLabel");var names=document.querySelectorAll(".step-names span");function sync(){var t=label?label.textContent:"";var n=1;var mm=/Step (\d)/.exec(t);if(mm){n=+mm[1];}for(var i=0;i<names.length;i++){names[i].classList.toggle("on",+names[i].getAttribute("data-stepname")===n);}}if(label&&"MutationObserver" in window){new MutationObserver(sync).observe(label,{childList:true,characterData:true,subtree:true});}sync();var pass=document.getElementById("f-pass"),tog=document.getElementById("passToggle");if(pass&&tog){tog.addEventListener("click",function(){var show=pass.type==="password";pass.type=show?"text":"password";tog.setAttribute("aria-label",show?"Hide password":"Show password");document.getElementById("eyeOn").style.display=show?"":"none";document.getElementById("eyeOff").style.display=show?"none":"";pass.focus();});}})();</script>
 <script src="lang.js"></script>
 <script src="theme.js"></script>
+<script src="text-size.js?v=2"></script>
 </body>
 </html>

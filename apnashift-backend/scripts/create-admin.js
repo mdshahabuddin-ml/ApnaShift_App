@@ -2,7 +2,7 @@
 // Usage:
 //   node scripts/create-admin.js "Owner" 9876543210 "StrongPass123"
 //   npm run admin:create -- "Owner" 9876543210 "StrongPass123"
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import pg from 'pg';
 import 'dotenv/config';
 

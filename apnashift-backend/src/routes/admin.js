@@ -1,7 +1,7 @@
 // Admin login (admins table). No register endpoint —
 // admin staff is created via manual insert (bcrypt password_hash).
 import { Router } from 'express';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { query } from '../db.js';
 import { signToken } from '../utils/jwt.js';
 import { adminLoginSchema, parseBody, VEHICLE_TO_DB, VEHICLE_TO_API } from '../validation/auth.js';
@@ -43,6 +43,7 @@ import {
 import { pool } from '../db.js';
 import { applyAdjustmentToPeriods } from '../services/settlements.js';
 import { logAuditSafe, logAuditTx } from '../services/audit.js';
+import { queueNotification } from '../services/notifyCenter.js';
 import { validateIdParam } from '../utils/validate.js';
 import { toPublicBooking } from './bookings.js';
 
@@ -55,7 +56,7 @@ adminRoutes.post('/login', authLimiter, async (req, res, next) => {
   try {
     const { phone, password } = parseBody(adminLoginSchema, req.body);
 
-    const found = await query('SELECT id, name, phone, password_hash FROM admins WHERE phone = $1', [
+    const found = await query('SELECT id, name, phone, password_hash, role FROM admins WHERE phone = $1', [
       phone,
     ]);
     if (found.rowCount === 0) {
@@ -68,8 +69,11 @@ adminRoutes.post('/login', authLimiter, async (req, res, next) => {
     }
 
     const row = found.rows[0];
-    const user = { id: row.id, name: row.name, phone: row.phone, role: 'admin' };
-    const token = signToken({ id: user.id, role: 'admin' });
+    // Role comes from the DB tier (022: 'admin' | 'super_admin') — never
+    // from the request body. Old rows default to 'admin'.
+    const role = row.role === 'super_admin' ? 'super_admin' : 'admin';
+    const user = { id: row.id, name: row.name, phone: row.phone, role };
+    const token = signToken({ id: user.id, role });
     res.json({ ok: true, token, user });
   } catch (err) {
     next(err);
@@ -479,6 +483,19 @@ adminRoutes.patch('/bookings/:id/assign', validateIdParam, async (req, res, next
     }
     // Best-effort: assign succeeds even if audit fails.
     await logAuditSafe(req.user.id, 'booking.assign', 'booking', req.params.id, { driver_id });
+    // Customer + driver bells (best-effort, never blocks assign).
+    await queueNotification({
+      role: 'user',
+      recipientId: updated.rows[0].user_id,
+      bookingId: updated.rows[0].id,
+      type: 'booking_accepted',
+    });
+    await queueNotification({
+      role: 'driver',
+      recipientId: driver_id,
+      bookingId: updated.rows[0].id,
+      type: 'assignment_received',
+    });
     publishAdminBooking('booking_status', {
       booking_id: req.params.id,
       status: 'accepted',

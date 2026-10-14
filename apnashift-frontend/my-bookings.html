@@ -242,9 +242,11 @@
       '<p class="meta" data-cancel-note="' + esc(b.id) + '"' +
       (b.status === "cancelled" && b.cancellation && b.cancellation.reason ? "" : ' hidden') + ">" +
        (b.status === "cancelled" ? "Cancellation reason: " + esc(CANCEL_LABEL[b.cancellation && b.cancellation.reason] || (b.cancellation && b.cancellation.reason) || "–") : "") + "</p>";
-    if(cancellable(b)){
+    var trackable = b.driver_id && (b.status === "accepted" || b.status === "arrived" || b.status === "in_transit");
+    if(cancellable(b) || trackable){
       html += '<div class="btnrow" data-actions="' + esc(b.id) + '">' +
-        '<button type="button" class="btn danger small" data-cancel="' + esc(b.id) + '">Cancel Booking</button></div>';
+        (trackable ? '<a class="btn ghost small" href="tracking.html?booking=' + esc(b.id) + '">Track live</a>' : '') +
+        (cancellable(b) ? '<button type="button" class="btn danger small" data-cancel="' + esc(b.id) + '">Cancel Booking</button>' : '') + '</div>';
     }
     return html + "</article>";
   }

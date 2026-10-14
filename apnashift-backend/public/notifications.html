@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>try{var __t=localStorage.getItem("apnashift-theme")||"system";var __d=__t;if(__t==="system"){__d=(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";}document.documentElement.setAttribute("data-theme",__d);document.documentElement.style.colorScheme=__d;}catch(__e){}try{var __p=parseInt(localStorage.getItem("apnashift-text-px"),10);if(isNaN(__p))__p=0;__p=Math.max(-4,Math.min(8,__p));document.documentElement.setAttribute("data-textpx",__p);}catch(__e2){}</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notifications | ApnaShift</title>
+<meta name="description" content="Your ApnaShift trip updates — booking confirmations, driver assignment and trip status.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0a2340;--navy-2:#102e57;--ink:#0b1f3a;--yellow:#ffb200;
+  --blue:#1a73e8;--muted:#5b6b82;--line:#e6ebf2;--bg:#f4f6fa;
+  --card:#ffffff;--radius:14px;--shadow:0 10px 30px rgba(10,35,64,.10);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Inter","Noto Sans Devanagari",system-ui,sans-serif;line-height:1.5}
+h1{font-family:"Plus Jakarta Sans","Noto Sans Devanagari",sans-serif}
+:focus-visible{outline:3px solid var(--navy);outline-offset:2px;border-radius:8px}
+/* header (same system as homepage) */
+.site-header{background:var(--navy);color:#fff;position:sticky;top:0;z-index:60}
+.site-header-inner{max-width:1360px;margin:0 auto;display:flex;align-items:center;gap:18px;padding:12px 28px}
+.site-brand{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none}
+.logo-text{font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:1.4rem;line-height:1}
+.logo-text .w{color:#fff}.logo-text .y{color:var(--yellow)}
+.logo-text small{display:block;font-family:"Inter",sans-serif;font-weight:600;font-size:.55rem;letter-spacing:2.2px;color:#fff;margin-top:2px}
+.site-nav{display:flex;gap:10px;margin:0 auto}
+.site-nav>a{color:#e8eef7;text-decoration:none;font-weight:600;font-size:.9rem;padding:8px 22px;border-radius:10px;background:rgba(255,255,255,.03);border:1.2px solid rgba(255,255,255,.28)}
+.site-nav>a.active{background:var(--yellow);border-color:var(--yellow);color:#111}
+.header-actions{display:flex;gap:12px;align-items:center;margin-left:auto}
+.ts-group{display:inline-flex;align-items:center;border:1.2px solid rgba(255,255,255,.28);border-radius:10px;overflow:hidden;background:rgba(255,255,255,.03)}
+.ts-group button{border:0;background:transparent;font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:.8rem;padding:9px 10px;cursor:pointer;min-width:36px;color:#fff}
+.ts-group button+button{border-left:1px solid rgba(255,255,255,.18)}
+.ts-dec{color:#9fc0e4}.ts-reset{color:#34d17b}.ts-inc{color:#fff}
+.ts-status{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.lang-drop{position:relative}
+.lang-drop summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;color:#fff;font-weight:600;font-size:.9rem;padding:8px 16px;border-radius:10px;background:rgba(255,255,255,.03);border:1.2px solid rgba(255,255,255,.28)}
+.lang-drop summary::-webkit-details-marker{display:none}
+.lang-menu{position:absolute;top:calc(100% + 8px);right:0;background:var(--navy-2);border:1px solid #24406b;border-radius:12px;padding:6px;min-width:180px;z-index:70}
+.lang-menu button{display:flex;width:100%;background:transparent;border:0;color:#fff;font:inherit;font-weight:600;font-size:.88rem;padding:10px 12px;border-radius:8px;cursor:pointer}
+.lang-menu .tick{margin-left:auto;color:var(--yellow);visibility:hidden}
+.lang-menu button.active .tick{visibility:visible}
+main{max-width:760px;margin:0 auto;padding:28px 18px 48px}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.page-head h1{margin:0;font-size:1.9rem;letter-spacing:-.5px}
+.page-head p{margin:4px 0 0;color:var(--muted);font-size:.92rem}
+.chiprow{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+.chip{border:1.5px solid var(--navy);background:#fff;color:var(--navy);border-radius:999px;font-weight:800;font-size:.85rem;padding:8px 16px;cursor:pointer;font-family:inherit}
+.chip.active{background:var(--navy);color:var(--yellow)}
+.chip.plain{border-color:#c9d0de;color:var(--ink)}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 18px}
+.btn{font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:.88rem;padding:10px 18px;border-radius:10px;border:1.6px solid var(--navy);cursor:pointer;background:var(--yellow);color:var(--navy);box-shadow:0 2px 0 var(--navy)}
+.btn.ghost{background:#fff}
+.btn[disabled]{opacity:.55;cursor:wait}
+.nlist{display:grid;gap:12px}
+.ncard{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--blue);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);display:block;color:inherit;text-decoration:none}
+.ncard.read{border-left-color:#c3ccd9;opacity:.82}
+.ncard h3{margin:0 0 4px;font-size:.98rem;display:flex;gap:9px;align-items:center}
+.ndot{width:9px;height:9px;flex:0 0 9px;border-radius:50%;background:var(--blue)}
+.ncard.read .ndot{background:#c3ccd9}
+.ncard p{margin:0 0 6px;font-size:.86rem;color:var(--muted)}
+.ncard .meta{font-size:.74rem;color:#8a96a8}
+.ncard .go{color:var(--blue);font-weight:800;font-size:.82rem}
+.state{padding:26px 16px;text-align:center;color:var(--muted);font-size:.92rem;background:var(--card);border:1.5px dashed #c9d0de;border-radius:var(--radius)}
+.state a{color:var(--blue);font-weight:700}
+.more{text-align:center;margin-top:16px}
+html[data-theme="dark"] body{background:#0b1526;color:#e9eff8}
+html[data-theme="dark"] .ncard{background:#111f36;border-color:#26395e}
+html[data-theme="dark"] .ncard p{color:#9db0c9}
+html[data-theme="dark"] .ncard .meta{color:#7d8fa8}
+html[data-theme="dark"] .state{background:#111f36;border-color:#26395e;color:#9db0c9}
+html[data-theme="dark"] .chip.plain{background:#14263f;color:#e9eff8;border-color:#26395e}
+html[data-theme="dark"] .page-head p{color:#9db0c9}
+@media(max-width:640px){.site-header-inner{padding:10px 14px}.page-head h1{font-size:1.5rem}main{padding:20px 14px 40px}}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="index.html" aria-label="ApnaShift home"><span class="logo-text"><span class="w">Apna</span><span class="y">Shift</span><small>SHIFTING • TRANSPORT</small></span></a>
+    <nav class="site-nav" aria-label="Main navigation">
+      <a href="index.html" data-i18n="nav_home">Home</a>
+      <a href="notifications.html" class="active" aria-current="page" data-i18n="pg_notif_nav">Notifications</a>
+      <a href="help.html" data-i18n="nav_help">Help</a>
+    </nav>
+    <div class="header-actions">
+      <div class="ts-group" role="group" aria-label="Text size">
+        <button type="button" class="ts-dec" data-tsbtn="dec" aria-label="Decrease text size">A−</button>
+        <button type="button" class="ts-reset" data-tsbtn="reset" aria-label="Reset text size" aria-pressed="true">A</button>
+        <button type="button" class="ts-inc" data-tsbtn="inc" aria-label="Increase text size">A+</button>
+        <span class="ts-status" data-ts-status aria-live="polite"></span>
+      </div>
+      <details class="lang-drop" id="langDrop">
+        <summary aria-label="Language">🌐&nbsp; <span id="langLabel">English</span>&nbsp; ▾</summary>
+        <div class="lang-menu">
+          <button type="button" data-setlang="en" class="active"><span>English</span><span class="tick">✓</span></button>
+          <button type="button" data-setlang="hi"><span>हिन्दी</span><span class="tick">✓</span></button>
+        </div>
+      </details>
+    </div>
+  </div>
+</header>
+<main>
+  <div class="page-head">
+    <div><h1 data-i18n="pg_notif_01">Notifications</h1><p data-i18n="pg_notif_02">Trip updates for your bookings — newest first.</p></div>
+    <div class="chiprow" role="group" aria-label="Filter">
+      <button type="button" class="chip active" id="fAll" data-i18n="pg_notif_03">All</button>
+      <button type="button" class="chip plain" id="fUnread" data-i18n="pg_notif_04">Unread</button>
+    </div>
+  </div>
+  <div class="btnrow">
+    <button type="button" class="btn ghost" id="markAll" data-i18n="pg_notif_05">Mark all as read</button>
+    <button type="button" class="btn ghost" id="refreshBtn" data-i18n="pg_notif_06">Refresh</button>
+  </div>
+  <div id="loginBox" class="state" hidden><span data-i18n="pg_notif_07">Log in to see your trip updates.</span> <a href="user-auth.html" data-i18n="pg_notif_08">Login</a></div>
+  <div id="alertBox" class="state" hidden></div>
+  <div class="nlist" id="nList"></div>
+  <div class="more"><button type="button" class="btn ghost" id="moreBtn" hidden data-i18n="pg_notif_09">Load more</button></div>
+</main>
+<script>window.PAGE_I18N={en:{pg_notif_nav:"Notifications",pg_notif_01:"Notifications",pg_notif_02:"Trip updates for your bookings — newest first.",pg_notif_03:"All",pg_notif_04:"Unread",pg_notif_05:"Mark all as read",pg_notif_06:"Refresh",pg_notif_07:"Log in to see your trip updates.",pg_notif_08:"Login",pg_notif_09:"Load more",pg_notif_10:"Loading updates…",pg_notif_11:"No updates yet — booking news will appear here.",pg_notif_12:"No unread updates.",pg_notif_13:"Could not load updates — check connection and retry.",pg_notif_14:"View trip →",pg_notif_15:"All caught up.",nav_home:"Home",nav_help:"Help",page_title:"Notifications | ApnaShift",meta_desc:"Your ApnaShift trip updates."},hi:{pg_notif_nav:"सूचनाएं",pg_notif_01:"सूचनाएं",pg_notif_02:"आपकी बुकिंग के अपडेट — सबसे नया पहले।",pg_notif_03:"सभी",pg_notif_04:"अपठित",pg_notif_05:"सभी को पढ़ा चिह्नित करें",pg_notif_06:"ताज़ा करें",pg_notif_07:"अपडेट देखने के लिए लॉगिन करें।",pg_notif_08:"लॉगिन",pg_notif_09:"और लोड करें",pg_notif_10:"अपडेट लोड हो रहे…",pg_notif_11:"अभी कोई अपडेट नहीं — बुकिंग खबर यहीं दिखेगी।",pg_notif_12:"कोई अपठित अपडेट नहीं।",pg_notif_13:"अपडेट लोड नहीं हुए — कनेक्शन जांचकर दोबारा कोशिश करें।",pg_notif_14:"ट्रिप देखें →",pg_notif_15:"सब पढ़ लिया।",nav_home:"होम",nav_help:"सहायता",page_title:"सूचनाएं | ApnaShift",meta_desc:"आपके ApnaShift ट्रिप अपडेट।"}};</script>
+<script src="lang.js"></script>
+<script src="theme.js"></script>
+<script src="text-size.js?v=2"></script>
+<script>
+(function(){
+  "use strict";
+  var API=(window.location.hostname==="localhost"||window.location.hostname==="127.0.0.1"||window.location.protocol==="file:")?"http://localhost:3000":"https://apnashiftapp-production.up.railway.app";
+  var list=document.getElementById("nList"),moreBtn=document.getElementById("moreBtn"),
+      markAll=document.getElementById("markAll"),refreshBtn=document.getElementById("refreshBtn"),
+      loginBox=document.getElementById("loginBox"),alertBox=document.getElementById("alertBox"),
+      fAll=document.getElementById("fAll"),fUnread=document.getElementById("fUnread");
+  function T(k){try{var l=document.documentElement.lang==="hi"?"hi":"en";var d=(window.PAGE_I18N||{})[l]||{};return d[k]||k;}catch(e){return k;}}
+  function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+  function auth(){try{var u=localStorage.getItem("apnashift_user_token");if(u)return{hdr:"Bearer "+u,role:"user"};var d=localStorage.getItem("apnashift_driver_token");if(d)return{hdr:"Bearer "+d,role:"driver"};}catch(e){}return null;}
+  function ago(iso){var t=new Date(iso).getTime();if(!isFinite(t))return "";var s=Math.max(0,Math.floor((Date.now()-t)/1000));if(s<60)return document.documentElement.lang==="hi"?"अभी":"just now";if(s<3600)return Math.floor(s/60)+(document.documentElement.lang==="hi"?" मि. पहले":"m ago");if(s<86400)return Math.floor(s/3600)+(document.documentElement.lang==="hi"?" घं. पहले":"h ago");try{return new Date(iso).toLocaleDateString("en-IN",{day:"numeric",month:"short"});}catch(e){return "";}}
+  var allItems=[],cursor=null,unreadOnly=false,loading=false;
+  // Trip milestones -> live map; everything else -> booking detail (user) or dashboard (driver).
+  function targetFor(n,role){
+    if(role==="driver")return "driver-dashboard.html";
+    if(n.type==="booking_accepted"||n.type==="driver_arrived"||n.type==="trip_started"||n.type==="trip_completed")return "tracking.html?booking="+encodeURIComponent(n.booking_id);
+    return "booking-detail.html?id="+encodeURIComponent(n.booking_id);
+  }
+  function cardHtml(n,role){
+    return '<a class="ncard'+(n.read_at?" read":"")+'" href="'+esc(targetFor(n,role))+'" data-nid="'+esc(n.id)+'"><h3><span class="ndot"></span>'+esc(n.title)+'</h3><p>'+esc(n.body)+'</p><span class="meta">'+esc(ago(n.created_at))+' • #'+esc(String(n.booking_id).slice(0,8))+'</span> <span class="go">'+esc(T("pg_notif_14"))+'</span></a>';
+  }
+  function render(){
+    var items=unreadOnly?allItems.filter(function(n){return !n.read_at;}):allItems;
+    if(items.length===0){list.innerHTML='<div class="state">'+esc(unreadOnly?T("pg_notif_12"):T("pg_notif_11"))+'</div>';}
+    else{list.innerHTML=items.map(function(n){return cardHtml(n,(auth()||{}).role||"user");}).join("");}
+    moreBtn.hidden=!(cursor&&!unreadOnly);
+  }
+  function showAlert(msg){alertBox.hidden=false;alertBox.textContent=msg;}
+  function hideAlert(){alertBox.hidden=true;alertBox.textContent="";}
+  function parseRes(res){return res.json().then(function(d){return{status:res.status,body:d};}).catch(function(){return{status:res.status,body:null};});}
+  function load(reset){
+    var a=auth();
+    if(!a){loginBox.hidden=false;list.innerHTML="";moreBtn.hidden=true;return;}
+    loginBox.hidden=true;
+    if(reset){allItems=[];cursor=null;}
+    if(loading)return;loading=true;
+    if(reset)list.innerHTML='<div class="state">'+esc(T("pg_notif_10"))+'</div>';
+    var url=API+"/api/notifications?limit=20"+(cursor?"&before="+encodeURIComponent(cursor):"");
+    fetch(url,{headers:{"Authorization":a.hdr}}).then(parseRes).then(function(x){
+      loading=false;
+      if(x.status===401||x.status===403){loginBox.hidden=false;list.innerHTML="";moreBtn.hidden=true;return;}
+      if(x.status!==200||!x.body||x.body.ok!==true||!Array.isArray(x.body.items))throw new Error("load");
+      hideAlert();
+      allItems=allItems.concat(x.body.items);
+      cursor=x.body.items.length===20?x.body.items[x.body.items.length-1].created_at:null;
+      render();
+    }).catch(function(){loading=false;if(allItems.length===0)list.innerHTML='<div class="state">'+esc(T("pg_notif_13"))+'</div>';else showAlert(T("pg_notif_13"));});
+  }
+  moreBtn.addEventListener("click",function(){load(false);});
+  refreshBtn.addEventListener("click",function(){load(true);});
+  markAll.addEventListener("click",function(){var a=auth();if(!a)return;markAll.disabled=true;fetch(API+"/api/notifications/read-all",{method:"POST",headers:{"Authorization":a.hdr}}).then(parseRes).then(function(){allItems.forEach(function(n){n.read_at=n.read_at||new Date().toISOString();});render();}).catch(function(){}).finally(function(){markAll.disabled=false;});});
+  fAll.addEventListener("click",function(){unreadOnly=false;fAll.classList.add("active");fUnread.classList.remove("active");fUnread.classList.add("plain");render();});
+  fUnread.addEventListener("click",function(){unreadOnly=true;fUnread.classList.add("active");fUnread.classList.remove("plain");fAll.classList.remove("active");render();});
+  list.addEventListener("click",function(ev){var a=ev.target.closest("[data-nid]");if(!a)return;var t=auth();if(!t)return;var id=a.getAttribute("data-nid");fetch(API+"/api/notifications/"+encodeURIComponent(id)+"/read",{method:"PATCH",headers:{"Authorization":t.hdr}}).catch(function(){});for(var i=0;i<allItems.length;i++){if(allItems[i].id===id){allItems[i].read_at=allItems[i].read_at||new Date().toISOString();break;}}});
+  load(true);
+})();
+</script>
+</body>
+</html>

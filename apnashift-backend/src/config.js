@@ -38,6 +38,17 @@ export const config = {
   trackOfflineAfterMs: num('TRACK_OFFLINE_AFTER_MS', 180 * 1000),
   // Operational retention for driver_locations (prune script).
   trackRetentionDays: num('TRACK_RETENTION_DAYS', 30),
+  // In-app notifications (bell polling + token register): dedicated limiter
+  // so a chatty poller never eats the booking/payment rate budget.
+  notifyRateLimitWindowMs: num('NOTIFY_RATE_LIMIT_WINDOW_MS', 15 * 60 * 1000),
+  notifyRateLimitMax: num('NOTIFY_RATE_LIMIT_MAX', 120),
+  // Notification retention (days): only READ rows are pruned — unread rows
+  // are NEVER deleted by retention.
+  notifRetentionDays: num('NOTIF_RETENTION_DAYS', 90),
+  // Push (Phase 2, FCM HTTP v1): all three set -> push ON, else in-app only.
+  fcmProjectId: process.env.FCM_PROJECT_ID ?? '',
+  fcmClientEmail: process.env.FCM_CLIENT_EMAIL ?? '',
+  fcmPrivateKey: process.env.FCM_PRIVATE_KEY ?? '',
   // Commission due cap (Rs): isse zyada baaki ho to driver naya accept nahi
   // kar sakta (admin assign unaffected). Gate reads env per-request.
   commissionDueLimitRs: num('COMMISSION_DUE_LIMIT', 1500),

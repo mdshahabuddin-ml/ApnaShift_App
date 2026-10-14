@@ -33,6 +33,7 @@ import { ratesFor, createBookingRow } from '../services/bookings.js';
 import { buildEstimate } from '../services/pricing.js';
 import { parseIdempotencyKey, hashBookingRequest } from '../services/idempotency.js';
 import { logAuditSafe } from '../services/audit.js';
+import { queueNotification } from '../services/notifyCenter.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { validateIdParam } from '../utils/validate.js';
 import { writeLimiter } from '../middleware/writeLimiter.js';
@@ -182,6 +183,13 @@ bookingsRoutes.post('/', requireAuth, requireRole('user'), writeLimiter, async (
       // Genuinely new booking -> notify subscribed drivers (replays never emit).
       publishNewBooking(inserted.rows[0].vehicle_type, newBookingEvent(inserted.rows[0]));
       publishAdminBooking('new_booking', await adminBookingEvent(inserted.rows[0]));
+      // Customer bell: booking placed (best-effort, never blocks creation).
+      await queueNotification({
+        role: 'user',
+        recipientId: req.user.id,
+        bookingId: inserted.rows[0].id,
+        type: 'booking_created',
+      });
       // Auditable dispatch trail (one row per real booking, never on replay).
       // admin_id stays NULL (creator is a customer, not staff) — user goes in details.
       await logAuditSafe(null, 'booking.created', 'booking', inserted.rows[0].id, {
@@ -252,6 +260,13 @@ bookingsRoutes.post('/', requireAuth, requireRole('user'), writeLimiter, async (
       // Genuinely new booking -> notify subscribed drivers (replays never emit).
       publishNewBooking(inserted.rows[0].vehicle_type, newBookingEvent(inserted.rows[0]));
       publishAdminBooking('new_booking', await adminBookingEvent(inserted.rows[0]));
+      // Customer bell: booking placed (best-effort, never blocks creation).
+      await queueNotification({
+        role: 'user',
+        recipientId: req.user.id,
+        bookingId: inserted.rows[0].id,
+        type: 'booking_created',
+      });
       // Auditable dispatch trail (one row per real booking, never on replay).
       // admin_id stays NULL (creator is a customer, not staff) — user goes in details.
       await logAuditSafe(null, 'booking.created', 'booking', inserted.rows[0].id, {
@@ -393,6 +408,15 @@ bookingsRoutes.patch('/:id/cancel', requireAuth, requireRole('user'), validateId
       status: 'cancelled',
       driver_id: updated.rows[0].driver_id,
     });
+    // Assigned driver learns via bell (best-effort, never blocks cancel).
+    if (updated.rows[0].driver_id) {
+      await queueNotification({
+        role: 'driver',
+        recipientId: updated.rows[0].driver_id,
+        bookingId: updated.rows[0].id,
+        type: 'booking_cancelled',
+      });
+    }
     res.json({ ok: true, booking: toPublicBooking(updated.rows[0]) });
   } catch (err) {
     next(err);

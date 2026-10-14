@@ -3,7 +3,7 @@
 // Skips if not set. Money math is integer-paise (services/money.js).
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import request from 'supertest';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import pg from 'pg';
 import { app } from '../src/app.js';
 import { applyTestSchema, truncateAll } from './helpers/db.js';
