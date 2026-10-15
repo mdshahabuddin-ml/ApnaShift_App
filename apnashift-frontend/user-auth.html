@@ -532,12 +532,43 @@ a{color:inherit}
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body)
     }).then(function(res){
+      var retryAfter = null;
+      try { retryAfter = res.headers.get("Retry-After"); } catch(e){}
       return res.json().then(function(data){
-        return { status: res.status, body: data };
+        return { status: res.status, body: data, retryAfter: retryAfter };
       }).catch(function(){
-        return { status: res.status, body: null };
+        return { status: res.status, body: null, retryAfter: retryAfter };
       });
     });
+  }
+
+  // 429 ke baad rapid re-click rokne ke liye button par chhota cooldown.
+  // Server ka window 15 min hai — ye sirf accidental double-submit rokta hai.
+  function cooldownButton(btn, textEl, baseText, secs){
+    if(!btn) return;
+    var left = secs || 60;
+    btn.disabled = true;
+    try { btn.dataset.cooling = "1"; } catch(e){}
+    var timer = setInterval(function(){
+      left -= 1;
+      if(left <= 0){
+        clearInterval(timer);
+        try { delete btn.dataset.cooling; } catch(e){}
+        btn.disabled = false;
+        if(textEl) textEl.textContent = baseText;
+      } else if(textEl){
+        textEl.textContent = baseText + " (" + left + "s)";
+      }
+    }, 1000);
+  }
+
+  function retryMessage(retryAfter){
+    var secs = parseInt(retryAfter, 10);
+    if(!isNaN(secs) && secs > 0){
+      var mins = Math.ceil(secs / 60);
+      return "Too many attempts — please try again after " + mins + " minute" + (mins > 1 ? "s" : "") + ".";
+    }
+    return "Too many attempts — please try once after 15 minutes.";
   }
 
   function saveToken(token, remember){
@@ -705,6 +736,8 @@ a{color:inherit}
       if(result.status !== 200 || !result.body || result.body.ok !== true){
         var fail = new Error("invalid");
         fail.code = result.body && result.body.error;
+        fail.status = result.status;
+        fail.retryAfter = result.retryAfter;
         throw fail;
       }
       var user = result.body.user || {};
@@ -720,14 +753,19 @@ a{color:inherit}
         showAlert("err", "This number is not a customer account.");
       } else if(err && err.message === "storage"){
         showAlert("err", "Could not save your login in the browser. Turn off private mode and try again.");
-      } else if(err && err.code === "too_many_attempts"){
-        showAlert("err", "Too many attempts — please try once after 15 minutes.");
+      } else if(err && (err.code === "too_many_attempts" || err.status === 429)){
+        showAlert("err", retryMessage(err.retryAfter));
+        cooldownButton(loginBtn, loginBtnText, "Login", 60);
+      } else if(err && (err.code === "server_error" || err.status >= 500)){
+        showAlert("err", "Server problem — please try again later. Do not retry repeatedly.");
       } else {
         showAlert("err", "Incorrect phone number or password.");
       }
     }).then(function(){
-      loginBtn.disabled = false;
-      loginBtnText.textContent = "Login";
+      if(loginBtn.dataset.cooling !== "1"){
+        loginBtn.disabled = false;
+        loginBtnText.textContent = "Login";
+      }
     });
   });
 
@@ -791,6 +829,8 @@ a{color:inherit}
       if(result.status !== 201 || !result.body || result.body.ok !== true){
         var fail = new Error("invalid");
         fail.code = result.body && result.body.error;
+        fail.status = result.status;
+        fail.retryAfter = result.retryAfter;
         fail.detail = result.body && result.body.details && result.body.details[0];
         throw fail;
       }
@@ -803,8 +843,11 @@ a{color:inherit}
       else if(err && err.message === "storage"){
         showAlert("err", "Could not save your login in the browser. Turn off private mode and try again.");
       }
-      else if(err && err.code === "too_many_attempts"){
-        showAlert("err", "Too many attempts — please try once after 15 minutes.");
+      else if(err && (err.code === "too_many_attempts" || err.status === 429)){
+        showAlert("err", retryMessage(err.retryAfter));
+      }
+      else if(err && (err.code === "server_error" || err.status >= 500)){
+        showAlert("err", "Server problem — please try again later. Do not retry repeatedly.");
       }
       else if(err && err.detail && err.detail.message){
         showAlert("err", err.detail.message);

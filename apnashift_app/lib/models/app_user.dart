@@ -23,4 +23,9 @@ class AppUser {
       );
 
   bool get isDriver => role == AppRole.driver;
+
+  /// Ye app sirf customer (role=user) ke liye hai. Driver/admin token se
+  /// login succeed ho jata hai (backend teeno table check karta hai), par
+  /// /api/bookings requireRole('user') par 403 dega — isliye gate yahin.
+  bool get isCustomer => role == AppRole.user;
 }

@@ -1,6 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Local dev API (http://10.0.2.2:3000) needs cleartext + internet. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Phase 3: driver live-location share (foreground only, active trip). -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <application
         android:label="ApnaShift"
         android:name="${applicationName}"

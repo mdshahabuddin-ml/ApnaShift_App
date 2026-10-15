@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../api/api_client.dart';
 import '../api/auth_api.dart';
 import '../models/app_user.dart';
+import '../services/push_tokens.dart';
 import 'token_store.dart';
 
 /// Session: token secure storage me, user memory me.
@@ -41,16 +42,32 @@ class Session extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Returns null on success, else an error code for the UI.
+  /// Codes: backend error codes, plus 'wrong_role' (driver/admin number —
+  /// ye app customer-only hai) aur 'network_error' (server unreachable).
+  /// Non-customer login ka token store NAHI hota (turant logout).
   Future<String?> login({required String phone, required String password}) async {
     try {
       final r = await auth.login(phone: phone, password: password);
+      if (!r.user.isCustomer) {
+        api.setToken(null);
+        await _store.delete();
+        user = null;
+        notifyListeners();
+        return 'wrong_role';
+      }
       api.setToken(r.token);
       await _store.write(r.token);
       user = r.user;
       notifyListeners();
+      PushTokens.register(api);
       return null;
     } on ApiException catch (e) {
       return e.code;
+    } catch (_) {
+      // SocketException / TimeoutException / storage errors — button atakna
+      // nahi chahiye, isliye code me badlo (throw mat karo).
+      return 'network_error';
     }
   }
 
@@ -61,13 +78,17 @@ class Session extends ChangeNotifier {
       await _store.write(r.token);
       user = r.user;
       notifyListeners();
+      PushTokens.register(api);
       return null;
     } on ApiException catch (e) {
       return e.code;
+    } catch (_) {
+      return 'network_error';
     }
   }
 
   Future<void> logout({bool silent = false}) async {
+    PushTokens.unregister(api);
     api.setToken(null);
     await _store.delete();
     user = null;

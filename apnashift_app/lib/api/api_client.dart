@@ -48,18 +48,54 @@ class ApiClient {
     return _decode(res);
   }
 
-  Future<Map<String, dynamic>> post(String path, {Object? body}) async {
+  Future<Map<String, dynamic>> post(String path, {Object? body, Map<String, String>? headers}) async {
     final res = await _http
-        .post(Uri.parse('$apiBaseUrl$path'), headers: _headers, body: body == null ? null : jsonEncode(body))
+        .post(Uri.parse('$apiBaseUrl$path'),
+            headers: {..._headers, ...?headers},
+            body: body == null ? null : jsonEncode(body))
         .timeout(const Duration(seconds: 15));
     return _decode(res);
   }
 
-  Future<Map<String, dynamic>> patch(String path, {Object? body}) async {
+  Future<Map<String, dynamic>> patch(String path, {Object? body, Map<String, String>? headers}) async {
     final res = await _http
-        .patch(Uri.parse('$apiBaseUrl$path'), headers: _headers, body: body == null ? null : jsonEncode(body))
+        .patch(Uri.parse('$apiBaseUrl$path'),
+            headers: {..._headers, ...?headers},
+            body: body == null ? null : jsonEncode(body))
         .timeout(const Duration(seconds: 15));
     return _decode(res);
+  }
+
+  Future<Map<String, dynamic>> put(String path, {Object? body, Map<String, String>? headers}) async {
+    final res = await _http
+        .put(Uri.parse('$apiBaseUrl$path'),
+            headers: {..._headers, ...?headers},
+            body: body == null ? null : jsonEncode(body))
+        .timeout(const Duration(seconds: 15));
+    return _decode(res);
+  }
+
+  Future<Map<String, dynamic>> delete(String path, {Object? body}) async {
+    final res = await _http
+        .delete(Uri.parse('$apiBaseUrl$path'),
+            headers: _headers, body: body == null ? null : jsonEncode(body))
+        .timeout(const Duration(seconds: 15));
+    return _decode(res);
+  }
+
+  /// SSE/live feeds ke liye raw streamed GET (Bearer header ke saath —
+  /// website fetch-based SSE parity, EventSource nahi). Caller stream
+  /// parse + cancel khud kare. Non-200 par ApiException.
+  Future<http.StreamedResponse> getStreamed(String path,
+      {Map<String, String>? query}) async {
+    final uri = Uri.parse('$apiBaseUrl$path').replace(queryParameters: query);
+    final req = http.Request('GET', uri)..headers.addAll(_headers);
+    req.headers['Accept'] = 'text/event-stream';
+    final res = await _http.send(req).timeout(const Duration(seconds: 15));
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      throw ApiException('http_${res.statusCode}', res.statusCode);
+    }
+    return res;
   }
 
   void close() => _http.close();
