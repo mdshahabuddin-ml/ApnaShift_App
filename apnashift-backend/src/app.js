@@ -19,7 +19,16 @@ import { whatsappRoutes } from './routes/whatsapp.js';
 import { driverSettlementRoutes, adminSettlementRoutes } from './routes/settlements.js';
 import { mssqlRoutes } from './routes/mssql.js';
 import { notificationsRoutes } from './routes/notifications.js';
-import { superAdminRoutes } from '../../super-admin-module/backend/superAdminRoutes.js';
+// Super-admin panel lives OUTSIDE the docker context (repo-root
+// super-admin-module/), so a static import crashes the production image
+// with ERR_MODULE_NOT_FOUND. Dynamic import + graceful skip: full repo
+// (local/CI tests) mounts /api/superadmin, docker image runs without it.
+let superAdminRoutes = null;
+try {
+  ({ superAdminRoutes } = await import('../../super-admin-module/backend/superAdminRoutes.js'));
+} catch {
+  console.warn('[app] super-admin module missing — /api/superadmin disabled.');
+}
 
 export function createApp() {
   const app = express();
@@ -107,7 +116,8 @@ export function createApp() {
   // In-app notifications (customer/driver, owner-scoped; admin role 403).
   app.use('/api/notifications', notificationsRoutes);
   // Super Admin read-only panel (SELECT-only router from super-admin-module/).
-  app.use('/api/superadmin', superAdminRoutes);
+  // Docker image me module nahi hota — tab ye mount skip hota hai.
+  if (superAdminRoutes) app.use('/api/superadmin', superAdminRoutes);
 
   // 404 — unknown routes.
   app.use((req, res) => {
