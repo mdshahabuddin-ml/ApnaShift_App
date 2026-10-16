@@ -57,6 +57,13 @@ export const pricingUpdateSchema = z
     base_rs: rateField.optional(),
     per_km_rs: rateField.optional(),
     helper_rs: rateField.optional(),
+    minimum_fare: rateField.optional(),
+    size_small_extra: rateField.optional(),
+    size_big_extra: rateField.optional(),
+    weight_0_100: rateField.optional(),
+    weight_100_300: rateField.optional(),
+    weight_300_500: rateField.optional(),
+    weight_500_plus: rateField.optional(),
     // Per-vehicle commission % (snapshot into bookings at creation).
     commission_pct: z
       .number({ invalid_type_error: 'commission_pct number ho (0-100).' })
@@ -72,9 +79,17 @@ export const pricingUpdateSchema = z
       v.base_rs !== undefined ||
       v.per_km_rs !== undefined ||
       v.helper_rs !== undefined ||
+      v.minimum_fare !== undefined ||
+      v.size_small_extra !== undefined ||
+      v.size_big_extra !== undefined ||
+      v.weight_0_100 !== undefined ||
+      v.weight_100_300 !== undefined ||
+      v.weight_300_500 !== undefined ||
+      v.weight_500_plus !== undefined ||
       v.commission_pct !== undefined,
     {
-      message: 'Kam se kam ek rate badlo (base_rs, per_km_rs, helper_rs ya commission_pct).',
+      message:
+        'Kam se kam ek rate badlo (base_rs, per_km_rs, helper_rs, minimum_fare, size_small_extra, size_big_extra, weight_0_100, weight_100_300, weight_300_500, weight_500_plus ya commission_pct).',
     },
   );
 

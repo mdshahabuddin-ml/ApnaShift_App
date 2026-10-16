@@ -24,6 +24,28 @@ const addressPointSchema = z.object({
   lng: lngField,
 });
 
+// Pricing v2 inputs (estimate + create share these; all optional with safe defaults
+// so old clients keep working — server fills chhota/0/1/false).
+const vehicleSizeTierField = z
+  .enum(['chhota', 'bada'], {
+    errorMap: () => ({ message: 'vehicle_size_tier chhota ya bada ho.' }),
+  })
+  .default('chhota');
+const goodsWeightField = z
+  .number({ invalid_type_error: 'goods_weight_kg number ho (kg).' })
+  .min(0, 'goods_weight_kg 0 se kam nahi.')
+  .max(5000, 'goods_weight_kg 5000 kg se zyada nahi.')
+  .default(0);
+const itemCountField = z
+  .number({ invalid_type_error: 'item_count number ho.' })
+  .int('item_count poora number ho.')
+  .min(1, 'item_count kam se kam 1.')
+  .max(100, 'item_count 100 se zyada nahi.')
+  .default(1);
+const bulkyField = z
+  .boolean({ invalid_type_error: 'has_bulky_item true/false ho.' })
+  .default(false);
+
 // For the public estimate endpoint (coords only, no address needed).
 export const estimateSchema = z.object({
   pickup: z.object({ lat: latField, lng: lngField }),
@@ -32,6 +54,10 @@ export const estimateSchema = z.object({
     errorMap: () => ({ message: 'vehicle_type pickup, mini_truck ya mini_tractor ho.' }),
   }),
   helper_needed: z.boolean({ invalid_type_error: 'helper_needed true/false ho.' }).default(false),
+  vehicle_size_tier: vehicleSizeTierField,
+  goods_weight_kg: goodsWeightField,
+  item_count: itemCountField,
+  has_bulky_item: bulkyField,
 });
 
 export const bookingCreateSchema = z.object({
@@ -41,18 +67,27 @@ export const bookingCreateSchema = z.object({
     errorMap: () => ({ message: 'vehicle_type pickup, mini_truck ya mini_tractor ho.' }),
   }),
   helper_needed: z.boolean({ invalid_type_error: 'helper_needed true/false ho.' }).default(false),
+  vehicle_size_tier: vehicleSizeTierField,
+  goods_weight_kg: goodsWeightField,
+  item_count: itemCountField,
+  has_bulky_item: bulkyField,
   // UPI default; cash bhi chalega. 'online' reserved (gateway nahi hai).
   payment_method: z
     .enum(['cash', 'upi', 'online'], {
       errorMap: () => ({ message: 'payment_method cash, upi ya online ho.' }),
     })
     .default('upi'),
+  // Items to Shift mandatory: kam se kam ek item + quantity (e.g. "2x Bed, 1x Sofa").
+  // Frontend/Flutter serialize karte hain; backend sirf non-empty + length check karta hai.
   item_description: z
-    .string()
+    .string({
+      required_error:
+        'Items to Shift me kam se kam ek item jodo (e.g. 1 Bed, 2 Boxes) — quantity ke saath.',
+      invalid_type_error: 'item_description string ho.',
+    })
     .trim()
-    .max(500, 'Item detail 500 akshar se zyada nahi.')
-    .optional()
-    .default(''),
+    .min(3, 'Items to Shift me kam se kam ek item jodo (e.g. 1 Bed, 2 Boxes) — quantity ke saath.')
+    .max(500, 'Item detail 500 akshar se zyada nahi.'),
   // Optional ISO time. Client-sent price has no field here —
   // the server always computes price (see route); sent values are ignored.
   // No past dates: future or present (with 60s skew allowance).

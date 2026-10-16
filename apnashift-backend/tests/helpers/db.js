@@ -38,10 +38,13 @@ export async function truncateAll(client) {
     'TRUNCATE users, drivers, admins, bookings, ratings, pricing_rules, audit_logs, pricing_history, idempotency_keys, enterprise_inquiries, driver_locations, payments, payment_adjustments, settlements, settlement_period_items, settlement_periods, password_reset_otps, driver_declines, wa_conversations, notifications, device_tokens RESTART IDENTITY CASCADE',
   );
   await client.query(
-    `INSERT INTO pricing_rules (vehicle_type, base_rs, per_km_rs, helper_rs) VALUES
-       ('Pickup', 350, 17.5, 200),
-       ('Mini Truck', 600, 22.5, 200),
-       ('Mini Tractor', 1000, 30, 200)`,
+    `INSERT INTO pricing_rules
+       (vehicle_type, base_rs, per_km_rs, helper_rs, minimum_fare,
+        size_small_extra, size_big_extra,
+        weight_0_100, weight_100_300, weight_300_500, weight_500_plus) VALUES
+       ('Pickup', 250, 17.5, 200, 250, 0, 0, 0, 0, 0, 0),
+       ('Mini Truck', 450, 22.5, 200, 450, 0, 0, 0, 0, 0, 0),
+       ('Mini Tractor', 750, 30, 200, 750, 0, 0, 0, 0, 0, 0)`,
   );
   // Config reseed: TRUNCATE ... CASCADE follows FKs and wipes platform_settings
   // (updated_by -> admins). Every suite needs the default commission present.

@@ -52,7 +52,8 @@ const BOOKING_COLS = `id, user_id, driver_id, pickup_address, pickup_lat, pickup
   drop_address, drop_lat, drop_lng, vehicle_type, helper, item_description,
   scheduled_at, delivered_at, distance_km, price_rs, status, created_at, updated_at,
   cancel_reason, cancelled_by, cancelled_at, payment_method,
-  commission_percent, disputed, dispute_reason`;
+  commission_percent, disputed, dispute_reason,
+  vehicle_size_tier, goods_weight_kg, item_count, has_bulky_item`;
 
 // DB row -> API shape (vehicle snake_case, price as number).
 // cancellation is null unless the booking was cancelled (012 columns;
@@ -66,6 +67,12 @@ export function toPublicBooking(row) {
     drop: { address: row.drop_address, lat: row.drop_lat, lng: row.drop_lng },
     vehicle_type: VEHICLE_TO_API[row.vehicle_type] ?? row.vehicle_type,
     helper_needed: row.helper,
+    vehicle_size_tier: row.vehicle_size_tier ?? 'chhota',
+    goods_weight_kg: row.goods_weight_kg === null || row.goods_weight_kg === undefined
+      ? 0
+      : Number(row.goods_weight_kg),
+    item_count: row.item_count ?? 1,
+    has_bulky_item: row.has_bulky_item ?? false,
     item_description: row.item_description,
     scheduled_time: row.scheduled_at,
     delivered_at: row.delivered_at,
@@ -101,13 +108,20 @@ export function toPublicBooking(row) {
 // POST /api/bookings/estimate-price (public)
 bookingsRoutes.post('/estimate-price', estimateLimiter, async (req, res, next) => {
   try {
-    const { pickup, drop, vehicle_type, helper_needed } = parseBody(estimateSchema, req.body);
+    const {
+      pickup, drop, vehicle_type, helper_needed,
+      vehicle_size_tier, goods_weight_kg, item_count, has_bulky_item,
+    } = parseBody(estimateSchema, req.body);
 
     const estimate = await buildEstimate({
       pickup,
       drop,
       vehicleType: vehicle_type,
       helperNeeded: helper_needed,
+      vehicleSizeTier: vehicle_size_tier,
+      goodsWeightKg: goods_weight_kg,
+      itemCount: item_count,
+      hasBulkyItem: has_bulky_item,
       rates: await ratesFor(vehicle_type),
     });
     res.json({ ok: true, ...estimate });
@@ -154,8 +168,10 @@ export async function adminBookingEvent(row) {
 // Same key + different payload returns 422 idempotency_conflict. Per-user scope.
 bookingsRoutes.post('/', requireAuth, requireRole('user'), writeLimiter, async (req, res, next) => {
   try {
-    const { pickup, drop, vehicle_type, helper_needed, item_description, scheduled_time, payment_method } =
-      parseBody(bookingCreateSchema, req.body);
+    const {
+      pickup, drop, vehicle_type, helper_needed, item_description, scheduled_time, payment_method,
+      vehicle_size_tier, goods_weight_kg, item_count, has_bulky_item,
+    } = parseBody(bookingCreateSchema, req.body);
     // Online gateway exists nahi — architecture ready hai (column + CHECK),
     // par creation abhi cash/upi-only hai (customer driver ko direct deta hai).
     if (payment_method !== 'cash' && payment_method !== 'upi') {
@@ -175,6 +191,10 @@ bookingsRoutes.post('/', requireAuth, requireRole('user'), writeLimiter, async (
       scheduledAt: scheduled_time,
       paymentMethod: payment_method,
       source: 'WEB',
+      vehicleSizeTier: vehicle_size_tier,
+      goodsWeightKg: goods_weight_kg,
+      itemCount: item_count,
+      hasBulkyItem: has_bulky_item,
     };
 
     // Without key: direct insert (legacy flow).
@@ -207,6 +227,10 @@ bookingsRoutes.post('/', requireAuth, requireRole('user'), writeLimiter, async (
       helper_needed,
       item_description,
       scheduled_time,
+      vehicle_size_tier,
+      goods_weight_kg,
+      item_count,
+      has_bulky_item,
     });
 
     // Fast path: known key returns the same booking (payload must match).

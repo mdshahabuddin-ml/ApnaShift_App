@@ -99,6 +99,11 @@ CREATE TABLE IF NOT EXISTS bookings (
   item_description TEXT NOT NULL DEFAULT '',
   distance_km NUMERIC(8, 2) NOT NULL CHECK (distance_km > 0 AND distance_km <= 500),
   helper BOOLEAN NOT NULL DEFAULT FALSE,
+  -- 023: pricing inputs per booking (audit; old rows get safe defaults).
+  vehicle_size_tier TEXT NOT NULL DEFAULT 'chhota' CHECK (vehicle_size_tier IN ('chhota', 'bada')),
+  goods_weight_kg NUMERIC(10, 2) NOT NULL DEFAULT 0 CHECK (goods_weight_kg >= 0 AND goods_weight_kg <= 5000),
+  item_count INTEGER NOT NULL DEFAULT 1 CHECK (item_count >= 1 AND item_count <= 100),
+  has_bulky_item BOOLEAN NOT NULL DEFAULT FALSE,
   price_rs NUMERIC(10, 2) NOT NULL CHECK (price_rs >= 0),
   -- 014: creation-time commission snapshot (rate lock) + dispute flag.
   commission_percent NUMERIC(5, 2) CHECK (
@@ -420,8 +425,10 @@ CREATE TRIGGER trg_bookings_trips
   FOR EACH ROW
   EXECUTE FUNCTION sync_driver_trips();
 
--- Pricing rules (seed: db/seed.sql). Quote formula:
---   total = base_rs + per_km_rs * distance_km + (helper ? helper_rs : 0)
+-- Pricing rules (seed: db/seed.sql). Quote formula (023):
+--   raw = base_rs + per_km_rs * distance_km + size_extra + weight_slab
+--       + (bulky ? 100 : 0) + max(0, item_count-5)*20 + (helper ? helper_rs : 0)
+--   total = round10(MAX(minimum_fare, raw))
 CREATE TABLE IF NOT EXISTS pricing_rules (
   id SERIAL PRIMARY KEY,
   vehicle_type TEXT NOT NULL UNIQUE CHECK (vehicle_type IN ('Pickup', 'Mini Truck', 'Mini Tractor')),
@@ -432,6 +439,14 @@ CREATE TABLE IF NOT EXISTS pricing_rules (
   commission_percent NUMERIC(5, 2) NOT NULL DEFAULT 15 CHECK (
     commission_percent >= 0 AND commission_percent <= 100
   ),
+  -- 023: minimum fare + admin-editable size/weight extras (never hardcoded).
+  minimum_fare NUMERIC(10, 2) NOT NULL DEFAULT 0 CHECK (minimum_fare >= 0),
+  size_small_extra NUMERIC(10, 2) NOT NULL DEFAULT 0 CHECK (size_small_extra >= 0),
+  size_big_extra NUMERIC(10, 2) NOT NULL DEFAULT 0 CHECK (size_big_extra >= 0),
+  weight_0_100 NUMERIC(10, 2) NOT NULL DEFAULT 0 CHECK (weight_0_100 >= 0),
+  weight_100_300 NUMERIC(10, 2) NOT NULL DEFAULT 0 CHECK (weight_100_300 >= 0),
+  weight_300_500 NUMERIC(10, 2) NOT NULL DEFAULT 0 CHECK (weight_300_500 >= 0),
+  weight_500_plus NUMERIC(10, 2) NOT NULL DEFAULT 0 CHECK (weight_500_plus >= 0),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -460,6 +475,20 @@ CREATE TABLE IF NOT EXISTS pricing_history (
   new_base_rs NUMERIC(10, 2) NOT NULL,
   new_per_km_rs NUMERIC(10, 2) NOT NULL,
   new_helper_rs NUMERIC(10, 2) NOT NULL,
+  old_minimum_fare NUMERIC(10, 2),
+  new_minimum_fare NUMERIC(10, 2),
+  old_size_small_extra NUMERIC(10, 2),
+  new_size_small_extra NUMERIC(10, 2),
+  old_size_big_extra NUMERIC(10, 2),
+  new_size_big_extra NUMERIC(10, 2),
+  old_weight_0_100 NUMERIC(10, 2),
+  new_weight_0_100 NUMERIC(10, 2),
+  old_weight_100_300 NUMERIC(10, 2),
+  new_weight_100_300 NUMERIC(10, 2),
+  old_weight_300_500 NUMERIC(10, 2),
+  new_weight_300_500 NUMERIC(10, 2),
+  old_weight_500_plus NUMERIC(10, 2),
+  new_weight_500_plus NUMERIC(10, 2),
   changed_by UUID REFERENCES admins (id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );

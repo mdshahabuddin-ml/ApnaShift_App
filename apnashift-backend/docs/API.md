@@ -72,14 +72,20 @@ Body:
 ```json
 { "pickup": { "lat": 22.7196, "lng": 75.8577 },
   "drop": { "lat": 22.75, "lng": 75.9 },
-  "vehicle_type": "mini_truck", "helper_needed": false }
+  "vehicle_type": "mini_truck", "helper_needed": false,
+  "vehicle_size_tier": "chhota", "goods_weight_kg": 0,
+  "item_count": 1, "has_bulky_item": false }
 ```
+New pricing inputs all optional (defaults `chhota`/`0`/`1`/`false` so old clients keep working).
 Response `200` (rates `pricing_rules` table se, total nearest Rs 10):
 ```json
 { "ok": true, "distance_km": 7.15, "vehicle_type": "mini_truck",
-  "base_fare": 600, "distance_fare": 160.86, "helper_charge": 0,
-  "total": 760, "estimate_min": 680, "estimate_max": 840 }
+  "base_fare": 450, "distance_fare": 160.86,
+  "size_charge": 0, "weight_charge": 0, "bulky_charge": 0, "items_charge": 0,
+  "helper_charge": 0, "minimum_fare": 450,
+  "total": 610, "estimate_min": 550, "estimate_max": 670 }
 ```
+Formula: `raw = base + distance×rate + size_extra + weight_slab + (bulky?100:0) + max(0,item_count-5)×20 + helper`, phir `total = round10(MAX(minimum_fare, raw))`. Weight slabs (kg): `<=100`, `<=300`, `<=500`, `>500` — charges `pricing_rules` se (admin-editable, hardcode nahi).
 Ek sheher ka MVP: distance `500 km` se zyada par `400 distance_too_far`
 (DB me bhi `CHECK (distance_km <= 500)` backup hai).
 
@@ -93,7 +99,7 @@ bookings unaffected. `GET /:id` me accepted+ par driver `upi_id` milta hai.
 
 ### GET /api/admin/bookings?status&from&to&city (paginated)
 Body: pickup/drop `{ address, lat, lng }`, `vehicle_type`, `helper_needed`,
-`item_description` (optional, 500), `scheduled_time` (optional ISO, future me ho —
+`item_description` (mandatory, min 3, max 500 — Items to Shift: kam se kam ek item + quantity, e.g. `2x Bed, 1x Sofa`; khaali par `400 validation_failed`), `scheduled_time` (optional ISO, future me ho —
 past date par `400 validation_failed`).
 **Price server ginata hai** — body me price bhejo to ignore hoga.
 Distance `500 km` se zyada par `400 distance_too_far` (koi row nahi banti).
@@ -391,9 +397,14 @@ Driver verified+active aur gaadi match honi chahiye
 (`409 driver_unavailable`, `400 vehicle_mismatch`). Audit me.
 
 ### GET /api/admin/pricing-rules | PUT | GET /history
-PUT body: `{ "vehicle_type": "pickup", "base_rs": 400 }` (kam se kam ek rate).
+PUT body: `{ "vehicle_type": "pickup", "base_rs": 250 }` (kam se kam ek rate).
+Editable: `base_rs`, `per_km_rs`, `helper_rs`, `minimum_fare`, `size_small_extra`,
+`size_big_extra`, `weight_0_100`, `weight_100_300`, `weight_300_500`, `weight_500_plus`,
+`commission_pct`. Current fares — Pickup base/min `250`, Mini Truck `450`,
+Mini Tractor `750` (per_km `17.5`/`22.5`/`30` unchanged).
 Transaction me update + history row + audit row (teenon atomic — audit fail ho
 to rate bhi rollback). Response: `{ ok, rule, history_id }`.
+Purani bookings ka `price_rs` snapshot kabhi nahi badalta — naye rates sirf nayi bookings par.
 Verify/reject/assign me audit best-effort hai (audit fail ho to bhi main
 action success rehta hai).
 

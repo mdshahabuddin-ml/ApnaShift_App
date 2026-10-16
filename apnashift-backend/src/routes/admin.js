@@ -511,7 +511,10 @@ adminRoutes.patch('/bookings/:id/assign', validateIdParam, async (req, res, next
 adminRoutes.get('/pricing-rules', async (req, res, next) => {
   try {
     const rows = await query(
-      'SELECT vehicle_type, base_rs, per_km_rs, helper_rs, commission_percent, updated_at FROM pricing_rules ORDER BY id',
+      `SELECT vehicle_type, base_rs, per_km_rs, helper_rs, commission_percent,
+              minimum_fare, size_small_extra, size_big_extra,
+              weight_0_100, weight_100_300, weight_300_500, weight_500_plus, updated_at
+         FROM pricing_rules ORDER BY id`,
     );
     res.json({
       ok: true,
@@ -521,6 +524,13 @@ adminRoutes.get('/pricing-rules', async (req, res, next) => {
         per_km_rs: Number(r.per_km_rs),
         helper_rs: Number(r.helper_rs),
         commission_pct: Number(r.commission_percent),
+        minimum_fare: Number(r.minimum_fare ?? 0),
+        size_small_extra: Number(r.size_small_extra ?? 0),
+        size_big_extra: Number(r.size_big_extra ?? 0),
+        weight_0_100: Number(r.weight_0_100 ?? 0),
+        weight_100_300: Number(r.weight_100_300 ?? 0),
+        weight_300_500: Number(r.weight_300_500 ?? 0),
+        weight_500_plus: Number(r.weight_500_plus ?? 0),
         updated_at: r.updated_at,
       })),
     });
@@ -535,13 +545,21 @@ adminRoutes.get('/pricing-rules', async (req, res, next) => {
 // commission change audit details me darj hota hai.
 adminRoutes.put('/pricing-rules', async (req, res, next) => {
   try {
-    const { vehicle_type, base_rs, per_km_rs, helper_rs, commission_pct } = parseBody(pricingUpdateSchema, req.body);
+    const {
+      vehicle_type, base_rs, per_km_rs, helper_rs, minimum_fare,
+      size_small_extra, size_big_extra,
+      weight_0_100, weight_100_300, weight_300_500, weight_500_plus,
+      commission_pct,
+    } = parseBody(pricingUpdateSchema, req.body);
 
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
       const current = await client.query(
-        'SELECT base_rs, per_km_rs, helper_rs, commission_percent FROM pricing_rules WHERE vehicle_type = $1 FOR UPDATE',
+        `SELECT base_rs, per_km_rs, helper_rs, commission_percent, minimum_fare,
+                size_small_extra, size_big_extra,
+                weight_0_100, weight_100_300, weight_300_500, weight_500_plus
+           FROM pricing_rules WHERE vehicle_type = $1 FOR UPDATE`,
         [VEHICLE_TO_DB[vehicle_type]],
       );
       if (current.rowCount === 0) {
@@ -549,42 +567,83 @@ adminRoutes.put('/pricing-rules', async (req, res, next) => {
         return res.status(400).json({ ok: false, error: 'unknown_vehicle' });
       }
       const old = current.rows[0];
+      const num = (v) => (v === null || v === undefined ? 0 : Number(v));
       const nextVals = {
-        base_rs: base_rs ?? Number(old.base_rs),
-        per_km_rs: per_km_rs ?? Number(old.per_km_rs),
-        helper_rs: helper_rs ?? Number(old.helper_rs),
-        commission_pct: commission_pct ?? Number(old.commission_percent),
+        base_rs: base_rs ?? num(old.base_rs),
+        per_km_rs: per_km_rs ?? num(old.per_km_rs),
+        helper_rs: helper_rs ?? num(old.helper_rs),
+        minimum_fare: minimum_fare ?? num(old.minimum_fare),
+        size_small_extra: size_small_extra ?? num(old.size_small_extra),
+        size_big_extra: size_big_extra ?? num(old.size_big_extra),
+        weight_0_100: weight_0_100 ?? num(old.weight_0_100),
+        weight_100_300: weight_100_300 ?? num(old.weight_100_300),
+        weight_300_500: weight_300_500 ?? num(old.weight_300_500),
+        weight_500_plus: weight_500_plus ?? num(old.weight_500_plus),
+        commission_pct: commission_pct ?? num(old.commission_percent),
       };
       const updated = await client.query(
-        `UPDATE pricing_rules SET base_rs = $1, per_km_rs = $2, helper_rs = $3, commission_percent = $4, updated_at = now()
-         WHERE vehicle_type = $5
-         RETURNING vehicle_type, base_rs, per_km_rs, helper_rs, commission_percent, updated_at`,
-        [nextVals.base_rs, nextVals.per_km_rs, nextVals.helper_rs, nextVals.commission_pct, VEHICLE_TO_DB[vehicle_type]],
+        `UPDATE pricing_rules
+            SET base_rs = $1, per_km_rs = $2, helper_rs = $3, commission_percent = $4,
+                minimum_fare = $5, size_small_extra = $6, size_big_extra = $7,
+                weight_0_100 = $8, weight_100_300 = $9, weight_300_500 = $10, weight_500_plus = $11,
+                updated_at = now()
+         WHERE vehicle_type = $12
+         RETURNING vehicle_type, base_rs, per_km_rs, helper_rs, commission_percent,
+                   minimum_fare, size_small_extra, size_big_extra,
+                   weight_0_100, weight_100_300, weight_300_500, weight_500_plus, updated_at`,
+        [
+          nextVals.base_rs, nextVals.per_km_rs, nextVals.helper_rs, nextVals.commission_pct,
+          nextVals.minimum_fare, nextVals.size_small_extra, nextVals.size_big_extra,
+          nextVals.weight_0_100, nextVals.weight_100_300, nextVals.weight_300_500, nextVals.weight_500_plus,
+          VEHICLE_TO_DB[vehicle_type],
+        ],
       );
       const hist = await client.query(
         `INSERT INTO pricing_history
            (vehicle_type, old_base_rs, old_per_km_rs, old_helper_rs,
-            new_base_rs, new_per_km_rs, new_helper_rs, changed_by)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
+            new_base_rs, new_per_km_rs, new_helper_rs, changed_by,
+            old_minimum_fare, new_minimum_fare,
+            old_size_small_extra, new_size_small_extra,
+            old_size_big_extra, new_size_big_extra,
+            old_weight_0_100, new_weight_0_100,
+            old_weight_100_300, new_weight_100_300,
+            old_weight_300_500, new_weight_300_500,
+            old_weight_500_plus, new_weight_500_plus)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8,
+                 $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22) RETURNING id`,
         [
           VEHICLE_TO_DB[vehicle_type],
-          Number(old.base_rs),
-          Number(old.per_km_rs),
-          Number(old.helper_rs),
+          num(old.base_rs),
+          num(old.per_km_rs),
+          num(old.helper_rs),
           nextVals.base_rs,
           nextVals.per_km_rs,
           nextVals.helper_rs,
           req.user.id,
+          num(old.minimum_fare), nextVals.minimum_fare,
+          num(old.size_small_extra), nextVals.size_small_extra,
+          num(old.size_big_extra), nextVals.size_big_extra,
+          num(old.weight_0_100), nextVals.weight_0_100,
+          num(old.weight_100_300), nextVals.weight_100_300,
+          num(old.weight_300_500), nextVals.weight_300_500,
+          num(old.weight_500_plus), nextVals.weight_500_plus,
         ],
       );
       // Audit in same transaction: failure rolls back rate+history too.
       const r = updated.rows[0];
       await logAuditTx(client, req.user.id, 'pricing.update', 'pricing_rule', r.vehicle_type, {
         old: {
-          base_rs: Number(old.base_rs),
-          per_km_rs: Number(old.per_km_rs),
-          helper_rs: Number(old.helper_rs),
-          commission_pct: Number(old.commission_percent),
+          base_rs: num(old.base_rs),
+          per_km_rs: num(old.per_km_rs),
+          helper_rs: num(old.helper_rs),
+          commission_pct: num(old.commission_percent),
+          minimum_fare: num(old.minimum_fare),
+          size_small_extra: num(old.size_small_extra),
+          size_big_extra: num(old.size_big_extra),
+          weight_0_100: num(old.weight_0_100),
+          weight_100_300: num(old.weight_100_300),
+          weight_300_500: num(old.weight_300_500),
+          weight_500_plus: num(old.weight_500_plus),
         },
         new: nextVals,
       });
@@ -597,6 +656,13 @@ adminRoutes.put('/pricing-rules', async (req, res, next) => {
           per_km_rs: Number(r.per_km_rs),
           helper_rs: Number(r.helper_rs),
           commission_pct: Number(r.commission_percent),
+          minimum_fare: Number(r.minimum_fare ?? 0),
+          size_small_extra: Number(r.size_small_extra ?? 0),
+          size_big_extra: Number(r.size_big_extra ?? 0),
+          weight_0_100: Number(r.weight_0_100 ?? 0),
+          weight_100_300: Number(r.weight_100_300 ?? 0),
+          weight_300_500: Number(r.weight_300_500 ?? 0),
+          weight_500_plus: Number(r.weight_500_plus ?? 0),
           updated_at: r.updated_at,
         },
         history_id: hist.rows[0].id,
@@ -629,25 +695,47 @@ adminRoutes.get('/pricing-rules/history', async (req, res, next) => {
     params.push(limit);
     const rows = await query(
       `SELECT id, vehicle_type, old_base_rs, old_per_km_rs, old_helper_rs,
-              new_base_rs, new_per_km_rs, new_helper_rs, changed_by, created_at
+              new_base_rs, new_per_km_rs, new_helper_rs, changed_by, created_at,
+              old_minimum_fare, new_minimum_fare,
+              old_size_small_extra, new_size_small_extra,
+              old_size_big_extra, new_size_big_extra,
+              old_weight_0_100, new_weight_0_100,
+              old_weight_100_300, new_weight_100_300,
+              old_weight_300_500, new_weight_300_500,
+              old_weight_500_plus, new_weight_500_plus
        FROM pricing_history ${conds.length > 0 ? `WHERE ${conds.join(' AND ')}` : ''}
        ORDER BY id DESC LIMIT $${params.length}`,
       params,
     );
+    const numOrNull = (v) => (v === null || v === undefined ? null : Number(v));
     res.json({
       ok: true,
       history: rows.rows.map((h) => ({
         id: h.id,
         vehicle_type: h.vehicle_type,
         old: {
-          base_rs: h.old_base_rs === null ? null : Number(h.old_base_rs),
-          per_km_rs: h.old_per_km_rs === null ? null : Number(h.old_per_km_rs),
-          helper_rs: h.old_helper_rs === null ? null : Number(h.old_helper_rs),
+          base_rs: numOrNull(h.old_base_rs),
+          per_km_rs: numOrNull(h.old_per_km_rs),
+          helper_rs: numOrNull(h.old_helper_rs),
+          minimum_fare: numOrNull(h.old_minimum_fare),
+          size_small_extra: numOrNull(h.old_size_small_extra),
+          size_big_extra: numOrNull(h.old_size_big_extra),
+          weight_0_100: numOrNull(h.old_weight_0_100),
+          weight_100_300: numOrNull(h.old_weight_100_300),
+          weight_300_500: numOrNull(h.old_weight_300_500),
+          weight_500_plus: numOrNull(h.old_weight_500_plus),
         },
         new: {
           base_rs: Number(h.new_base_rs),
           per_km_rs: Number(h.new_per_km_rs),
           helper_rs: Number(h.new_helper_rs),
+          minimum_fare: numOrNull(h.new_minimum_fare),
+          size_small_extra: numOrNull(h.new_size_small_extra),
+          size_big_extra: numOrNull(h.new_size_big_extra),
+          weight_0_100: numOrNull(h.new_weight_0_100),
+          weight_100_300: numOrNull(h.new_weight_100_300),
+          weight_300_500: numOrNull(h.new_weight_300_500),
+          weight_500_plus: numOrNull(h.new_weight_500_plus),
         },
         changed_by: h.changed_by,
         created_at: h.created_at,

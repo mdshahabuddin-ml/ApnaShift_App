@@ -226,6 +226,13 @@ CREATE TABLE pricing_rules (
   per_km_rs DECIMAL(10, 2) NOT NULL CHECK (per_km_rs >= 0),
   helper_rs DECIMAL(10, 2) NOT NULL DEFAULT 200 CHECK (helper_rs >= 0),
   commission_percent DECIMAL(5, 2) NOT NULL DEFAULT 15 CHECK (commission_percent >= 0 AND commission_percent <= 100),
+  minimum_fare DECIMAL(10, 2) NOT NULL DEFAULT 0 CHECK (minimum_fare >= 0),
+  size_small_extra DECIMAL(10, 2) NOT NULL DEFAULT 0 CHECK (size_small_extra >= 0),
+  size_big_extra DECIMAL(10, 2) NOT NULL DEFAULT 0 CHECK (size_big_extra >= 0),
+  weight_0_100 DECIMAL(10, 2) NOT NULL DEFAULT 0 CHECK (weight_0_100 >= 0),
+  weight_100_300 DECIMAL(10, 2) NOT NULL DEFAULT 0 CHECK (weight_100_300 >= 0),
+  weight_300_500 DECIMAL(10, 2) NOT NULL DEFAULT 0 CHECK (weight_300_500 >= 0),
+  weight_500_plus DECIMAL(10, 2) NOT NULL DEFAULT 0 CHECK (weight_500_plus >= 0),
   updated_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
 );
 GO

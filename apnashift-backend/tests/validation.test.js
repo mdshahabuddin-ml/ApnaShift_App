@@ -7,6 +7,7 @@ const base = {
   pickup: { address: '12 MG Road, Indore', lat: 22.72, lng: 75.86 },
   drop: { address: '45 AB Road, Indore', lat: 22.75, lng: 75.9 },
   vehicle_type: 'pickup',
+  item_description: '2x Bed, 1x Sofa',
 };
 
 describe('bookingCreateSchema.scheduled_time — past reject, future pass', () => {

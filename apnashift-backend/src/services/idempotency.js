@@ -29,6 +29,10 @@ export function hashBookingRequest({
   helper_needed,
   item_description,
   scheduled_time,
+  vehicle_size_tier,
+  goods_weight_kg,
+  item_count,
+  has_bulky_item,
 }) {
   const canonical = JSON.stringify({
     pickup,
@@ -37,6 +41,10 @@ export function hashBookingRequest({
     helper_needed,
     item_description: item_description ?? '',
     scheduled_time: scheduled_time ?? null,
+    vehicle_size_tier: vehicle_size_tier ?? 'chhota',
+    goods_weight_kg: goods_weight_kg ?? 0,
+    item_count: item_count ?? 1,
+    has_bulky_item: has_bulky_item ?? false,
   });
   return crypto.createHash('sha256').update(canonical).digest('hex');
 }

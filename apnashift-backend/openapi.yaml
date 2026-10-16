@@ -54,6 +54,10 @@ components:
         drop: { $ref: '#/components/schemas/AddressPoint' }
         vehicle_type: { $ref: '#/components/schemas/VehicleType' }
         helper_needed: { type: boolean }
+        vehicle_size_tier: { type: string, enum: [chhota, bada] }
+        goods_weight_kg: { type: number }
+        item_count: { type: integer }
+        has_bulky_item: { type: boolean }
         item_description: { type: string }
         scheduled_time: { type: string, format: date-time, nullable: true }
         delivered_at: { type: string, format: date-time, nullable: true, description: 'Set on delivered, else null' }
@@ -278,6 +282,10 @@ paths:
                 drop: { $ref: '#/components/schemas/Coord' }
                 vehicle_type: { $ref: '#/components/schemas/VehicleType' }
                 helper_needed: { type: boolean, default: false }
+                vehicle_size_tier: { type: string, enum: [chhota, bada], default: chhota }
+                goods_weight_kg: { type: number, minimum: 0, maximum: 5000, default: 0 }
+                item_count: { type: integer, minimum: 1, maximum: 100, default: 1 }
+                has_bulky_item: { type: boolean, default: false }
       responses:
         '200':
           description: Estimate (rates from DB, total rounded to Rs 10)
@@ -289,12 +297,17 @@ paths:
                   ok: { type: boolean, example: true }
                   distance_km: { type: number, example: 7.15 }
                   vehicle_type: { $ref: '#/components/schemas/VehicleType' }
-                  base_fare: { type: number, example: 600 }
+                  base_fare: { type: number, example: 450 }
                   distance_fare: { type: number, example: 160.86 }
+                  size_charge: { type: number, example: 0 }
+                  weight_charge: { type: number, example: 0 }
+                  bulky_charge: { type: number, example: 0 }
+                  items_charge: { type: number, example: 0 }
                   helper_charge: { type: number, example: 0 }
-                  total: { type: number, example: 760 }
-                  estimate_min: { type: number, example: 680 }
-                  estimate_max: { type: number, example: 840 }
+                  minimum_fare: { type: number, example: 450 }
+                  total: { type: number, example: 610 }
+                  estimate_min: { type: number, example: 550 }
+                  estimate_max: { type: number, example: 670 }
         '400':
           description: validation_failed or distance_too_far (>500 km, one-city MVP)
           content:
@@ -315,13 +328,17 @@ paths:
           application/json:
             schema:
               type: object
-              required: [pickup, drop, vehicle_type]
+              required: [pickup, drop, vehicle_type, item_description]
               properties:
                 pickup: { $ref: '#/components/schemas/AddressPoint' }
                 drop: { $ref: '#/components/schemas/AddressPoint' }
                 vehicle_type: { $ref: '#/components/schemas/VehicleType' }
                 helper_needed: { type: boolean, default: false }
-                item_description: { type: string }
+                vehicle_size_tier: { type: string, enum: [chhota, bada], default: chhota }
+                goods_weight_kg: { type: number, minimum: 0, maximum: 5000, default: 0 }
+                item_count: { type: integer, minimum: 1, maximum: 100, default: 1 }
+                has_bulky_item: { type: boolean, default: false }
+                item_description: { type: string, minLength: 3, maxLength: 500, example: '2x Bed, 1x Sofa, 3x Box', description: 'Mandatory: at least one item with quantity' }
                 scheduled_time: { type: string, format: date-time, description: 'Optional, must be now/future (past date is 400)' }
       responses:
         '201':
