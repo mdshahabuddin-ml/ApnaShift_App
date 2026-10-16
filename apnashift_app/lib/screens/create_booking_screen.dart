@@ -795,7 +795,9 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
                           lastDate: DateTime.now()
                               .add(const Duration(days: 30)),
                           initialDate: _date ?? DateTime.now());
-                      if (d != null) setState(() => _date = d);
+                      if (d != null && mounted) {
+                        setState(() => _date = d);
+                      }
                     },
                     child: Text(_date == null
                         ? 'Date (optional)'
@@ -806,7 +808,9 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
                     onPressed: () async {
                       final t = await showTimePicker(
                           context: context, initialTime: TimeOfDay.now());
-                      if (t != null) setState(() => _time = t);
+                      if (t != null && mounted) {
+                        setState(() => _time = t);
+                      }
                     },
                     child: Text(_time == null
                         ? 'Time (optional)'

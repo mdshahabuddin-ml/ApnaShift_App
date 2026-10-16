@@ -88,7 +88,9 @@
       nav_help: "সাহায্য",
       nav_dashboard: "ড্যাশবোর্ড",
       nav_mybookings: "আমার বুকিং",
-      nav_payments: "পেমেন্ট"
+      nav_payments: "পেমেন্ট",
+      lang_en: "English",
+      lang_hi: "हिन्दी"
     },
     mr: {
       nav_home: "होम",
@@ -101,7 +103,9 @@
       nav_help: "मदत",
       nav_dashboard: "डॅशबोर्ड",
       nav_mybookings: "माझी बुकिंग",
-      nav_payments: "पेमेंट"
+      nav_payments: "पेमेंट",
+      lang_en: "English",
+      lang_hi: "हिन्दी"
     },
     te: {
       nav_home: "హోమ్",
@@ -114,7 +118,9 @@
       nav_help: "సహాయం",
       nav_dashboard: "డాష్‌బోర్డ్",
       nav_mybookings: "నా బుకింగ్‌లు",
-      nav_payments: "చెల్లింపులు"
+      nav_payments: "చెల్లింపులు",
+      lang_en: "English",
+      lang_hi: "हिन्दी"
     },
     ta: {
       nav_home: "முகப்பு",
@@ -127,7 +133,9 @@
       nav_help: "உதவி",
       nav_dashboard: "டாஷ்போர்டு",
       nav_mybookings: "எனது முன்பதிவுகள்",
-      nav_payments: "கட்டணங்கள்"
+      nav_payments: "கட்டணங்கள்",
+      lang_en: "English",
+      lang_hi: "हिन्दी"
     },
     gu: {
       nav_home: "હોમ",
@@ -140,7 +148,9 @@
       nav_help: "મદદ",
       nav_dashboard: "ડેશબોર્ડ",
       nav_mybookings: "મારી બુકિંગ",
-      nav_payments: "ચુકવણી"
+      nav_payments: "ચુકવણી",
+      lang_en: "English",
+      lang_hi: "हिन्दी"
     },
     ur: {
       nav_home: "ہوم",
@@ -153,7 +163,9 @@
       nav_help: "مدد",
       nav_dashboard: "ڈیش بورڈ",
       nav_mybookings: "میری بکنگ",
-      nav_payments: "ادائیگی"
+      nav_payments: "ادائیگی",
+      lang_en: "English",
+      lang_hi: "हिन्दी"
     },
     kn: {
       nav_home: "ಮುಖಪುಟ",
@@ -166,7 +178,9 @@
       nav_help: "ಸಹಾಯ",
       nav_dashboard: "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
       nav_mybookings: "ನನ್ನ ಬುಕಿಂಗ್‌ಗಳು",
-      nav_payments: "ಪಾವತಿಗಳು"
+      nav_payments: "ಪಾವತಿಗಳು",
+      lang_en: "English",
+      lang_hi: "हिन्दी"
     },
     or: {
       nav_home: "ହୋମ୍",
@@ -179,7 +193,9 @@
       nav_help: "ସହାୟତା",
       nav_dashboard: "ଡ୍ୟାସବୋର୍ଡ",
       nav_mybookings: "ମୋ ବୁକିଂ",
-      nav_payments: "ପେମେଣ୍ଟ"
+      nav_payments: "ପେମେଣ୍ଟ",
+      lang_en: "English",
+      lang_hi: "हिन्दी"
     }
   };
 
