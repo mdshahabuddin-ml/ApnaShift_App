@@ -46,7 +46,8 @@ class Session extends ChangeNotifier {
   /// Codes: backend error codes, plus 'wrong_role' (driver/admin number —
   /// ye app customer-only hai) aur 'network_error' (server unreachable).
   /// Non-customer login ka token store NAHI hota (turant logout).
-  Future<String?> login({required String phone, required String password}) async {
+  Future<String?> login(
+      {required String phone, required String password, bool persist = true}) async {
     try {
       final r = await auth.login(phone: phone, password: password);
       if (!r.user.isCustomer) {
@@ -57,7 +58,12 @@ class Session extends ChangeNotifier {
         return 'wrong_role';
       }
       api.setToken(r.token);
-      await _store.write(r.token);
+      // "Keep me logged in" unchecked -> session-only token (no persistence).
+      if (persist) {
+        await _store.write(r.token);
+      } else {
+        await _store.delete();
+      }
       user = r.user;
       notifyListeners();
       PushTokens.register(api);
@@ -71,11 +77,19 @@ class Session extends ChangeNotifier {
     }
   }
 
-  Future<String?> register({required String name, required String phone, required String password}) async {
+  Future<String?> register(
+      {required String name,
+      required String phone,
+      required String password,
+      bool persist = true}) async {
     try {
       final r = await auth.register(name: name, phone: phone, password: password);
       api.setToken(r.token);
-      await _store.write(r.token);
+      if (persist) {
+        await _store.write(r.token);
+      } else {
+        await _store.delete();
+      }
       user = r.user;
       notifyListeners();
       PushTokens.register(api);
