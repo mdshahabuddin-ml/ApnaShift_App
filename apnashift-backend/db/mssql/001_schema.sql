@@ -107,6 +107,17 @@ CREATE TABLE bookings (
   cancelled_at DATETIME2 NULL,
   disputed BIT NOT NULL DEFAULT 0,
   dispute_reason NVARCHAR(500) NULL,
+  -- 023 (pricing v2 inputs) + 019 (booking source): fresh installs get them
+  -- here; existing tables are patched by the guarded ALTERs below.
+  vehicle_size_tier NVARCHAR(10) NOT NULL DEFAULT 'chhota'
+    CHECK (vehicle_size_tier IN ('chhota', 'bada')),
+  goods_weight_kg DECIMAL(10, 2) NOT NULL DEFAULT 0
+    CHECK (goods_weight_kg >= 0 AND goods_weight_kg <= 5000),
+  item_count INT NOT NULL DEFAULT 1
+    CHECK (item_count >= 1 AND item_count <= 100),
+  has_bulky_item BIT NOT NULL DEFAULT 0,
+  booking_source NVARCHAR(20) NOT NULL DEFAULT 'WEB'
+    CHECK (booking_source IN ('WEB', 'WHATSAPP', 'ADMIN', 'MOBILE')),
   created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
   updated_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
   CONSTRAINT bookings_delivered_at_check CHECK (
@@ -143,6 +154,43 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_bookings_disputed')
 GO
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_bookings_cancelled_at')
   CREATE INDEX idx_bookings_cancelled_at ON bookings (status, cancelled_at DESC);
+GO
+
+-- 023 + 019 backfill for databases created before these columns existed
+-- (CREATE TABLE above is skipped when the table exists — these are not).
+IF COL_LENGTH('bookings', 'vehicle_size_tier') IS NULL
+  ALTER TABLE bookings ADD vehicle_size_tier NVARCHAR(10) NOT NULL DEFAULT 'chhota';
+GO
+IF COL_LENGTH('bookings', 'goods_weight_kg') IS NULL
+  ALTER TABLE bookings ADD goods_weight_kg DECIMAL(10, 2) NOT NULL DEFAULT 0;
+GO
+IF COL_LENGTH('bookings', 'item_count') IS NULL
+  ALTER TABLE bookings ADD item_count INT NOT NULL DEFAULT 1;
+GO
+IF COL_LENGTH('bookings', 'has_bulky_item') IS NULL
+  ALTER TABLE bookings ADD has_bulky_item BIT NOT NULL DEFAULT 0;
+GO
+IF COL_LENGTH('bookings', 'booking_source') IS NULL
+  ALTER TABLE bookings ADD booking_source NVARCHAR(20) NOT NULL DEFAULT 'WEB';
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'bookings_size_tier_ck')
+  ALTER TABLE bookings ADD CONSTRAINT bookings_size_tier_ck CHECK (
+    vehicle_size_tier IN ('chhota', 'bada'));
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'bookings_weight_ck')
+  ALTER TABLE bookings ADD CONSTRAINT bookings_weight_ck CHECK (
+    goods_weight_kg >= 0 AND goods_weight_kg <= 5000);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'bookings_item_count_ck')
+  ALTER TABLE bookings ADD CONSTRAINT bookings_item_count_ck CHECK (
+    item_count >= 1 AND item_count <= 100);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'bookings_source_ck')
+  ALTER TABLE bookings ADD CONSTRAINT bookings_source_ck CHECK (
+    booking_source IN ('WEB', 'WHATSAPP', 'ADMIN', 'MOBILE'));
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_bookings_source_created')
+  CREATE INDEX idx_bookings_source_created ON bookings (booking_source, created_at DESC);
 GO
 
 -- updated_at auto-refresh (TRIGGER_NESTLEVEL stops the self-update recursion).
@@ -236,6 +284,29 @@ CREATE TABLE pricing_rules (
   updated_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
 );
 GO
+-- Backfill for databases created before the 023 columns existed
+-- (CREATE TABLE above is skipped when the table exists — these are not).
+IF COL_LENGTH('pricing_rules', 'minimum_fare') IS NULL
+  ALTER TABLE pricing_rules ADD minimum_fare DECIMAL(10, 2) NOT NULL DEFAULT 0;
+GO
+IF COL_LENGTH('pricing_rules', 'size_small_extra') IS NULL
+  ALTER TABLE pricing_rules ADD size_small_extra DECIMAL(10, 2) NOT NULL DEFAULT 0;
+GO
+IF COL_LENGTH('pricing_rules', 'size_big_extra') IS NULL
+  ALTER TABLE pricing_rules ADD size_big_extra DECIMAL(10, 2) NOT NULL DEFAULT 0;
+GO
+IF COL_LENGTH('pricing_rules', 'weight_0_100') IS NULL
+  ALTER TABLE pricing_rules ADD weight_0_100 DECIMAL(10, 2) NOT NULL DEFAULT 0;
+GO
+IF COL_LENGTH('pricing_rules', 'weight_100_300') IS NULL
+  ALTER TABLE pricing_rules ADD weight_100_300 DECIMAL(10, 2) NOT NULL DEFAULT 0;
+GO
+IF COL_LENGTH('pricing_rules', 'weight_300_500') IS NULL
+  ALTER TABLE pricing_rules ADD weight_300_500 DECIMAL(10, 2) NOT NULL DEFAULT 0;
+GO
+IF COL_LENGTH('pricing_rules', 'weight_500_plus') IS NULL
+  ALTER TABLE pricing_rules ADD weight_500_plus DECIMAL(10, 2) NOT NULL DEFAULT 0;
+GO
 
 -- Admins (staff login; manual insert).
 IF OBJECT_ID('admins', 'U') IS NULL
@@ -244,8 +315,20 @@ CREATE TABLE admins (
   name NVARCHAR(80) NOT NULL CHECK (LEN(name) BETWEEN 2 AND 80),
   phone NVARCHAR(15) NOT NULL UNIQUE CHECK (LEN(phone) = 10 AND phone LIKE '[6-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'),
   password_hash NVARCHAR(MAX) NOT NULL,
+  -- 022: role tiers (PG: TEXT DEFAULT 'admin').
+  role NVARCHAR(20) NOT NULL DEFAULT 'admin' CHECK (role IN ('admin', 'super_admin')),
   created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
 );
+GO
+-- 022 backfill for pre-existing admins tables.
+IF COL_LENGTH('admins', 'role') IS NULL
+  ALTER TABLE admins ADD role NVARCHAR(20) NOT NULL DEFAULT 'admin';
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'admins_role_ck')
+  ALTER TABLE admins ADD CONSTRAINT admins_role_ck CHECK (role IN ('admin', 'super_admin'));
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_admins_role')
+  CREATE INDEX idx_admins_role ON admins (role);
 GO
 
 -- Audit log + pricing history.
@@ -280,9 +363,67 @@ CREATE TABLE pricing_history (
   new_base_rs DECIMAL(10, 2) NOT NULL,
   new_per_km_rs DECIMAL(10, 2) NOT NULL,
   new_helper_rs DECIMAL(10, 2) NOT NULL,
+  -- 023: new-field snapshots (nullable so old history rows stay valid).
+  old_minimum_fare DECIMAL(10, 2) NULL,
+  new_minimum_fare DECIMAL(10, 2) NULL,
+  old_size_small_extra DECIMAL(10, 2) NULL,
+  new_size_small_extra DECIMAL(10, 2) NULL,
+  old_size_big_extra DECIMAL(10, 2) NULL,
+  new_size_big_extra DECIMAL(10, 2) NULL,
+  old_weight_0_100 DECIMAL(10, 2) NULL,
+  new_weight_0_100 DECIMAL(10, 2) NULL,
+  old_weight_100_300 DECIMAL(10, 2) NULL,
+  new_weight_100_300 DECIMAL(10, 2) NULL,
+  old_weight_300_500 DECIMAL(10, 2) NULL,
+  new_weight_300_500 DECIMAL(10, 2) NULL,
+  old_weight_500_plus DECIMAL(10, 2) NULL,
+  new_weight_500_plus DECIMAL(10, 2) NULL,
   changed_by UNIQUEIDENTIFIER NULL REFERENCES admins (id) ON DELETE SET NULL,
   created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
 );
+GO
+-- 023 backfill for pre-existing pricing_history tables.
+IF COL_LENGTH('pricing_history', 'old_minimum_fare') IS NULL
+  ALTER TABLE pricing_history ADD old_minimum_fare DECIMAL(10, 2) NULL;
+GO
+IF COL_LENGTH('pricing_history', 'new_minimum_fare') IS NULL
+  ALTER TABLE pricing_history ADD new_minimum_fare DECIMAL(10, 2) NULL;
+GO
+IF COL_LENGTH('pricing_history', 'old_size_small_extra') IS NULL
+  ALTER TABLE pricing_history ADD old_size_small_extra DECIMAL(10, 2) NULL;
+GO
+IF COL_LENGTH('pricing_history', 'new_size_small_extra') IS NULL
+  ALTER TABLE pricing_history ADD new_size_small_extra DECIMAL(10, 2) NULL;
+GO
+IF COL_LENGTH('pricing_history', 'old_size_big_extra') IS NULL
+  ALTER TABLE pricing_history ADD old_size_big_extra DECIMAL(10, 2) NULL;
+GO
+IF COL_LENGTH('pricing_history', 'new_size_big_extra') IS NULL
+  ALTER TABLE pricing_history ADD new_size_big_extra DECIMAL(10, 2) NULL;
+GO
+IF COL_LENGTH('pricing_history', 'old_weight_0_100') IS NULL
+  ALTER TABLE pricing_history ADD old_weight_0_100 DECIMAL(10, 2) NULL;
+GO
+IF COL_LENGTH('pricing_history', 'new_weight_0_100') IS NULL
+  ALTER TABLE pricing_history ADD new_weight_0_100 DECIMAL(10, 2) NULL;
+GO
+IF COL_LENGTH('pricing_history', 'old_weight_100_300') IS NULL
+  ALTER TABLE pricing_history ADD old_weight_100_300 DECIMAL(10, 2) NULL;
+GO
+IF COL_LENGTH('pricing_history', 'new_weight_100_300') IS NULL
+  ALTER TABLE pricing_history ADD new_weight_100_300 DECIMAL(10, 2) NULL;
+GO
+IF COL_LENGTH('pricing_history', 'old_weight_300_500') IS NULL
+  ALTER TABLE pricing_history ADD old_weight_300_500 DECIMAL(10, 2) NULL;
+GO
+IF COL_LENGTH('pricing_history', 'new_weight_300_500') IS NULL
+  ALTER TABLE pricing_history ADD new_weight_300_500 DECIMAL(10, 2) NULL;
+GO
+IF COL_LENGTH('pricing_history', 'old_weight_500_plus') IS NULL
+  ALTER TABLE pricing_history ADD old_weight_500_plus DECIMAL(10, 2) NULL;
+GO
+IF COL_LENGTH('pricing_history', 'new_weight_500_plus') IS NULL
+  ALTER TABLE pricing_history ADD new_weight_500_plus DECIMAL(10, 2) NULL;
 GO
 
 -- Idempotency keys (per-user scope).
@@ -366,7 +507,12 @@ CREATE TABLE payments (
   settled_amount DECIMAL(10, 2) NOT NULL DEFAULT 0 CHECK (settled_amount >= 0),
   collected_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
   created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
-  CONSTRAINT payments_split_ck CHECK (driver_earning + platform_commission = gross_amount)
+  -- 017: COD driver-confirm timestamp (NULL = not confirmed / legacy row).
+  cash_confirmed_at DATETIME2 NULL,
+  CONSTRAINT payments_split_ck CHECK (driver_earning + platform_commission = gross_amount),
+  CONSTRAINT payments_cash_confirm_ck CHECK (
+    cash_confirmed_at IS NULL OR payment_method = 'cash'
+  )
 );
 GO
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_payments_driver')
@@ -377,6 +523,15 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_payments_user')
 GO
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_payments_settlement')
   CREATE INDEX idx_payments_settlement ON payments (settlement_status, collected_at DESC);
+GO
+-- 017 backfill for pre-existing payments tables.
+IF COL_LENGTH('payments', 'cash_confirmed_at') IS NULL
+  ALTER TABLE payments ADD cash_confirmed_at DATETIME2 NULL;
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'payments_cash_confirm_ck')
+  ALTER TABLE payments ADD CONSTRAINT payments_cash_confirm_ck CHECK (
+    cash_confirmed_at IS NULL OR payment_method = 'cash'
+  );
 GO
 
 IF OBJECT_ID('payment_adjustments', 'U') IS NULL
@@ -411,6 +566,59 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_settlements_driver')
   CREATE INDEX idx_settlements_driver ON settlements (driver_id, settled_at DESC);
 GO
 
+-- 017: weekly settlement periods (PG money is BIGINT paise; UNIQUE driver+week).
+IF OBJECT_ID('settlement_periods', 'U') IS NULL
+CREATE TABLE settlement_periods (
+  id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+  driver_id UNIQUEIDENTIFIER NOT NULL REFERENCES drivers (id),
+  week_start DATE NOT NULL,
+  week_end DATE NOT NULL,
+  gross_paise BIGINT NOT NULL CHECK (gross_paise >= 0),
+  commission_paise BIGINT NOT NULL CHECK (commission_paise >= 0),
+  earning_paise BIGINT NOT NULL CHECK (earning_paise >= 0),
+  settled_paise BIGINT NOT NULL DEFAULT 0 CHECK (settled_paise >= 0),
+  status NVARCHAR(20) NOT NULL DEFAULT 'DUE'
+    CHECK (status IN ('DUE', 'PARTIALLY_PAID', 'PAID', 'DISPUTED')),
+  dispute_reason NVARCHAR(MAX) NULL CHECK (dispute_reason IS NULL OR LEN(dispute_reason) BETWEEN 3 AND 500),
+  created_by UNIQUEIDENTIFIER NULL REFERENCES admins (id) ON DELETE SET NULL,
+  created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+  CONSTRAINT settlement_periods_week_ck CHECK (
+    week_end = DATEADD(DAY, 6, week_start)
+    AND ((DATEPART(WEEKDAY, week_start) + @@DATEFIRST - 2) % 7 + 1) = 1
+  ),
+  CONSTRAINT settlement_periods_settled_ck CHECK (settled_paise <= gross_paise),
+  CONSTRAINT settlement_periods_unique_ck UNIQUE (driver_id, week_start)
+);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_settlement_periods_driver_week')
+  CREATE INDEX idx_settlement_periods_driver_week ON settlement_periods (driver_id, week_start DESC);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_settlement_periods_status')
+  CREATE INDEX idx_settlement_periods_status ON settlement_periods (status, week_end DESC);
+GO
+
+IF OBJECT_ID('settlement_period_items', 'U') IS NULL
+CREATE TABLE settlement_period_items (
+  period_id UNIQUEIDENTIFIER NOT NULL REFERENCES settlement_periods (id) ON DELETE CASCADE,
+  payment_id UNIQUEIDENTIFIER NOT NULL REFERENCES payments (id),
+  PRIMARY KEY (period_id, payment_id)
+);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_settlement_period_items_payment')
+  CREATE UNIQUE INDEX idx_settlement_period_items_payment ON settlement_period_items (payment_id);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_settlement_period_items_period')
+  CREATE INDEX idx_settlement_period_items_period ON settlement_period_items (period_id);
+GO
+
+-- 017: optional link from admin receipts to a weekly period (PG: UUID ... SET NULL).
+IF COL_LENGTH('settlements', 'settlement_period_id') IS NULL
+  ALTER TABLE settlements ADD settlement_period_id UNIQUEIDENTIFIER NULL REFERENCES settlement_periods (id) ON DELETE SET NULL;
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_settlements_period')
+  CREATE INDEX idx_settlements_period ON settlements (settlement_period_id);
+GO
+
 -- Platform settings (commission fallback) + commission history.
 IF OBJECT_ID('platform_settings', 'U') IS NULL
 CREATE TABLE platform_settings (
@@ -429,4 +637,98 @@ CREATE TABLE commission_history (
   changed_by UNIQUEIDENTIFIER NULL REFERENCES admins (id) ON DELETE SET NULL,
   created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
 );
+GO
+
+-- 021: in-app notifications (PG UNIQUE doubles as dedupe guard) + push tokens.
+IF OBJECT_ID('notifications', 'U') IS NULL
+CREATE TABLE notifications (
+  id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+  seq INT IDENTITY(1,1),
+  recipient_role NVARCHAR(20) NOT NULL CHECK (recipient_role IN ('user', 'driver')),
+  recipient_id UNIQUEIDENTIFIER NOT NULL,
+  booking_id UNIQUEIDENTIFIER NOT NULL REFERENCES bookings (id) ON DELETE CASCADE,
+  type NVARCHAR(30) NOT NULL CHECK (type IN (
+    'booking_created', 'booking_accepted', 'driver_arrived',
+    'trip_started', 'trip_completed', 'booking_cancelled',
+    'assignment_received'
+  )),
+  title NVARCHAR(MAX) NOT NULL,
+  body NVARCHAR(MAX) NOT NULL,
+  data NVARCHAR(MAX) NOT NULL DEFAULT '{}',
+  read_at DATETIME2 NULL,
+  created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+  CONSTRAINT notifications_dedupe_ck UNIQUE (booking_id, recipient_role, recipient_id, type)
+);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_notif_recipient_time')
+  CREATE INDEX idx_notif_recipient_time ON notifications (recipient_role, recipient_id, created_at DESC);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_notif_unread')
+  CREATE INDEX idx_notif_unread ON notifications (recipient_role, recipient_id) WHERE read_at IS NULL;
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_notif_booking')
+  CREATE INDEX idx_notif_booking ON notifications (booking_id);
+GO
+
+IF OBJECT_ID('device_tokens', 'U') IS NULL
+CREATE TABLE device_tokens (
+  id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+  owner_role NVARCHAR(20) NOT NULL CHECK (owner_role IN ('user', 'driver')),
+  owner_id UNIQUEIDENTIFIER NOT NULL,
+  platform NVARCHAR(20) NOT NULL CHECK (platform IN ('android', 'ios', 'web')),
+  token NVARCHAR(512) NOT NULL CHECK (LEN(token) BETWEEN 1 AND 512),
+  created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+  updated_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+  CONSTRAINT device_tokens_owner_token_ck UNIQUE (owner_role, owner_id, token)
+);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_device_tokens_owner')
+  CREATE INDEX idx_device_tokens_owner ON device_tokens (owner_role, owner_id);
+GO
+
+-- 016: password-reset OTPs (PG: HMAC hash, no FK — phone is the key).
+IF OBJECT_ID('password_reset_otps', 'U') IS NULL
+CREATE TABLE password_reset_otps (
+  id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+  phone NVARCHAR(15) NOT NULL CHECK (LEN(phone) = 10 AND phone LIKE '[6-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'),
+  otp_hash NVARCHAR(MAX) NOT NULL,
+  expires_at DATETIME2 NOT NULL,
+  attempts INT NOT NULL DEFAULT 0 CHECK (attempts >= 0),
+  created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
+);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_password_reset_otps_phone_created')
+  CREATE INDEX idx_password_reset_otps_phone_created ON password_reset_otps (phone, created_at DESC);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_password_reset_otps_expires')
+  CREATE INDEX idx_password_reset_otps_expires ON password_reset_otps (expires_at);
+GO
+
+-- 019: WhatsApp dialog state (PG data JSONB -> NVARCHAR(MAX) JSON '{}').
+IF OBJECT_ID('wa_conversations', 'U') IS NULL
+CREATE TABLE wa_conversations (
+  id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+  phone NVARCHAR(15) NOT NULL UNIQUE CHECK (LEN(phone) = 10 AND phone LIKE '[6-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'),
+  state NVARCHAR(50) NOT NULL DEFAULT 'START',
+  data NVARCHAR(MAX) NOT NULL DEFAULT '{}',
+  booking_id UNIQUEIDENTIFIER NULL REFERENCES bookings (id) ON DELETE SET NULL,
+  created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+  updated_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
+);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_wa_conversations_updated')
+  CREATE INDEX idx_wa_conversations_updated ON wa_conversations (updated_at DESC);
+GO
+
+-- 018: driver decline records (append-only; never touches bookings rows).
+IF OBJECT_ID('driver_declines', 'U') IS NULL
+CREATE TABLE driver_declines (
+  driver_id UNIQUEIDENTIFIER NOT NULL REFERENCES drivers (id) ON DELETE CASCADE,
+  booking_id UNIQUEIDENTIFIER NOT NULL REFERENCES bookings (id),
+  created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+  PRIMARY KEY (driver_id, booking_id)
+);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_driver_declines_booking')
+  CREATE INDEX idx_driver_declines_booking ON driver_declines (booking_id, created_at DESC);
 GO
