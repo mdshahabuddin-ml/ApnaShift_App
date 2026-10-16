@@ -27,7 +27,10 @@ let superAdminRoutes = null;
 try {
   ({ superAdminRoutes } = await import('../../super-admin-module/backend/superAdminRoutes.js'));
 } catch {
-  console.warn('[app] super-admin module missing — /api/superadmin disabled.');
+  // Info (not warn): the docker image intentionally excludes
+  // super-admin-module/ (outside the build context), so this is the
+  // expected state in production — log platforms must not flag it Error.
+  console.info('[app] super-admin module not bundled — /api/superadmin disabled.');
 }
 
 export function createApp() {
