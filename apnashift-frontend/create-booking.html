@@ -63,6 +63,19 @@
   .hint{font-size:.82rem;color:var(--muted);margin:4px 0 0}
   .error-text{color:var(--red);font-size:.82rem;font-weight:600;min-height:1.1em;margin:4px 0 0}
   .field.invalid input,.field.invalid select{border-color:var(--red)}
+  .items-grid{display:grid;gap:8px;grid-template-columns:1fr 1fr;margin:8px 0}
+  @media(max-width:480px){.items-grid{grid-template-columns:1fr}}
+  .item-row{display:flex;align-items:center;gap:8px;background:#f8fafc;border:2px solid var(--border);border-radius:10px;padding:8px 10px}
+  .item-row .iname{flex:1;font-weight:600;font-size:.88rem;color:var(--navy)}
+  .qty-btn{width:32px;height:32px;border-radius:8px;border:2px solid var(--navy);background:#fff;color:var(--navy);font-weight:800;font-size:1rem;cursor:pointer;line-height:1}
+  .qty-val{min-width:28px;text-align:center;font-weight:800;color:var(--navy)}
+  .custom-row{display:flex;gap:8px;margin:8px 0}
+  .custom-row input{flex:1}
+  .custom-add{font:inherit;font-weight:800;background:var(--navy);color:#fff;border:2px solid var(--navy);border-radius:10px;padding:10px 14px;cursor:pointer;white-space:nowrap}
+  .custom-list{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+  .custom-chip{display:inline-flex;align-items:center;gap:6px;background:#fff8e2;border:2px solid var(--navy);border-radius:999px;padding:4px 6px 4px 12px;font-size:.83rem;font-weight:600}
+  .custom-chip button{border:0;background:#c0392b;color:#fff;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:.75rem;line-height:1}
+  .items-count{font-size:.82rem;color:var(--muted);font-weight:600;margin:4px 0 0}
   .controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
   .btn{font-family:"Baloo 2","Comic Sans MS",system-ui,sans-serif;font-weight:800;font-size:.95rem;padding:11px 18px;border-radius:12px;border:2px solid var(--navy);cursor:pointer;background:var(--yellow);color:var(--navy);box-shadow:0 4px 0 var(--navy);text-decoration:none;display:inline-block}
   .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--navy)}
@@ -101,9 +114,28 @@
   <p class="sub" data-i18n="pg_create-booking_02">Enter addresses, view the live fare, then confirm your booking.</p>
 
   <div id="pageAlert" role="alert" aria-live="assertive"></div>
+  <div id="pinBanner" role="status" aria-live="polite" style="display:none;background:#fff8e2;border:2px dashed var(--navy);border-radius:10px;padding:12px;margin:0 0 14px;font-size:.9rem;font-weight:600"><b>Map trouble?</b> Map / suggestions unavailable ho sakte hain — neeche <b>Book Using PIN Code</b> se aage badho.<div class="controls"><button type="button" class="btn" id="pinModeBtn">Book Using PIN Code</button></div><p class="hint" id="pinBannerStatus" style="margin:8px 0 0"></p></div>
 
   <section class="card" aria-labelledby="formTitle">
     <h2 id="formTitle" data-i18n="pg_create-booking_03">Trip details</h2>
+    <div class="controls" style="margin-bottom:12px"><button type="button" class="btn ghost" id="pinToggleLink">Book Using PIN Code (map unavailable?)</button></div>
+    <div id="pinFallback" style="display:none;border:2px solid var(--navy);border-radius:10px;padding:12px;margin:0 0 12px;background:#f8fafc">
+      <b>PIN Code fallback</b>
+      <p class="hint">Pickup + Drop ke 6-digit Indian PIN likho (city/district/state address me manually likho — koi auto-fill nahi). Fare/distance sirf valid coordinates par backend se aayega; kuch invent nahi hoga.</p>
+      <div class="row2">
+        <div class="field" id="f-pickupPin">
+          <label for="pickupPin">Pickup PIN Code *</label>
+          <input type="text" id="pickupPin" inputmode="numeric" maxlength="6" placeholder="e.g. 452001">
+          <p class="error-text" id="pickupPin-err"></p>
+        </div>
+        <div class="field" id="f-dropPin">
+          <label for="dropPin">Drop PIN Code *</label>
+          <input type="text" id="dropPin" inputmode="numeric" maxlength="6" placeholder="e.g. 452002">
+          <p class="error-text" id="dropPin-err"></p>
+        </div>
+      </div>
+      <div class="controls"><button type="button" class="btn ghost" id="pinBackBtn">Back to map</button></div>
+    </div>
     <div class="field" id="f-pickup">
       <label for="pickupAddr" data-i18n="pg_create-booking_04">Pickup address</label>
       <input type="text" id="pickupAddr" maxlength="300" placeholder="Example: 12 MG Road, Indore" data-i18n-ph="pg_create-booking_05">
@@ -143,6 +175,46 @@
       </select>
       <p class="error-text" id="vehicle-err"></p>
     </div>
+    <div class="row2">
+      <div class="field" id="f-size">
+        <label for="sizeTier">Vehicle size</label>
+        <select id="sizeTier">
+          <option value="chhota">Chhota (small)</option>
+          <option value="bada">Bada (big)</option>
+        </select>
+        <p class="error-text" id="sizeTier-err"></p>
+      </div>
+      <div class="field" id="f-weight">
+        <label for="weightKg">Approx weight (kg)</label>
+        <input type="number" id="weightKg" min="0" max="5000" step="1" value="0">
+        <p class="error-text" id="weightKg-err"></p>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field" id="f-count">
+        <label for="itemCount">Item count</label>
+        <input type="number" id="itemCount" min="1" max="100" step="1" value="1">
+        <p class="error-text" id="itemCount-err"></p>
+      </div>
+      <div class="field" id="f-bulky">
+        <label for="bulkyChk">Bulky item?</label>
+        <label style="font-weight:400"><input type="checkbox" id="bulkyChk" style="width:auto"> Heavy/bulky samaan hai (+Rs 100)</label>
+      </div>
+    </div>
+    <div class="field" id="f-items">
+      <label>Items to Shift *</label>
+      <p class="hint">Add at least one item with quantity — kam se kam ek item mandatory hai.</p>
+      <div class="items-grid" id="itemsGrid" role="group" aria-label="Common household items"></div>
+      <div class="custom-row">
+        <input type="text" id="customItemName" maxlength="40" placeholder="Custom item — e.g. Plants, TV, Mattress" aria-label="Custom item name">
+        <button type="button" class="custom-add" id="customItemAdd">+ Add</button>
+      </div>
+      <div class="custom-list" id="customList" aria-live="polite"></div>
+      <p class="items-count" id="itemsCount">0 items selected — please add at least one.</p>
+      <label for="itemNotes" style="margin-top:8px">Additional notes (optional)</label>
+      <input type="text" id="itemNotes" maxlength="200" placeholder="Example: 2nd floor, lift available">
+      <p class="error-text" id="items-err"></p>
+    </div>
     <div class="controls">
       <button type="button" class="btn ghost" id="estimateBtn" data-i18n="pg_create-booking_16">Check Live Price</button>
     </div>
@@ -150,6 +222,10 @@
       <table>
         <tbody>
           <tr><td data-i18n="pg_create-booking_17">Distance</td><td id="fareDist">–</td></tr>
+          <tr><td>Base</td><td id="fareBase">–</td></tr>
+          <tr><td>Size charge</td><td id="fareSize">–</td></tr>
+          <tr><td>Weight charge</td><td id="fareWeight">–</td></tr>
+          <tr><td>Bulky / Items</td><td id="fareExtra">–</td></tr>
           <tr><td data-i18n="pg_create-booking_18">Total fare</td><td id="fareTotal">–</td></tr>
         </tbody>
       </table>
@@ -199,6 +275,10 @@
   var dropLat = document.getElementById("dropLat");
   var dropLng = document.getElementById("dropLng");
   var vehicle = document.getElementById("vehicle");
+  var sizeTier = document.getElementById("sizeTier");
+  var weightKg = document.getElementById("weightKg");
+  var itemCount = document.getElementById("itemCount");
+  var bulkyChk = document.getElementById("bulkyChk");
   var estimateBtn = document.getElementById("estimateBtn");
   var bookBtn = document.getElementById("bookBtn");
   var fareCard = document.getElementById("fareCard");
@@ -233,6 +313,138 @@
     return !bad;
   }
 
+  // ---- PIN Code fallback (map/suggestion unavailable) ----
+  // No reliable PIN lookup exists: city/district/state stay manual.
+  // PINs validated + embedded in address ("addr — PIN 452001"); API + DB untouched.
+  var PIN_RE = /^[1-9][0-9]{5}$/;
+  var pinMode = false;
+  function withPin(addr, pin){
+    var a = String(addr || "").trim();
+    var p = String(pin || "").trim();
+    if(!p) return a;
+    var tagged = a + " — PIN " + p;
+    return tagged.length > 300 ? tagged.slice(0, 300) : tagged;
+  }
+  function validPin(v){ return PIN_RE.test(String(v || "").trim()); }
+  function setPinMode(on){
+    pinMode = !!on;
+    var fb = document.getElementById("pinFallback");
+    var banner = document.getElementById("pinBanner");
+    if(fb) fb.style.display = pinMode ? "block" : "none";
+    if(banner && pinMode) banner.style.display = "none";
+    if(!pinMode) hideAlert();
+  }
+  function showPinBanner(msg){
+    var banner = document.getElementById("pinBanner");
+    var st = document.getElementById("pinBannerStatus");
+    if(banner) banner.style.display = "block";
+    if(st && msg) st.textContent = msg;
+  }
+  (function wirePin(){
+    var on = document.getElementById("pinModeBtn");
+    var link = document.getElementById("pinToggleLink");
+    var back = document.getElementById("pinBackBtn");
+    if(on) on.addEventListener("click", function(){ setPinMode(true); hideAlert(); });
+    if(link) link.addEventListener("click", function(){ setPinMode(!pinMode); hideAlert(); });
+    if(back) back.addEventListener("click", function(){ setPinMode(false); });
+  })();
+
+  // ---- Items to Shift (mandatory): common items + custom, qty 0..20 ----
+  var ITEM_CATALOG = ["Bed", "Sofa", "Table", "Chair", "Refrigerator", "Washing Machine", "Box", "Almari / Wardrobe"];
+  var itemQty = {};
+  var customItems = [];
+  (function initQty(){ for(var i = 0; i < ITEM_CATALOG.length; i++) itemQty[ITEM_CATALOG[i]] = 0; })();
+  function escHtml(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function totalItemCount(){
+    var t = 0, k;
+    for(k in itemQty){ if(Object.prototype.hasOwnProperty.call(itemQty, k)) t += (itemQty[k] || 0); }
+    for(var i = 0; i < customItems.length; i++) t += (customItems[i].qty || 0);
+    return t;
+  }
+  function buildItemDescription(){
+    var parts = [];
+    for(var i = 0; i < ITEM_CATALOG.length; i++){
+      var k = ITEM_CATALOG[i];
+      if(itemQty[k] > 0) parts.push(itemQty[k] + "x " + k);
+    }
+    for(var j = 0; j < customItems.length; j++){
+      if(customItems[j].qty > 0 && customItems[j].name) parts.push(customItems[j].qty + "x " + customItems[j].name);
+    }
+    var notesEl = document.getElementById("itemNotes");
+    var notes = notesEl ? notesEl.value.trim() : "";
+    var base = parts.join(", ");
+    if(notes) base = base ? (base + " | Notes: " + notes) : notes;
+    return base;
+  }
+  function refreshItemsUI(){
+    var grid = document.getElementById("itemsGrid");
+    if(grid){
+      var html = "";
+      for(var i = 0; i < ITEM_CATALOG.length; i++){
+        var name = ITEM_CATALOG[i], q = itemQty[name] || 0;
+        html += '<div class="item-row"><span class="iname">' + escHtml(name) + '</span>' +
+          '<button type="button" class="qty-btn" data-item="' + escHtml(name) + '" data-d="-1" aria-label="Decrease ' + escHtml(name) + '">−</button>' +
+          '<span class="qty-val">' + q + '</span>' +
+          '<button type="button" class="qty-btn" data-item="' + escHtml(name) + '" data-d="1" aria-label="Increase ' + escHtml(name) + '">+</button></div>';
+      }
+      grid.innerHTML = html;
+      var btns = grid.querySelectorAll(".qty-btn");
+      for(var b = 0; b < btns.length; b++){
+        (function(btn){
+          btn.addEventListener("click", function(){
+            var n = btn.getAttribute("data-item");
+            var d = Number(btn.getAttribute("data-d"));
+            var v = (itemQty[n] || 0) + d;
+            if(v < 0) v = 0; if(v > 20) v = 20;
+            itemQty[n] = v;
+            refreshItemsUI();
+          });
+        })(btns[b]);
+      }
+    }
+    var cl = document.getElementById("customList");
+    if(cl){
+      var ch = "";
+      for(var j = 0; j < customItems.length; j++){
+        ch += '<span class="custom-chip">' + escHtml(customItems[j].qty + "x " + customItems[j].name) +
+          ' <button type="button" data-ci="' + j + '" aria-label="Remove">×</button></span>';
+      }
+      cl.innerHTML = ch;
+      var rm = cl.querySelectorAll("button[data-ci]");
+      for(var r = 0; r < rm.length; r++){
+        (function(btn){
+          btn.addEventListener("click", function(){
+            customItems.splice(Number(btn.getAttribute("data-ci")), 1);
+            refreshItemsUI();
+          });
+        })(rm[r]);
+      }
+    }
+    var cnt = document.getElementById("itemsCount");
+    if(cnt){
+      var t = totalItemCount();
+      cnt.textContent = t === 0 ? "0 items selected — please add at least one." : (t + (t === 1 ? " item" : " items") + " selected.");
+    }
+  }
+  (function wireCustom(){
+    var add = document.getElementById("customItemAdd");
+    var inp = document.getElementById("customItemName");
+    if(!add || !inp) return;
+    add.addEventListener("click", function(){
+      var v = inp.value.trim().slice(0, 40);
+      if(v.length < 2){ showAlert("err", "Custom item ka naam kam se kam 2 akshar likho."); inp.focus(); return; }
+      customItems.push({ name: v, qty: 1 });
+      inp.value = "";
+      hideAlert();
+      refreshItemsUI();
+    });
+  })();
+  refreshItemsUI();
+
   // Form validate karke saaf payload do (estimate + booking dono use karte hain).
   function cleanForm(){
     hideAlert();
@@ -252,21 +464,57 @@
       setErr("f-vehicle", "vehicle-err", true, "Please select a vehicle.");
       ok = false;
     } else setErr("f-vehicle", "vehicle-err", false);
+    var pickupPinEl = document.getElementById("pickupPin");
+    var dropPinEl = document.getElementById("dropPin");
+    var pinP = "", pinD = "";
+    if(pinMode){
+      if(!validPin(pickupPinEl ? pickupPinEl.value : "")){
+        setErr("f-pickupPin", "pickupPin-err", true, "Enter a valid 6-digit Indian PIN code (1-9 se shuru)."); ok = false;
+      } else setErr("f-pickupPin", "pickupPin-err", false);
+      if(!validPin(dropPinEl ? dropPinEl.value : "")){
+        setErr("f-dropPin", "dropPin-err", true, "Enter a valid 6-digit Indian PIN code (1-9 se shuru)."); ok = false;
+      } else setErr("f-dropPin", "dropPin-err", false);
+      pinP = pickupPinEl ? pickupPinEl.value.trim() : "";
+      pinD = dropPinEl ? dropPinEl.value.trim() : "";
+    }
+    var size = (sizeTier && sizeTier.value === "bada") ? "bada" : "chhota";
+    var wt = num(weightKg, 0, 5000);
+    if(wt === null){ setErr("f-weight", "weightKg-err", true, "Weight 0-5000 kg me likho."); ok = false; }
+    else setErr("f-weight", "weightKg-err", false);
+    var cnt = num(itemCount, 1, 100);
+    if(cnt === null){ setErr("f-count", "itemCount-err", true, "Item count 1-100 me likho."); ok = false; }
+    else setErr("f-count", "itemCount-err", false);
+    var bulky = !!(bulkyChk && bulkyChk.checked);
+    var desc = buildItemDescription();
+    if(totalItemCount() < 1){
+      setErr("f-items", "items-err", true, "Please add at least one item to shift (e.g. 1 Bed, 2 Boxes) with quantity — Items to Shift mandatory hai.");
+      showAlert("err", "Please add at least one item to shift with quantity before proceeding.");
+      ok = false;
+    } else if(desc.length < 3 || desc.length > 500){
+      setErr("f-items", "items-err", true, "Items list 3-500 characters me ho.");
+      ok = false;
+    } else setErr("f-items", "items-err", false);
     if(!ok) return null;
     return {
-      pickup: { address: pa, lat: pLat, lng: pLng },
-      drop: { address: da, lat: dLat, lng: dLng },
-      vehicle_type: vehicle.value
+      pickup: { address: pinMode ? withPin(pa, pinP) : pa, lat: pLat, lng: pLng },
+      drop: { address: pinMode ? withPin(da, pinD) : da, lat: dLat, lng: dLng },
+      vehicle_type: vehicle.value,
+      vehicle_size_tier: size,
+      goods_weight_kg: wt,
+      item_count: Math.trunc(cnt),
+      has_bulky_item: bulky,
+      item_description: desc
     };
   }
 
+  function rs(v){ return (v === undefined || v === null || !isFinite(Number(v))) ? "–" : "Rs " + Number(v); }
   // Live price seedha backend estimate API se (koi andaza nahi).
-  estimateBtn.addEventListener("click", function(){
+  function doEstimate(live){
     var clean = cleanForm();
     if(!clean) return;
     estimateBtn.disabled = true;
     estimateBtn.textContent = "Calculating fare…";
-    fareCard.classList.remove("show");
+    if(!live) fareCard.classList.remove("show");
     fetch(API_BASE_URL + "/api/bookings/estimate-price", {
       method: "POST",
       headers: authHeaders(),
@@ -274,7 +522,11 @@
         pickup: { lat: clean.pickup.lat, lng: clean.pickup.lng },
         drop: { lat: clean.drop.lat, lng: clean.drop.lng },
         vehicle_type: clean.vehicle_type,
-        helper_needed: false
+        helper_needed: false,
+        vehicle_size_tier: clean.vehicle_size_tier,
+        goods_weight_kg: clean.goods_weight_kg,
+        item_count: clean.item_count,
+        has_bulky_item: clean.has_bulky_item
       })
     }).then(readBody).then(function(result){
       if(result.status === 401){ window.location.href = "user-auth.html"; return; }
@@ -285,6 +537,11 @@
       }
       document.getElementById("fareDist").textContent =
         (result.body.distance_km !== undefined ? result.body.distance_km + " km" : "–");
+      document.getElementById("fareBase").textContent = rs(result.body.base_fare);
+      document.getElementById("fareSize").textContent = rs(result.body.size_charge);
+      document.getElementById("fareWeight").textContent = rs(result.body.weight_charge);
+      var extra = (Number(result.body.bulky_charge) || 0) + (Number(result.body.items_charge) || 0);
+      document.getElementById("fareExtra").textContent = rs(extra);
       document.getElementById("fareTotal").textContent =
         (result.body.total !== undefined ? "Rs " + result.body.total : "–");
       fareCard.classList.add("show");
@@ -295,7 +552,20 @@
       estimateBtn.disabled = false;
       estimateBtn.textContent = "Check Live Price";
     });
-  });
+  }
+  estimateBtn.addEventListener("click", function(){ doEstimate(false); });
+  // Estimate live update ho jab naye fields badlein (fare already visible ho to).
+  var liveTimer = null;
+  function liveRefresh(){
+    if(!fareCard.classList.contains("show")) return;
+    if(liveTimer) clearTimeout(liveTimer);
+    liveTimer = setTimeout(function(){ doEstimate(true); }, 600);
+  }
+  if(vehicle) vehicle.addEventListener("change", liveRefresh);
+  if(sizeTier) sizeTier.addEventListener("change", liveRefresh);
+  if(weightKg) weightKg.addEventListener("input", liveRefresh);
+  if(itemCount) itemCount.addEventListener("input", liveRefresh);
+  if(bulkyChk) bulkyChk.addEventListener("change", liveRefresh);
 
   // Booking pakki karo — success sirf backend 201 par, phir detail page.
   bookBtn.addEventListener("click", function(){
@@ -336,7 +606,7 @@
   }
 })();
 </script>
-<script>window.PAGE_I18N={en:{page_title:"Create Booking | ApnaShift",meta_desc:"Book a vehicle on ApnaShift — view live fares and confirm your booking.",'pg_create-booking_01':"Book a Vehicle",'pg_create-booking_02':"Enter addresses, view the live fare, then confirm your booking.",'pg_create-booking_03':"Trip details",'pg_create-booking_04':"Pickup address",'pg_create-booking_05':"Example: 12 MG Road, Indore",'pg_create-booking_06':"Pickup lat",'pg_create-booking_07':"Pickup lng",'pg_create-booking_08':"Drop address",'pg_create-booking_09':"Example: 45 AB Road, Indore",'pg_create-booking_10':"Drop lat",'pg_create-booking_11':"Drop lng",'pg_create-booking_12':"Select vehicle",'pg_create-booking_13':"Pickup — Small goods",'pg_create-booking_14':"Mini Truck — Household goods",'pg_create-booking_15':"Mini Tractor — Heavy goods",'pg_create-booking_16':"Check Live Price",'pg_create-booking_17':"Distance",'pg_create-booking_18':"Total fare",'pg_create-booking_19':"Confirm Booking",'pg_create-booking_20':"Default payment method is UPI (cannot be changed after booking).",'pg_create-booking_21':"Home",'pg_create-booking_22':"Help",'pg_create-booking_23':"Privacy Policy",'pg_create-booking_24':"Terms & Conditions"},hi:{page_title:"बुकिंग बनाएं | ApnaShift",meta_desc:"ApnaShift पर वाहन बुक करें — लाइव किराया देखें और बुकिंग कन्फर्म करें।",'pg_create-booking_01':"वाहन बुक करें",'pg_create-booking_02':"पता भरें, लाइव किराया देखें, फिर बुकिंग कन्फर्म करें।",'pg_create-booking_03':"ट्रिप विवरण",'pg_create-booking_04':"पिकअप पता",'pg_create-booking_05':"उदाहरण: 12 एमजी रोड, इंदौर",'pg_create-booking_06':"पिकअप अक्षांश",'pg_create-booking_07':"पिकअप देशांतर",'pg_create-booking_08':"ड्रॉप पता",'pg_create-booking_09':"उदाहरण: 45 एबी रोड, इंदौर",'pg_create-booking_10':"ड्रॉप अक्षांश",'pg_create-booking_11':"ड्रॉप देशांतर",'pg_create-booking_12':"वाहन चुनें",'pg_create-booking_13':"पिकअप — छोटा सामान",'pg_create-booking_14':"मिनी ट्रक — घर का सामान",'pg_create-booking_15':"मिनी ट्रैक्टर — भारी सामान",'pg_create-booking_16':"लाइव किराया देखें",'pg_create-booking_17':"दूरी",'pg_create-booking_18':"कुल किराया",'pg_create-booking_19':"बुकिंग कन्फर्म करें",'pg_create-booking_20':"डिफॉल्ट भुगतान UPI है (बुकिंग के बाद बदला नहीं जा सकता)।",'pg_create-booking_21':"होम",'pg_create-booking_22':"सहायता",'pg_create-booking_23':"प्राइवेसी पॉलिसी",'pg_create-booking_24':"नियम और शर्तें"}};</script>
+<script>window.PAGE_I18N={"en":{"page_title":"Create Booking | ApnaShift","meta_desc":"Book a vehicle on ApnaShift — view live fares and confirm your booking.","pg_create-booking_01":"Book a Vehicle","pg_create-booking_02":"Enter addresses, view the live fare, then confirm your booking.","pg_create-booking_03":"Trip details","pg_create-booking_04":"Pickup address","pg_create-booking_05":"Example: 12 MG Road, Indore","pg_create-booking_06":"Pickup lat","pg_create-booking_07":"Pickup lng","pg_create-booking_08":"Drop address","pg_create-booking_09":"Example: 45 AB Road, Indore","pg_create-booking_10":"Drop lat","pg_create-booking_11":"Drop lng","pg_create-booking_12":"Select vehicle","pg_create-booking_13":"Pickup — Small goods","pg_create-booking_14":"Mini Truck — Household goods","pg_create-booking_15":"Mini Tractor — Heavy goods","pg_create-booking_16":"Check Live Price","pg_create-booking_17":"Distance","pg_create-booking_18":"Total fare","pg_create-booking_19":"Confirm Booking","pg_create-booking_20":"Default payment method is UPI (cannot be changed after booking).","pg_create-booking_21":"Home","pg_create-booking_22":"Help","pg_create-booking_23":"Privacy Policy","pg_create-booking_24":"Terms & Conditions"},"hi":{"page_title":"बुकिंग बनाएं | ApnaShift","meta_desc":"ApnaShift पर वाहन बुक करें — लाइव किराया देखें और बुकिंग कन्फर्म करें।","pg_create-booking_01":"वाहन बुक करें","pg_create-booking_02":"पता भरें, लाइव किराया देखें, फिर बुकिंग कन्फर्म करें।","pg_create-booking_03":"ट्रिप विवरण","pg_create-booking_04":"पिकअप पता","pg_create-booking_05":"उदाहरण: 12 एमजी रोड, इंदौर","pg_create-booking_06":"पिकअप अक्षांश","pg_create-booking_07":"पिकअप देशांतर","pg_create-booking_08":"ड्रॉप पता","pg_create-booking_09":"उदाहरण: 45 एबी रोड, इंदौर","pg_create-booking_10":"ड्रॉप अक्षांश","pg_create-booking_11":"ड्रॉप देशांतर","pg_create-booking_12":"वाहन चुनें","pg_create-booking_13":"पिकअप — छोटा सामान","pg_create-booking_14":"मिनी ट्रक — घर का सामान","pg_create-booking_15":"मिनी ट्रैक्टर — भारी सामान","pg_create-booking_16":"लाइव किराया देखें","pg_create-booking_17":"दूरी","pg_create-booking_18":"कुल किराया","pg_create-booking_19":"बुकिंग कन्फर्म करें","pg_create-booking_20":"डिफॉल्ट भुगतान UPI है (बुकिंग के बाद बदला नहीं जा सकता)।","pg_create-booking_21":"होम","pg_create-booking_22":"सहायता","pg_create-booking_23":"प्राइवेसी पॉलिसी","pg_create-booking_24":"नियम और शर्तें"},"bn":{"page_title":"বুকিং তৈরি করুন | ApnaShift","meta_desc":"ApnaShift-এ গাড়ি বুক করুন — লাইভ ভাড়া দেখে বুকিং নিশ্চিত করুন।","pg_create-booking_01":"গাড়ি বুক করুন","pg_create-booking_02":"ঠিকানা দিন, লাইভ ভাড়া দেখুন, তারপর বুকিং নিশ্চিত করুন।","pg_create-booking_03":"ট্রিপের বিবরণ","pg_create-booking_04":"পিকআপ ঠিকানা","pg_create-booking_05":"উদাহরণ: 12 MG Road, Indore","pg_create-booking_06":"পিকআপ অক্ষাংশ","pg_create-booking_07":"পিকআপ দ্রাঘিমাংশ","pg_create-booking_08":"ড্রপ ঠিকানা","pg_create-booking_09":"উদাহরণ: 45 AB Road, Indore","pg_create-booking_10":"ড্রপ অক্ষাংশ","pg_create-booking_11":"ড্রপ দ্রাঘিমাংশ","pg_create-booking_12":"গাড়ি বেছে নিন","pg_create-booking_13":"Pickup — ছোট মাল","pg_create-booking_14":"Mini Truck — ঘরের মাল","pg_create-booking_15":"Mini Tractor — ভারী মাল","pg_create-booking_16":"লাইভ ভাড়া দেখুন","pg_create-booking_17":"দূরত্ব","pg_create-booking_18":"মোট ভাড়া","pg_create-booking_19":"বুকিং নিশ্চিত করুন","pg_create-booking_20":"ডিফল্ট পেমেন্ট UPI (বুকিংয়ের পর বদলানো যাবে না)।","pg_create-booking_21":"হোম","pg_create-booking_22":"সাহায্য","pg_create-booking_23":"গোপনীয়তা নীতি","pg_create-booking_24":"শর্তাবলী"},"mr":{"page_title":"बुकिंग तयार करा | ApnaShift","meta_desc":"ApnaShift वर वाहन बुक करा — लाइव्ह भाडे पाहून बुकिंग निश्चित करा.","pg_create-booking_01":"वाहन बुक करा","pg_create-booking_02":"पत्ते भरा, लाइव्ह भाडे पहा, मग बुकिंग निश्चित करा.","pg_create-booking_03":"ट्रिप तपशील","pg_create-booking_04":"पिकअप पत्ता","pg_create-booking_05":"उदाहरण: 12 MG Road, Indore","pg_create-booking_06":"पिकअप अक्षांश","pg_create-booking_07":"पिकअप रेखांश","pg_create-booking_08":"ड्रॉप पत्ता","pg_create-booking_09":"उदाहरण: 45 AB Road, Indore","pg_create-booking_10":"ड्रॉप अक्षांश","pg_create-booking_11":"ड्रॉप रेखांश","pg_create-booking_12":"वाहन निवडा","pg_create-booking_13":"Pickup — लहान माल","pg_create-booking_14":"Mini Truck — घरगुती माल","pg_create-booking_15":"Mini Tractor — जड माल","pg_create-booking_16":"लाइव्ह किंमत तपासा","pg_create-booking_17":"अंतर","pg_create-booking_18":"एकूण भाडे","pg_create-booking_19":"बुकिंग निश्चित करा","pg_create-booking_20":"डीफॉल्ट पेमेंट UPI (बुकिंगनंतर बदलता येणार नाही).","pg_create-booking_21":"होम","pg_create-booking_22":"मदत","pg_create-booking_23":"गोपनीयता धोरण","pg_create-booking_24":"अटी व शर्ती"},"te":{"page_title":"బుకింగ్ సృష్టించండి | ApnaShift","meta_desc":"ApnaShift‌లో వాహనం బుక్ చేయండి — లైవ్ ఛార్జీ చూసి బుకింగ్ నిర్ధారించండి.","pg_create-booking_01":"వాహనం బుక్ చేయండి","pg_create-booking_02":"చిరునామాలు ఇవ్వండి, లైవ్ ఛార్జీ చూడండి, తర్వాత బుకింగ్ నిర్ధారించండి.","pg_create-booking_03":"ట్రిప్ వివరాలు","pg_create-booking_04":"పికప్ చిరునామా","pg_create-booking_05":"ఉదాహరణ: 12 MG Road, Indore","pg_create-booking_06":"పికప్ అక్షాంశ","pg_create-booking_07":"పికప్ రేఖాంశ","pg_create-booking_08":"డ్రాప్ చిరునామా","pg_create-booking_09":"ఉదాహరణ: 45 AB Road, Indore","pg_create-booking_10":"డ్రాప్ అక్షాంశ","pg_create-booking_11":"డ్రాప్ రేఖాంశ","pg_create-booking_12":"వాహనం ఎంచుకోండి","pg_create-booking_13":"Pickup — చిన్న సరుకు","pg_create-booking_14":"Mini Truck — ఇంటి సరుకు","pg_create-booking_15":"Mini Tractor — బరువైన సరుకు","pg_create-booking_16":"లైవ్ ధర చూడండి","pg_create-booking_17":"దూరం","pg_create-booking_18":"మొత్తం ఛార్జీ","pg_create-booking_19":"బుకింగ్ నిర్ధారించండి","pg_create-booking_20":"డిఫాల్ట్ చెల్లింపు UPI (బుకింగ్ తర్వాత మార్చలేరు).","pg_create-booking_21":"హోమ్","pg_create-booking_22":"సహాయం","pg_create-booking_23":"గోప్యతా విధానం","pg_create-booking_24":"నిబంధనలు"},"ta":{"page_title":"முன்பதிவை உருவாக்கு | ApnaShift","meta_desc":"ApnaShift-இல் வாகனம் முன்பதிவு — நேரடி கட்டணம் பார்த்து முன்பதிவை உறுதி செய்க.","pg_create-booking_01":"வாகன முன்பதிவு","pg_create-booking_02":"முகவரிகளை தந்து, நேரடி கட்டணம் பார்த்து, பின் முன்பதிவை உறுதி செய்க.","pg_create-booking_03":"பயண விவரங்கள்","pg_create-booking_04":"பிக்கப் முகவரி","pg_create-booking_05":"உதாரணம்: 12 MG Road, Indore","pg_create-booking_06":"பிக்கப் அட்சரேகை","pg_create-booking_07":"பிக்கப் தீர்க்கரேகை","pg_create-booking_08":"டிராப் முகவரி","pg_create-booking_09":"உதாரணம்: 45 AB Road, Indore","pg_create-booking_10":"டிராப் அட்சரேகை","pg_create-booking_11":"டிராப் தீர்க்கரேகை","pg_create-booking_12":"வாகனம் தேர்வு","pg_create-booking_13":"Pickup — சிறு சரக்கு","pg_create-booking_14":"Mini Truck — வீட்டு சரக்கு","pg_create-booking_15":"Mini Tractor — கனமான சரக்கு","pg_create-booking_16":"நேரடி விலையை பார்க்க","pg_create-booking_17":"தூரம்","pg_create-booking_18":"மொத்த கட்டணம்","pg_create-booking_19":"முன்பதிவை உறுதி செய்க","pg_create-booking_20":"இயல்பு கட்டணம் UPI (முன்பதிவுக்கு பின் மாற்ற முடியாது).","pg_create-booking_21":"முகப்பு","pg_create-booking_22":"உதவி","pg_create-booking_23":"தனியுரிமை கொள்கை","pg_create-booking_24":"விதிமுறைகள்"},"gu":{"page_title":"બુકિંગ બનાવો | ApnaShift","meta_desc":"ApnaShift પર વાહન બુક કરો — લાઇવ ભાડું જોઈને બુકિંગ કન્ફર્મ કરો.","pg_create-booking_01":"વાહન બુક કરો","pg_create-booking_02":"સરનામાં આપો, લાઇવ ભાડું જુઓ, પછી બુકિંગ કન્ફર્મ કરો.","pg_create-booking_03":"ટ્રિપ વિગતો","pg_create-booking_04":"પિકઅપ સરનામું","pg_create-booking_05":"ઉદાહરણ: 12 MG Road, Indore","pg_create-booking_06":"પિકઅપ અક્ષાંશ","pg_create-booking_07":"પિકઅપ રેખાંશ","pg_create-booking_08":"ડ્રોપ સરનામું","pg_create-booking_09":"ઉદાહરણ: 45 AB Road, Indore","pg_create-booking_10":"ડ્રોપ અક્ષાંશ","pg_create-booking_11":"ડ્રોપ રેખાંશ","pg_create-booking_12":"વાહન પસંદ કરો","pg_create-booking_13":"Pickup — નાનો માલ","pg_create-booking_14":"Mini Truck — ઘરનો માલ","pg_create-booking_15":"Mini Tractor — ભારે માલ","pg_create-booking_16":"લાઇવ ભાવ જુઓ","pg_create-booking_17":"અંતર","pg_create-booking_18":"કુલ ભાડું","pg_create-booking_19":"બુકિંગ કન્ફર્મ કરો","pg_create-booking_20":"ડિફોલ્ટ ચુકવણી UPI (બુકિંગ પછી બદલી શકાશે નહીં).","pg_create-booking_21":"હોમ","pg_create-booking_22":"મદદ","pg_create-booking_23":"પ્રાઇવસી પોલિસી","pg_create-booking_24":"નિયમો"},"ur":{"page_title":"بکنگ بنائیں | ApnaShift","meta_desc":"ApnaShift پر گاڑی بک کریں — لائیو کرایہ دیکھ کر بکنگ کنفرم کریں۔","pg_create-booking_01":"گاڑی بک کریں","pg_create-booking_02":"پتے دیں، لائیو کرایہ دیکھیں، پھر بکنگ کنفرم کریں۔","pg_create-booking_03":"ٹرپ کی تفصیل","pg_create-booking_04":"پک اپ پتہ","pg_create-booking_05":"مثال: 12 MG Road, Indore","pg_create-booking_06":"پک اپ عرض البلد","pg_create-booking_07":"پک اپ طول البلد","pg_create-booking_08":"ڈراپ پتہ","pg_create-booking_09":"مثال: 45 AB Road, Indore","pg_create-booking_10":"ڈراپ عرض البلد","pg_create-booking_11":"ڈراپ طول البلد","pg_create-booking_12":"گاڑی منتخب کریں","pg_create-booking_13":"Pickup — چھوٹا سامان","pg_create-booking_14":"Mini Truck — گھریلو سامان","pg_create-booking_15":"Mini Tractor — بھاری سامان","pg_create-booking_16":"لائیو قیمت دیکھیں","pg_create-booking_17":"فاصلہ","pg_create-booking_18":"کل کرایہ","pg_create-booking_19":"بکنگ کنفرم کریں","pg_create-booking_20":"ڈیفالٹ ادائیگی UPI (بکنگ کے بعد تبدیل نہیں ہوگی).","pg_create-booking_21":"ہوم","pg_create-booking_22":"مدد","pg_create-booking_23":"پرائیویسی پالیسی","pg_create-booking_24":"شرائط"},"kn":{"page_title":"ಬುಕಿಂಗ್ ರಚಿಸಿ | ApnaShift","meta_desc":"ApnaShift‌ನಲ್ಲಿ ವಾಹನ ಬುಕ್ ಮಾಡಿ — ಲೈವ್ ಬಾಡಿಗೆ ನೋಡಿ ಬುಕಿಂಗ್ ಖಚಿತಪಡಿಸಿ.","pg_create-booking_01":"ವಾಹನ ಬುಕ್ ಮಾಡಿ","pg_create-booking_02":"ವಿಳಾಸ ನೀಡಿ, ಲೈವ್ ಬಾಡಿಗೆ ನೋಡಿ, ನಂತರ ಬುಕಿಂಗ್ ಖಚಿತಪಡಿಸಿ.","pg_create-booking_03":"ಟ್ರಿಪ್ ವಿವರ","pg_create-booking_04":"ಪಿಕಪ್ ವಿಳಾಸ","pg_create-booking_05":"ಉದಾಹರಣೆ: 12 MG Road, Indore","pg_create-booking_06":"ಪಿಕಪ್ ಅಕ್ಷಾಂಶ","pg_create-booking_07":"ಪಿಕಪ್ ರೇಖಾಂಶ","pg_create-booking_08":"ಡ್ರಾಪ್ ವಿಳಾಸ","pg_create-booking_09":"ಉದಾಹರಣೆ: 45 AB Road, Indore","pg_create-booking_10":"ಡ್ರಾಪ್ ಅಕ್ಷಾಂಶ","pg_create-booking_11":"ಡ್ರಾಪ್ ರೇಖಾಂಶ","pg_create-booking_12":"ವಾಹನ ಆಯ್ಕೆಮಾಡಿ","pg_create-booking_13":"Pickup — ಸಣ್ಣ ಸರಕು","pg_create-booking_14":"Mini Truck — ಮನೆ ಸರಕು","pg_create-booking_15":"Mini Tractor — ಭಾರವಾದ ಸರಕು","pg_create-booking_16":"ಲೈವ್ ಬೆಲೆ ನೋಡಿ","pg_create-booking_17":"ದೂರ","pg_create-booking_18":"ಒಟ್ಟು ಬಾಡಿಗೆ","pg_create-booking_19":"ಬುಕಿಂಗ್ ಖಚಿತಪಡಿಸಿ","pg_create-booking_20":"ಡಿಫಾಲ್ಟ್ ಪಾವತಿ UPI (ಬುಕಿಂಗ್ ನಂತರ ಬದಲಾಯಿಸಲಾಗುವುದಿಲ್ಲ).","pg_create-booking_21":"ಮುಖಪುಟ","pg_create-booking_22":"ಸಹಾಯ","pg_create-booking_23":"ಗೌಪ್ಯತಾ ನೀತಿ","pg_create-booking_24":"ನಿಯಮಗಳು"},"or":{"page_title":"ବୁକିଂ ତିଆରି କରନ୍ତୁ | ApnaShift","meta_desc":"ApnaShiftରେ ଗାଡ଼ି ବୁକ୍ କରନ୍ତୁ — ଲାଇଭ୍ ଭଡ଼ା ଦେଖି ବୁକିଂ ନିଶ୍ଚିତ କରନ୍ତୁ।","pg_create-booking_01":"ଗାଡ଼ି ବୁକ୍ କରନ୍ତୁ","pg_create-booking_02":"ଠିକଣା ଦିଅନ୍ତୁ, ଲାଇଭ୍ ଭଡ଼ା ଦେଖନ୍ତୁ, ତାପରେ ବୁକିଂ ନିଶ୍ଚିତ କରନ୍ତୁ।","pg_create-booking_03":"ଟ୍ରିପ୍ ବିବରଣୀ","pg_create-booking_04":"ପିକଅପ୍ ଠିକଣା","pg_create-booking_05":"ଉଦାହରଣ: 12 MG Road, Indore","pg_create-booking_06":"ପିକଅପ୍ ଅକ୍ଷାଂଶ","pg_create-booking_07":"ପିକଅପ୍ ଦ୍ରାଘିମା","pg_create-booking_08":"ଡ୍ରପ୍ ଠିକଣା","pg_create-booking_09":"ଉଦାହରଣ: 45 AB Road, Indore","pg_create-booking_10":"ଡ୍ରପ୍ ଅକ୍ଷାଂଶ","pg_create-booking_11":"ଡ୍ରପ୍ ଦ୍ରାଘିମା","pg_create-booking_12":"ଗାଡ଼ି ବାଛନ୍ତୁ","pg_create-booking_13":"Pickup — ଛୋଟ ସାମାନ","pg_create-booking_14":"Mini Truck — ଘର ସାମାନ","pg_create-booking_15":"Mini Tractor — ଭାରୀ ସାମାନ","pg_create-booking_16":"ଲାଇଭ୍ ମୂଲ୍ୟ ଦେଖନ୍ତୁ","pg_create-booking_17":"ଦୂରତା","pg_create-booking_18":"ମୋଟ ଭଡ଼ା","pg_create-booking_19":"ବୁକିଂ ନିଶ୍ଚିତ କରନ୍ତୁ","pg_create-booking_20":"ଡିଫଲ୍ଟ ପେମେଣ୍ଟ UPI (ବୁକିଂ ପରେ ବଦଳିବ ନାହିଁ)।","pg_create-booking_21":"ହୋମ୍","pg_create-booking_22":"ସହାୟତା","pg_create-booking_23":"ଗୋପନୀୟତା ନୀତି","pg_create-booking_24":"ନିୟମ"}};</script>
 <script src="lang.js"></script>
 </body>
 </html>

@@ -107,7 +107,7 @@
       </div>
       <div class="field">
         <label for="baseInp" data-i18n="pg_admin-pricing_11">Base Rs (blank = no change)</label>
-        <input type="number" id="baseInp" min="0" placeholder="350" data-i18n-ph="pg_admin-pricing_12">
+        <input type="number" id="baseInp" min="0" placeholder="250" data-i18n-ph="pg_admin-pricing_12">
       </div>
       <div class="field">
         <label for="kmInp" data-i18n="pg_admin-pricing_13">Per km Rs (blank = no change)</label>
@@ -116,6 +116,34 @@
       <div class="field">
         <label for="helperInp" data-i18n="pg_admin-pricing_15">Helper Rs (blank = no change)</label>
         <input type="number" id="helperInp" min="0" placeholder="200" data-i18n-ph="pg_admin-pricing_16">
+      </div>
+      <div class="field">
+        <label for="minInp">Minimum fare Rs (blank = no change)</label>
+        <input type="number" id="minInp" min="0" placeholder="250">
+      </div>
+      <div class="field">
+        <label for="smallInp">Size chhota extra Rs (blank = no change)</label>
+        <input type="number" id="smallInp" min="0" placeholder="0">
+      </div>
+      <div class="field">
+        <label for="bigInp">Size bada extra Rs (blank = no change)</label>
+        <input type="number" id="bigInp" min="0" placeholder="0">
+      </div>
+      <div class="field">
+        <label for="w0100Inp">Weight 0-100 kg Rs (blank = no change)</label>
+        <input type="number" id="w0100Inp" min="0" placeholder="0">
+      </div>
+      <div class="field">
+        <label for="w100300Inp">Weight 100-300 kg Rs (blank = no change)</label>
+        <input type="number" id="w100300Inp" min="0" placeholder="0">
+      </div>
+      <div class="field">
+        <label for="w300500Inp">Weight 300-500 kg Rs (blank = no change)</label>
+        <input type="number" id="w300500Inp" min="0" placeholder="0">
+      </div>
+      <div class="field">
+        <label for="w500pInp">Weight 500+ kg Rs (blank = no change)</label>
+        <input type="number" id="w500pInp" min="0" placeholder="0">
       </div>
       <div class="field">
         <label for="commInp" data-i18n="pg_admin-pricing_17">Commission % (blank = no change)</label>
@@ -166,6 +194,13 @@
   var baseInp = document.getElementById("baseInp");
   var kmInp = document.getElementById("kmInp");
   var helperInp = document.getElementById("helperInp");
+  var minInp = document.getElementById("minInp");
+  var smallInp = document.getElementById("smallInp");
+  var bigInp = document.getElementById("bigInp");
+  var w0100Inp = document.getElementById("w0100Inp");
+  var w100300Inp = document.getElementById("w100300Inp");
+  var w300500Inp = document.getElementById("w300500Inp");
+  var w500pInp = document.getElementById("w500pInp");
   var commInp = document.getElementById("commInp");
 
   function showAlert(type, msg){
@@ -216,12 +251,16 @@
         if(result.status !== 200 || !result.body || result.body.ok !== true) throw new Error("load_failed");
         var rules = Array.isArray(result.body.rules) ? result.body.rules : [];
         if(!rules.length){ ratesWrap.innerHTML = '<p class="empty">No rates found.</p>'; return; }
-        var h = "<table><tr><th>Vehicle</th><th>Base</th><th>Per km</th><th>Helper</th><th>Comm. %</th><th>Updated</th></tr>";
+        var h = "<table><tr><th>Vehicle</th><th>Base</th><th>Per km</th><th>Helper</th><th>Min</th><th>Chhota</th><th>Bada</th><th>W 0-100</th><th>W 100-300</th><th>W 300-500</th><th>W 500+</th><th>Comm. %</th><th>Updated</th></tr>";
         for(var i = 0; i < rules.length; i++){
           var r = rules[i];
           h += "<tr><td>" + esc(r.vehicle_type) + "</td><td>" + esc(r.base_rs) +
             "</td><td>" + esc(r.per_km_rs) + "</td><td>" + esc(r.helper_rs) +
-            "</td><td>" + esc(r.commission_pct) + "</td><td>" + esc(fmtDate(r.updated_at)) + "</td></tr>";
+            "</td><td>" + esc(r.minimum_fare) + "</td><td>" + esc(r.size_small_extra) +
+            "</td><td>" + esc(r.size_big_extra) + "</td><td>" + esc(r.weight_0_100) +
+            "</td><td>" + esc(r.weight_100_300) + "</td><td>" + esc(r.weight_300_500) +
+            "</td><td>" + esc(r.weight_500_plus) + "</td><td>" + esc(r.commission_pct) +
+            "</td><td>" + esc(fmtDate(r.updated_at)) + "</td></tr>";
         }
         ratesWrap.innerHTML = h + "</table>";
       })
@@ -242,13 +281,24 @@
   function saveRate(){
     var body = { vehicle_type: vehicleSel.value };
     var b = numOrUndef(baseInp), k = numOrUndef(kmInp), hp = numOrUndef(helperInp), c = numOrUndef(commInp);
-    if(b === undefined && k === undefined && hp === undefined && c === undefined){
+    var mn = numOrUndef(minInp), sm = numOrUndef(smallInp), bg = numOrUndef(bigInp);
+    var w1 = numOrUndef(w0100Inp), w2 = numOrUndef(w100300Inp), w3 = numOrUndef(w300500Inp), w4 = numOrUndef(w500pInp);
+    if(b === undefined && k === undefined && hp === undefined && c === undefined &&
+       mn === undefined && sm === undefined && bg === undefined &&
+       w1 === undefined && w2 === undefined && w3 === undefined && w4 === undefined){
       showAlert("err", "Fill at least one field.");
       return;
     }
     if(b !== undefined){ if(!(b >= 0)){ showAlert("err", "Base Rs must be 0 or more."); return; } body.base_rs = b; }
     if(k !== undefined){ if(!(k >= 0)){ showAlert("err", "Per km Rs must be 0 or more."); return; } body.per_km_rs = k; }
     if(hp !== undefined){ if(!(hp >= 0)){ showAlert("err", "Helper Rs must be 0 or more."); return; } body.helper_rs = hp; }
+    if(mn !== undefined){ if(!(mn >= 0)){ showAlert("err", "Minimum fare must be 0 or more."); return; } body.minimum_fare = mn; }
+    if(sm !== undefined){ if(!(sm >= 0)){ showAlert("err", "Chhota extra must be 0 or more."); return; } body.size_small_extra = sm; }
+    if(bg !== undefined){ if(!(bg >= 0)){ showAlert("err", "Bada extra must be 0 or more."); return; } body.size_big_extra = bg; }
+    if(w1 !== undefined){ if(!(w1 >= 0)){ showAlert("err", "Weight slab must be 0 or more."); return; } body.weight_0_100 = w1; }
+    if(w2 !== undefined){ if(!(w2 >= 0)){ showAlert("err", "Weight slab must be 0 or more."); return; } body.weight_100_300 = w2; }
+    if(w3 !== undefined){ if(!(w3 >= 0)){ showAlert("err", "Weight slab must be 0 or more."); return; } body.weight_300_500 = w3; }
+    if(w4 !== undefined){ if(!(w4 >= 0)){ showAlert("err", "Weight slab must be 0 or more."); return; } body.weight_500_plus = w4; }
     if(c !== undefined){ if(!(c >= 0 && c <= 100)){ showAlert("err", "Commission must be between 0 and 100."); return; } body.commission_pct = c; }
     showAlert(null, "");
     saveBtn.disabled = true;
@@ -261,6 +311,8 @@
       if(result.status === 200 && result.body && result.body.ok === true){
         showAlert("ok", "Rate saved (history #" + result.body.history_id + ").");
         baseInp.value = ""; kmInp.value = ""; helperInp.value = ""; commInp.value = "";
+        minInp.value = ""; smallInp.value = ""; bigInp.value = "";
+        w0100Inp.value = ""; w100300Inp.value = ""; w300500Inp.value = ""; w500pInp.value = "";
         loadRates();
         return;
       }

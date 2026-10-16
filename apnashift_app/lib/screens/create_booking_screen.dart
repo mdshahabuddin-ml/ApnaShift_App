@@ -34,6 +34,29 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
   final _dropLat = TextEditingController(text: '22.7296');
   final _dropLng = TextEditingController(text: '75.8677');
   final _item = TextEditingController();
+  final _customName = TextEditingController();
+  // PIN Code fallback (map unavailable): 6-digit Indian PINs, validated with
+  // ^[1-9][0-9]{5}$ and embedded in the address text ("addr — PIN 452001"),
+  // so API contracts + DB schema are untouched. No PIN lookup exists, so
+  // city/district/state stay manual. Fare only from backend estimate.
+  final _pickupPin = TextEditingController();
+  final _dropPin = TextEditingController();
+  bool _pinMode = false;
+  bool _mapFailed = false;
+  static final RegExp kPinRe = RegExp(r'^[1-9][0-9]{5}$');
+  // Items to Shift (mandatory): common catalog + custom, qty 0..20.
+  static const List<String> kCatalog = [
+    'Bed',
+    'Sofa',
+    'Table',
+    'Chair',
+    'Refrigerator',
+    'Washing Machine',
+    'Box',
+    'Almari / Wardrobe',
+  ];
+  final Map<String, int> _items = {for (final n in kCatalog) n: 0};
+  final List<({String name, int qty})> _custom = [];
   DateTime? _date;
   TimeOfDay? _time;
   String _vehicle = 'pickup';
@@ -66,7 +89,42 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
       if (tpl is String && tpl.isNotEmpty && mounted) {
         setState(() => _tiles = tpl);
       }
-    }).catchError((_) => <String, dynamic>{});
+    }).catchError((_) {
+      // Map service unreachable — offer PIN fallback (values preserved).
+      if (mounted) setState(() => _mapFailed = true);
+      return <String, dynamic>{};
+    });
+  }
+
+  /// Manual map retry (existing values preserved).
+  Future<void> _retryMap() async {
+    try {
+      final cfg = await widget.session.api.get('/api/geo/config');
+      final tpl =
+          (cfg['tiles'] is Map) ? (cfg['tiles'] as Map)['template'] : null;
+      if (!mounted) return;
+      setState(() {
+        if (tpl is String && tpl.isNotEmpty) _tiles = tpl;
+        _mapFailed = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Map service wapas mil gayi.')));
+      }
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _mapFailed = true);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Map abhi bhi unavailable — PIN fallback se aage badho.')));
+    }
+  }
+
+  String _withPin(String addr, String pin) {
+    final a = addr.trim();
+    final p = pin.trim();
+    if (p.isEmpty) return a;
+    final tagged = '$a — PIN $p';
+    return tagged.length > 300 ? tagged.substring(0, 300) : tagged;
   }
 
   Future<void> _pickOnMap(bool pickup) async {
@@ -119,7 +177,41 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
     _dropLat.dispose();
     _dropLng.dispose();
     _item.dispose();
+    _customName.dispose();
+    _pickupPin.dispose();
+    _dropPin.dispose();
     super.dispose();
+  }
+
+  int get _totalItems {
+    var t = 0;
+    for (final v in _items.values) {
+      t += v;
+    }
+    for (final c in _custom) {
+      t += c.qty;
+    }
+    return t;
+  }
+
+  /// Catalog + custom + optional notes -> backend item_description (<=500).
+  String _buildItemDescription() {
+    final parts = <String>[];
+    for (final n in kCatalog) {
+      final q = _items[n] ?? 0;
+      if (q > 0) parts.add('${q}x $n');
+    }
+    for (final c in _custom) {
+      if (c.qty > 0 && c.name.trim().isNotEmpty) {
+        parts.add('${c.qty}x ${c.name.trim()}');
+      }
+    }
+    var base = parts.join(', ');
+    final notes = _item.text.trim();
+    if (notes.isNotEmpty) {
+      base = base.isEmpty ? notes : '$base | Notes: $notes';
+    }
+    return base;
   }
 
   double? _parseLat(String v) {
@@ -178,6 +270,14 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
     if (_dropAddr.text.trim().length > 300) {
       return 'Drop address 300 akshar se zyada nahi.';
     }
+    if (_pinMode) {
+      if (!kPinRe.hasMatch(_pickupPin.text.trim())) {
+        return 'Pickup PIN galat hai — 6-digit Indian PIN likho (1-9 se shuru).';
+      }
+      if (!kPinRe.hasMatch(_dropPin.text.trim())) {
+        return 'Drop PIN galat hai — 6-digit Indian PIN likho (1-9 se shuru).';
+      }
+    }
     if (_parseLat(_dropLat.text) == null) return 'Drop lat -90..90 number ho.';
     if (_parseLng(_dropLng.text) == null) return 'Drop lng -180..180 number ho.';
     final dist = _distanceKm();
@@ -187,8 +287,15 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
     if (!['pickup', 'mini_truck', 'mini_tractor'].contains(_vehicle)) {
       return 'Vehicle pickup, mini_truck ya mini_tractor ho.';
     }
-    if (_item.text.trim().length > 500) {
-      return 'Item detail 500 akshar se zyada nahi.';
+    final desc = _buildItemDescription();
+    if (_totalItems < 1) {
+      return 'Kam se kam ek item jodo (e.g. 1 Bed, 2 Boxes) — Items to Shift mandatory hai.';
+    }
+    if (desc.length < 3) {
+      return 'Kam se kam ek item jodo — quantity ke saath.';
+    }
+    if (desc.length > 500) {
+      return 'Item detail 500 akshar se zyada nahi (items + notes milakar).';
     }
     if (_date != null) {
       final now = DateTime.now().subtract(const Duration(minutes: 1));
@@ -303,16 +410,20 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
       // Double-tap double-booking se bachne ke liye button _booking me
       // disabled rehta hai.
       final b = await _api.create(
-        pickupAddress: _pickupAddr.text.trim(),
+        pickupAddress: _pinMode
+            ? _withPin(_pickupAddr.text, _pickupPin.text)
+            : _pickupAddr.text.trim(),
         pickupLat: _parseLat(_pickupLat.text)!,
         pickupLng: _parseLng(_pickupLng.text)!,
-        dropAddress: _dropAddr.text.trim(),
+        dropAddress: _pinMode
+            ? _withPin(_dropAddr.text, _dropPin.text)
+            : _dropAddr.text.trim(),
         dropLat: _parseLat(_dropLat.text)!,
         dropLng: _parseLng(_dropLng.text)!,
         vehicleType: _vehicle,
         helperNeeded: _helper,
         paymentMethod: _pay,
-        itemDescription: _item.text.trim(),
+        itemDescription: _buildItemDescription(),
         scheduledTime: _scheduledAt(),
       );
       if (!mounted) return;
@@ -382,6 +493,110 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
                 child: Text(_error!,
                     style: const TextStyle(color: Colors.red))),
           const SizedBox(height: 8),
+          if (_mapFailed && !_pinMode)
+            Card(
+              color: Colors.amber.shade50,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Map trouble?',
+                        style: TextStyle(fontWeight: FontWeight.w800)),
+                    const Text(
+                        'Map / suggestions unavailable ho sakte hain. PIN fallback se aage badho — details safe rahenge.',
+                        style: TextStyle(fontSize: 12)),
+                    const SizedBox(height: 8),
+                    Row(children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () =>
+                              setState(() => _pinMode = true),
+                          child: const Text('Book Using PIN Code'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      OutlinedButton(
+                        onPressed: _retryMap,
+                        child: const Text('Retry map'),
+                      ),
+                    ]),
+                  ],
+                ),
+              ),
+            ),
+          if (!_pinMode)
+            OutlinedButton.icon(
+              icon: const Icon(Icons.pin_drop, size: 16),
+              label: const Text('Book Using PIN Code (map unavailable?)'),
+              onPressed: () => setState(() => _pinMode = true),
+            ),
+          if (_pinMode)
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('PIN Code fallback',
+                        style: TextStyle(fontWeight: FontWeight.w800)),
+                    const Text(
+                        '6-digit Indian PINs likho. City/district/state address me manually likho — koi auto-fill nahi. Fare sirf backend estimate se.',
+                        style:
+                            TextStyle(fontSize: 12, color: Colors.grey)),
+                    const SizedBox(height: 8),
+                    Row(children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _pickupPin,
+                          keyboardType: TextInputType.number,
+                          maxLength: 6,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                                RegExp(r'[0-9]'))
+                          ],
+                          decoration: const InputDecoration(
+                              labelText: 'Pickup PIN *',
+                              hintText: 'e.g. 452001',
+                              border: OutlineInputBorder(),
+                              counterText: ''),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextField(
+                          controller: _dropPin,
+                          keyboardType: TextInputType.number,
+                          maxLength: 6,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                                RegExp(r'[0-9]'))
+                          ],
+                          decoration: const InputDecoration(
+                              labelText: 'Drop PIN *',
+                              hintText: 'e.g. 452002',
+                              border: OutlineInputBorder(),
+                              counterText: ''),
+                        ),
+                      ),
+                    ]),
+                    const SizedBox(height: 8),
+                    Row(children: [
+                      TextButton(
+                        onPressed: () =>
+                            setState(() => _pinMode = false),
+                        child: const Text('Back to map'),
+                      ),
+                      const Spacer(),
+                      OutlinedButton(
+                        onPressed: _retryMap,
+                        child: const Text('Retry map'),
+                      ),
+                    ]),
+                  ],
+                ),
+              ),
+            ),
           TextField(
             controller: _pickupAddr,
             decoration: const InputDecoration(
@@ -639,13 +854,119 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
                     _helper = v ?? false;
                     _quote = null;
                   })),
-          TextField(
-            controller: _item,
-            maxLength: 500,
-            maxLines: 2,
-            decoration: const InputDecoration(
-                labelText: 'Item detail (optional)',
-                border: OutlineInputBorder()),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Items to Shift *',
+                      style: TextStyle(fontWeight: FontWeight.w800)),
+                  const SizedBox(height: 4),
+                  const Text(
+                      'Kam se kam ek item + quantity chuno — booking ke saath save hogi.',
+                      style: TextStyle(fontSize: 12, color: Colors.grey)),
+                  const SizedBox(height: 8),
+                  for (final n in kCatalog)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      child: Row(
+                        children: [
+                          Expanded(child: Text(n)),
+                          IconButton(
+                            icon: const Icon(Icons.remove_circle_outline),
+                            onPressed: () => setState(() {
+                              final v = (_items[n] ?? 0) - 1;
+                              _items[n] = v < 0 ? 0 : v;
+                              _quote = null;
+                            }),
+                          ),
+                          Text('${_items[n] ?? 0}',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w800)),
+                          IconButton(
+                            icon: const Icon(Icons.add_circle_outline),
+                            onPressed: () => setState(() {
+                              final v = (_items[n] ?? 0) + 1;
+                              _items[n] = v > 20 ? 20 : v;
+                              _quote = null;
+                            }),
+                          ),
+                        ],
+                      ),
+                    ),
+                  const Divider(),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _customName,
+                          maxLength: 40,
+                          decoration: const InputDecoration(
+                              labelText: 'Custom item (e.g. Plants, TV)',
+                              border: OutlineInputBorder()),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        onPressed: () {
+                          final v =
+                              _customName.text.trim().substring(
+                                  0,
+                                  _customName.text.trim().length > 40
+                                      ? 40
+                                      : _customName.text.trim().length);
+                          if (v.length < 2) {
+                            setState(() => _fieldError =
+                                'Custom item ka naam kam se kam 2 akshar.');
+                            return;
+                          }
+                          setState(() {
+                            _custom.add((name: v, qty: 1));
+                            _customName.clear();
+                            _fieldError = null;
+                            _quote = null;
+                          });
+                        },
+                        child: const Text('+ Add'),
+                      ),
+                    ],
+                  ),
+                  for (var i = 0; i < _custom.length; i++)
+                    Chip(
+                      label: Text(
+                          '${_custom[i].qty}x ${_custom[i].name}'),
+                      deleteIcon: const Icon(Icons.close, size: 16),
+                      onDeleted: () => setState(() {
+                        _custom.removeAt(i);
+                        _quote = null;
+                      }),
+                    ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _totalItems == 0
+                        ? '0 items — kam se kam ek jodo.'
+                        : '$_totalItems item${_totalItems == 1 ? '' : 's'} selected.',
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: _totalItems == 0
+                            ? Colors.red
+                            : Colors.green,
+                        fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _item,
+                    maxLength: 200,
+                    maxLines: 2,
+                    decoration: const InputDecoration(
+                        labelText: 'Additional notes (optional)',
+                        hintText: '2nd floor, lift available',
+                        border: OutlineInputBorder()),
+                  ),
+                ],
+              ),
+            ),
           ),
           const SizedBox(height: 12),
           OutlinedButton(

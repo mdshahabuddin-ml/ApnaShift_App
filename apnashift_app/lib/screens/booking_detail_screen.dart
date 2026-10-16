@@ -247,6 +247,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                   Text('Distance: ${_b!.distanceKm} km'),
                 Text(
                     'Fare: ₹${_b!.priceRs?.toStringAsFixed(0) ?? '—'} (${_b!.paymentMethod})'),
+                Text('Items: ${_b!.itemDescription?.isNotEmpty == true ? _b!.itemDescription! : '—'}'),
                 if (_b!.status == 'cancelled' && _b!.cancelReason != null)
                   Text('Cancel: ${_b!.cancelReason} (${_b!.cancelledBy ?? ''})',
                       style: const TextStyle(color: Colors.red)),
