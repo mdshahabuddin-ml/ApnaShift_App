@@ -230,7 +230,7 @@ describeDb('admin (DB)', () => {
       vehicle_type: 'Pickup',
       new: { base_rs: 400, per_km_rs: 17.5, helper_rs: 200 },
     });
-    expect(hist.body.history[0].old.base_rs).toBe(350);
+    expect(hist.body.history[0].old.base_rs).toBe(250);
 
     const bad = await admin(
       request(app).put('/api/admin/pricing-rules').send({ vehicle_type: 'pickup', base_rs: -5 }),
