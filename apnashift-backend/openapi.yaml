@@ -884,7 +884,7 @@ paths:
         - { name: lat, in: query, schema: { type: number, minimum: -90, maximum: 90 } }
         - { name: lng, in: query, schema: { type: number, minimum: -180, maximum: 180 } }
       responses:
-        '200': { description: OK (results[].formatted/lat/lng) }
+        '200': { description: 'OK (results[].formatted/lat/lng)' }
         '503': { description: geoapify_unavailable (key missing) }
   /api/geo/route:
     get:
@@ -895,7 +895,7 @@ paths:
         - { name: drop_lat, in: query, required: true, schema: { type: number } }
         - { name: drop_lng, in: query, required: true, schema: { type: number } }
       responses:
-        '200': { description: OK (distance_m, duration_s, geometry[].lat/lng) }
+        '200': { description: 'OK (distance_m, duration_s, geometry[].lat/lng)' }
         '503': { description: geoapify_unavailable (key missing) }
   /api/whatsapp/webhook:
     get:
