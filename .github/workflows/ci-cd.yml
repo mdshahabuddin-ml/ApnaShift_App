@@ -186,6 +186,7 @@ jobs:
           fi
       - name: Deploy to Railway staging service
         run: |
+          cd "$GITHUB_WORKSPACE"
           echo "up target: project=${RAILWAY_PROJECT_ID} service=${RAILWAY_STAGING_SERVICE_ID} (chahiye fd283892-d583-4b73-aee3-3d177d754605 = ApnaShift_App) env=staging"
           if out=$(railway up --project "${RAILWAY_PROJECT_ID}" --service "${RAILWAY_STAGING_SERVICE_ID}" --environment staging 2>&1); then
             echo "$out"
@@ -306,6 +307,7 @@ jobs:
           fi
       - name: Deploy to Railway production service
         run: |
+          cd "$GITHUB_WORKSPACE"
           echo "up target: project=${RAILWAY_PROJECT_ID} service=${RAILWAY_PRODUCTION_SERVICE_ID} (chahiye fd283892-d583-4b73-aee3-3d177d754605 = ApnaShift_App) env=production"
           if out=$(railway up --project "${RAILWAY_PROJECT_ID}" --service "${RAILWAY_PRODUCTION_SERVICE_ID}" --environment production 2>&1); then
             echo "$out"
