@@ -50,17 +50,25 @@ if (localHosts.has(host)) {
   process.exit(2);
 }
 
-// ---- guard 2: MSSQL side must be exactly ApnaShiftDB (default) or a *migrate*
-// scratch (post-run verification of ApnaShiftDB_migrate). Never _test, never
-// anything else.
+// ---- guard 2: MSSQL side must be exactly ApnaShiftDB (default), a *migrate*
+// scratch, or an exact name approved via MIGRATE_ALLOW_TARGET (D2 allowlist).
+// Never _test, never anything else.
 const auditTarget = process.env.AUDIT_TARGET ?? 'ApnaShiftDB';
-if (auditTarget !== 'ApnaShiftDB' && !/migrate/i.test(auditTarget)) {
-  console.error(`AUDIT ABORT: AUDIT_TARGET '${auditTarget}' nahi chalega (ApnaShiftDB ya *migrate* scratch hi).`);
+const allowedTargets = (process.env.MIGRATE_ALLOW_TARGET ?? '')
+  .split(',')
+  .map((s) => s.trim().toLowerCase())
+  .filter(Boolean);
+if (
+  auditTarget !== 'ApnaShiftDB' &&
+  !/migrate/i.test(auditTarget) &&
+  !allowedTargets.includes(auditTarget.toLowerCase())
+) {
+  console.error(`AUDIT ABORT: AUDIT_TARGET '${auditTarget}' nahi chalega (ApnaShiftDB, *migrate* scratch, ya MIGRATE_ALLOW_TARGET exact name).`);
   process.exit(2);
 }
 const mcfg = mssqlConfig();
 mcfg.database = auditTarget;
-console.log(`MSSQL target: ${mcfg.server}:${mcfg.port} db=${mcfg.database} (forced, local)`);
+console.log(`MSSQL target: ${mcfg.server}:${mcfg.port} db=${mcfg.database} (forced)`);
 
 const ident = /^[A-Za-z_][A-Za-z0-9_]*$/;
 

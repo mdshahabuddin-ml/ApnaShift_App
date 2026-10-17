@@ -15,7 +15,10 @@ const pool = await new sql.ConnectionPool({
   server: process.env.MSSQL_SERVER ?? 'localhost',
   port: Number(process.env.MSSQL_PORT || 14330),
   database: process.env.MSSQL_DATABASE,
-  options: { encrypt: false, trustServerCertificate: true },
+  options: {
+    encrypt: (process.env.MSSQL_ENCRYPT ?? 'false') === 'true',
+    trustServerCertificate: (process.env.MSSQL_TRUST_CERT ?? 'true') === 'true',
+  },
 }).connect();
 
 let fails = 0;

@@ -1,6 +1,7 @@
-// TEMP Step-D' smoke: boot the real server against ApnaShiftDB_migrate
-// (production data) and exercise read-only endpoints. Prints statuses/counts/
-// ids only — never phones, names, addresses, hashes, or tokens.
+// TEMP Step-D' smoke: boot the real server against a *migrate* scratch (or an
+// exact MIGRATE_ALLOW_TARGET name via SMOKE_TARGET) holding production data
+// and exercise read-only endpoints. Prints statuses/counts/ids only — never
+// phones, names, addresses, hashes, or tokens.
 import 'dotenv/config';
 import { spawn } from 'node:child_process';
 import sql from 'mssql';
@@ -14,14 +15,31 @@ const check = (label, ok, detail) => {
   if (!ok) failures++;
 };
 
-// gather expectations from the scratch (read-only; values kept in memory)
+// D2 target rule (same allowlist idea as migrate-data-mssql.js): default
+// scratch, *migrate* name, or exact name in MIGRATE_ALLOW_TARGET.
+// SMOKE_TARGET deliberately separate from MSSQL_DATABASE so .env defaults can
+// never silently retarget the smoke.
+const smokeTarget = process.env.SMOKE_TARGET ?? 'ApnaShiftDB_migrate';
+const allowedTargets = (process.env.MIGRATE_ALLOW_TARGET ?? '')
+  .split(',')
+  .map((s) => s.trim().toLowerCase())
+  .filter(Boolean);
+if (!/migrate/i.test(smokeTarget) && !allowedTargets.includes(smokeTarget.toLowerCase())) {
+  console.error(`SMOKE ABORT: target '${smokeTarget}' allowed nahi hai (migrate scratch ya MIGRATE_ALLOW_TARGET exact name).`);
+  process.exit(1);
+}
+
+// gather expectations from the target (read-only; values kept in memory)
 const pool = await new sql.ConnectionPool({
   user: process.env.MSSQL_USER,
   password: process.env.MSSQL_PASSWORD,
   server: process.env.MSSQL_SERVER ?? 'localhost',
   port: Number(process.env.MSSQL_PORT || 14330),
-  database: 'ApnaShiftDB_migrate',
-  options: { encrypt: false, trustServerCertificate: true },
+  database: smokeTarget,
+  options: {
+    encrypt: (process.env.MSSQL_ENCRYPT ?? 'false') === 'true',
+    trustServerCertificate: (process.env.MSSQL_TRUST_CERT ?? 'true') === 'true',
+  },
 }).connect();
 const bk = (
   await pool.request().query(`SELECT TOP 1 user_id FROM bookings ORDER BY created_at`)
@@ -59,7 +77,7 @@ const child = spawn(process.execPath, ['src/server.js'], {
   env: {
     ...process.env,
     DB_DRIVER: 'mssql',
-    MSSQL_DATABASE: 'ApnaShiftDB_migrate',
+    MSSQL_DATABASE: smokeTarget,
     PORT: '3999',
   },
   stdio: ['ignore', 'pipe', 'pipe'],

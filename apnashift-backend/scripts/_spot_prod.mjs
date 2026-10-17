@@ -23,7 +23,14 @@ if (!user || !pass || !db) fail('PGUSER/PGPASSWORD/PGDATABASE incomplete.');
 const [ph, pp] = raw.trim().split(':');
 
 const targetDb = process.env.MSSQL_DATABASE ?? '';
-if (!/migrate/i.test(targetDb)) fail(`MSSQL_DATABASE='${targetDb}' migrate scratch nahi hai.`);
+// D2 allowlist: same rule as migrate-data-mssql.js — *migrate* scratch or an
+// exact name in MIGRATE_ALLOW_TARGET (comma-separated, no wildcards).
+const allowedTargets = (process.env.MIGRATE_ALLOW_TARGET ?? '')
+  .split(',')
+  .map((s) => s.trim().toLowerCase())
+  .filter(Boolean);
+if (!/migrate/i.test(targetDb) && !allowedTargets.includes(targetDb.toLowerCase()))
+  fail(`MSSQL_DATABASE='${targetDb}' allowed nahi hai (migrate scratch ya MIGRATE_ALLOW_TARGET exact name).`);
 
 const ident = /^[A-Za-z_][A-Za-z0-9_]*$/;
 let failures = 0;
@@ -45,7 +52,14 @@ const pool = await new sql.ConnectionPool({
   server: process.env.MSSQL_SERVER ?? 'localhost',
   port: Number(process.env.MSSQL_PORT || 14330),
   database: targetDb,
-  options: { encrypt: false, trustServerCertificate: true, connectTimeout: 8000, requestTimeout: 60000 },
+  options: {
+    encrypt: (process.env.MSSQL_ENCRYPT ?? 'false') === 'true',
+    trustServerCertificate: (process.env.MSSQL_TRUST_CERT ?? 'true') === 'true',
+    connectTimeout: process.env.MSSQL_CONNECT_TIMEOUT
+      ? Number(process.env.MSSQL_CONNECT_TIMEOUT)
+      : 8000,
+    requestTimeout: 60000,
+  },
 }).connect();
 
 const tables = (
