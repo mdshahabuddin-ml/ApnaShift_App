@@ -6,8 +6,9 @@ production until Phase 4 is approved and green.
 
 Prepared from verified state (2026-10-17):
 
-- Local `main` = `fea50b7` (3 commits ahead of `origin/main`: Phase 1 `ac9381f`,
-  Phase 2 `00067de`, data-migration `fea50b7` — **none pushed**).
+- Local `main` = `d293a77` (4 commits ahead of `origin/main`: Phase 1 `ac9381f`,
+  Phase 2 `00067de`, data-migration `fea50b7`, this runbook `d293a77` —
+  **none pushed**).
 - `ApnaShiftDB_migrate` = verified copy of production: 23/23 tables, 42/42 rows
   counts + values (`_audit.mjs`, `_spot_prod.mjs`), app smoke 7/7
   (`_smoke_scratch.mjs`). Date off-by-one bug fixed in `migrate-data-mssql.js`.
@@ -21,10 +22,21 @@ Prepared from verified state (2026-10-17):
 
 | # | Decision | Why it blocks | Options |
 |---|---|---|---|
-| **D1** | **Where does production MSSQL live?** | Today MSSQL = SQLEXPRESS on this laptop (`localhost:14330`). Railway **cannot** reach it, and exposing the laptop is forbidden. | Azure SQL (free tier exists, paid after), Railway-hosted mssql container (usage cost), other cloud SQL. **Costs money → your call.** |
-| **D2** | Final target DB name + tool guard | `migrate-data-mssql.js` only loads into DBs matching `/migrate/i` (safety). Final target needs either (a) keep name containing `migrate` (ugly but works), or (b) an explicit env-gated allowlist added to the tool (small approved edit). | Pick name (e.g. `ApnaShiftDB_prod`) + option (b) |
+| **D1** | **Where does production MSSQL live?** | Today MSSQL = SQLEXPRESS on this laptop (`localhost:14330`). Railway **cannot** reach it, and exposing the laptop is forbidden. | ✅ **CHOSEN: Option A — Azure SQL free offer** (GP serverless, West US 2, $0 at this scale). **TIMING: deferred by user 2026-10-17** — Azure account creation + cost alert ("billing/subscription") will happen in a later phase; Phases 3+ blocked until then. **Interim production = PostgreSQL (Option D posture): $0, no new subscription.** Firewall note: Railway static egress = Pro plan only → free path uses a 0.0.0.0/0 rule + strong SQL password + TLS (disclosed, user-approved). |
+| **D2** | Final target DB name + tool guard | `migrate-data-mssql.js` only loads into DBs matching `/migrate/i` (safety). Final target needs either (a) keep name containing `migrate` (ugly but works), or (b) an explicit env-gated allowlist added to the tool (small approved edit). | ✅ **RESOLVED: name `ApnaShiftDB_prod` + option (b)** — exact-name allowlist `MIGRATE_ALLOW_TARGET` added to the tool (no wildcards, default behavior unchanged). |
 | **D3** | Maintenance window | Writes must pause during Phases 1–4 (short: data is 42 rows — window can be ~15 min). | Date/time |
 | **D4** | When to push `main` | Push triggers full CI → staging → **production deploy** (gates + rollback built in). Phase 0 does this on its own schedule, separate from the window. | Day for Phase 0 |
+
+### D1 options (researched 2026-10-17 — nothing purchased, awaiting pick)
+
+| Option | Cost now | Cost ongoing | Trade-offs |
+|---|---|---|---|
+| **A. Azure SQL free offer** | $0 | $0 at this size (per-DB: 100k vCore-seconds + 32 GB storage free/month for subscription lifetime, up to 10 DBs) | Managed PaaS, pick West US ≈ Railway `sfo` latency. Caveats: **no SLA** (Microsoft frames it dev/PoC-grade), free tier is for *new* DBs (fits cutover), auto-pause if limits ever hit. Needs Azure account (card for verification, not charged in limits) |
+| **B. MSSQL container on Railway** | ~$15–30/mo | same | Same project/region as app (best latency, zero network config). Self-managed backups/patching, Express 10 GB cap (fine for 42 rows), real monthly bill (RAM $10/GB/mo + CPU $20/vCPU/mo) |
+| **C. AWS RDS SQL Server Express** | ~$18–20/mo | same | Fully managed backups, us-west-2 ≈ near `sfo`. **No free tier** for accounts after mid-2025 — priciest fit for a 42-row DB |
+| **D. Stay on PostgreSQL** | $0 | $0 | Zero risk/effort; all MSSQL work stays committed and verified for a later cutover. Only correct if MSSQL isn't a hard requirement |
+
+Recommendation: **A** (or **D** if MSSQL isn't required). B only if same-region latency outweighs $0; skip C.
 
 ---
 
@@ -34,11 +46,18 @@ Push is gated by CI: lint → tests → build → **staging** migrate+deploy+ful
 smoke → only then **production** migrate+deploy → health/smoke. Any red gate
 stops production automatically (workflow `ci-cd.yml`).
 
-- [ ] Verify staging service is actually healthy first (Railway listing showed
-      one service in `Failed` state — confirm which service the staging
-      secrets point to and that its last deployment is green).
-- [ ] Confirm GitHub secrets exist (CI has its own fail-safe guard for this).
-- [ ] `git push origin main` (3 commits) → watch CI run all 9 jobs green.
+- [x] Staging health verified (2026-10-17): env `staging` shows `ApnaShift_App`
+      Online (`apnashiftapp-staging-4ecb`) and `diplomatic-solace` Online.
+      Findings: `diplomatic-solace` = duplicate legacy API service (its staging
+      logs show the same ApnaShift API on port 8080); its **production**
+      deployment is Failed *pre-build* ("Deployment does not have an
+      associated build") — pre-existing, not caused by this work, and CI only
+      ever deploys the one service named by `RAILWAY_STAGING_SERVICE_ID` /
+      `RAILWAY_PRODUCTION_SERVICE_ID`.
+- [ ] At push time: confirm the secrets → `ApnaShift_App` mapping by opening
+      any recent Actions run log (`railway up --service <id>` line), and that
+      GitHub secrets exist (CI has its own fail-safe guard for this).
+- [ ] `git push origin main` (4 commits) → watch CI run all 9 jobs green.
 - [ ] CI applies `023_pricing_v2` to production PG (`db:migrate`, additive only)
       → production schema now = HEAD.
 - [ ] Re-run the audit and compare with expectations:

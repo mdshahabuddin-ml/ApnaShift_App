@@ -74,9 +74,16 @@ if (railwayForm) {
 if (!process.env.MSSQL_USER || !process.env.MSSQL_PASSWORD)
   fail('.env me MSSQL_USER / MSSQL_PASSWORD chahiye.');
 const targetDb = process.env.MSSQL_DATABASE ?? '';
-if (!/migrate/i.test(targetDb)) {
+// D2 allowlist: exact names (comma-separated) beyond the /migrate/i scratch
+// pattern — e.g. MIGRATE_ALLOW_TARGET=ApnaShiftDB_prod. Exact match only,
+// no wildcards, case-insensitive; still refuses any other DB (no deletes).
+const allowedTargets = (process.env.MIGRATE_ALLOW_TARGET ?? '')
+  .split(',')
+  .map((s) => s.trim().toLowerCase())
+  .filter(Boolean);
+if (!/migrate/i.test(targetDb) && !allowedTargets.includes(targetDb.toLowerCase())) {
   fail(
-    `MSSQL_DATABASE='${targetDb}' me 'migrate' nahi hai. Scratch DB ka naam 'migrate' rakho (jaise ApnaShiftDB_migrate) — real/test DBs par data load kabhi nahi hoga.`,
+    `MSSQL_DATABASE='${targetDb}' allowed nahi hai. Scratch DB ka naam 'migrate' rakho (jaise ApnaShiftDB_migrate) ya exact naam MIGRATE_ALLOW_TARGET me do (comma-separated) — real/test DBs par data load kabhi nahi hoga.`,
   );
 }
 const targetName = /^[A-Za-z0-9_]+$/.test(targetDb) ? targetDb : null;
@@ -90,8 +97,10 @@ const mcfg = {
   database: targetName,
   options: {
     encrypt: (process.env.MSSQL_ENCRYPT ?? 'false') === 'true',
-    trustServerCertificate: true,
-    connectTimeout: 8000,
+    trustServerCertificate: (process.env.MSSQL_TRUST_CERT ?? 'true') === 'true',
+    connectTimeout: process.env.MSSQL_CONNECT_TIMEOUT
+      ? Number(process.env.MSSQL_CONNECT_TIMEOUT)
+      : 8000,
     requestTimeout: 60000,
   },
   pool: { max: 5 },

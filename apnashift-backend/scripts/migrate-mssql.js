@@ -25,8 +25,10 @@ function mssqlConfig() {
     options: {
       instanceName: port ? undefined : instance || undefined,
       encrypt: (process.env.MSSQL_ENCRYPT ?? 'false') === 'true',
-      trustServerCertificate: true,
-      connectTimeout: 10000,
+      trustServerCertificate: (process.env.MSSQL_TRUST_CERT ?? 'true') === 'true',
+      connectTimeout: process.env.MSSQL_CONNECT_TIMEOUT
+        ? Number(process.env.MSSQL_CONNECT_TIMEOUT)
+        : 10000,
       requestTimeout: 60000,
     },
   };
