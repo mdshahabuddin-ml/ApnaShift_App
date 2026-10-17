@@ -186,12 +186,17 @@ jobs:
           fi
       - name: Deploy to Railway staging service
         run: |
-          railway up --service "${{ secrets.RAILWAY_STAGING_SERVICE_ID }}" --environment staging || {
-            echo '::error::DEPLOY RUKA (staging): `railway up` fail. Railway dashboard me service id/environment naam verify karo.'
+          echo "up target: project=${RAILWAY_PROJECT_ID} service=${RAILWAY_STAGING_SERVICE_ID} (chahiye fd283892-d583-4b73-aee3-3d177d754605 = ApnaShift_App) env=staging"
+          if out=$(railway up --project "${RAILWAY_PROJECT_ID}" --service "${RAILWAY_STAGING_SERVICE_ID}" --environment staging 2>&1); then
+            echo "$out"
+          else
+            echo "$out"
+            echo "::error::DEPLOY RUKA (staging up): $(printf '%s' "$out" | tail -n 8 | tr '\n' ' ')"
             exit 1
-          }
+          fi
         env:
           RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+          RAILWAY_STAGING_SERVICE_ID: ${{ secrets.RAILWAY_STAGING_SERVICE_ID }}
 
   # ---- 5. Staging health + readiness ----
   verify-staging:
@@ -301,12 +306,17 @@ jobs:
           fi
       - name: Deploy to Railway production service
         run: |
-          railway up --service "${{ secrets.RAILWAY_PRODUCTION_SERVICE_ID }}" --environment production || {
-            echo '::error::DEPLOY RUKA (production): `railway up` fail. Railway dashboard check karo; staging abhi bhi purana stable chal raha hai.'
+          echo "up target: project=${RAILWAY_PROJECT_ID} service=${RAILWAY_PRODUCTION_SERVICE_ID} (chahiye fd283892-d583-4b73-aee3-3d177d754605 = ApnaShift_App) env=production"
+          if out=$(railway up --project "${RAILWAY_PROJECT_ID}" --service "${RAILWAY_PRODUCTION_SERVICE_ID}" --environment production 2>&1); then
+            echo "$out"
+          else
+            echo "$out"
+            echo "::error::DEPLOY RUKA (production up): $(printf '%s' "$out" | tail -n 8 | tr '\n' ' ')"
             exit 1
-          }
+          fi
         env:
           RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+          RAILWAY_PRODUCTION_SERVICE_ID: ${{ secrets.RAILWAY_PRODUCTION_SERVICE_ID }}
 
   # ---- 8. Production health verification (read-only, no test data) ----
   verify-production:
