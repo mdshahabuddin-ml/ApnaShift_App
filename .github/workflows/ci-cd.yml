@@ -204,6 +204,9 @@ jobs:
     name: Staging health/ready
     runs-on: ubuntu-latest
     needs: [deploy-staging]
+    defaults:
+      run:
+        working-directory: .
     steps:
       - name: Wait + check /api/health and /api/ready
         run: |
