@@ -158,10 +158,17 @@ jobs:
       - name: Migrate staging DB (additive only — kabhi destructive nahi)
         run: |
           npm i -g @railway/cli
-          railway run --project "${{ secrets.RAILWAY_PROJECT_ID }}" --environment staging --service Postgres -- npm run db:migrate || {
-            echo '::error::DEPLOY RUKA (staging migrate): staging DB migrate fail (URL Railway Postgres service se liya — secret ki zaroorat nahi). Production ko kuch nahi hua. Staging Postgres ke Variables check karo.'
+          railway whoami || {
+            echo '::error::DEPLOY RUKA (staging migrate): RAILWAY_TOKEN invalid/expired hai. Railway dashboard se naya PROJECT token banao aur GitHub secret update karo.'
             exit 1
           }
+          if out=$(railway run --project "${{ secrets.RAILWAY_PROJECT_ID }}" --environment staging --service Postgres -- npm run db:migrate 2>&1); then
+            echo "$out"
+          else
+            echo "$out"
+            echo "::error::DEPLOY RUKA (staging migrate): $(printf '%s' "$out" | tail -n 5 | tr '\n' ' ')"
+            exit 1
+          fi
       - name: Deploy to Railway staging service
         run: |
           railway up --service "${{ secrets.RAILWAY_STAGING_SERVICE_ID }}" --environment staging || {
@@ -214,10 +221,13 @@ jobs:
           export SMOKE_ADMIN_PHONE="70${suffix}"
           export SMOKE_ADMIN_PASSWORD="Staging-${{ github.run_id }}-Admin!"
           npm i -g @railway/cli
-          railway run --project "${{ secrets.RAILWAY_PROJECT_ID }}" --environment staging --service Postgres -- node scripts/create-admin.js "SmokeAdmin" "$SMOKE_ADMIN_PHONE" "$SMOKE_ADMIN_PASSWORD" || {
-            echo '::error::SMOKE RUKA: staging admin create fail hua (staging Postgres ke Variables check karo).'
+          if out=$(railway run --project "${{ secrets.RAILWAY_PROJECT_ID }}" --environment staging --service Postgres -- node scripts/create-admin.js "SmokeAdmin" "$SMOKE_ADMIN_PHONE" "$SMOKE_ADMIN_PASSWORD" 2>&1); then
+            echo "$out"
+          else
+            echo "$out"
+            echo "::error::SMOKE RUKA: $(printf '%s' "$out" | tail -n 5 | tr '\n' ' ')"
             exit 1
-          }
+          fi
           SMOKE_BASE_URL="${{ secrets.STAGING_BASE_URL }}" SMOKE_MODE=full node scripts/smoke.js || {
             echo '::error::SMOKE FAIL (staging): upar SMOKE FAIL line dekho — kaunsa gate toota (auth/booking/accept/GPS/tracking/enterprise). Fix karke dobara push karo. Production deploy NAHI hoga.'
             exit 1
@@ -252,10 +262,17 @@ jobs:
       - name: Migrate production DB (additive only — no DROP/TRUNCATE ever)
         run: |
           npm i -g @railway/cli
-          railway run --project "${{ secrets.RAILWAY_PROJECT_ID }}" --environment production --service Postgres -- npm run db:migrate || {
-            echo '::error::DEPLOY RUKA (production migrate): prod DB migrate fail (URL Railway Postgres service se liya). Staging/deploy ko kuch nahi hua. Pehle staging par verify karo, phir manual retry.'
+          railway whoami || {
+            echo '::error::DEPLOY RUKA (production migrate): RAILWAY_TOKEN invalid/expired hai. Railway dashboard se naya PROJECT token banao aur GitHub secret update karo.'
             exit 1
           }
+          if out=$(railway run --project "${{ secrets.RAILWAY_PROJECT_ID }}" --environment production --service Postgres -- npm run db:migrate 2>&1); then
+            echo "$out"
+          else
+            echo "$out"
+            echo "::error::DEPLOY RUKA (production migrate): $(printf '%s' "$out" | tail -n 5 | tr '\n' ' ')"
+            exit 1
+          fi
       - name: Deploy to Railway production service
         run: |
           railway up --service "${{ secrets.RAILWAY_PRODUCTION_SERVICE_ID }}" --environment production || {
