@@ -157,6 +157,8 @@ jobs:
           RAILWAY_STAGING_SERVICE_ID: ${{ secrets.RAILWAY_STAGING_SERVICE_ID }}
           STAGING_BASE_URL: ${{ secrets.STAGING_BASE_URL }}
       - name: Migrate staging DB (additive only — kabhi destructive nahi)
+        env:
+          STAGING_DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
         run: |
           npm i -g @railway/cli
           railway upgrade --yes || true
@@ -170,7 +172,12 @@ jobs:
             echo "::error::DEPLOY RUKA (staging token check): railway run fail. RAILWAY_TOKEN_STAGING = $mask — ye value local 'token-ok' test wale token se match honi chahiye. Fresh staging token banao aur GitHub secret EDIT (pencil) se update karo."
             exit 1
           fi
-          if out=$(railway run --project "${{ secrets.RAILWAY_PROJECT_ID }}" --environment staging --service Postgres -- npm run db:migrate 2>&1); then
+          echo "STAGING_DATABASE_URL = ${STAGING_DATABASE_URL:-EMPTY}"
+          echo "${STAGING_DATABASE_URL:-}" | grep -qE '^[A-Za-z0-9.-]+:[0-9]+$' || {
+            echo '::error::DEPLOY RUKA (staging migrate): STAGING_DATABASE_URL secret host:port form me chahiye (e.g. yamanote.proxy.rlwy.net:17434 — Railway → staging Postgres → Connect/public TCP proxy se endpoint copy karke secret update karo).'
+            exit 1
+          }
+          if out=$(DATABASE_URL="$STAGING_DATABASE_URL" railway run --project "${{ secrets.RAILWAY_PROJECT_ID }}" --environment staging --service Postgres -- npm run db:migrate 2>&1); then
             echo "$out"
           else
             echo "$out"
@@ -224,13 +231,15 @@ jobs:
           cache-dependency-path: apnashift-backend/package-lock.json
       - run: npm ci --no-audit --no-fund --omit=dev
       - name: Create staging admin (unique phone per run) + run FULL smoke
+        env:
+          STAGING_DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
         run: |
           suffix=$(date +%s | tail -c 9)
           export SMOKE_ADMIN_PHONE="70${suffix}"
           export SMOKE_ADMIN_PASSWORD="Staging-${{ github.run_id }}-Admin!"
           npm i -g @railway/cli
           railway upgrade --yes || true
-          if out=$(railway run --project "${{ secrets.RAILWAY_PROJECT_ID }}" --environment staging --service Postgres -- node scripts/create-admin.js "SmokeAdmin" "$SMOKE_ADMIN_PHONE" "$SMOKE_ADMIN_PASSWORD" 2>&1); then
+          if out=$(DATABASE_URL="$STAGING_DATABASE_URL" railway run --project "${{ secrets.RAILWAY_PROJECT_ID }}" --environment staging --service Postgres -- node scripts/create-admin.js "SmokeAdmin" "$SMOKE_ADMIN_PHONE" "$SMOKE_ADMIN_PASSWORD" 2>&1); then
             echo "$out"
           else
             echo "$out"
@@ -283,7 +292,7 @@ jobs:
             echo "::error::DEPLOY RUKA (production token check): railway run fail. RAILWAY_TOKEN = $mask — production environment wala fresh project token banao aur GitHub secret EDIT (pencil) se update karo."
             exit 1
           fi
-          if out=$(railway run --project "${{ secrets.RAILWAY_PROJECT_ID }}" --environment production --service Postgres -- npm run db:migrate 2>&1); then
+          if out=$(railway run --project "${{ secrets.RAILWAY_PROJECT_ID }}" --environment production --service ApnaShift_App -- npm run db:migrate 2>&1); then
             echo "$out"
           else
             echo "$out"
