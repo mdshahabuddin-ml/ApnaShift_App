@@ -3,17 +3,17 @@
 // Skips if TEST_DATABASE_URL is not set.
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import request from 'supertest';
-import pg from 'pg';
+import { makeTestClient, hasTestDb } from './helpers/db.js';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { app } from '../src/app.js';
 
-const HAS_DB = !!process.env.TEST_DATABASE_URL;
+const HAS_DB = hasTestDb;
 const describeDb = HAS_DB ? describe : describe.skip;
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-const client = HAS_DB ? new pg.Client({ connectionString: process.env.TEST_DATABASE_URL }) : null;
+const client = HAS_DB ? makeTestClient() : null;
 
 let phoneCounter = 9881000000;
 function nextPhone() {

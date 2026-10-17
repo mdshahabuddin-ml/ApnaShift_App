@@ -7,18 +7,18 @@ import request from 'supertest';
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import pg from 'pg';
+import { makeTestClient, hasTestDb } from './helpers/db.js';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { app } from '../src/app.js';
 import { requireAuth, requireRole } from '../src/middleware/auth.js';
 
-const HAS_DB = !!process.env.TEST_DATABASE_URL;
+const HAS_DB = hasTestDb;
 const describeDb = HAS_DB ? describe : describe.skip;
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-const client = HAS_DB ? new pg.Client({ connectionString: process.env.TEST_DATABASE_URL }) : null;
+const client = HAS_DB ? makeTestClient() : null;
 
 // Each test uses a distinct phone (not parallel-safe, but unique in sequence).
 let phoneCounter = 9876000000;

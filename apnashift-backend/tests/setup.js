@@ -1,6 +1,8 @@
 // Runs BEFORE each test file's imports.
 // src/config.js reads env at import time, so test values
 // must be set here (setting them in test files will not work).
+import { createRequire } from 'node:module';
+
 process.env.NODE_ENV ??= 'test';
 
 // Test-only JWT secret (never put a real secret here).
@@ -25,9 +27,20 @@ process.env.TRACK_MIN_INTERVAL_MS ??= '0';
 // Fast bcrypt (12 rounds take 30s+ for the suite, 4 is faster with same logic).
 process.env.BCRYPT_ROUNDS ??= '4';
 
-// Auth integration tests need a separate test DB:
-//   TEST_DATABASE_URL=postgres://.../apnashift_test npx vitest run
-// Auth tests skip if not set (health tests still run).
+// Load .env AFTER the ??= defaults above (dotenv never overrides existing
+// keys, so test values win over .env). Needed for MSSQL_* on local dev.
+const require = createRequire(import.meta.url);
+require('dotenv').config();
+
+// Test DB mode:
+// 1. TEST_DATABASE_URL set (CI / local PG) -> pg driver against that URL,
+//    regardless of local MSSQL_* creds in .env.
+// 2. Else MSSQL creds present -> mssql driver against the test database
+//    (ApnaShiftDB_test by default; override with TEST_MSSQL_DATABASE).
 if (process.env.TEST_DATABASE_URL) {
   process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
+  process.env.DB_DRIVER = 'pg';
+} else if (process.env.MSSQL_USER) {
+  process.env.DB_DRIVER = 'mssql';
+  process.env.MSSQL_DATABASE = process.env.TEST_MSSQL_DATABASE ?? 'ApnaShiftDB_test';
 }

@@ -2,6 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import request from 'supertest';
 import { app } from '../src/app.js';
+import { hasTestDb } from './helpers/db.js';
 
 describe('GET /api/health', () => {
   it('200 + ok:true deta hai', async () => {
@@ -22,7 +23,7 @@ describe('unknown route', () => {
 
 // Readiness + DB connectivity (CI deploy gate bhi yahi check karta hai).
 // DB ke bina skip — baaki suites ki tarah TEST_DATABASE_URL aane par chalta hai.
-const HAS_DB = !!process.env.TEST_DATABASE_URL;
+const HAS_DB = hasTestDb;
 const describeDb = HAS_DB ? describe : describe.skip;
 
 describeDb('GET /api/ready', () => {

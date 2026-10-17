@@ -3,17 +3,16 @@
 // Skips this suite if TEST_DATABASE_URL is not set.
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import request from 'supertest';
-import pg from 'pg';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { app } from '../src/app.js';
-import { applyTestSchema, truncateAll } from './helpers/db.js';
+import { applyTestSchema, truncateAll, makeTestClient, hasTestDb } from './helpers/db.js';
 
-const HAS_DB = !!process.env.TEST_DATABASE_URL;
+const HAS_DB = hasTestDb;
 const describeDb = HAS_DB ? describe : describe.skip;
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-const client = HAS_DB ? new pg.Client({ connectionString: process.env.TEST_DATABASE_URL }) : null;
+const client = HAS_DB ? makeTestClient() : null;
 
 let phoneCounter = 9865000000;
 function nextPhone() {
