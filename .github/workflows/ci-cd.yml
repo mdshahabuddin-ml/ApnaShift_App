@@ -159,6 +159,7 @@ jobs:
       - name: Migrate staging DB (additive only — kabhi destructive nahi)
         run: |
           npm i -g @railway/cli
+          railway upgrade --yes || true
           tok="${RAILWAY_TOKEN:-}"
           if [ -n "$tok" ]; then mask="len=${#tok} ${tok:0:4}...${tok: -4}"; else mask="EMPTY"; fi
           echo "CLI $(railway --version 2>&1 | head -1) | RAILWAY_TOKEN_STAGING=$mask"
@@ -228,6 +229,7 @@ jobs:
           export SMOKE_ADMIN_PHONE="70${suffix}"
           export SMOKE_ADMIN_PASSWORD="Staging-${{ github.run_id }}-Admin!"
           npm i -g @railway/cli
+          railway upgrade --yes || true
           if out=$(railway run --project "${{ secrets.RAILWAY_PROJECT_ID }}" --environment staging --service Postgres -- node scripts/create-admin.js "SmokeAdmin" "$SMOKE_ADMIN_PHONE" "$SMOKE_ADMIN_PASSWORD" 2>&1); then
             echo "$out"
           else
@@ -270,6 +272,7 @@ jobs:
       - name: Migrate production DB (additive only — no DROP/TRUNCATE ever)
         run: |
           npm i -g @railway/cli
+          railway upgrade --yes || true
           tok="${RAILWAY_TOKEN:-}"
           if [ -n "$tok" ]; then mask="len=${#tok} ${tok:0:4}...${tok: -4}"; else mask="EMPTY"; fi
           echo "CLI $(railway --version 2>&1 | head -1) | RAILWAY_TOKEN=$mask"
