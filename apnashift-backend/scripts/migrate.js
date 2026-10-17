@@ -6,15 +6,16 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import pg from 'pg';
 import 'dotenv/config';
+import { pgConfigFromEnv } from './pg-config.js';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-const dbUrl = process.env.DATABASE_URL;
-if (!dbUrl) {
-  console.error('[migrate] DATABASE_URL khaali hai. .env banao (.env.example dekho).');
+const pgConfig = pgConfigFromEnv();
+if (!pgConfig) {
+  console.error('[migrate] DB config nahi mila: DATABASE_URL (full URL ya host:port) ya PGUSER/PGPASSWORD/PGDATABASE chahiye. .env banao (.env.example dekho).');
   process.exit(1);
 }
 
-const client = new pg.Client({ connectionString: dbUrl });
+const client = new pg.Client(pgConfig);
 try {
   await client.connect();
   // Order: base schema -> migrations (002, 003...) -> seed. All static SQL.

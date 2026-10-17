@@ -50,8 +50,8 @@ GitHub runners par nahi hota (known env gap, app code se unrelated).
 | `RAILWAY_PROJECT_ID` | Railway project id |
 | `RAILWAY_STAGING_SERVICE_ID` | Staging backend service id |
 | `RAILWAY_PRODUCTION_SERVICE_ID` | Production backend service id |
-| `STAGING_DATABASE_URL` | Staging Postgres URL — **sirf** `db:migrate` + `create-admin` ke liye |
-| `PRODUCTION_DATABASE_URL` | Production Postgres URL — **sirf** `db:migrate` ke liye |
+| `STAGING_DATABASE_URL` | **Legacy — ab CI use nahi karta**: migrate/create-admin ab `railway run` se Railway Postgres service sehi URL lete hain |
+| `PRODUCTION_DATABASE_URL` | **Legacy — ab CI use nahi karta**: same, `railway run` se |
 | `STAGING_BASE_URL` | `https://<staging>.up.railway.app` (trailing slash nahi) |
 | `PRODUCTION_BASE_URL` | `https://apnashiftapp-production.up.railway.app` |
 

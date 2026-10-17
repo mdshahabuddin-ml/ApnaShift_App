@@ -5,6 +5,7 @@
 import bcrypt from 'bcryptjs';
 import pg from 'pg';
 import 'dotenv/config';
+import { pgConfigFromEnv } from './pg-config.js';
 
 const [name, rawPhone, password] = process.argv.slice(2);
 
@@ -27,14 +28,14 @@ if (password.length < 8) {
   console.error('[admin:create] Password kam se kam 8 akshar.');
   process.exit(1);
 }
-const dbUrl = process.env.DATABASE_URL;
-if (!dbUrl) {
-  console.error('[admin:create] DATABASE_URL khaali hai. .env banao.');
+const pgConfig = pgConfigFromEnv();
+if (!pgConfig) {
+  console.error('[admin:create] DB config nahi mila: DATABASE_URL (full URL ya host:port) ya PGUSER/PGPASSWORD/PGDATABASE chahiye. .env banao.');
   process.exit(1);
 }
 
 const rounds = Number(process.env.BCRYPT_ROUNDS ?? 12);
-const client = new pg.Client({ connectionString: dbUrl });
+const client = new pg.Client(pgConfig);
 try {
   await client.connect();
   const hash = await bcrypt.hash(password, rounds);
