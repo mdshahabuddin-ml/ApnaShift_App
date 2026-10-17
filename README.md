@@ -46,7 +46,8 @@ GitHub runners par nahi hota (known env gap, app code se unrelated).
 
 | Secret | Kaunsa |
 |---|---|
-| `RAILWAY_TOKEN` | Railway CLI deploy token |
+| `RAILWAY_TOKEN` | Railway CLI token — **production**-scoped (sirf production migrate/deploy jobs) |
+| `RAILWAY_TOKEN_STAGING` | Railway CLI token — **staging**-scoped (staging migrate/deploy/smoke jobs). Railway Project → Tokens se banao, Environment = staging |
 | `RAILWAY_PROJECT_ID` | Railway project id |
 | `RAILWAY_STAGING_SERVICE_ID` | Staging backend service id |
 | `RAILWAY_PRODUCTION_SERVICE_ID` | Production backend service id |

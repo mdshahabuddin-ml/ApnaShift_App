@@ -137,7 +137,7 @@ jobs:
     if: github.event_name == 'push' || github.event.inputs.deploy_target == 'staging' || github.event.inputs.deploy_target == 'production'
     environment: staging
     env:
-      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_STAGING }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -148,6 +148,7 @@ jobs:
       - run: npm ci --no-audit --no-fund --omit=dev
       - name: Fail-safe guard (secrets present?)
         run: |
+          [ -n "${{ secrets.RAILWAY_TOKEN_STAGING }}" ] || { echo "::error::DEPLOY RUKA (staging): GitHub secret RAILWAY_TOKEN_STAGING missing hai — Railway Project → Tokens me staging environment ka naya token banao aur GitHub me secret dalo."; exit 1; }
           for v in RAILWAY_TOKEN RAILWAY_PROJECT_ID RAILWAY_STAGING_SERVICE_ID STAGING_BASE_URL; do
             [ -n "${!v}" ] || { echo "::error::DEPLOY RUKA (staging): secret/variable $v set nahi hai. README ka 'GitHub Secrets' section dekho."; exit 1; }
           done
@@ -206,7 +207,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [verify-staging]
     env:
-      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_STAGING }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -252,6 +253,7 @@ jobs:
       - run: npm ci --no-audit --no-fund --omit=dev
       - name: Fail-safe guard (secrets present?)
         run: |
+          [ -n "${{ secrets.RAILWAY_TOKEN }}" ] || { echo "::error::DEPLOY RUKA (production): GitHub secret RAILWAY_TOKEN missing hai — Railway Project → Tokens me production environment ka token banao aur GitHub me secret dalo."; exit 1; }
           for v in RAILWAY_TOKEN RAILWAY_PROJECT_ID RAILWAY_PRODUCTION_SERVICE_ID PRODUCTION_BASE_URL; do
             [ -n "${!v}" ] || { echo "::error::DEPLOY RUKA (production): secret/variable $v set nahi hai. Staging GREEN tha, par production ko haath nahi lagaya."; exit 1; }
           done
