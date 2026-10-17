@@ -477,6 +477,7 @@ CREATE TABLE driver_locations (
   lng FLOAT NOT NULL CHECK (lng BETWEEN -180 AND 180),
   accuracy_m DECIMAL(8, 2) NULL CHECK (accuracy_m IS NULL OR (accuracy_m >= 0 AND accuracy_m <= 10000)),
   speed_mps DECIMAL(6, 2) NULL CHECK (speed_mps IS NULL OR (speed_mps >= 0 AND speed_mps <= 100)),
+  heading_deg DECIMAL(5, 1) NULL CHECK (heading_deg IS NULL OR (heading_deg >= 0 AND heading_deg <= 360)),
   recorded_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
 );
 GO
