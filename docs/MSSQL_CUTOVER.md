@@ -4,11 +4,12 @@ Status: **PREPARED, NOT EXECUTED.** Every command here is read-only or listed
 for execution only after explicit approval. Railway PostgreSQL remains
 production until Phase 4 is approved and green.
 
-Prepared from verified state (2026-10-17):
+Prepared from verified state (2026-10-17); status lines refreshed 2026-10-18
+evening:
 
-- Local `main` = `d293a77` (4 commits ahead of `origin/main`: Phase 1 `ac9381f`,
-  Phase 2 `00067de`, data-migration `fea50b7`, this runbook `d293a77` —
-  **none pushed**).
+- Local `main` = `b2503a5`, **1 commit ahead of `origin/main`** (push state
+  changes often — check `git status` at execution time; push = CI → staging
+  → production deploy, D4).
 - `ApnaShiftDB_migrate` = verified copy of production: 23/23 tables, 42/42 rows
   counts + values (`_audit.mjs`, `_spot_prod.mjs`), app smoke 7/7
   (`_smoke_scratch.mjs`). Date off-by-one bug fixed in `migrate-data-mssql.js`.
@@ -69,18 +70,21 @@ stops production automatically (workflow `ci-cd.yml`).
       **DONE 2026-10-18** — production migrate ran 002→023 cleanly, then
       `railway up` deployed, health returned 200. Production `/api/ready` =
       `{"ok":true,"db":"up"}`.
-- [ ] Re-run the audit and compare with expectations:
-
-```powershell
-# from apnashift-backend
-$env:MSSQL_DATABASE='ApnaShiftDB'; railway run node scripts\_audit.mjs
-```
-
-Expected after 023: `bookings/pricing_rules/pricing_history` **extra_cols gone**
-(column issues drop 5 → 4); remaining4 = identity `default_diffs`
-(`commission_history.id`, `notifications.seq`, `pricing_history.id`,
-`pricing_rules.id`) — representation-only, acceptable. Counts stay
-42 vs 6 (local `ApnaShiftDB` intentionally not loaded).
+- [x] Re-run the audit and compare with expectations:
+      **DONE 2026-10-18 (evening)** — `railway run node scripts\_audit.mjs`
+      with `MSSQL_DATABASE='ApnaShiftDB'`. Matches the expectation exactly:
+      column issues **5 → 4**, all four = identity `default_diffs`
+      (`commission_history.id`, `notifications.seq`, `pricing_history.id`,
+      `pricing_rules.id`); v2 extra_cols **gone** (prod runs `023`); counts
+      42 vs 6, 15/23 identical, 8 count-problems = the intentionally
+      unloaded tables; PK 23/23, FK 29/29 (0 table-issues); UNIQUE 17→14
+      + CHECK diffs = known representation deltas (Appendix C).
+      `MIGRATION-COMPLETE: NO` is expected here (target is the dev DB,
+      not a prod mirror — prod mirror = `ApnaShiftDB_prod`, verified
+      separately).
+- [x] Spot re-verify after the `minimum_fare` expectation fix:
+      **SPOT-PROD OK — 42 rows + v2 defaults** (`spot-prod.ps1` wrapper →
+      `_spot_prod.mjs` vs `ApnaShiftDB_prod`).
 
 - [x] Decide D1/D2/D3 (above) — **D2 resolved 2026-10-17** (target
       `ApnaShiftDB_prod` + exact-name allowlist). **D5 final decision
@@ -259,7 +263,8 @@ later unless upgraded. Dates below are targets, not contracts.
 
 - [ ] **≈2026-10-30 (services stop se 1 din pehle):** final fresh dump chalao
       (agar Oct 18 ke baad production me koi nayi write hui ho). Naya file
-      `backups/apnashift-prod-<date>.dump.zip` banega.
+      `backups/apnashift-prod-<date>.dump.zip` banega. *Latest abhi tak:*
+      `apnashift-prod-20261018-145517.dump.zip` (3 dumps aaj).
 - [ ] **Backup ki dusri copy:** `backups/` folder abhi sirf E: drive pe hai —
       ek copy Google Drive/external disk me daalo (local disk fail = sab
       khatam). Minimum: dono `.dump.zip` + purani `.sql`.
@@ -283,8 +288,12 @@ later unless upgraded. Dates below are targets, not contracts.
       `GEOAPIFY_API_KEY`, `JWT_SECRET`, `NODE_ENV`, `TRUST_PROXY`) +
       GitHub secrets update + CI wapas green.
 - [ ] **CI expected-red after ≈Oct 31:** Railway jobs fail (services offline)
-      — code bug nahi. Deploy-toggle aana chahiye (GitHub Actions variable
-      `DEPLOY_DISABLED=true` se staging/prod jobs skip).
+      — code bug nahi. Deploy-toggle **code ready hai** (`ci-cd.yml`:
+      staging + production jobs `vars.DEPLOY_DISABLED != 'true'` par skip,
+      commit `2315d19`) — baaki sirf GitHub repo variable
+      `DEPLOY_DISABLED=true` set karna hai (Settings → Actions → Variables),
+      tab tak chhodo: abhi services online hain aur push par deploy chahiye
+      bhi sakta hai. *Variable abhi set nahi hai* (2026-10-18 check).
 
 ### Relaunch env inventory (names only — values Railway dashboard / `.env` se)
 
@@ -369,7 +378,60 @@ smoke + health gates stay identical.
 | v2 extra columns | **Gone after Phase 0** (prod runs `023`) |
 | PK 23/23, FK 29/29 (+ per-table), types 12 canonical pairs, nullable diffs 0 | Parity ✓ |
 
-## APPENDIX D — Risks & mitigations
+## APPENDIX D — mssql-mode test gap (found 2026-10-18): RESOLVED same day
+
+Local `npx vitest run` in **mssql mode** (no `TEST_DATABASE_URL`; `.env`
+MSSQL creds → `ApnaShiftDB_test`) was **164 passed / 122 failed**. PG mode
+was unaffected (CI runs that path and is green). Now **286/286 green** in
+mssql mode; PG path untouched. What was broken and how it was fixed:
+
+1. **OUTPUT-without-INTO vs enabled triggers** (113 of 122 failures) —
+   SQL Server error: *"The target table 'bookings' of the DML statement
+   cannot have any enabled triggers if the statement contains an OUTPUT
+   clause without INTO clause."* Translator now rewrites `DML ..
+   RETURNING` to a deterministic temp-capture batch (`rewriteReturning`,
+   `captureViaTemp` in `src/mssql/translate.js`):
+   `DROP TABLE IF EXISTS #r<fnv1a>; SELECT TOP 0 * INTO #r.. FROM (SELECT * FROM
+   t WHERE 1=0 UNION ALL SELECT * FROM t WHERE 1=0) AS __capture_src; DML ..
+   OUTPUT INSERTED.* INTO #r..; SELECT <cols> FROM #r..; DROP TABLE IF EXISTS #r..;`
+   (UNION ALL trick because plain `SELECT INTO` copies identity →
+   OUTPUT INTO refuses it; trigger-safe, types auto). `tests/translate.test.js`
+   expectations updated to the batch shape.
+2. **Bare BIT in boolean context** — T-SQL rejects `WHERE CASE WHEN @b THEN`
+   (error 4145) even via sqlcmd. `rewriteBoolean`: `WHERE|AND|OR|WHEN|NOT +
+   @pN` (only params, never bare columns — column lists falsely matched) →
+   `@pN = 1`. Fixed `src/routes/drivers.js` `CASE WHEN $34 THEN`.
+3. **NULL-unique semantics** — PG allows many NULLs in UNIQUE, MSSQL plain
+   UNIQUE allows one. Affected `drivers.email`, `drivers.license_number`,
+   `settlements.reference_no` (second driver-register died with unique
+   violation → 409 `phone_taken`). `001_schema.sql` inline UNIQUE removed;
+   filtered indexes (`WHERE col IS NOT NULL`) added; new
+   `db/mssql/004_unique_nullable.sql` drops any UQ key on nullable columns
+   and recreates them (applied to `ApnaShiftDB_test`, `ApnaShiftDB`,
+   `ApnaShiftDB_prod`, `ApnaShiftDB_migrate`). `mapPgError` now extracts
+   constraint/index name from messages 2601/2627 → `err.constraint` so
+   route 409 codes work. **Note:** prod name `ApnaShift` (old) has no
+   unique indexes on nullable columns — inconsistent with `ApnaShiftDB`;
+   not in the cutover path (target is `ApnaShiftDB_prod`), flagged only.
+4. **Other translator gaps fixed:** `JOIN LATERAL` → APPLY
+   (`admin.js:766`), `NULLS FIRST/LAST` → CASE sort key, PG `GROUP BY pk`
+   functional dependency (`admin.js:92/1009` error 8120), multi-row
+   `VALUES .. ON CONFLICT` (seed.sql pricing INSERT), aggregate-over-
+   scalar-subquery → CROSS APPLY (error 130; `settlements.js:144,146,352`).
+5. **Test-side portability:** `to_regclass`/`pg_get_constraintdef`/
+   `pg_indexes` assertions → shared engine-aware helpers in
+   `tests/helpers/db.js` (`tableExists`/`indexExists`/`checkConstraintDefs`);
+   `delivered_at` type assertion accepts `timestamp|datetime2`; tedious
+   returns uppercase uniqueidentifiers → `lowercaseUuids` in
+   `src/mssql/db.js` for pg parity.
+
+- **Pre-existing, not a regression** — checked with `translate.js` from
+  `2315d19` and from `00067de` (Phase 2): same 164/122 baseline. The older
+  "286/286 both modes" claim ran against a trigger-free test DB.
+- **Verified:** `npx vitest run` (mssql mode) = 36 files / 286 tests
+  passed; `npm run lint` clean. CI (PG mode) re-verified on push.
+
+## APPENDIX E — Risks & mitigations
 
 | Risk | Mitigation |
 |---|---|

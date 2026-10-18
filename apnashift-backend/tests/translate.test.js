@@ -3,6 +3,10 @@
 import { describe, it, expect } from 'vitest';
 import { translateToMssql } from '../src/mssql/translate.js';
 
+// RETURNING rows are captured through a deterministic temp table (#r<fnv1a>);
+// normalize the hash so expectations stay readable.
+const norm = (s) => s.replace(/#r[a-z0-9]+/g, '#rX');
+
 describe('params: $n -> @pn', () => {
   it('converts numbered placeholders', () => {
     expect(translateToMssql('SELECT * FROM users WHERE id = $1')).toBe(
@@ -18,39 +22,65 @@ describe('params: $n -> @pn', () => {
   });
 });
 
-describe('INSERT .. RETURNING -> OUTPUT', () => {
+describe('INSERT .. RETURNING -> trigger-safe temp capture', () => {
   it('auth register', () => {
     expect(
-      translateToMssql('INSERT INTO users (name, phone, password_hash) VALUES ($1, $2, $3) RETURNING id, name, phone'),
+      norm(translateToMssql('INSERT INTO users (name, phone, password_hash) VALUES ($1, $2, $3) RETURNING id, name, phone')),
     ).toBe(
-      'INSERT INTO users (name, phone, password_hash) OUTPUT INSERTED.id, INSERTED.name, INSERTED.phone VALUES (@p1, @p2, @p3)',
+      [
+        'DROP TABLE IF EXISTS #rX;',
+        'SELECT TOP 0 * INTO #rX FROM (SELECT * FROM users WHERE 1 = 0 UNION ALL SELECT * FROM users WHERE 1 = 0) AS __capture_src;',
+        'INSERT INTO users (name, phone, password_hash) OUTPUT INSERTED.* INTO #rX VALUES (@p1, @p2, @p3);',
+        'SELECT id, name, phone FROM #rX;',
+        'DROP TABLE IF EXISTS #rX;',
+      ].join('\n'),
     );
   });
 
   it('INSERT .. RETURNING * (wa_conversations)', () => {
     expect(
-      translateToMssql("INSERT INTO wa_conversations (phone, state, data) VALUES ($1, 'START', '{}') RETURNING *"),
+      norm(translateToMssql("INSERT INTO wa_conversations (phone, state, data) VALUES ($1, 'START', '{}') RETURNING *")),
     ).toBe(
-      "INSERT INTO wa_conversations (phone, state, data) OUTPUT INSERTED.* VALUES (@p1, 'START', '{}')",
+      [
+        'DROP TABLE IF EXISTS #rX;',
+        'SELECT TOP 0 * INTO #rX FROM (SELECT * FROM wa_conversations WHERE 1 = 0 UNION ALL SELECT * FROM wa_conversations WHERE 1 = 0) AS __capture_src;',
+        "INSERT INTO wa_conversations (phone, state, data) OUTPUT INSERTED.* INTO #rX VALUES (@p1, 'START', '{}');",
+        'SELECT * FROM #rX;',
+        'DROP TABLE IF EXISTS #rX;',
+      ].join('\n'),
     );
   });
 });
 
-describe('UPDATE .. RETURNING -> OUTPUT before WHERE', () => {
+describe('UPDATE .. RETURNING -> trigger-safe temp capture', () => {
   it('UPDATE with TRUE/FALSE/now() in SET', () => {
     expect(
-      translateToMssql(
+      norm(translateToMssql(
         'UPDATE bookings SET disputed = TRUE, dispute_reason = $1, updated_at = now() WHERE id = $2 RETURNING id, status',
-      ),
+      )),
     ).toBe(
-      'UPDATE bookings SET disputed = 1, dispute_reason = @p1, updated_at = SYSUTCDATETIME() OUTPUT INSERTED.id, INSERTED.status WHERE id = @p2',
+      [
+        'DROP TABLE IF EXISTS #rX;',
+        'SELECT TOP 0 * INTO #rX FROM (SELECT * FROM bookings WHERE 1 = 0 UNION ALL SELECT * FROM bookings WHERE 1 = 0) AS __capture_src;',
+        'UPDATE bookings SET disputed = 1, dispute_reason = @p1, updated_at = SYSUTCDATETIME() OUTPUT INSERTED.* INTO #rX WHERE id = @p2;',
+        'SELECT id, status FROM #rX;',
+        'DROP TABLE IF EXISTS #rX;',
+      ].join('\n'),
     );
   });
 
   it('UPDATE .. RETURNING * (settlement_periods)', () => {
     expect(
-      translateToMssql('UPDATE settlement_periods SET status = $1, dispute_reason = NULL WHERE id = $2 RETURNING *'),
-    ).toBe('UPDATE settlement_periods SET status = @p1, dispute_reason = NULL OUTPUT INSERTED.* WHERE id = @p2');
+      norm(translateToMssql('UPDATE settlement_periods SET status = $1, dispute_reason = NULL WHERE id = $2 RETURNING *')),
+    ).toBe(
+      [
+        'DROP TABLE IF EXISTS #rX;',
+        'SELECT TOP 0 * INTO #rX FROM (SELECT * FROM settlement_periods WHERE 1 = 0 UNION ALL SELECT * FROM settlement_periods WHERE 1 = 0) AS __capture_src;',
+        'UPDATE settlement_periods SET status = @p1, dispute_reason = NULL OUTPUT INSERTED.* INTO #rX WHERE id = @p2;',
+        'SELECT * FROM #rX;',
+        'DROP TABLE IF EXISTS #rX;',
+      ].join('\n'),
+    );
   });
 });
 
@@ -83,15 +113,18 @@ describe('ON CONFLICT DO UPDATE -> MERGE', () => {
     expect(out).toContain('WHEN MATCHED THEN UPDATE SET platform = src.platform, updated_at = SYSUTCDATETIME()');
   });
 
-  it('DO NOTHING + RETURNING -> MERGE with OUTPUT', () => {
-    const out = translateToMssql(
-      `INSERT INTO notifications (recipient_role, recipient_id, booking_id, type, title, body, data)
+  it('DO NOTHING + RETURNING -> MERGE with temp capture', () => {
+    const out = norm(
+      translateToMssql(
+        `INSERT INTO notifications (recipient_role, recipient_id, booking_id, type, title, body, data)
        VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)
        ON CONFLICT (booking_id, recipient_role, recipient_id, type) DO NOTHING
        RETURNING id, type, title, body, booking_id, read_at, created_at`,
+      ),
     );
     expect(out).toContain('CAST(@p7 AS NVARCHAR(MAX))');
-    expect(out).toContain('OUTPUT INSERTED.id, INSERTED.type, INSERTED.title, INSERTED.body, INSERTED.booking_id, INSERTED.read_at, INSERTED.created_at');
+    expect(out).toContain('OUTPUT INSERTED.* INTO #rX');
+    expect(out).toContain('SELECT id, type, title, body, booking_id, read_at, created_at FROM #rX;');
     expect(out).toContain('WHEN NOT MATCHED THEN INSERT');
     expect(out).not.toContain('WHEN MATCHED');
   });

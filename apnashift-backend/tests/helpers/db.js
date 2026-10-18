@@ -178,6 +178,37 @@ class MssqlTestClient {
 }
 
 // ------------------------------------------------------------- both modes
+// Catalog introspection — same assertions on both engines (pg_catalog vs sys).
+export async function tableExists(client, table) {
+  const r = await client.query(
+    'SELECT table_name FROM information_schema.tables WHERE table_name = $1',
+    [table],
+  );
+  return r.rowCount > 0;
+}
+
+export async function indexExists(client, name) {
+  const q =
+    testDbMode === 'mssql'
+      ? 'SELECT name FROM sys.indexes WHERE name = $1'
+      : 'SELECT indexname FROM pg_indexes WHERE indexname = $1';
+  const r = await client.query(q, [name]);
+  return r.rowCount > 0;
+}
+
+// CHECK-constraint definitions on a table (pg_get_constraintdef vs
+// sys.check_constraints.definition).
+export async function checkConstraintDefs(client, table) {
+  const q =
+    testDbMode === 'mssql'
+      ? `SELECT definition AS def FROM sys.check_constraints WHERE parent_object_id = OBJECT_ID($1)`
+      : `SELECT pg_get_constraintdef(c.oid) AS def FROM pg_constraint c
+         JOIN pg_class t ON t.oid = c.conrelid
+         WHERE t.relname = $1 AND c.contype = 'c'`;
+  const r = await client.query(q, [table]);
+  return r.rows.map((x) => x.def);
+}
+
 export async function applyTestSchema(client, root) {
   if (typeof client.rawSchema === 'function') {
     await client.rawSchema();

@@ -8,7 +8,7 @@ import bcrypt from 'bcryptjs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { app } from '../src/app.js';
-import { applyTestSchema, truncateAll, makeTestClient, hasTestDb } from './helpers/db.js';
+import { applyTestSchema, truncateAll, makeTestClient, hasTestDb, indexExists, checkConstraintDefs } from './helpers/db.js';
 
 const HAS_DB = hasTestDb;
 const describeDb = HAS_DB ? describe : describe.skip;
@@ -115,21 +115,17 @@ describeDb('delivered_at (DB)', () => {
        WHERE table_name = 'bookings' AND column_name = 'delivered_at'`,
     );
     expect(col.rowCount).toBe(1);
-    expect(col.rows[0].data_type).toContain('timestamp');
+    // PG: timestamp/timestamptz; mssql: datetime2.
+    expect(col.rows[0].data_type).toMatch(/timestamp|datetime2/);
 
-    const check = await client.query(
-      `SELECT pg_get_constraintdef(oid) AS def FROM pg_constraint
-       WHERE conname = 'bookings_delivered_at_check'`,
+    const deliveredChecks = (await checkConstraintDefs(client, 'bookings')).filter((d) =>
+      d.includes('delivered_at'),
     );
-    expect(check.rowCount).toBe(1);
-    expect(check.rows[0].def).toContain('delivered_at');
+    expect(deliveredChecks).toHaveLength(1);
+    expect(deliveredChecks[0]).toContain('delivered_at');
 
     for (const idx of ['idx_bookings_driver_delivered', 'idx_bookings_delivered_at']) {
-      const found = await client.query(
-        `SELECT indexname FROM pg_indexes WHERE indexname = $1`,
-        [idx],
-      );
-      expect(found.rowCount).toBe(1);
+      expect(await indexExists(client, idx)).toBe(true);
     }
   });
 

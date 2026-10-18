@@ -44,7 +44,7 @@ CREATE TABLE drivers (
   commission_due DECIMAL(10, 2) NOT NULL DEFAULT 0 CHECK (commission_due >= 0),
   needs_review BIT NOT NULL DEFAULT 0,
   rejection_reason NVARCHAR(MAX) NULL,
-  email NVARCHAR(120) NULL UNIQUE,
+  email NVARCHAR(120) NULL,
   dob DATE NULL,
   gender NVARCHAR(20) NULL CHECK (gender IS NULL OR gender IN ('male', 'female', 'other', 'prefer_not_to_say')),
   city NVARCHAR(120) NULL,
@@ -56,7 +56,7 @@ CREATE TABLE drivers (
   capacity_kg INT NULL CHECK (capacity_kg IS NULL OR (capacity_kg >= 0 AND capacity_kg <= 50000)),
   fuel_type NVARCHAR(20) NULL CHECK (fuel_type IS NULL OR fuel_type IN ('diesel', 'petrol', 'cng', 'electric', 'other')),
   ownership NVARCHAR(20) NULL CHECK (ownership IS NULL OR ownership IN ('owned', 'financed', 'rented', 'other')),
-  license_number NVARCHAR(25) NULL UNIQUE,
+  license_number NVARCHAR(25) NULL,
   license_type NVARCHAR(MAX) NULL,
   license_expiry DATE NULL,
   license_state NVARCHAR(MAX) NULL,
@@ -76,6 +76,17 @@ CREATE TABLE drivers (
   upi_id NVARCHAR(321) NULL CHECK (upi_id IS NULL OR (LEN(upi_id) BETWEEN 4 AND 321 AND upi_id LIKE '%@%')),
   created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
 );
+GO
+-- PG UNIQUE ko bahut saare NULL allow karte hain; MSSQL ka plain UNIQUE ek
+-- hi NULL deta hai. Nullable columns par filtered unique index = PG parity
+-- (aur index naam wahi jo PG constraint names hain -> 23505 mapping chalti hai).
+IF OBJECT_ID('drivers', 'U') IS NOT NULL
+AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'drivers_email_unique' AND object_id = OBJECT_ID('drivers'))
+  CREATE UNIQUE INDEX drivers_email_unique ON drivers (email) WHERE email IS NOT NULL;
+GO
+IF OBJECT_ID('drivers', 'U') IS NOT NULL
+AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'drivers_license_unique' AND object_id = OBJECT_ID('drivers'))
+  CREATE UNIQUE INDEX drivers_license_unique ON drivers (license_number) WHERE license_number IS NOT NULL;
 GO
 
 -- Bookings (status machine: pending -> accepted -> arrived -> in_transit -> delivered + cancelled).
@@ -556,12 +567,16 @@ CREATE TABLE settlements (
   driver_id UNIQUEIDENTIFIER NOT NULL REFERENCES drivers (id),
   amount DECIMAL(10, 2) NOT NULL CHECK (amount > 0),
   method NVARCHAR(20) NOT NULL CHECK (method IN ('cash', 'bank_transfer', 'upi')),
-  reference_no NVARCHAR(100) NULL UNIQUE,
+  reference_no NVARCHAR(100) NULL,
   admin_id UNIQUEIDENTIFIER NULL REFERENCES admins (id) ON DELETE SET NULL,
   notes NVARCHAR(500) NULL,
   settled_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
   created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
 );
+GO
+IF OBJECT_ID('settlements', 'U') IS NOT NULL
+AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'settlements_reference_no_key' AND object_id = OBJECT_ID('settlements'))
+  CREATE UNIQUE INDEX settlements_reference_no_key ON settlements (reference_no) WHERE reference_no IS NOT NULL;
 GO
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_settlements_driver')
   CREATE INDEX idx_settlements_driver ON settlements (driver_id, settled_at DESC);

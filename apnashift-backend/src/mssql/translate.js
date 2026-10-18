@@ -219,11 +219,45 @@ function rewriteOnConflict(sql) {
   const cols = splitTopLevel(ins[2]);
   const kwIdx = head.lastIndexOf('VALUES');
   const openIdx = head.indexOf('(', kwIdx);
-  const valuesEnd = afterBalanced(head, openIdx);
+  // Poora VALUES list nikalo (multi-row tuple support): tuple1 ke `(` se lekar
+  // aakhiri tuple ke `)` tak, top-level `, (...)` ke saath.
+  let i = openIdx;
+  let depth = 0;
+  let valuesEnd = -1;
+  let inStr = false;
+  while (i < head.length) {
+    const ch = head[i];
+    if (inStr) {
+      if (ch === "'") {
+        if (head[i + 1] === "'") i++;
+        else inStr = false;
+      }
+      i++;
+      continue;
+    }
+    if (ch === "'") inStr = true;
+    else if (ch === '(') depth++;
+    else if (ch === ')') {
+      depth--;
+      if (depth === 0) {
+        const m = /^\s*,\s*\(/.exec(head.slice(i + 1));
+        if (m) {
+          i = i + 1 + m[0].indexOf('('); // agle tuple ka '('
+          depth = 1;
+          i++;
+          continue;
+        }
+        valuesEnd = i + 1;
+        break;
+      }
+    }
+    i++;
+  }
+  if (valuesEnd < 0) throw new Error('translate: unbalanced VALUES list');
+  const valuesList = head.slice(openIdx, valuesEnd);
   if (head.slice(valuesEnd).trim() !== '') {
     throw new Error('translate: unexpected text between VALUES and ON CONFLICT');
   }
-  const valuesInner = head.slice(openIdx + 1, valuesEnd - 1);
   const prefix = head.slice(0, ins.index);
 
   let body = rest.replace(/^\s*ON CONFLICT\b/i, '').replace(/^\s*/, '');
@@ -252,9 +286,11 @@ function rewriteOnConflict(sql) {
   }
 
   // Targetless DO NOTHING: swallow duplicate-key errors around the INSERT.
+  // (`ins.index` already points at the "INSERT ..." keyword — do not add a
+  // second one, that emits "INSERT INSERT INTO ..." which is a syntax error.)
   if (!target.length && isNothing && returningCols === null) {
     return (
-      `${prefix}BEGIN TRY\n  INSERT ${head.slice(ins.index).trim()}\nEND TRY\n` +
+      `${prefix}BEGIN TRY\n  ${head.slice(ins.index).trim()};\nEND TRY\n` +
       'BEGIN CATCH\n  IF ERROR_NUMBER() NOT IN (2601, 2627) THROW;\nEND CATCH'
     );
   }
@@ -265,9 +301,8 @@ function rewriteOnConflict(sql) {
   const insertVals = cols.map((c) => `src.${quoteIdent(c)}`).join(', ');
 
   const lines = [`MERGE ${table} WITH (HOLDLOCK) AS tgt`];
-  lines.push(`USING (VALUES (${valuesInner})) AS src (${srcCols})`);
+  lines.push(`USING (VALUES ${valuesList}) AS src (${srcCols})`);
   lines.push(`ON ${onConds}`);
-  if (returningCols !== null) lines.push(`OUTPUT ${outputSpec(returningCols, 'INSERTED')}`);
   if (updateSet) {
     const sets = updateSet.map((s) => {
       const eq = s.indexOf('=');
@@ -282,31 +317,80 @@ function rewriteOnConflict(sql) {
     lines.push(`WHEN MATCHED THEN UPDATE SET ${sets.join(', ')}`);
   }
   lines.push(`WHEN NOT MATCHED THEN INSERT (${srcCols}) VALUES (${insertVals})`);
-  lines.push(';');
 
-  return prefix + lines.join('\n');
+  const stmt = lines.join('\n');
+
+  // MERGE ka OUTPUT clause WHEN clauses ke BAAD aata hai (INSERT/UPDATE/DELETE
+  // ke ulta) — pehle rakhne par syntax error 102. Aur RETURNING ke liye
+  // trigger-safe capture bhi chahiye (error 334) — dono yahin hote hain.
+  if (returningCols !== null) {
+    const parsed = parseReturningCols(returningCols);
+    const tmp = `#r${fnv1a(sql)}`;
+    return prefix + captureViaTemp(table, tmp, `${stmt}\nOUTPUT INSERTED.* INTO ${tmp}`, parsed);
+  }
+  return prefix + `${stmt};`;
 }
 
 // --------------------------------------------------- RETURNING -> OUTPUT clause
-function outputSpec(cols, source) {
+// RETURNING list: `*` ya bare columns (optional AS alias). Output clause me
+// hamesha `INSERTED.*`/`DELETED.*` jata hai (temp table me saare columns),
+// isliye items sirf final SELECT projection ke liye chahiye.
+function parseReturningCols(cols) {
   const trimmed = cols.trim();
-  if (trimmed === '*') return `${source}.*`;
-  return splitTopLevel(trimmed)
-    .map((raw) => {
-      let item = raw.trim();
-      let alias = null;
-      const asIdx = /\s+AS\s+([\w"]+)\s*$/i.exec(item);
-      if (asIdx) {
-        alias = asIdx[1];
-        item = item.slice(0, asIdx.index).trim();
-      }
-      const bare = item.includes('.') ? item.slice(item.lastIndexOf('.') + 1) : item;
-      if (!/^[A-Za-z_][\w]*$/.test(bare)) {
-        throw new Error('translate: unsupported RETURNING expression: ' + raw);
-      }
-      return `${source}.${bare}${alias ? ` AS ${alias}` : ''}`;
-    })
+  if (trimmed === '*') return { star: true, items: [] };
+  const items = splitTopLevel(trimmed).map((raw) => {
+    let item = raw.trim();
+    let alias = null;
+    const asIdx = /\s+AS\s+([\w"]+)\s*$/i.exec(item);
+    if (asIdx) {
+      alias = asIdx[1];
+      item = item.slice(0, asIdx.index).trim();
+    }
+    const bare = item.includes('.') ? item.slice(item.lastIndexOf('.') + 1) : item;
+    if (!/^[A-Za-z_][\w]*$/.test(bare)) {
+      throw new Error('translate: unsupported RETURNING expression: ' + raw);
+    }
+    return { bare, alias };
+  });
+  return { star: false, items };
+}
+
+function returningSelectList(parsed) {
+  if (parsed.star) return '*';
+  return parsed.items
+    .map((c) => `${quoteIdent(c.bare)}${c.alias ? ` AS ${c.alias}` : ''}`)
     .join(', ');
+}
+
+// Deterministic temp-table name (same SQL -> same name; DROP IF EXISTS makes
+// it safe to reuse across pooled connections and repeated calls).
+function fnv1a(text) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h.toString(36);
+}
+
+// Trigger-safe OUTPUT capture. SQL Server error 334: OUTPUT-without-INTO is
+// illegal on a DML target that has enabled triggers — and db/mssql/001_schema.sql
+// enables trg_bookings_* / trg_ratings_* for PG parity, so a plain
+// `INSERT ... OUTPUT INSERTED.x VALUES (...)` fails on the first booking.
+// Redirect the OUTPUT into a temp table and let the caller read the row from
+// a final SELECT. The temp is built through a UNION ALL because a plain
+// SELECT INTO copies the identity property, which OUTPUT INTO then refuses
+// (IDENTITY_INSERT + explicit column list would be needed — column names are
+// not known to this pure translator). Verified on SQLEXPRESS 2022: INSERT/
+// UPDATE/DELETE/MERGE + triggered tables.
+function captureViaTemp(table, tmp, dml, parsed) {
+  return [
+    `DROP TABLE IF EXISTS ${tmp};`,
+    `SELECT TOP 0 * INTO ${tmp} FROM (SELECT * FROM ${table} WHERE 1 = 0 UNION ALL SELECT * FROM ${table} WHERE 1 = 0) AS __capture_src;`,
+    `${dml.replace(/;\s*$/, '')};`,
+    `SELECT ${returningSelectList(parsed)} FROM ${tmp};`,
+    `DROP TABLE IF EXISTS ${tmp};`,
+  ].join('\n');
 }
 
 function rewriteReturning(sql) {
@@ -315,32 +399,42 @@ function rewriteReturning(sql) {
 
   const before = sql.slice(0, hit.index);
   const fullCols = sql.slice(hit.index + hit.match[0].length);
-  const trailing = (fullCols.match(/;\s*$/) ?? [''])[0];
   const cols = fullCols.replace(/;\s*$/, '').trim();
   const trimmedBefore = before.trimStart();
 
   let source = 'INSERTED';
   let insertAt;
+  let table;
 
   if (/^INSERT\s+INTO\b/i.test(trimmedBefore)) {
+    const tbl = /^INSERT\s+INTO\s+(\w+)/i.exec(trimmedBefore);
+    if (!tbl) throw new Error('translate: INSERT..RETURNING target not found');
+    table = tbl[1];
     const vIdx = /\sVALUES\s*\(/i.exec(before);
     if (!vIdx) throw new Error('translate: INSERT..RETURNING without VALUES');
     insertAt = before.indexOf('VALUES', vIdx.index);
   } else if (/^UPDATE\b/i.test(trimmedBefore)) {
+    const tbl = /^UPDATE\s+(\w+)/i.exec(trimmedBefore);
+    if (!tbl) throw new Error('translate: UPDATE..RETURNING target not found');
+    table = tbl[1];
     insertAt = topLevelFirst(before, /\s(?:WHERE|FROM)\s+/i);
     if (insertAt < 0) throw new Error('translate: UPDATE..RETURNING without WHERE/FROM');
   } else if (/^DELETE\s+FROM\b/i.test(trimmedBefore)) {
     source = 'DELETED';
+    const tbl = /^DELETE\s+FROM\s+(\w+)/i.exec(trimmedBefore);
+    if (!tbl) throw new Error('translate: DELETE..RETURNING target not found');
+    table = tbl[1];
     insertAt = topLevelFirst(before, /\sWHERE\s+/i);
     if (insertAt < 0) throw new Error('translate: DELETE..RETURNING without WHERE');
   } else {
     throw new Error('translate: RETURNING on unsupported statement shape');
   }
 
-  const spec = outputSpec(cols, source);
+  const parsed = parseReturningCols(cols);
   const head = before.slice(0, insertAt).replace(/\s+$/, '');
   const tail = before.slice(insertAt).replace(/^\s+/, '');
-  return `${head} OUTPUT ${spec} ${tail}${trailing}`;
+  const tmp = `#r${fnv1a(sql)}`;
+  return captureViaTemp(table, tmp, `${head} OUTPUT ${source}.* INTO ${tmp} ${tail}`, parsed);
 }
 
 // --------------------------------------------------------- 4. LIMIT/OFFSET
@@ -424,11 +518,463 @@ function shiftMatches(matches, upTo, pos, delta) {
   }
 }
 
+// ------------------------------------------- 4b. LATERAL -> APPLY
+// PG:   [LEFT|INNER] JOIN LATERAL (sub) alias ON TRUE
+// T-SQL: [OUTER|CROSS] APPLY (sub) alias   — APPLY me ON clause nahi hota,
+// aur `LATERAL` keyword hi nahi hai (error 156/102).
+function rewriteLateral(sql) {
+  let s = sql;
+  for (let guard = 0; guard < 20; guard++) {
+    const hit = findOutsideLiterals(s, /\b(?:LEFT|RIGHT|INNER|FULL)?\s*JOIN\s+LATERAL\s*/i);
+    if (!hit) break;
+    const start = hit.index;
+    const kw = hit.match[0].toLowerCase();
+    const outer = /\b(left|right|inner|full)\b/.test(kw);
+    const applyKw = outer ? 'OUTER APPLY' : 'CROSS APPLY';
+
+    let open = start + hit.match[0].length;
+    while (open < s.length && /\s/.test(s[open])) open++;
+    if (s[open] !== '(') break; // not a subquery — leave as-is
+    const close = afterBalanced(s, open); // index just past ')'
+    const aliasM = /^\s*([A-Za-z_][\w$]*)/.exec(s.slice(close));
+    if (!aliasM) break;
+    const aliasEnd = close + aliasM[0].length;
+    const alias = aliasM[1] ? ` ${aliasM[1]}` : '';
+
+    // Optional `ON <cond>` ko poora hata do (APPLY ke paas ON nahi hota).
+    let end = aliasEnd;
+    const onM = /^\s*ON\s+/i.exec(s.slice(aliasEnd));
+    if (onM) {
+      const condStart = aliasEnd + onM[0].length;
+      let j = condStart;
+      let depth = 0;
+      while (j < s.length) {
+        const ch = s[j];
+        if (ch === '(') depth++;
+        else if (ch === ')') {
+          if (depth === 0) break;
+          depth--;
+        } else if (depth === 0) {
+          if (ch === ',' || ch === ';') break;
+          if (/\s/.test(ch)) {
+            const stop =
+              /^\s*(?:WHERE|GROUP\s+BY|ORDER\s+BY|HAVING|LIMIT|OFFSET|UNION|LEFT|RIGHT|INNER|FULL|CROSS|JOIN)\b/i.exec(
+                s.slice(j),
+              );
+            if (stop) break;
+          }
+        }
+        j++;
+      }
+      end = j;
+      while (end > condStart && /\s/.test(s[end - 1])) end--;
+    }
+    const repl = `${applyKw} ${s.slice(open, close)}${alias}`;
+    s = s.slice(0, start) + repl + s.slice(end);
+  }
+  return s;
+}
+
+// ---------------------------------------- 4c. ORDER BY ... NULLS FIRST/LAST
+// MSSQL ko `NULLS LAST` syntax hi nahi milta (error 102). PG parity ke liye
+// null-flag ko pehla sort key bana do: non-nulls pehle (ASC) / nulls last.
+function rewriteNullsOrder(sql) {
+  return outsideLiterals(sql, (s0) => {
+    let s = s0;
+    for (let guard = 0; guard < 40; guard++) {
+      const m = /\bNULLS\s+(FIRST|LAST)\b/i.exec(s);
+      if (!m) break;
+      const nullsFirst = m[1].toUpperCase() === 'FIRST';
+
+      // item ka start: depth-0 ',' ya `ORDER BY` tak peechhe jao.
+      const lower = s.toLowerCase();
+      let itemStart = -1;
+      let depth = 0;
+      for (let i = m.index - 1; i >= 0; i--) {
+        const ch = s[i];
+        if (ch === ')') depth++;
+        else if (ch === '(') {
+          if (depth === 0) break; // subquery/func ke andar — yahi item boundary
+          depth--;
+        } else if (ch === ',' && depth === 0) {
+          itemStart = i + 1;
+          break;
+        }
+        if (depth === 0 && endsWithWord(lower, i, 'order by')) {
+          itemStart = i + 'order by'.length;
+          break;
+        }
+      }
+      if (itemStart < 0) itemStart = 0;
+      const item = s.slice(itemStart, m.index).replace(/\s+$/, '');
+      const dirM = /\s+(ASC|DESC)$/i.exec(item);
+      const dir = dirM ? dirM[1].toUpperCase() : 'ASC';
+      const expr = (dirM ? item.slice(0, dirM.index) : item).trim();
+      if (!expr) break;
+
+      const isDesc = dir === 'DESC';
+      const flag = nullsFirst === isDesc ? 1 : 0;
+      const repl = ` CASE WHEN ${expr} IS NULL THEN ${flag} ELSE ${1 - flag} END, ${expr} ${dir}`;
+      s = s.slice(0, itemStart) + repl + s.slice(m.index + m[0].length);
+    }
+    return s;
+  });
+}
+
+// ------------------------------- 4d. GROUP BY PK -> PG functional dependency
+// PG: `GROUP BY d.id` (PK) ke saath `d.name` select/ORDER BY me chalta hai
+// (functional dependency). MSSQL ko error 8120 milta hai. Simple
+// `alias.col` items ko GROUP BY me add kar do — PG parity safe hai, kyunki
+// aisa query PG me tabhi chalta hai jab GROUP BY us table ka PK ho.
+function rewriteGroupBy(sql) {
+  return outsideLiterals(sql, (s0) => {
+    let s = s0;
+    const gbIdx = [];
+    const gRe = /\bGROUP\s+BY\b/gi;
+    let g;
+    while ((g = gRe.exec(s))) gbIdx.push(g.index);
+
+    const isSimpleCol = (x) => /^[A-Za-z_]\w*\.[A-Za-z_]\w*$/.test(x);
+    const baseOf = (x) => (x.includes('.') ? x.slice(x.lastIndexOf('.') + 1) : x);
+
+    for (let k = gbIdx.length - 1; k >= 0; k--) {
+      const gbAt = gbIdx[k];
+      const listStart = gbAt + /^GROUP\s+BY/i.exec(s.slice(gbAt))[0].length;
+
+      // GROUP BY list ka ant: depth-0 par HAVING/ORDER/LIMIT/OFFSET/UNION/) /;
+      let listEnd = -1;
+      let depth = 0;
+      const lower = s.toLowerCase();
+      for (let i = listStart; i < s.length; i++) {
+        const ch = s[i];
+        if (ch === '(') depth++;
+        else if (ch === ')') {
+          if (depth === 0) {
+            listEnd = i;
+            break;
+          }
+          depth--;
+        } else if (depth === 0) {
+          if (ch === ';' ) {
+            listEnd = i;
+            break;
+          }
+          if (/\s/.test(ch)) {
+            const stop =
+              /^\s*(?:HAVING|ORDER\s+BY|LIMIT|OFFSET|UNION|FOR)\b/i.exec(s.slice(i));
+            if (stop) {
+              listEnd = i;
+              break;
+            }
+          }
+        }
+      }
+      if (listEnd < 0) listEnd = s.length;
+      while (listEnd > listStart && /\s/.test(s[listEnd - 1])) listEnd--;
+      const groupText = s.slice(listStart, listEnd);
+      const groupItems = splitTopLevel(groupText)
+        .map((x) => x.replace(/\s+(?:ASC|DESC)$/i, '').trim().toLowerCase())
+        .filter(Boolean);
+      if (!groupItems.length) continue;
+
+      // Nearest SELECT (depth-0, backward) — wahi rewriteLimit wala scan.
+      const prefix = s.slice(0, gbAt);
+      let bDepth = 0;
+      let selectAt = -1;
+      for (let i = prefix.length - 1; i >= 0; i--) {
+        const ch = prefix[i];
+        if (ch === ')') bDepth++;
+        else if (ch === '(') {
+          if (bDepth === 0) break;
+          bDepth--;
+        }
+        if (bDepth === 0 && endsWithWord(lower, i, 'select')) {
+          selectAt = i;
+          break;
+        }
+      }
+      if (selectAt < 0) continue;
+
+      // SELECT list ka ant: depth-0 FROM.
+      let fromAt = -1;
+      let fDepth = 0;
+      for (let i = selectAt; i < s.length; i++) {
+        const ch = s[i];
+        if (ch === '(') fDepth++;
+        else if (ch === ')') {
+          if (fDepth === 0) break;
+          fDepth--;
+        } else if (fDepth === 0 && endsWithWord(lower, i, 'from')) {
+          fromAt = i;
+          break;
+        }
+      }
+      if (fromAt < 0) continue;
+      let selStart = selectAt + /^select/i.exec(s.slice(selectAt))[0].length;
+      const distM = /^\s+DISTINCT\b/i.exec(s.slice(selStart));
+      if (distM) continue; // DISTINCT semantics — chhod do jaise hai
+      while (selStart < fromAt && /\s/.test(s[selStart])) selStart++;
+
+      // ORDER BY list (GROUP BY ke baad, depth-0) — ORDER BY me bhi simple
+      // columns PG functional dependency se chalte hain, MSSQL ko chahiye.
+      let orderStart = -1;
+      let orderEnd = -1;
+      {
+        let d = 0;
+        let i = listEnd;
+        for (; i < s.length; i++) {
+          const c = s[i];
+          if (c === '(') d++;
+          else if (c === ')') {
+            if (d === 0) break;
+            d--;
+          } else if (d === 0) {
+            if (c === ';') break;
+            if (endsWithWord(lower, i, 'order by')) {
+              orderStart = i + 'order by'.length;
+              break;
+            }
+          }
+        }
+        if (orderStart >= 0) {
+          orderEnd = s.length;
+          d = 0;
+          for (let j = orderStart; j < s.length; j++) {
+            const c = s[j];
+            if (c === '(') d++;
+            else if (c === ')') {
+              if (d === 0) {
+                orderEnd = j;
+                break;
+              }
+              d--;
+            } else if (d === 0 && c === ';') {
+              orderEnd = j;
+              break;
+            } else if (d === 0 && /\s/.test(c)) {
+              const stop = /^\s*(?:LIMIT|OFFSET|FETCH|UNION|FOR)\b/i.exec(s.slice(j));
+              if (stop) {
+                orderEnd = j;
+                break;
+              }
+            }
+          }
+          while (orderEnd > orderStart && /\s/.test(s[orderEnd - 1])) orderEnd--;
+        }
+      }
+
+      const wanted = new Set(groupItems);
+      const additions = [];
+      const consider = (raw) => {
+        const noDir = raw.replace(/\s+(?:ASC|DESC)$/i, '').trim();
+        if (!noDir) return;
+        const aliasM = /\s+AS\s+[A-Za-z_]\w*$/i.exec(noDir);
+        const expr = (aliasM ? noDir.slice(0, aliasM.index) : noDir).trim();
+        if (!expr || expr.includes('(')) return; // aggregate/subquery/func — skip
+        const low = expr.toLowerCase();
+        if (wanted.has(low)) return;
+        if (!isSimpleCol(expr)) {
+          // bare ident: sirf tab maan lo agar GROUP BY me wahi column ho
+          if (/^[A-Za-z_]\w*$/.test(low)) {
+            const hit = groupItems.some((gi) => gi === low || gi.endsWith('.' + low));
+            if (hit) return;
+          }
+          return;
+        }
+        const col = baseOf(low);
+        const hit = groupItems.some((gi) => gi === low || gi.endsWith('.' + col));
+        if (hit) return;
+        wanted.add(low);
+        additions.push(expr);
+      };
+
+      for (const item of splitTopLevel(s.slice(selStart, fromAt))) consider(item);
+      if (orderStart >= 0) for (const item of splitTopLevel(s.slice(orderStart, orderEnd)))
+        consider(item);
+
+      if (additions.length) {
+        s = `${s.slice(0, listEnd)}, ${additions.join(', ')}${s.slice(listEnd)}`;
+      }
+    }
+    return s;
+  });
+}
+
+// ------------------------- 4e. aggregate over scalar subquery -> CROSS APPLY
+// PG: `SUM((SELECT COALESCE(SUM(x), 0) FROM o WHERE o.k = p.id))` chalta hai;
+// MSSQL error 130 deta hai ("aggregate ... containing an aggregate or a
+// subquery"). Subquery ko CROSS APPLY me le jao, aggregate uske column par.
+function parenDepthAt(s, end) {
+  let d = 0;
+  let inStr = false;
+  for (let i = 0; i < end; i++) {
+    const ch = s[i];
+    if (inStr) {
+      if (ch === "'") {
+        if (s[i + 1] === "'") i++;
+        else inStr = false;
+      }
+      continue;
+    }
+    if (ch === "'") inStr = true;
+    else if (ch === '(') d++;
+    else if (ch === ')') d--;
+  }
+  return d;
+}
+
+function rewriteAggregateSubquery(sql) {
+  let s = sql;
+  for (let guard = 0; guard < 20; guard++) {
+    const hit = findOutsideLiterals(s, /\b(SUM|COUNT|AVG|MIN|MAX)\s*\(\s*\(/i);
+    if (!hit) break;
+    const aggStart = hit.index;
+    const aggName = hit.match[1].toUpperCase();
+    const open1 = aggStart + hit.match[0].indexOf('(');
+    let p = open1 + 1;
+    while (p < s.length && /\s/.test(s[p])) p++;
+    if (s[p] !== '(') break;
+    const open2 = p;
+    if (!/^\s*SELECT\b/i.test(s.slice(open2 + 1))) break;
+    let close1;
+    let close2;
+    try {
+      close1 = afterBalanced(s, open1);
+      close2 = afterBalanced(s, open2);
+    } catch {
+      break;
+    }
+    if (close2 !== close1 - 1) break; // `AGG((SELECT ..))` shape hi chahiye
+    const sub = s.slice(open2 + 1, close2 - 1);
+
+    // Enclosing query ka SELECT dhoondho (depth-0 par, `;` tak).
+    const lower = s.toLowerCase();
+    let qSelect = -1;
+    let d = 0;
+    for (let i = aggStart - 1; i >= 0; i--) {
+      const ch = s[i];
+      if (ch === ';') {
+        if (d === 0) break;
+        continue;
+      }
+      if (ch === ')') {
+        d++;
+        continue;
+      }
+      if (ch === '(') {
+        if (d > 0) d--;
+        continue; // enclosing expression (COALESCE etc.) — aage jao
+      }
+      if (d === 0 && endsWithWord(lower, i, 'select')) {
+        qSelect = i;
+        break;
+      }
+    }
+    if (qSelect < 0) break;
+    const q = parenDepthAt(s, qSelect);
+
+    const alias = `__asq${guard}${fnv1a(sub).slice(0, 5)}`;
+    const repl = `${aggName}(${alias}.v)`;
+    s = s.slice(0, aggStart) + repl + s.slice(close1);
+    const scanStart = aggStart + repl.length;
+
+    // Injection point: enclosing query ke body level (q) par WHERE/ORDER/
+    // GROUP/LIMIT/`;`/`)` — uske theek pehle CROSS APPLY jod do.
+    let depth = parenDepthAt(s, scanStart);
+    let inj = -1;
+    let inStr = false;
+    for (let i = scanStart; i < s.length; i++) {
+      const ch = s[i];
+      if (inStr) {
+        if (ch === "'") {
+          if (s[i + 1] === "'") i++;
+          else inStr = false;
+        }
+        continue;
+      }
+      if (ch === "'") inStr = true;
+      else if (ch === '(') depth++;
+      else if (ch === ')') {
+        if (depth === q) {
+          inj = i;
+          break;
+        }
+        depth--;
+      } else if (depth === q) {
+        if (ch === ';') {
+          inj = i;
+          break;
+        }
+        if (/\s/.test(ch)) {
+          const stop =
+            /^\s*(?:WHERE|GROUP\s+BY|HAVING|ORDER\s+BY|LIMIT|OFFSET|FETCH|UNION|FOR)\b/i.exec(
+              s.slice(i),
+            );
+          if (stop) {
+            inj = i;
+            break;
+          }
+        }
+      }
+    }
+    if (inj < 0) inj = s.length;
+    while (inj > scanStart && /\s/.test(s[inj - 1])) inj--;
+
+    // Subquery ko column alias do (top-level FROM ke pehle ` AS v`).
+    let inner;
+    let fIdx = -1;
+    let fd = 0;
+    let inStr2 = false;
+    const subLower = sub.toLowerCase();
+    for (let i = 0; i < sub.length; i++) {
+      const ch = sub[i];
+      if (inStr2) {
+        if (ch === "'") {
+          if (sub[i + 1] === "'") i++;
+          else inStr2 = false;
+        }
+        continue;
+      }
+      if (ch === "'") inStr2 = true;
+      else if (ch === '(') fd++;
+      else if (ch === ')') fd--;
+      else if (fd === 0 && endsWithWord(subLower, i, 'from')) {
+        fIdx = i;
+        break;
+      }
+    }
+    if (fIdx >= 0) {
+      let fs = fIdx;
+      while (fs > 0 && /\s/.test(sub[fs - 1])) fs--;
+      inner = `${sub.slice(0, fs)} AS v ${sub.slice(fs)}`;
+    } else {
+      inner = `${sub.trim().replace(/;$/, '')} AS v`;
+    }
+    s = `${s.slice(0, inj)} CROSS APPLY (${inner}) AS ${alias}${s.slice(inj)}`;
+  }
+  return s;
+}
+
 // ------------------------------------------------------------- 5. = ANY($n)
 function rewriteAny(sql) {
   return sql.replace(
     /([A-Za-z_][\w]*(?:\.[A-Za-z_][\w]*)*)\s*=\s*ANY\((@p\d+)\)/g,
     (_, col, p) => `${col} IN (SELECT TRY_CAST(value AS UNIQUEIDENTIFIER) FROM OPENJSON(${p}))`,
+  );
+}
+
+// ------------------------------------------ 5b. bare boolean params
+// T-SQL BIT params ko boolean context me use nahi kar sakte —
+// `CASE WHEN @p1 THEN ..` PG me valid hai, MSSQL me error 4145
+// ("non-boolean type ... near 'THEN'"). Sirf `@pN` params par lagta hai
+// (bare columns/`(` contexts me false-positive khatarnaak hai — column
+// lists, VALUES, function args sab `(` se shuru hote hain).
+function rewriteBoolean(sql) {
+  return outsideLiterals(sql, (s) =>
+    s.replace(
+      /((?:\bWHERE\b|\bAND\b|\bOR\b|\bWHEN\b|\bNOT\b)\s*)(@p\d+)(?=\s*(?:\bTHEN\b|\bAND\b|\bOR\b|[),;]|$))/g,
+      (_, pre, expr) => `${pre}${expr} = 1`,
+    ),
   );
 }
 
@@ -585,17 +1131,22 @@ export function translateToMssql(sql) {
   }
   let s = rewriteParams(sql);
   s = rewriteCasts(s);
+  s = rewriteLateral(s);
+  s = rewriteNullsOrder(s);
   s = rewriteOnConflict(s);
   s = rewriteReturning(s);
   s = rewriteLimit(s);
+  s = rewriteAggregateSubquery(s);
   s = rewriteAny(s);
   s = rewriteForUpdate(s);
   s = rewriteFilter(s);
+  s = rewriteGroupBy(s);
   s = rewriteMakeInterval(s);
   s = rewriteIntervalNow(s);
   s = rewriteToChar(s);
   s = rewriteDateTrunc(s);
   s = rewriteIlike(s);
+  s = rewriteBoolean(s);
   s = rewriteKeyIdent(s);
   s = rewriteTrueFalse(s);
   return s;

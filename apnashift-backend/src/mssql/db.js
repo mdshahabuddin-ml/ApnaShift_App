@@ -80,6 +80,20 @@ function autoJson(rows) {
   return rows;
 }
 
+// PG uuid columns always come back lowercase; tedious returns uppercase
+// uniqueidentifier strings. Lowercase UUID-shaped values for pg parity —
+// API responses and tests were written against PG's lowercase ids.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function lowercaseUuids(rows) {
+  for (const row of rows) {
+    for (const k of Object.keys(row)) {
+      const v = row[k];
+      if (typeof v === 'string' && UUID_RE.test(v)) row[k] = v.toLowerCase();
+    }
+  }
+  return rows;
+}
+
 // Params: pg accepted undefined->null, JS arrays->array params, ISO strings
 // as timestamptz. Mirror that for tedious (which rejects undefined/arrays,
 // and cannot parse the trailing 'Z' in datetime comparisons).
@@ -98,9 +112,21 @@ function normalizeParam(v) {
 // table, 23503 FK. mssql sets err.code='EREQUEST' — overwrite it.
 function mapPgError(err) {
   const n = err?.number;
-  if (n === 2601 || n === 2627) err.code = '23505';
-  else if (n === 547) err.code = /FOREIGN KEY/i.test(err.message ?? '') ? '23503' : '23514';
-  else if (n === 208) err.code = '42P01';
+  if (n === 2601 || n === 2627) {
+    err.code = '23505';
+    // PG me err.constraint milta hai; MSSQL message me constraint/index naam
+    // hota hai — routes usi se email/license/phone decide karte hain.
+    const m =
+      /(?:constraint|index) '([^']+)'/i.exec(err.message ?? '') ??
+      /Cannot insert duplicate key row in object '[^']+' with unique index '([^']+)'/i.exec(
+        err.message ?? '',
+      );
+    if (m && !err.constraint) err.constraint = m[1];
+  } else if (n === 547) {
+    err.code = /FOREIGN KEY/i.test(err.message ?? '') ? '23503' : '23514';
+  } else if (n === 208) {
+    err.code = '42P01';
+  }
   return err;
 }
 
@@ -114,7 +140,7 @@ async function runQuery(conn, text, params = []) {
   } catch (err) {
     throw mapPgError(err);
   }
-  const rows = autoJson(stringifyPgNumericTypes(result.recordset ?? []));
+  const rows = lowercaseUuids(autoJson(stringifyPgNumericTypes(result.recordset ?? [])));
   const rowCount = result.recordset
     ? result.recordset.length
     : (result.rowsAffected?.[0] ?? 0);

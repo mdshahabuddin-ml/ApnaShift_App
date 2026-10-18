@@ -7,7 +7,7 @@ import bcrypt from 'bcryptjs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { app } from '../src/app.js';
-import { applyTestSchema, truncateAll, makeTestClient, hasTestDb } from './helpers/db.js';
+import { applyTestSchema, truncateAll, makeTestClient, hasTestDb, tableExists, indexExists, checkConstraintDefs } from './helpers/db.js';
 
 const HAS_DB = hasTestDb;
 const describeDb = HAS_DB ? describe : describe.skip;
@@ -89,21 +89,19 @@ describeDb('audit items 1-5 (DB)', () => {
     expect(has('drivers', 'rejection_reason')).toBe(true);
 
     for (const t of ['audit_logs', 'pricing_history', 'idempotency_keys']) {
-      const reg = await client.query('SELECT to_regclass($1) AS oid', [`public.${t}`]);
-      expect(reg.rows[0].oid).not.toBeNull();
+      expect(await tableExists(client, t)).toBe(true);
     }
 
-    const statusDef = await client.query(
-      `SELECT pg_get_constraintdef(oid) AS def FROM pg_constraint WHERE conname = 'bookings_status_check'`,
+    // Status CHECK: PG me named (bookings_status_check), mssql me inline/auto-
+    // named — definition se dhoondho, dono engines par same assertion.
+    const statusDefs = (await checkConstraintDefs(client, 'bookings')).filter((d) =>
+      d.includes('pending'),
     );
-    expect(statusDef.rowCount).toBe(1);
-    expect(statusDef.rows[0].def).toContain('pending');
-    expect(statusDef.rows[0].def).not.toContain('requested');
+    expect(statusDefs).toHaveLength(1);
+    expect(statusDefs[0]).toContain('pending');
+    expect(statusDefs[0]).not.toContain('requested');
 
-    const idx = await client.query(
-      `SELECT indexname FROM pg_indexes WHERE indexname = 'idx_bookings_available'`,
-    );
-    expect(idx.rowCount).toBe(1);
+    expect(await indexExists(client, 'idx_bookings_available')).toBe(true);
   });
 
   it('item 2 — 500 km se zyada par estimate + create 400 distance_too_far, row nahi', async () => {
