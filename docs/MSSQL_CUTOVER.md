@@ -22,11 +22,11 @@ Prepared from verified state (2026-10-17):
 
 | # | Decision | Why it blocks | Options |
 |---|---|---|---|
-| **D1** | **Where does production MSSQL live?** | Today MSSQL = SQLEXPRESS on this laptop (`localhost:14330`). Railway **cannot** reach it, and exposing the laptop is forbidden. | ✅ **CHOSEN: Option A — Azure SQL free offer** (GP serverless, West US 2, $0 at this scale). **TIMING: deferred by user 2026-10-17** — Azure account creation + cost alert ("billing/subscription") will happen in a later phase; Phases 3+ blocked until then. **Interim production = PostgreSQL (Option D posture): $0, no new subscription.** Firewall note: Railway static egress = Pro plan only → free path uses a 0.0.0.0/0 rule + strong SQL password + TLS (disclosed, user-approved). |
+| **D1** | **Where does production MSSQL live?** | Today MSSQL = SQLEXPRESS on this laptop (`localhost:14330`). Railway **cannot** reach it, and exposing the laptop is forbidden. | ✅ **CHOSEN: Option A — Azure SQL free offer** (GP serverless, West US 2, $0 at this scale). **TIMING: deferred by user 2026-10-17** — Azure account creation + cost alert ("billing/subscription") will happen in a later phase; Phases 3+ blocked until then. **Further postponed 2026-10-18** (user: abhi nahi, baad me). Interim production = PostgreSQL (Option D posture): $0, no new subscription. Firewall note: Railway static egress = Pro plan only → free path uses a 0.0.0.0/0 rule + strong SQL password + TLS (disclosed, user-approved). |
 | **D2** | Final target DB name + tool guard | `migrate-data-mssql.js` only loads into DBs matching `/migrate/i` (safety). Final target needs either (a) keep name containing `migrate` (ugly but works), or (b) an explicit env-gated allowlist added to the tool (small approved edit). | ✅ **RESOLVED: name `ApnaShiftDB_prod` + option (b)** — exact-name allowlist `MIGRATE_ALLOW_TARGET` added to the tool (no wildcards, default behavior unchanged). 2026-10-17 follow-up: same allowlist + `MSSQL_ENCRYPT`/`MSSQL_TRUST_CERT`/`MSSQL_CONNECT_TIMEOUT` knobs extended to the verifiers (`_spot_prod.mjs`, `_audit.mjs`; `_smoke_scratch.mjs` uses `SMOKE_TARGET` + allowlist so `.env` can never silently retarget it). End-to-end rehearsal on local `ApnaShiftDB_prod`: load `VERIFY OK 23/42` → `SPOT-PROD OK` → `SMOKE 7/7` → audit counts 23/23 (expected v2/unique-check deltas only); rehearsal DB dropped. |
-| **D3** | Maintenance window | Writes must pause during Phases 1–4 (short: data is 42 rows — window can be ~15 min). | Date/time |
+| **D3** | Maintenance window | Writes must pause during Phases 1–4 (short: data is 42 rows — window can be ~15 min). | ✅ **CHOSEN 2026-10-18: Sunday 2026-10-25, 2:00–4:00 AM IST** (user pick). Phase 4 (cutover) targets the first ~15 min of this window; rollback fits inside it with margin. |
 | **D4** | When to push `main` | Push triggers full CI → staging → **production deploy** (gates + rollback built in). Phase 0 does this on its own schedule, separate from the window. | Day for Phase 0 |
-| **D5** | **Railway hosting continuity (trial expiry)** | Free trial = one-time $5/30 days (banner on 2026-10-17: "13 days or $3.72 left" → ends ≈ 2026-10-31). On expiry the account auto-reverts to the **Free plan = $1/mo credit** < current ~$2.3/mo usage → **app + Postgres stop**. Official policy: trial **volumes are deleted 30 days after credit expiry unless the account is upgraded**. A cutover has no value if the host itself stops. | Card → **Hobby (~$5/mo flat; usage fits inside the included $5 credit, trial credit carries over)** before trial end; or plan a separate host migration (out of scope here). |
+| **D5** | **Railway hosting continuity (trial expiry)** | Free trial = one-time $5/30 days (banner on 2026-10-17: "13 days or $3.72 left" → ends ≈ 2026-10-31). On expiry the account auto-reverts to the **Free plan = $1/mo credit** < current usage ($1.43 as of 2026-10-18, estimated bill $1.43) → **app + Postgres stop**. Official policy: trial **volumes are deleted 30 days after credit expiry unless the account is upgraded**. A cutover has no value if the host itself stops. | **DEFERRED by user 2026-10-18** ("abhi ruko, baad me decide karunga"). Decision still required **before ≈2026-10-31** or services auto-stop. Path when ready: Railway dashboard → project → Settings → Billing → **Hobby (~$5/mo flat)** + card. Hobby ka $5 credit current usage cover karta hai; trial credit carry over hota hai. Alternative if user wants to leave Railway: host migration (out of scope here). |
 
 ### D1 options (researched 2026-10-17 — nothing purchased, awaiting pick)
 
@@ -82,7 +82,11 @@ Expected after 023: `bookings/pricing_rules/pricing_history` **extra_cols gone**
 `pricing_rules.id`) — representation-only, acceptable. Counts stay
 42 vs 6 (local `ApnaShiftDB` intentionally not loaded).
 
-- [ ] Decide D1/D2/D3 (above).
+- [x] Decide D1/D2/D3 (above) — **D2 resolved 2026-10-17** (target
+      `ApnaShiftDB_prod` + exact-name allowlist). **D3 chosen 2026-10-18**
+      (Sun 2026-10-25, 2:00–4:00 AM IST). **D1 still postponed** (Azure
+      account — blocks Phases 3–4). **D5 deferred 2026-10-18** — Railway
+      upgrade needed before ≈Oct 31 or services auto-stop.
 
 ## PHASE 1 — Window start (writes stop, PG untouched)
 
@@ -121,6 +125,11 @@ node scripts\_smoke_scratch.mjs             # app: SMOKE-SCRATCH OK 7/7
 
 ## PHASE 3 — Provision final target (D1 + D2)
 
+**BLOCKED on D1** (Azure SQL free account — postponed by user 2026-10-17,
+further confirmed 2026-10-18 "abhi ruko"). Chosen window D3 = **Sun
+2026-10-25 2:00–4:00 AM IST** will pass without Phase 3 unless D1 unblocks
+before then; if not, reschedule window when Azure is ready.
+
 - [ ] Provision chosen host (D1 — your cost approval), note
       `MSSQL_SERVER / MSSQL_PORT / MSSQL_USER / MSSQL_PASSWORD / MSSQL_ENCRYPT`.
 - [ ] Create empty DB + login/user with db_owner (provider's console/sqlcmd).
@@ -140,6 +149,12 @@ railway run node scripts\migrate-data-mssql.js
       the final target).
 
 ## PHASE 4 — Switch (the actual cutover — needs explicit approval)
+
+**Scheduled window: Sunday 2026-10-25, 2:00–4:00 AM IST** (D3, chosen
+2026-10-18). Phase 1 starts at 2:00; cutover + verify targets first ~15 min;
+rollback fits inside the window with margin. **Depends on Phase 3 being
+done first** (Azure account — currently postponed; reschedule window if
+D1 not ready by 2026-10-24).
 
 ```powershell
 # set vars on production service — password via stdin (never in shell history)
