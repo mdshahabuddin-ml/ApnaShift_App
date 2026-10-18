@@ -733,3 +733,27 @@ GO
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_driver_declines_booking')
   CREATE INDEX idx_driver_declines_booking ON driver_declines (booking_id, created_at DESC);
 GO
+
+-- Index parity with production PostgreSQL (7 idx missing vs prod, found in
+-- read-only Phase 1 audit 2026-10-18; defs copied from pg_indexes.indexdef).
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_bookings_delivered_at')
+  CREATE INDEX idx_bookings_delivered_at ON bookings (delivered_at DESC);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_bookings_driver_delivered')
+  CREATE INDEX idx_bookings_driver_delivered ON bookings (driver_id, delivered_at DESC);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'enterprise_inquiries_email_idx')
+  CREATE INDEX enterprise_inquiries_email_idx ON enterprise_inquiries (email);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'enterprise_inquiries_status_idx')
+  CREATE INDEX enterprise_inquiries_status_idx ON enterprise_inquiries (status, created_at DESC);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_idempotency_booking')
+  CREATE INDEX idx_idempotency_booking ON idempotency_keys (booking_id);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_payment_adjustments_payment')
+  CREATE INDEX idx_payment_adjustments_payment ON payment_adjustments (payment_id, created_at);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_pricing_hist_vehicle')
+  CREATE INDEX idx_pricing_hist_vehicle ON pricing_history (vehicle_type);
+GO

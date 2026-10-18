@@ -502,6 +502,24 @@ function rewriteIntervalNow(sql) {
   return s;
 }
 
+// -------------------------------- 8b. now() - make_interval(secs => X)
+// PG: `now() - make_interval(secs => $1)` = X seconds ago. T-SQL me
+// make_interval nahi hota — DATEADD(second, X, SYSUTCDATETIME()).
+function rewriteMakeInterval(sql) {
+  let s = sql.replace(
+    /\bnow\(\)\s*-\s*make_interval\(secs\s*=>\s*([^)]+)\)/gi,
+    (_, secs) => `DATEADD(second, ${secs.trim()}, SYSUTCDATETIME())`,
+  );
+  s = s.replace(
+    /\bSYSUTCDATETIME\(\)\s*-\s*make_interval\(secs\s*=>\s*([^)]+)\)/gi,
+    (_, secs) => `DATEADD(second, ${secs.trim()}, SYSUTCDATETIME())`,
+  );
+  if (/\bmake_interval\s*\(/i.test(s)) {
+    throw new Error('translate: unsupported make_interval shape');
+  }
+  return s;
+}
+
 // --------------------------------------- 9. to_char(date_trunc(..)) buckets
 function rewriteToChar(sql) {
   let bucketExpr = null;
@@ -515,6 +533,20 @@ function rewriteToChar(sql) {
   );
   if (bucketExpr && /\bGROUP\s+BY\s+bucket\b/i.test(s)) {
     s = s.replace(/\bGROUP\s+BY\s+bucket\b/i, `GROUP BY ${bucketExpr}`);
+  }
+  return s;
+}
+
+// ------------------------- 9b. bare date_trunc('unit', expr) -> DATETRUNC
+// SQL Server 2022+ (compat 150+). to_char(date_trunc(... AT TIME ZONE)) ka
+// form section 9 pehle kha chuka hota hai — yahan sirf bare form bachta hai.
+function rewriteDateTrunc(sql) {
+  let s = sql.replace(
+    /\bdate_trunc\(\s*'(\w+)'\s*,\s*([^()]*(?:\([^()]*\))?[^()]*)\)/g,
+    (_, unitRaw, expr) => `DATETRUNC(${toUnit(unitRaw)}, ${expr.trim()})`,
+  );
+  if (/\bdate_trunc\s*\(/i.test(s)) {
+    throw new Error('translate: unsupported date_trunc shape');
   }
   return s;
 }
@@ -559,8 +591,10 @@ export function translateToMssql(sql) {
   s = rewriteAny(s);
   s = rewriteForUpdate(s);
   s = rewriteFilter(s);
+  s = rewriteMakeInterval(s);
   s = rewriteIntervalNow(s);
   s = rewriteToChar(s);
+  s = rewriteDateTrunc(s);
   s = rewriteIlike(s);
   s = rewriteKeyIdent(s);
   s = rewriteTrueFalse(s);

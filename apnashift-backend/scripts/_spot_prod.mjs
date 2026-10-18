@@ -211,15 +211,17 @@ for (const t of tables) {
   } else say(`OK   bookings v2 defaults on ${r.recordset.length} rows (chhota/0/1/false)`);
 }
 {
+  // minimum_fare is real production config (non-zero) — covered by the full
+  // row value-match above; only the size/weight v2 cols must hold defaults.
   const r = await pool.request().query(
-    `SELECT minimum_fare, size_small_extra, size_big_extra, weight_0_100, weight_100_300, weight_300_500, weight_500_plus FROM pricing_rules`,
+    `SELECT size_small_extra, size_big_extra, weight_0_100, weight_100_300, weight_300_500, weight_500_plus FROM pricing_rules`,
   );
-  const cols = ['minimum_fare', 'size_small_extra', 'size_big_extra', 'weight_0_100', 'weight_100_300', 'weight_300_500', 'weight_500_plus'];
+  const cols = ['size_small_extra', 'size_big_extra', 'weight_0_100', 'weight_100_300', 'weight_300_500', 'weight_500_plus'];
   const ok = r.recordset.every((x) => cols.every((c) => Number(x[c]) === 0));
   if (!ok) {
     failures++;
     say('FAIL pricing_rules v2 default columns: unexpected values');
-  } else say(`OK   pricing_rules v2 defaults on ${r.recordset.length} rows (all 0)`);
+  } else say(`OK   pricing_rules v2 defaults on ${r.recordset.length} rows (size/weight all 0)`);
 }
 
 await pgc.end();

@@ -112,6 +112,8 @@ scratch was built from the final frozen state.
 
 ```powershell
 # from apnashift-backend — EXACT sequence proven in this repo
+# (2026-10-18 note: migrate/_spot ko Railway-form chahiye — Appendix A ka
+# "Railway-form gotcha" wrapper pehle padho, warna guard FAIL karega)
 $SQ = "C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\SQLCMD.EXE"
 & $SQ -S localhost,14330 -E -Q "IF DB_ID('ApnaShiftDB_migrate') IS NOT NULL DROP DATABASE [ApnaShiftDB_migrate];" -b
 & $SQ -S localhost,14330 -E -Q "CREATE DATABASE [ApnaShiftDB_migrate];" -b
@@ -127,6 +129,32 @@ Verify (all read-only):
 railway run node scripts\_spot_prod.mjs      # values: SPOT-PROD OK
 node scripts\_smoke_scratch.mjs             # app: SMOKE-SCRATCH OK 7/7
 ```
+
+## DONE — Full production → local MSSQL load (2026-10-18, user-requested)
+
+User: "mujhe sara database MSSQL me chahiye; Railway band ho jaye koi dikkat
+nahi" — isliye cutover window ke bina, ek complete read-only copy banayi:
+
+- **Target:** `ApnaShiftDB_prod` on `localhost,14330` (SQLEXPRESS01, started
+  2026-10-18; service = Auto but machine par kabhi stopped milta hai — pehle
+  start karo). Created via `sqlcmd -E` + `apnashift_app` → `db_owner`
+  (login non-sysadmin hai, `CREATE DATABASE` khud nahi kar sakta).
+- **Tool:** `scripts/migrate-data-mssql.js` (read-only source, schema WITHOUT
+  seed, refuses non-empty target). Railway run ab **full `postgres://` URL**
+  deta hai aur `PGUSER/PGPASSWORD/PGDATABASE` vars project me hain hi nahi —
+  isliye ek temp wrapper (`migrate-prod.ps1`, repo ke bahar) ne URL se PG* vars
+  banaye aur `DATABASE_URL` ko `host:port` form me convert kiya (secret sirf
+  process env me, kabhi print/CLI nahi).
+- **Verify (sab read-only, sab green):**
+  1. migrate → `VERIFY OK — 23 tables, 42 rows, counts match`
+  2. `_audit.mjs` (`AUDIT_TARGET=ApnaShiftDB_prod`) → 23/23 tables, 42/42
+     rows, 0 count-problems, PK/FK parity (schema deltas Appendix C jaisa)
+  3. `_spot_prod.mjs` → `SPOT-PROD OK — 42 rows value-level verified`
+     (fix: `minimum_fare` real prod config hai, usse defaults-check se hataya
+     — row value-match use cover karta hai)
+
+MSSQL copy = production PG ka exact mirror; PG waise bhi 3 copies me safe
+(2 Railway env dumps + 1 local dump + ab MSSQL).
 
 ## PHASE 3 — Provision final target (D1 + D2)
 
@@ -237,11 +265,18 @@ later unless upgraded. Dates below are targets, not contracts.
       khatam). Minimum: dono `.dump.zip` + purani `.sql`.
 - [ ] **≈2026-11-30 se pehle:** confirm final dump + dusri copy done — uske
       baad Railway trial volumes delete hote hain.
+- [x] **2026-10-18** Full production data mirrored to local MSSQL:
+      `ApnaShiftDB_prod` (23 tables / 42 rows, audit + value-level verified —
+      see "DONE — Full production → local MSSQL load"). Railway band hone par
+      bhi data laptop par rahega (ab 4 copies: 2 dumps + old .sql + MSSQL).
 - [ ] **Secrets exposure (2026-10-18):** session logs me production
-      `DATABASE_URL` password + `GEOAPIFY_API_KEY` openly dikhe. Railway
-      wind-down ke baad DATABASE_URL ka koi value nahi; Geoapify key free
-      tier hai — chaho to [my.geoapify.com](https://my.geoapify.com) me jaake
-      key rotate kar lo (2 min), Railway dono envs me `GEOAPIFY_API_KEY`
+      `DATABASE_URL` password, `GEOAPIFY_API_KEY` **aur `JWT_SECRET`** openly
+      dikhe (`railway variable list` table wrap ne redaction bypass kiya —
+      aage aise commands avoid karo / JSON me keys lo). Railway
+      wind-down ke baad DATABASE_URL ka koi value nahi; launch pe `JWT_SECRET`
+      waise bhi **naya banao** (relaunch inventory me likha hai). Geoapify key
+      free tier hai — chaho to [my.geoapify.com](https://my.geoapify.com) me
+      jaake key rotate kar lo (2 min), Railway dono envs me `GEOAPIFY_API_KEY`
       update karna hoga. Optional.
 - [ ] **New host pe relaunch (launch time):** dump restore + `db:migrate` +
       Railway (ya naye host) ke env vars set (names: `DATABASE_URL`,
@@ -296,8 +331,19 @@ railway run node scripts\_schema_compare.mjs # structural diff (schema only)
 
 Tool guard recap (`migrate-data-mssql.js`): source localhost **or**
 Railway-form + `MIGRATE_ALLOW_REMOTE_SOURCE=1`; target must match
-`/migrate/i`; source SELECT-only; refuses non-empty target (no deletes, ever);
-per-table `COUNT(*)` verify + final `VERIFY OK` line.
+`/migrate/i` **or** `MIGRATE_ALLOW_TARGET` exact name (D2 allowlist); source
+SELECT-only; refuses non-empty target (no deletes, ever); per-table `COUNT(*)`
+verify + final `VERIFY OK` line.
+
+**Railway-form gotcha (2026-10-18):** `railway run` ab project ko **full
+`postgres://` URL** deta hai aur `PGUSER/PGPASSWORD/PGDATABASE` vars set hi
+nahi hain. Scripts jo Railway-form (`host:port` + PG* vars) maang hain
+(`migrate-data-mssql.js`, `_spot_prod.mjs`) seedha `railway run` se fail
+honge — pehle URL se PG* derive karo (repo ke bahar temp wrapper pattern,
+jaise `migrate-prod.ps1`/`spot-prod.ps1`): `DATABASE_URL` parse →
+`PGUSER/PGPASSWORD/PGDATABASE` set → `DATABASE_URL='<host>:<port>'` → script
+run. `_audit.mjs` full URL khud handle karta hai (wrapper nahi chahiye).
+
 
 ## APPENDIX B — CI gates (push → production path)
 
