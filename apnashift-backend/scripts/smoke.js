@@ -118,11 +118,15 @@ async function fullChecks() {
   if (fail > 0) return false;
 
   // 5. driver location updates (lat/lng/accuracy/speed/heading).
+  // Server throttle: TRACK_MIN_INTERVAL_MS (default 3000) per driver+booking
+  // — do posts ko us gap se door rakhna warna doosra 429.
   const fixes = [
     { lat: 22.721, lng: 75.859, accuracy_m: 12.5, speed_mps: 8.3, heading_deg: 90 },
     { lat: 22.724, lng: 75.862, accuracy_m: 9.4, speed_mps: 7.1, heading_deg: 100 },
   ];
-  for (const f of fixes) {
+  for (let i = 0; i < fixes.length; i += 1) {
+    if (i > 0) await new Promise((r) => setTimeout(r, 3200));
+    const f = fixes[i];
     const p = await call('POST', `/api/driver/bookings/${bid}/location`, f, tokD);
     check(`driver_gps_post_${f.lat}`, p.status === 201 && p.body?.point?.lat === f.lat, `status=${p.status}`);
   }
