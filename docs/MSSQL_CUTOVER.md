@@ -55,12 +55,20 @@ stops production automatically (workflow `ci-cd.yml`).
       associated build") — pre-existing, not caused by this work, and CI only
       ever deploys the one service named by `RAILWAY_STAGING_SERVICE_ID` /
       `RAILWAY_PRODUCTION_SERVICE_ID`.
-- [ ] At push time: confirm the secrets → `ApnaShift_App` mapping by opening
+- [x] At push time: confirm the secrets → `ApnaShift_App` mapping by opening
       any recent Actions run log (`railway up --service <id>` line), and that
       GitHub secrets exist (CI has its own fail-safe guard for this).
-- [ ] `git push origin main` (4 commits) → watch CI run all 9 jobs green.
-- [ ] CI applies `023_pricing_v2` to production PG (`db:migrate`, additive only)
+      **Confirmed 2026-10-18** — `RAILWAY_STAGING_SERVICE_ID` /
+      `RAILWAY_PRODUCTION_SERVICE_ID` both point at `ApnaShift_App`
+      (`fd283892`), not `diplomatic-solace`.
+- [x] `git push origin main` → watch CI run all jobs green.
+      **DONE 2026-10-18** — run `39103177970` (commit `e5db888`) passed all
+      8 gates including staging full smoke (16/16) and production health.
+- [x] CI applies `023_pricing_v2` to production PG (`db:migrate`, additive only)
       → production schema now = HEAD.
+      **DONE 2026-10-18** — production migrate ran 002→023 cleanly, then
+      `railway up` deployed, health returned 200. Production `/api/ready` =
+      `{"ok":true,"db":"up"}`.
 - [ ] Re-run the audit and compare with expectations:
 
 ```powershell
