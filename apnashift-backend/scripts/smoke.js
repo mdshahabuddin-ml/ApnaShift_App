@@ -132,8 +132,8 @@ async function fullChecks() {
   }
 
   // 6. customer live tracking (latest point + Online state + last update).
-  const snap = await call('GET', `/api/bookings/${bid}/location?history=1`, tokC);
-  check('tracking_snapshot_200', snap.status === 200 && snap.body?.ok === true, `status=${snap.status}`);
+  const snap = await call('GET', `/api/bookings/${bid}/location?history=1`, null, tokC);
+  check('tracking_snapshot_200', snap.status === 200 && snap.body?.ok === true, `status=${snap.status}${snap.netErr ? ` net=${snap.netErr}` : ''}`);
   check('tracking_state_live', snap.body?.tracking?.state === 'live', `state=${snap.body?.tracking?.state}`);
   check('tracking_latest_marker', snap.body?.points?.[0]?.lat === 22.724, JSON.stringify(snap.body?.points?.[0] ?? null).slice(0, 80));
   check('tracking_last_updated_set', !!snap.body?.tracking?.last_updated, 'last_updated missing');
