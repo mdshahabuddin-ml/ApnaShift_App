@@ -3,6 +3,7 @@
   "share": "disabled",
   "autoupdate": false,
   "snapshot": false,
+  "instructions": ["AGENTS.md"],
   "permission": {
     "external_directory": "allow",
     "bash": "allow",
