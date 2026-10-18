@@ -86,9 +86,12 @@ Expected after 023: `bookings/pricing_rules/pricing_history` **extra_cols gone**
       `ApnaShiftDB_prod` + exact-name allowlist). **D5 final decision
       2026-10-18**: Railway winding down pre-launch (no paid plan until
       launch) → **D3 window cancelled**, Phases 3–6 deferred. **D1 still
-      postponed** (Azure account). **Action item before ≈Nov 30** (30 days
-      after trial credit exhausts): take final PG dump + local backups so
-      trial-volume deletion cannot lose anything.
+      postponed** (Azure account). **Pre-wind-down backup DONE 2026-10-18**:
+      production PG dump (pg_dump 18.6, custom format, 184 TOC entries,
+      verified with `pg_restore --list`) at
+      `backups/apnashift-prod-20261018-130026.dump.zip` (+ raw
+      `apnashift-prod-20261018-125905.dump`). Re-dump if prod writes more
+      before services stop.
 
 ## PHASE 1 — Window start (writes stop, PG untouched)
 
