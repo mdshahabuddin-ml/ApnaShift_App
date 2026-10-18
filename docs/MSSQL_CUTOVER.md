@@ -263,11 +263,19 @@ later unless upgraded. Dates below are targets, not contracts.
 
 - [ ] **≈2026-10-30 (services stop se 1 din pehle):** final fresh dump chalao
       (agar Oct 18 ke baad production me koi nayi write hui ho). Naya file
-      `backups/apnashift-prod-<date>.dump.zip` banega. *Latest abhi tak:*
-      `apnashift-prod-20261018-145517.dump.zip` (3 dumps aaj).
-- [ ] **Backup ki dusri copy:** `backups/` folder abhi sirf E: drive pe hai —
-      ek copy Google Drive/external disk me daalo (local disk fail = sab
-      khatam). Minimum: dono `.dump.zip` + purani `.sql`.
+      `backups/apnashift-prod-<date>.dump.zip` banega — **uske baad
+      `deploy/copy-backups.ps1` dobara chalana** (dusri copies update ho jayengi).
+      *Latest abhi tak:* `apnashift-prod-20261018-145517.dump.zip` (3 dumps aaj).
+- [x] **2026-10-18** Backup ki dusri copy: `deploy/copy-backups.ps1` se 5
+      files (221,943 bytes) SHA256-verify ke saath `C:\ApnaShift-Backups\`
+      (doosri physical disk) + `OneDrive\ApnaShift-Backups\` (cloud sync)
+      me copy ho gayin. Re-run (idempotent, naye dump ke baad dobara chalao):
+
+  ```powershell
+  cd apnashift-backend
+  powershell -NoProfile -ExecutionPolicy Bypass -File deploy\copy-backups.ps1
+  # USB laga ho to: ... -File deploy\copy-backups.ps1 -Dest 'F:\ApnaShift-Backups'
+  ```
 - [ ] **≈2026-11-30 se pehle:** confirm final dump + dusri copy done — uske
       baad Railway trial volumes delete hote hain.
 - [x] **2026-10-18** Full production data mirrored to local MSSQL:
