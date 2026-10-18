@@ -40,6 +40,11 @@ evening:
 
 Recommendation: **A** (or **D** if MSSQL isn't required). B only if same-region latency outweighs $0; skip C.
 
+> **Launch-time refresh (2026-10-18):** verified current pricing + 2 extra
+> combos (Oracle ARM $0, x64 VPS + SQL Express free, hybrid Railway +
+> Azure SQL) in **`docs/D1_HOST_OPTIONS.md`** — that's the decision doc
+> for launch day (D1 gate for Phase 3).
+
 ---
 
 ## PHASE 0 — Pre-cutover (no risk to data; does deploy code)
@@ -105,7 +110,9 @@ stops production automatically (workflow `ci-cd.yml`).
 3. Last delta check (prod may have new rows since the scratch copy):
 
 ```powershell
-$env:MSSQL_DATABASE='ApnaShiftDB_migrate'; railway run node scripts\_audit.mjs
+# NOTE (bug found in 2026-10-18 rehearsal): _audit.mjs reads AUDIT_TARGET,
+# NOT MSSQL_DATABASE — the old command below silently audited dev ApnaShiftDB.
+$env:AUDIT_TARGET='ApnaShiftDB_migrate'; railway run node scripts\_audit.mjs
 ```
 
 If any count differs from the scratch → go to Phase 2 (always re-sync; it is
@@ -227,6 +234,36 @@ railway variable set DB_DRIVER=pg --service <PROD_SERVICE_ID> --environment prod
 - PG was never modified → it still holds the exact pre-window state.
 - Separate concern: **code** rollback (CI deploys) is independent —
   Railway dashboard → Deployments → previous green → Redeploy (per `ci-cd.yml`).
+
+## DRESS REHEARSAL — Phases 1–4 simulated (2026-10-18): GREEN
+
+Phases 3–6 launch tak deferred hone ke bawajood, poora **Phases 1–4 dry-run**
+ek hi sitting me local par chala gaya (prod sirf read; koi real writes nahi):
+
+| Phase | Step | Result |
+|---|---|---|
+| 1 | delta check `AUDIT_TARGET=ApnaShiftDB_migrate` vs frozen prod | counts **23/23, 0 count-problems** ✓ |
+| 2 | drop/create scratch → `migrate-data-mssql.js` (Railway source + consent) | **VERIFY OK — 23 tables, 42 rows** ✓ |
+| 2v | `_spot_prod.mjs` + `_smoke_scratch.mjs` | **SPOT-PROD OK** (42/42 values) + **smoke 7/7** ✓ |
+| 3 | provision `ApnaShiftDB_launch_target` → exact-name `MIGRATE_ALLOW_TARGET` guard path → load | **VERIFY OK — 23/42** ✓ |
+| 3v | `_audit.mjs` + `_spot_prod.mjs` on the final-target stand-in | 23/23, 0 count-problems + **SPOT-PROD OK** ✓ |
+| 4 | switch stand-in: `SMOKE_TARGET=ApnaShiftDB_launch_target` → real server boot (port 3999) | **smoke 7/7** ✓ (estimate=550, login 401, bookings 1/1) |
+
+**Rehearsal me mile issues → fixed:**
+1. Phase 1 ka command `MSSQL_DATABASE` use karta tha, par `_audit.mjs` sirf
+   `AUDIT_TARGET` padhta hai — pura command dev `ApnaShiftDB` audit karta
+   (silent wrong target). Command upar fix kiya gaya.
+
+**Notes:**
+- Phase 1 step 2 (pause service) pre-launch applicable nahi (koi live users
+  nahi) — launch-day window me hoga.
+- `MIGRATION-COMPLETE: NO` expected hai (verdict `ucDiffs===0` mangta hai;
+  Appendix C representation deltas hamesha rahenge) — phase gate = "counts
+  23/23" wali line.
+- Stand-in DB chhod di gayi hai: `ApnaShiftDB_launch_target` (haatane ke liye
+  `DROP DATABASE [ApnaShiftDB_launch_target];`).
+- Total rehearsal time ≈ 4 min — launch-day window ≈ 15 min comfortably
+  cover karta hai.
 
 ## PHASE 5 — Soak
 
