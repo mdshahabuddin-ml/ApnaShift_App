@@ -378,6 +378,13 @@ smoke + health gates stay identical.
 | v2 extra columns | **Gone after Phase 0** (prod runs `023`) |
 | PK 23/23, FK 29/29 (+ per-table), types 12 canonical pairs, nullable diffs 0 | Parity ✓ |
 
+Audit tool note (2026-10-18): `_audit.mjs` MSSQL queries now count
+**filtered unique indexes** (`sys.indexes WHERE is_unique=1 AND
+has_filter=1`) as UQ equivalents — SQL Server key constraints cannot be
+filtered, so the 3 nullable-column uniques (`drivers_email_unique`,
+`drivers_license_unique`, `settlements_reference_no_key`) live as filtered
+indexes. Without this the audit reported UNIQUE 17→11.
+
 ## APPENDIX D — mssql-mode test gap (found 2026-10-18): RESOLVED same day
 
 Local `npx vitest run` in **mssql mode** (no `TEST_DATABASE_URL`; `.env`
@@ -410,9 +417,11 @@ mssql mode; PG path untouched. What was broken and how it was fixed:
    and recreates them (applied to `ApnaShiftDB_test`, `ApnaShiftDB`,
    `ApnaShiftDB_prod`, `ApnaShiftDB_migrate`). `mapPgError` now extracts
    constraint/index name from messages 2601/2627 → `err.constraint` so
-   route 409 codes work. **Note:** prod name `ApnaShift` (old) has no
-   unique indexes on nullable columns — inconsistent with `ApnaShiftDB`;
-   not in the cutover path (target is `ApnaShiftDB_prod`), flagged only.
+   route 409 codes work. **Note (verified 2026-10-18 evening):** `ApnaShift`
+   (old name) is an **empty legacy DB — 0 tables**, nothing to migrate; all
+   4 populated DBs (`ApnaShiftDB`, `_test`, `_prod`, `_migrate`) carry the 3
+   filtered uniques and zero UQ-on-nullable (remaining `UQ__*` are all on
+   NOT NULL cols: phone/application_ref/booking_id/vehicle_type).
 4. **Other translator gaps fixed:** `JOIN LATERAL` → APPLY
    (`admin.js:766`), `NULLS FIRST/LAST` → CASE sort key, PG `GROUP BY pk`
    functional dependency (`admin.js:92/1009` error 8120), multi-row

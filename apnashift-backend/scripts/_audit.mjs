@@ -180,7 +180,9 @@ const msColRows = {
   cons: (
     await pool2.request().query(
       `SELECT 'PK' AS contype, COUNT(*) AS n FROM sys.key_constraints WHERE type='PK'
-       UNION ALL SELECT 'UQ', COUNT(*) FROM sys.key_constraints WHERE type='UQ'
+       UNION ALL SELECT 'UQ',
+         (SELECT COUNT(*) FROM sys.key_constraints WHERE type='UQ') +
+         (SELECT COUNT(*) FROM sys.indexes WHERE is_unique=1 AND has_filter=1 AND is_primary_key=0)
        UNION ALL SELECT 'FK', COUNT(*) FROM sys.foreign_keys
        UNION ALL SELECT 'C', COUNT(*) FROM sys.check_constraints`,
     )
@@ -195,17 +197,27 @@ const msColRows = {
       `SELECT t, type, COUNT(*) AS n FROM (
          SELECT OBJECT_NAME(parent_object_id) AS t, 'u' AS type FROM sys.key_constraints WHERE type='UQ'
          UNION ALL
+         SELECT OBJECT_NAME(object_id), 'u' FROM sys.indexes WHERE is_unique=1 AND has_filter=1 AND is_primary_key=0
+         UNION ALL
          SELECT OBJECT_NAME(parent_object_id), 'c' FROM sys.check_constraints
        ) x GROUP BY t, type`,
     )
   ).recordset,
   udefs: (
     await pool2.request().query(
-      `SELECT OBJECT_NAME(kc.parent_object_id) AS t, kc.name AS conname, col.name AS cols
-       FROM sys.key_constraints kc
-       JOIN sys.index_columns ic ON ic.object_id = kc.parent_object_id AND ic.index_id = kc.unique_index_id
-       JOIN sys.columns col ON col.object_id = ic.object_id AND col.column_id = ic.column_id
-       WHERE kc.type = 'UQ' ORDER BY 1, 2, ic.column_id`,
+      `SELECT t, conname, cols FROM (
+         SELECT OBJECT_NAME(kc.parent_object_id) AS t, kc.name AS conname, col.name AS cols
+         FROM sys.key_constraints kc
+         JOIN sys.index_columns ic ON ic.object_id = kc.parent_object_id AND ic.index_id = kc.unique_index_id
+         JOIN sys.columns col ON col.object_id = ic.object_id AND col.column_id = ic.column_id
+         WHERE kc.type = 'UQ'
+         UNION ALL
+         SELECT OBJECT_NAME(i.object_id), i.name, col.name
+         FROM sys.indexes i
+         JOIN sys.index_columns ic ON ic.object_id = i.object_id AND ic.index_id = i.index_id
+         JOIN sys.columns col ON col.object_id = ic.object_id AND col.column_id = ic.column_id
+         WHERE i.is_unique=1 AND i.has_filter=1 AND i.is_primary_key=0
+       ) x ORDER BY 1, 2, 3`,
     )
   ).recordset,
 };
