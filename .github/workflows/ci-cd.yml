@@ -134,7 +134,10 @@ jobs:
     name: Deploy staging
     runs-on: ubuntu-latest
     needs: [build]
-    if: github.event_name == 'push' || github.event.inputs.deploy_target == 'staging' || github.event.inputs.deploy_target == 'production'
+    # DEPLOY_DISABLED=true (repo Actions variable, Settings -> Actions -> Variables)
+    # = Railway jobs skip — lint/tests/build chalte rehte hain. Railway wind-down
+    # (≈Oct 31 2026) ke baad services offline hongi, tab yeh ON kar dena.
+    if: ${{ (github.event_name == 'push' || github.event.inputs.deploy_target == 'staging' || github.event.inputs.deploy_target == 'production') && vars.DEPLOY_DISABLED != 'true' }}
     environment: staging
     env:
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_STAGING }}
@@ -265,7 +268,7 @@ jobs:
     name: Deploy production
     runs-on: ubuntu-latest
     needs: [smoke-staging]
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event.inputs.deploy_target == 'production')
+    if: ${{ github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event.inputs.deploy_target == 'production') && vars.DEPLOY_DISABLED != 'true' }}
     environment: production
     env:
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}

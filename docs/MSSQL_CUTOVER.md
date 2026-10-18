@@ -211,6 +211,68 @@ railway variable set DB_DRIVER=pg --service <PROD_SERVICE_ID> --environment prod
 
 ---
 
+## WIND-DOWN CHECKLIST (D5 — Railway shutoff, pre-launch)
+
+Decided 2026-10-18: no paid plan/card until real launch. Services auto-stop
+when trial credit exhausts (≈2026-10-31); trial volumes deleted ~30 days
+later unless upgraded. Dates below are targets, not contracts.
+
+- [x] **2026-10-18** Baseline production dumps exist:
+      `backups/apnashift-prod-20261018-*.dump(.zip)` (verified TOC=184/195)
+      + older local `backups/apnashift-main-20261014-1029.sql`.
+- [x] **2026-10-18** Dump script committed: `apnashift-backend/deploy/backup-prod.ps1`
+      (password kabhi CLI pe nahi; DATABASE_URL env se). Run:
+
+  ```powershell
+  cd apnashift-backend
+  railway run --environment production --service ApnaShift_App -- `
+    powershell -NoProfile -ExecutionPolicy Bypass -File deploy\backup-prod.ps1
+  ```
+
+- [ ] **≈2026-10-30 (services stop se 1 din pehle):** final fresh dump chalao
+      (agar Oct 18 ke baad production me koi nayi write hui ho). Naya file
+      `backups/apnashift-prod-<date>.dump.zip` banega.
+- [ ] **Backup ki dusri copy:** `backups/` folder abhi sirf E: drive pe hai —
+      ek copy Google Drive/external disk me daalo (local disk fail = sab
+      khatam). Minimum: dono `.dump.zip` + purani `.sql`.
+- [ ] **≈2026-11-30 se pehle:** confirm final dump + dusri copy done — uske
+      baad Railway trial volumes delete hote hain.
+- [ ] **Secrets exposure (2026-10-18):** session logs me production
+      `DATABASE_URL` password + `GEOAPIFY_API_KEY` openly dikhe. Railway
+      wind-down ke baad DATABASE_URL ka koi value nahi; Geoapify key free
+      tier hai — chaho to [my.geoapify.com](https://my.geoapify.com) me jaake
+      key rotate kar lo (2 min), Railway dono envs me `GEOAPIFY_API_KEY`
+      update karna hoga. Optional.
+- [ ] **New host pe relaunch (launch time):** dump restore + `db:migrate` +
+      Railway (ya naye host) ke env vars set (names: `DATABASE_URL`,
+      `GEOAPIFY_API_KEY`, `JWT_SECRET`, `NODE_ENV`, `TRUST_PROXY`) +
+      GitHub secrets update + CI wapas green.
+- [ ] **CI expected-red after ≈Oct 31:** Railway jobs fail (services offline)
+      — code bug nahi. Deploy-toggle aana chahiye (GitHub Actions variable
+      `DEPLOY_DISABLED=true` se staging/prod jobs skip).
+
+### Relaunch env inventory (names only — values Railway dashboard / `.env` se)
+
+App service (staging + production, dono me SAME names, alag values):
+
+| Var | Kya hai |
+|---|---|
+| `DATABASE_URL` | Postgres connection string (naye host ka, form-B host:port ya full URL) |
+| `GEOAPIFY_API_KEY` | geocoding/autocomplete key (free tier) |
+| `JWT_SECRET` | auth signing secret — naye host pe **naya banao** purana reuse mat karo |
+| `NODE_ENV` | `production` |
+| `TRUST_PROXY` | `1` |
+| `JWT_EXPIRES_IN` / `BCRYPT_ROUNDS` | optional (defaults chalte hain) |
+| `WHATSAPP_*` | abhi khaali (mock/none default) |
+
+GitHub Actions secrets (CI ke liye): `RAILWAY_TOKEN`, `RAILWAY_PROJECT_ID`,
+`RAILWAY_STAGING_SERVICE_ID`, `RAILWAY_PRODUCTION_SERVICE_ID`,
+`STAGING_DATABASE_URL`, `PRODUCTION_DATABASE_URL`, `STAGING_BASE_URL`,
+`PRODUCTION_BASE_URL` (+ `RAILWAY_TOKEN_STAGING`).
+GitHub Actions **variable**: `DEPLOY_DISABLED` (`true` = deploy jobs skip).
+
+---
+
 ## APPENDIX A — Verifier command reference (all read-only)
 
 ```powershell

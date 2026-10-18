@@ -1,0 +1,4 @@
+# Database backups — full production data, NEVER commit.
+backups/*.dump
+backups/*.dump.zip
+backups/*.dump.gz
