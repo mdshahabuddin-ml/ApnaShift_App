@@ -210,6 +210,8 @@ class _DriverRegisterScreenState extends State<DriverRegisterScreen> {
         return 'Bahut tries — 15 min ruk ke retry karo.';
       case 'network_error':
         return 'Server se baat nahi ho payi.';
+      case 'api_base_url_missing':
+        return 'API URL set nahi hai — flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000 (emulator) ya http://<laptop-LAN-IP>:3000 (phone) se chalao.';
       default:
         return 'Register fail ($code). Retry karo.';
     }

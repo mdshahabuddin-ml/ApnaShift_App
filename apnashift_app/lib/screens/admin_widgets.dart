@@ -14,6 +14,11 @@ String adminFriendly(Object e) {
         return 'Details check karo (filter/amount/ref).';
       case 'too_many_attempts':
         return 'Bahut requests — thoda ruk ke retry karo.';
+      case 'maintenance_active':
+        final m = e.message;
+        return (m != null && m.isNotEmpty)
+            ? 'Maintenance chal raha hai — $m'
+            : 'Maintenance chal raha hai — actions thodi der me wapas chalu honge.';
       case 'not_found':
         return 'Nahi mila (galat id / doosri state).';
       case 'invalid_transition':

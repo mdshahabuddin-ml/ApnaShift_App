@@ -61,6 +61,46 @@ function fcmUrl(projectId) {
   return `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
 }
 
+// Single-token send for the announcement dispatcher (dispatch tracks every
+// attempt in announcement_push_log). Never throws.
+//   ok       -> accepted by FCM
+//   dead     -> FCM says token is gone (404/410/UNREGISTERED) -> caller prunes
+//   oauth    -> credential problem (caller should abort the batch)
+export async function sendToDeviceToken(token, { title, body, data = {} }) {
+  try {
+    const cfg = fcmConfig();
+    if (!cfg) return { ok: false, error: 'not_configured' };
+    const access = await accessToken();
+    const strData = {};
+    for (const [k, v] of Object.entries(data)) strData[String(k)] = String(v);
+    const res = await fetch(fcmUrl(cfg.projectId), {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${access}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: { token, notification: { title, body }, data: strData },
+      }),
+    });
+    if (res.ok) return { ok: true };
+    const txt = await res.text().catch(() => '');
+    let fcmCode = '';
+    try {
+      fcmCode = JSON.parse(txt)?.error?.code ?? '';
+    } catch {
+      // Non-JSON error body — HTTP status is all we know.
+    }
+    const dead =
+      res.status === 404 || res.status === 410 || fcmCode === 'UNREGISTERED' || fcmCode === 'NOT_FOUND';
+    return {
+      ok: false,
+      error: fcmCode || `http_${res.status}`,
+      dead,
+    };
+  } catch (err) {
+    const oauth = /oauth/i.test(String(err?.message ?? ''));
+    return { ok: false, error: oauth ? 'oauth_fail' : 'send_fail', oauth };
+  }
+}
+
 // Best-effort fan-out to one owner's registered tokens. Always resolves.
 export async function pushToOwner(ownerRole, ownerId, { title, body, data = {} }) {
   try {

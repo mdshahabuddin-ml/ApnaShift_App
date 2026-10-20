@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script src="api-config.js"></script>
+<script src="announcements.js"></script>
 <script>try{var __t=localStorage.getItem("apnashift-theme")||"system";var __d=__t;if(__t==="system"){__d=(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";}document.documentElement.setAttribute("data-theme",__d);document.documentElement.style.colorScheme=__d;}catch(__e){}try{var __p=parseInt(localStorage.getItem("apnashift-text-px"),10);if(isNaN(__p))__p=0;__p=Math.max(-4,Math.min(8,__p));document.documentElement.setAttribute("data-textpx",__p);}catch(__e2){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ApnaShift — Move Smarter</title>
@@ -639,14 +641,14 @@ html[data-theme="dark"] .vcard .go{color:#eef3fa}
 <script>
 (function(){
   "use strict";
-  var API=(window.location.hostname==="localhost"||window.location.hostname==="127.0.0.1"||window.location.protocol==="file:")?"http://localhost:3000":"https://apnashiftapp-production.up.railway.app";
+  var API=window.API_BASE_URL;
   var bell=document.getElementById("nbBell"),badge=document.getElementById("nbBadge"),
       panel=document.getElementById("nbPanel"),list=document.getElementById("nbList"),
       markAll=document.getElementById("nbMarkAll");
   if(!bell||!panel||!list) return;
   function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
   function L(en,hi){return document.documentElement.lang==="hi"?hi:en;}
-  function auth(){try{var u=localStorage.getItem("apnashift_user_token");if(u)return "Bearer "+u;var d=localStorage.getItem("apnashift_driver_token");if(d)return "Bearer "+d;}catch(e){}return null;}
+  function auth(){try{var u=localStorage.getItem("apnashift_user_token")||sessionStorage.getItem("apnashift_user_token");if(u)return "Bearer "+u;var d=localStorage.getItem("apnashift_driver_token");if(d)return "Bearer "+d;}catch(e){}return null;}
   function ago(iso){var t=new Date(iso).getTime();if(!isFinite(t))return "";var s=Math.max(0,Math.floor((Date.now()-t)/1000));if(s<60)return L("just now","अभी");if(s<3600)return Math.floor(s/60)+L("m ago"," मि. पहले");if(s<86400)return Math.floor(s/3600)+L("h ago"," घं. पहले");try{return new Date(iso).toLocaleDateString("en-IN",{day:"numeric",month:"short"});}catch(e){return "";}}
   function setBadge(n){if(n>0){badge.hidden=false;badge.textContent=n>99?"99+":String(n);}else{badge.hidden=true;badge.textContent="0";}}
   function loginHtml(){return '<p class="nb-empty">'+esc(L("Log in to see your trip updates.","अपडेट देखने के लिए लॉगिन करें."))+' <a href="user-auth.html">'+esc(L("Login","लॉगिन"))+'</a></p>';}

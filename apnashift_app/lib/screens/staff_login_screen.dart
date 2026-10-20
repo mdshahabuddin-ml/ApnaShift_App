@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../api/admin_api.dart';
 import '../api/api_client.dart';
+import '../config/api_config.dart';
 import '../settings/app_settings.dart';
 import 'login_screen.dart';
 import 'super_admin_home.dart';
@@ -26,6 +27,10 @@ String _friendlyStaff(String code) {
       return 'Bahut tries — 15 minute ruk ke retry karo.';
     case 'not_super_admin':
       return 'Ye admin account super admin nahi hai — super admin se login karo.';
+    case 'api_base_url_missing':
+      return 'API URL set nahi hai — flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000 (emulator) ya http://<laptop-LAN-IP>:3000 (phone) se chalao.';
+    case 'network_error':
+      return 'Server se baat nahi ho payi. Server $apiBaseUrl chal raha hai? Emulator: --dart-define=API_BASE_URL=$apiLocalEmulatorUrl; phone: --dart-define=API_BASE_URL=http://<laptop-LAN-IP>:3000.';
     default:
       return 'Login fail ($code). Server reachable hai?';
   }
@@ -36,6 +41,7 @@ class _StaffLoginScreenState extends State<StaffLoginScreen> {
   final _pass = TextEditingController();
   String? _error;
   bool _busy = false;
+  bool _obscurePass = true;
 
   static final _phoneRe = RegExp(r'^[6-9][0-9]{9}$');
 
@@ -85,7 +91,7 @@ class _StaffLoginScreenState extends State<StaffLoginScreen> {
       if (!mounted) return;
       setState(() {
         _busy = false;
-        _error = 'Server se baat nahi ho payi.';
+        _error = _friendlyStaff('network_error');
       });
     }
   }
@@ -133,13 +139,20 @@ class _StaffLoginScreenState extends State<StaffLoginScreen> {
                 const SizedBox(height: 12),
                 TextField(
                   controller: _pass,
-                  obscureText: true,
+                  obscureText: _obscurePass,
                   style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Password',
-                    labelStyle: TextStyle(color: Colors.white70),
-                    enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white38)),
-                    focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: yellow)),
+                    labelStyle: const TextStyle(color: Colors.white70),
+                    enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.white38)),
+                    focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: yellow)),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePass ? Icons.visibility_off : Icons.visibility,
+                        color: Colors.white70,
+                      ),
+                      onPressed: () => setState(() => _obscurePass = !_obscurePass),
+                    ),
                   ),
                   onSubmitted: (_) => _go(),
                 ),

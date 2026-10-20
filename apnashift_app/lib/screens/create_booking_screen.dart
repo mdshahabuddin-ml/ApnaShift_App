@@ -8,6 +8,7 @@ import '../api/geo_api.dart';
 import '../auth/session.dart';
 import '../models/booking.dart';
 import '../settings/app_settings.dart';
+import '../services/announcement_store.dart';
 import '../widgets/app_scaffold.dart';
 import 'booking_detail_screen.dart';
 import 'map_widgets.dart';
@@ -62,6 +63,11 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
   String _vehicle = 'pickup';
   String _pay = 'upi';
   bool _helper = false;
+  // Har screen-session ka alag nonce — double-tap/network-retry par key same
+  // rehti hai (backend replay karta hai), naya intent (chahe payload same ho)
+  // naya key leta hai (purani/cancelled booking trap nahi).
+  final String _idemSession =
+      DateTime.now().microsecondsSinceEpoch.toRadixString(36);
 
   PriceEstimate? _quote;
   String? _error;
@@ -83,6 +89,8 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
   @override
   void initState() {
     super.initState();
+    // Maintenance block card live rahe — store update par rebuild.
+    AnnouncementStore.instance.addListener(_storeChanged);
     widget.session.api.get('/api/geo/config').then((cfg) {
       final tpl =
           (cfg['tiles'] is Map) ? (cfg['tiles'] as Map)['template'] : null;
@@ -167,8 +175,13 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
   bool get _dropStale =>
       _dropPicked != null && _dropAddr.text.trim() != _dropPicked;
 
+  void _storeChanged() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void dispose() {
+    AnnouncementStore.instance.removeListener(_storeChanged);
     _deb?.cancel();
     _pickupAddr.dispose();
     _pickupLat.dispose();
@@ -386,6 +399,34 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
     }
   }
 
+  /// Idempotency-Key = FNV-1a(payload + session-nonce), hex, 'flt-' prefix.
+  /// Same form + same values → same key (replay-safe); kuch bhi badle to
+  /// naya key (backend ka (user,key)+payload-hash design se match).
+  String _idemKey() {
+    final parts = <String>[
+      _idemSession,
+      _pinMode
+          ? _withPin(_pickupAddr.text, _pickupPin.text)
+          : _pickupAddr.text.trim(),
+      _parseLat(_pickupLat.text)!.toString(),
+      _parseLng(_pickupLng.text)!.toString(),
+      _pinMode ? _withPin(_dropAddr.text, _dropPin.text) : _dropAddr.text.trim(),
+      _parseLat(_dropLat.text)!.toString(),
+      _parseLng(_dropLng.text)!.toString(),
+      _vehicle,
+      _helper.toString(),
+      _pay,
+      _buildItemDescription(),
+      _scheduledAt()?.toUtc().toIso8601String() ?? '',
+    ].join('|');
+    var h = 0xcbf29ce484222325;
+    for (final u in parts.codeUnits) {
+      h ^= u;
+      h *= 0x100000001b3;
+    }
+    return 'flt-${h.toRadixString(16)}';
+  }
+
   Future<void> _confirm() async {
     final v = _validate();
     if (v != null) {
@@ -404,11 +445,9 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
       _error = null;
     });
     try {
-      // Idempotency-Key NAHI bhejte (legacy direct-insert flow).
-      // Reason: prod backend purana hai — key wali table/route missing par
-      // 500 server_error aata hai, bina key ke create succeed hota hai.
-      // Double-tap double-booking se bachne ke liye button _booking me
-      // disabled rehta hai.
+      // Idempotency-Key bhejte hain: double-tap/network-retry par backend
+      // same booking replay karta hai (duplicate create nahi). Key
+      // payload+session se derived hai (_idemKey).
       final b = await _api.create(
         pickupAddress: _pinMode
             ? _withPin(_pickupAddr.text, _pickupPin.text)
@@ -425,6 +464,7 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
         paymentMethod: _pay,
         itemDescription: _buildItemDescription(),
         scheduledTime: _scheduledAt(),
+        idempotencyKey: _idemKey(),
       );
       if (!mounted) return;
       setState(() => _booking = false);
@@ -454,10 +494,20 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
         case 'unsupported_payment_method':
           return 'Sirf UPI/Cash allowed (online gateway nahi hai).';
         case 'too_many_attempts':
-          return 'Bahut tries — 15 min ruk ke retry karo.';
+        case 'http_429':
+          return 'Rate limit — thodi der (≈15 min) ruk ke dobara try karo, ya server restart hua hai to turant chalega.';
         case 'invalid_token':
         case 'missing_token':
           return 'Session khatm — dobara login karo.';
+        case 'api_base_url_missing':
+          return 'API URL set nahi hai — flutter run --dart-define=API_BASE_URL=http://<laptop-LAN-IP>:3000 (phone) ya http://10.0.2.2:3000 (emulator) use karo.';
+        case 'idempotency_conflict':
+          return 'Is form se pehle ek booking process ho chuki hai — details badal ke dobara confirm karo.';
+        case 'maintenance_active':
+          final m = e.message;
+          return (m != null && m.isNotEmpty)
+              ? 'Bookings ruki hain — $m'
+              : 'Maintenance chal raha hai — bookings thodi der me wapas chalu hongi. Banner check karo.';
         case 'server_error':
           return 'Server error — booking save nahi hui. My Bookings me check karo (kabhi ban jati hai), date hata ke retry karo, ya backend update chahiye (prod purana hai).';
         default:
@@ -973,8 +1023,30 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
             ),
           ),
           const SizedBox(height: 12),
+          if (AnnouncementStore.instance.maintenanceBlocked)
+            Card(
+              color: Colors.deepOrange.shade50,
+              margin: const EdgeInsets.only(bottom: 10),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    const Icon(Icons.build, color: Colors.deepOrange, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        AnnouncementStore.instance.maintenanceMessage,
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           OutlinedButton(
-            onPressed: _estimating ? null : _estimate,
+            onPressed: _estimating || AnnouncementStore.instance.maintenanceBlocked
+                ? null
+                : _estimate,
             child: Text(_estimating ? 'Ruko…' : 'Get Estimate — See Fare'),
           ),
           if (_quote != null)
@@ -1001,7 +1073,9 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
             ),
           const SizedBox(height: 8),
           ElevatedButton(
-            onPressed: _booking ? null : _confirm,
+            onPressed: _booking || AnnouncementStore.instance.maintenanceBlocked
+                ? null
+                : _confirm,
             child: Text(_booking ? 'Ruko…' : 'Confirm Booking →'),
           ),
           const SizedBox(height: 24),

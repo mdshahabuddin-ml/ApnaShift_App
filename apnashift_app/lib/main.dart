@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:screenshot/screenshot.dart';
 import 'auth/admin_session.dart';
 import 'auth/driver_session.dart';
 import 'auth/session.dart';
+import 'api/api_client.dart';
 import 'screens/admin_home.dart';
 import 'screens/admin_login_screen.dart';
 import 'screens/customer_home.dart';
@@ -15,12 +17,23 @@ import 'screens/help_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart' show navy, yellow, LoginScreen;
 import 'settings/app_settings.dart';
+import 'services/announcement_store.dart';
+import 'services/update_check_service.dart';
 import 'theme/app_theme.dart';
 import 'util/error_reporter.dart';
 
 void main() {
   runZonedGuarded(() {
     ErrorReporter.init();
+    // X-App-Version header + /latest?version= ke liye installed version.
+    // Fail-soft: header missing = server allow karta hai (gate absent
+    // header ko punish nahi karta).
+    unawaited(PackageInfo.fromPlatform().then((info) {
+      ApiClient.appVersion = info.version; // "1.0.0" (+build alag field)
+    }).catchError((_) {
+      ApiClient.appVersion = '';
+    }));
+    UpdateCheckService.instance.init();
     runApp(const ApnaShiftApp());
   }, (Object e, StackTrace s) => ErrorReporter.report('zone', '$e', s));
 }
@@ -34,15 +47,18 @@ class ApnaShiftApp extends StatefulWidget {
   State<ApnaShiftApp> createState() => _ApnaShiftAppState();
 }
 
-class _ApnaShiftAppState extends State<ApnaShiftApp> {
+class _ApnaShiftAppState extends State<ApnaShiftApp>
+    with WidgetsBindingObserver {
   late final Session _session = widget.session ?? Session();
   late final AppSettings _settings = widget.settings ?? AppSettings();
   late final DriverSession _driver = DriverSession();
   late final AdminSession _admin = AdminSession();
+  bool _updateDialogOpen = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _session.addListener(_tick);
     _session.restore();
     _settings.addListener(_tick);
@@ -51,16 +67,56 @@ class _ApnaShiftAppState extends State<ApnaShiftApp> {
     _driver.restore();
     _admin.addListener(_tick);
     _admin.restore();
+    // Announcement banner: per-id dismiss restore + pehla feed fetch.
+    AnnouncementStore.instance.loadDismissed();
+    AnnouncementStore.instance.startTicker();
+    AnnouncementStore.instance.refresh();
+    // App update: startup par ek check + pending aaye to dialog.
+    UpdateCheckService.instance.addListener(_maybePromptUpdate);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(UpdateCheckService.instance.checkNow());
+      _maybePromptUpdate();
+    });
   }
 
-  void _tick() => setState(() {});
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Resume par halka version check (6h throttle service andar hai).
+    if (state == AppLifecycleState.resumed) {
+      unawaited(UpdateCheckService.instance.checkNow());
+    }
+  }
+
+  void _maybePromptUpdate() {
+    final svc = UpdateCheckService.instance;
+    if (svc.pending == null || _updateDialogOpen || !mounted) return;
+    _updateDialogOpen = true;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AppUpdateDialog(service: svc),
+    ).whenComplete(() => _updateDialogOpen = false);
+  }
+
+  void _tick() {
+    // Role change par banner feed ka audience sync (customer > driver).
+    AnnouncementStore.instance.updateAudience(
+      (_session.loggedIn && (_session.user?.isCustomer ?? false))
+          ? 'user'
+          : (_driver.loggedIn ? 'driver' : null),
+    );
+    setState(() {});
+  }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _session.removeListener(_tick);
     _settings.removeListener(_tick);
     _driver.removeListener(_tick);
     _admin.removeListener(_tick);
+    UpdateCheckService.instance.removeListener(_maybePromptUpdate);
+    AnnouncementStore.instance.stopTicker();
     super.dispose();
   }
 

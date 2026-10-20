@@ -25,6 +25,24 @@ class _AdminHomeState extends State<AdminHome> {
   int _tab = 0;
 
   @override
+  void initState() {
+    super.initState();
+    widget.session.addListener(_onSessionChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.session.removeListener(_onSessionChanged);
+    super.dispose();
+  }
+
+  void _onSessionChanged() {
+    if (!widget.session.loggedIn && mounted) {
+      Navigator.of(context).popUntil((r) => r.isFirst);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final role = widget.session.user?.role ?? 'admin';
     return Scaffold(

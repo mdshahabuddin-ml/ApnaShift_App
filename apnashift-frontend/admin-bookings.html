@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script src="api-config.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bookings | ApnaShift Admin</title>
 <meta name="description" content="ApnaShift admin — view bookings, apply filters, and assign drivers.">
@@ -167,10 +168,10 @@
 <script>
 (function(){
   "use strict";
-  // Backend base URL with local development fallback (same on all pages —
-  // localhost pages talk to localhost API, production pages to production,
-  // so login tokens always match the API that issued them).
-  var API_BASE_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.protocol === "file:") ? "http://localhost:3000" : "https://apnashiftapp-production.up.railway.app";
+  // Backend base URL - api-config.js se (single source of truth):
+// localhost/file -> http://localhost:3000; any other host (LAN IP, tunnel,
+// prod) -> "" = same-origin (page jis host par serve ho, API bhi wahi se).
+  var API_BASE_URL = window.API_BASE_URL;
   var TOKEN_KEY = "apnashift_admin_token";
   var LOGIN_PAGE = "admin-login.html";
   var PAGE_LIMIT = 20;

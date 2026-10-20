@@ -22,8 +22,9 @@ export default [
     },
   },
   {
-    // Served browser bundle (mirror of frontend/notify.js) — window is correct here.
-    files: ['public/notify.js'],
+    // Served browser bundles — window is correct here (theme/lang/text-size
+    // declare their own locals on purpose, so keep the list explicit).
+    files: ['public/notify.js', 'public/api-config.js', 'public/announcements.js'],
     languageOptions: {
       globals: { ...globals.node, ...globals.browser },
     },

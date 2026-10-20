@@ -304,6 +304,20 @@ export async function handleWaMessage({ phone, text }, deps = {}) {
           source: 'WHATSAPP',
         });
       } catch (err) {
+        if (err && err.code === 'maintenance_active') {
+          // Maintenance gate — keep CONFIRMATION state so a later "yes"
+          // retries cleanly once the announcement window closes.
+          const msg =
+            err.maintenance?.message ||
+            'Maintenance chal raha hai — bookings abhi ruki hain.';
+          const until = err.maintenance?.until;
+          return {
+            reply:
+              `${msg}` +
+              (until ? ` (takreeban ${new Date(until).toISOString().replace('T', ' ').slice(0, 16)} UTC tak)` : ''),
+            created: false,
+          };
+        }
         // e.g. route too long: back to start, booking row untouched.
         data = {};
         await setState('START', data);

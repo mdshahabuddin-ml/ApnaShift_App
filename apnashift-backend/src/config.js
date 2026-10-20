@@ -18,7 +18,7 @@ export const config = {
   bcryptRounds: num('BCRYPT_ROUNDS', 12),
   corsOrigin: process.env.CORS_ORIGIN ?? '*',
   rateLimitWindowMs: num('RATE_LIMIT_WINDOW_MS', 15 * 60 * 1000),
-  rateLimitMax: num('RATE_LIMIT_MAX', 100),
+  rateLimitMax: num('RATE_LIMIT_MAX', 300),
   authRateLimitWindowMs: num('AUTH_RATE_LIMIT_WINDOW_MS', 15 * 60 * 1000),
   authRateLimitMax: num('AUTH_RATE_LIMIT_MAX', 10),
   estimateRateLimitWindowMs: num('ESTIMATE_RATE_LIMIT_WINDOW_MS', 15 * 60 * 1000),

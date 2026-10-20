@@ -310,6 +310,104 @@ class AdminApi {
     return api.get('/api/superadmin/customers/$id');
   }
 
+  // ---- Announcements (super_admin: CRUD + push control) ----
+
+  Future<
+      ({
+        List<Map<String, dynamic>> items,
+        int total,
+        bool fcmConfigured
+      })> announcements(
+      {String? status, String? audience, int page = 1, int limit = 20}) async {
+    final d = await api.get('/api/announcements', query: {
+      if (status != null && status.isNotEmpty) 'status': status,
+      if (audience != null && audience.isNotEmpty) 'audience': audience,
+      'page': '$page',
+      'limit': '$limit',
+    });
+    final raw = (d['items'] ?? []) as List;
+    return (
+      items: raw
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList(),
+      total: int.tryParse('${d['total'] ?? 0}') ?? 0,
+      fcmConfigured: d['fcm_configured'] == true,
+    );
+  }
+
+  Future<Map<String, dynamic>> createAnnouncement(
+      Map<String, dynamic> body) async {
+    final d = await api.post('/api/announcements', body: body);
+    return Map<String, dynamic>.from(d['announcement'] as Map? ?? d);
+  }
+
+  Future<Map<String, dynamic>> updateAnnouncement(
+      String id, Map<String, dynamic> body) async {
+    final d = await api.patch('/api/announcements/$id', body: body);
+    return Map<String, dynamic>.from(d['announcement'] as Map? ?? d);
+  }
+
+  Future<Map<String, dynamic>> announcementPushReport(String id) async {
+    return api.get('/api/announcements/$id/push');
+  }
+
+  Future<Map<String, dynamic>> runAnnouncementPush(String id) async {
+    return api.post('/api/announcements/$id/push/run');
+  }
+
+  /// Public feed (banner source) — customer app bhi yahi use karti hai.
+  Future<Map<String, dynamic>> activeAnnouncements({String? audience}) async {
+    return api.get('/api/announcements/active', query: {
+      if (audience != null && audience.isNotEmpty) 'audience': audience,
+    });
+  }
+
+  // ---- App releases (super_admin: CRUD + push control) ----
+
+  Future<
+      ({
+        List<Map<String, dynamic>> items,
+        int total,
+        bool fcmConfigured
+      })> appReleases(
+      {String? status, int page = 1, int limit = 20}) async {
+    final d = await api.get('/api/app-updates', query: {
+      if (status != null && status.isNotEmpty) 'status': status,
+      'page': '$page',
+      'limit': '$limit',
+    });
+    final raw = (d['items'] ?? []) as List;
+    return (
+      items: raw
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList(),
+      total: int.tryParse('${d['total'] ?? 0}') ?? 0,
+      fcmConfigured: d['fcm_configured'] == true,
+    );
+  }
+
+  Future<Map<String, dynamic>> createAppRelease(
+      Map<String, dynamic> body) async {
+    final d = await api.post('/api/app-updates', body: body);
+    return Map<String, dynamic>.from(d['release'] as Map? ?? d);
+  }
+
+  Future<Map<String, dynamic>> updateAppRelease(
+      String id, Map<String, dynamic> body) async {
+    final d = await api.patch('/api/app-updates/$id', body: body);
+    return Map<String, dynamic>.from(d['release'] as Map? ?? d);
+  }
+
+  Future<Map<String, dynamic>> appReleasePushReport(String id) async {
+    return api.get('/api/app-updates/$id/push');
+  }
+
+  Future<Map<String, dynamic>> runAppReleasePush(String id) async {
+    return api.post('/api/app-updates/$id/push/run');
+  }
+
   // ---- Payment adjustments (append-only corrections) ----
 
   Future<Map<String, dynamic>> createAdjustment(

@@ -133,7 +133,16 @@ function mapPgError(err) {
 async function runQuery(conn, text, params = []) {
   const req = new sql.Request(conn);
   const list = Array.isArray(params) ? params : [];
-  list.forEach((v, i) => req.input(`p${i + 1}`, normalizeParam(v)));
+  list.forEach((v, i) => {
+    const nv = normalizeParam(v);
+    // Date params bind as DateTime2(7), NOT the legacy datetime default:
+    // tedious rounds datetime to 1/300s (~3.33ms) on write, so an ISO cursor
+    // like "...962Z" (ms-truncated) could round UP past the stored 100ns
+    // value and leak the boundary row back into `created_at < @p` pages.
+    // DateTime2(7) keeps exact ms precision — matches PG timestamptz behavior.
+    if (nv instanceof Date) req.input(`p${i + 1}`, sql.DateTime2(7), nv);
+    else req.input(`p${i + 1}`, nv);
+  });
   let result;
   try {
     result = await req.query(translateToMssql(text));

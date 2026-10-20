@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../l10n/strings.dart';
 import '../settings/app_settings.dart';
 import '../theme/app_theme.dart';
+import 'announcement_banner.dart';
 
 // Website parity header/footer: navy header (ApnaShift + nav + actions),
 // theme dropdown (☀/☾/◐), language dropdown (🌐 EN/HI), text-size A-/A/A+.
@@ -42,6 +43,7 @@ class AppScaffold extends StatelessWidget {
       body: Column(
         children: [
           _TextSizeBar(settings: settings),
+          const AnnouncementBanner(),
           Expanded(child: body),
         ],
       ),

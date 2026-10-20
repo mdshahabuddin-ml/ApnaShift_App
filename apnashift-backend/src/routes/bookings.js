@@ -37,6 +37,8 @@ import { queueNotification } from '../services/notifyCenter.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { validateIdParam } from '../utils/validate.js';
 import { writeLimiter } from '../middleware/writeLimiter.js';
+import { maintenanceGate } from '../services/announcements.js';
+import { appUpdateGate } from '../middleware/appUpdateGate.js';
 
 export const bookingsRoutes = Router();
 
@@ -105,8 +107,8 @@ export function toPublicBooking(row) {
 
 // (ratesFor lives in services/bookings.js — shared with the WhatsApp flow.)
 
-// POST /api/bookings/estimate-price (public)
-bookingsRoutes.post('/estimate-price', estimateLimiter, async (req, res, next) => {
+// POST /api/bookings/estimate-price (public) — blocked during maintenance mode.
+bookingsRoutes.post('/estimate-price', estimateLimiter, maintenanceGate, appUpdateGate, async (req, res, next) => {
   try {
     const {
       pickup, drop, vehicle_type, helper_needed,
@@ -166,7 +168,7 @@ export async function adminBookingEvent(row) {
 // POST /api/bookings (user) — server computes price, not the client.
 // Optional Idempotency-Key: first success replays (201 -> 200, same booking).
 // Same key + different payload returns 422 idempotency_conflict. Per-user scope.
-bookingsRoutes.post('/', requireAuth, requireRole('user'), writeLimiter, async (req, res, next) => {
+bookingsRoutes.post('/', requireAuth, requireRole('user'), writeLimiter, maintenanceGate, appUpdateGate, async (req, res, next) => {
   try {
     const {
       pickup, drop, vehicle_type, helper_needed, item_description, scheduled_time, payment_method,

@@ -29,7 +29,10 @@ class _CustomerHomeState extends State<CustomerHome> {
     final pages = [
       CreateBookingScreen(
           session: widget.session, settings: widget.settings),
-      BookingsScreen(session: widget.session, settings: widget.settings),
+      BookingsScreen(
+          session: widget.session,
+          settings: widget.settings,
+          active: _tab == 1),
       NotificationsScreen(
           session: widget.session, settings: widget.settings),
       _AccountTab(session: widget.session, settings: widget.settings),

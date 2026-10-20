@@ -245,9 +245,24 @@ export async function truncateAll(client) {
   // Clear all transactional tables + restore pricing seed (else ratesFor returns 400 unknown_vehicle).
   // pricing_rules is TRUNCATEd (so pricing PUT mutations do not leak), then seed re-inserted.
   // In mssql mode the TRUNCATE is emulated by the client (FK-ordered DELETEs).
-  await client.query(
-    'TRUNCATE users, drivers, admins, bookings, ratings, pricing_rules, audit_logs, pricing_history, idempotency_keys, enterprise_inquiries, driver_locations, payments, payment_adjustments, settlements, settlement_period_items, settlement_periods, password_reset_otps, driver_declines, wa_conversations, notifications, device_tokens RESTART IDENTITY CASCADE',
+  const want = [
+    'users', 'drivers', 'admins', 'bookings', 'ratings', 'pricing_rules',
+    'audit_logs', 'pricing_history', 'idempotency_keys', 'enterprise_inquiries',
+    'driver_locations', 'payments', 'payment_adjustments', 'settlements',
+    'settlement_period_items', 'settlement_periods', 'password_reset_otps',
+    'driver_declines', 'wa_conversations', 'notifications', 'device_tokens',
+    'announcements', 'announcement_push_log',
+    'app_releases', 'app_release_push_log',
+  ];
+  // CI runs vitest against PG where db/mssql/005 was never applied — only
+  // TRUNCATE tables that actually exist on this engine (both support
+  // information_schema.tables).
+  const existRes = await client.query(
+    "SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE'",
   );
+  const exist = new Set(existRes.rows.map((r) => r.table_name));
+  const list = want.filter((t) => exist.has(t));
+  await client.query(`TRUNCATE ${list.join(', ')} RESTART IDENTITY CASCADE`);
   await client.query(
     `INSERT INTO pricing_rules
        (vehicle_type, base_rs, per_km_rs, helper_rs, minimum_fare,

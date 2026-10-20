@@ -2,6 +2,8 @@
 import { app } from './app.js';
 import { config } from './config.js';
 import { pool } from './db.js';
+import { startAnnouncementTicker } from './services/announcements.js';
+import { startReleaseTicker } from './services/appUpdates.js';
 
 // Auth is meaningless without JWT — do not start silently.
 if (!config.jwtSecret) {
@@ -17,6 +19,9 @@ if (config.jwtSecret.length < 32) {
 const server = app.listen(config.port, () => {
   // Log only port + env — never DATABASE_URL/JWT.
   console.log(`[server] ApnaShift API listening on port ${config.port} (${config.env})`);
+  // Scheduled announcement + app-release pushes (30s tickers, in-process).
+  startAnnouncementTicker();
+  startReleaseTicker();
 });
 
 function shutdown(signal) {

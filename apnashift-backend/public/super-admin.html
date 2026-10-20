@@ -119,6 +119,8 @@ dialog menu{display:flex;gap:10px;justify-content:flex-end;padding:0;margin:14px
       <button type="button" data-sec="finance">💰 Finance</button>
       <button type="button" data-sec="enterprise">🏢 Enterprise</button>
       <button type="button" data-sec="audit">🛡️ Security &amp; Audit</button>
+      <button type="button" data-sec="announcements">📣 Announcements</button>
+      <button type="button" data-sec="appupdates">🔄 App updates</button>
     </nav>
     <div class="sfoot">
       <span id="whoLine">admin</span><br>
@@ -261,6 +263,97 @@ dialog menu{display:flex;gap:10px;justify-content:flex-end;padding:0;margin:14px
         <p class="muted">Failed API requests / suspicious-activity ka dedicated table backend me nahi hai — ye gap document hai, naya table bina permission ke nahi banaya gaya.</p>
       </div>
     </section>
+
+    <!-- ANNOUNCEMENTS -->
+    <section class="panel" id="p-announcements" aria-label="Announcements and maintenance mode">
+      <div class="card">
+        <h2 id="anFormTitle">Create announcement</h2>
+        <div class="row">
+          <div class="field" style="flex:1 1 260px"><label for="anTitle">Title *</label><input type="text" id="anTitle" maxlength="200" placeholder="Server maintenance"></div>
+          <div class="field"><label for="anSeverity">Severity</label>
+            <select id="anSeverity"><option value="info">info</option><option value="warning">warning</option><option value="critical">critical</option><option value="maintenance">maintenance</option></select>
+          </div>
+          <div class="field"><label for="anAudience">Audience</label>
+            <select id="anAudience"><option value="all">all</option><option value="users">users</option><option value="drivers">drivers</option></select>
+          </div>
+          <div class="field" id="anStatusWrap"><label for="anStatus">Status</label>
+            <select id="anStatus"><option value="draft">draft</option><option value="published">published</option></select>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:10px"><label for="anBody">Body *</label><textarea id="anBody" rows="3" maxlength="4000" placeholder="Users ko dikhne wala message"></textarea></div>
+        <div class="row">
+          <div class="field"><label for="anMaint">Maintenance mode (bookings block)</label><input type="checkbox" id="anMaint" style="width:22px;height:22px;align-self:start"></div>
+          <div class="field"><label for="anPush">Push (FCM) enabled</label><input type="checkbox" id="anPush" style="width:22px;height:22px;align-self:start"></div>
+          <div class="field"><label for="anStart">Start (local time, optional)</label><input type="datetime-local" id="anStart"></div>
+          <div class="field"><label for="anEnd">End (local time, optional)</label><input type="datetime-local" id="anEnd"></div>
+          <div class="field"><label for="anNotify">Notify before start (min, blank = off)</label><input type="number" id="anNotify" min="0" max="10080" placeholder="e.g. 30"></div>
+        </div>
+        <div class="field" id="anBlockWrap" hidden style="margin-bottom:10px"><label for="anBlockMsg">Block message * (users ko dikhega)</label><textarea id="anBlockMsg" rows="2" maxlength="500"></textarea></div>
+        <div class="actions">
+          <button class="btn" type="button" id="anSave">Create</button>
+          <button class="btn secondary" type="button" id="anCancelEdit" hidden>Cancel edit</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>All announcements <span class="badge info" id="anFcm">FCM …</span></h2>
+        <div class="row">
+          <div class="field"><label for="anFilter">Status filter</label>
+            <select id="anFilter"><option value="">All</option><option value="draft">draft</option><option value="published">published</option><option value="deactivated">deactivated</option></select>
+          </div>
+          <button class="btn secondary" type="button" id="anGo">Refresh</button>
+        </div>
+        <div id="anOut"><p class="loading">Loading…</p></div>
+        <div id="anDetail"></div>
+      </div>
+      <div class="notice"><strong>Kaise chalta hai:</strong> "Active" koi stored flag nahi — server har read par <code>published AND window</code> derive karta hai, isliye expiry/maintenance block khud lift hota hai (koi job nahi). Push bina <code>FCM_*</code> creds ke "awaiting credentials" rehta hai — koi row touch nahi hoti. Status flips se pending push cancel/re-arm hota hai; retry sirf failed rows delete karta hai (sent rows safe = kabhi duplicate push nahi).</div>
+    </section>
+
+    <!-- APP UPDATES -->
+    <section class="panel" id="p-appupdates" aria-label="App release management">
+      <div class="card">
+        <h2 id="auFormTitle">Create release</h2>
+        <div class="row">
+          <div class="field"><label for="auVersion">Version * (x.y.z)</label><input type="text" id="auVersion" maxlength="20" placeholder="1.1.0"></div>
+          <div class="field"><label for="auBuild">Build (versionCode, optional)</label><input type="number" id="auBuild" min="1" placeholder="2"></div>
+          <div class="field"><label for="auMinVer">Min supported version (optional)</label><input type="text" id="auMinVer" maxlength="20" placeholder="1.0.0 — is se purane = forced"></div>
+          <div class="field"><label for="auAudience">Audience</label>
+            <select id="auAudience"><option value="all">all</option><option value="users">users</option><option value="drivers">drivers</option></select>
+          </div>
+          <div class="field"><label for="auPriority">Priority</label>
+            <select id="auPriority"><option value="low">low</option><option value="normal" selected>normal</option><option value="high">high</option></select>
+          </div>
+          <div class="field" id="auStatusWrap"><label for="auStatus">Status</label>
+            <select id="auStatus"><option value="draft">draft</option><option value="published">published</option></select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field"><label for="auMandatory">Mandatory (426 gate — purane app bookings nahi kar payenge)</label><input type="checkbox" id="auMandatory" style="width:22px;height:22px;align-self:start"></div>
+          <div class="field"><label for="auPush">Push (FCM) release notice</label><input type="checkbox" id="auPush" style="width:22px;height:22px;align-self:start"></div>
+        </div>
+        <div class="field" style="margin-bottom:10px"><label for="auNotes">Release notes * (app dialog me yahi dikhega)</label><textarea id="auNotes" rows="3" maxlength="8000"></textarea></div>
+        <div class="field" style="margin-bottom:10px"><label for="auUrl">Update URL (https://… — Play Store listing / verified APK page)</label><input type="url" id="auUrl" maxlength="500" placeholder="https://play.google.com/store/apps/details?id=com.apnashift.apnashift_app"></div>
+        <div class="row" id="auPushWrap" hidden>
+          <div class="field" style="flex:1 1 240px"><label for="auPushTitle">Push title (optional)</label><input type="text" id="auPushTitle" maxlength="200"></div>
+          <div class="field" style="flex:2 1 320px"><label for="auPushBody">Push body (optional)</label><input type="text" id="auPushBody" maxlength="500"></div>
+        </div>
+        <div class="actions">
+          <button class="btn" type="button" id="auSave">Create</button>
+          <button class="btn secondary" type="button" id="auCancelEdit" hidden>Cancel edit</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>All releases <span class="badge info" id="auFcm">FCM …</span></h2>
+        <div class="row">
+          <div class="field"><label for="auFilter">Status filter</label>
+            <select id="auFilter"><option value="">All</option><option value="draft">draft</option><option value="published">published</option><option value="archived">archived</option></select>
+          </div>
+          <button class="btn secondary" type="button" id="auGo">Refresh</button>
+        </div>
+        <div id="auOut"><p class="loading">Loading…</p></div>
+        <div id="auDetail"></div>
+      </div>
+      <div class="notice"><strong>Kaise chalta hai:</strong> App startup/resume par <code>GET /api/app-updates/latest?version=…</code> action deta hai (none/optional/required); required hone par protected API calls 426 bhi deti hain (server-side gate — client dialog sirf UX hai). "Latest" derived hai (published + newest published_at) — archive karne se release retire. Push bina <code>FCM_*</code> creds ke "awaiting credentials"; retry sirf failed rows delete karta hai (sent = no duplicate). update_url sirf <code>https://</code> (raw APK kabhi nahi).</div>
+    </section>
   </main>
 </div>
 
@@ -335,7 +428,7 @@ function confirmDlg(title,text,needReason,extraLabel){
   });
 }
 // Section router
-var TITLES={overview:["Operations Overview","Live database se — sample data nahi."],customers:["Customers","Search + authorized actions only."],drivers:["Drivers","Applications, verification, activity."],finance:["Finance","Read-only by default; actions need confirm + reason."],enterprise:["Enterprise Inquiries","Status wahi jo backend enum me hai."],audit:["Security & Audit","Audit trail + gap documentation."]};
+var TITLES={overview:["Operations Overview","Live database se — sample data nahi."],customers:["Customers","Search + authorized actions only."],drivers:["Drivers","Applications, verification, activity."],finance:["Finance","Read-only by default; actions need confirm + reason."],enterprise:["Enterprise Inquiries","Status wahi jo backend enum me hai."],audit:["Security & Audit","Audit trail + gap documentation."],announcements:["Announcements","Create, schedule, publish, maintenance block — sab live API se." ],appupdates:["App Updates","Release CRUD + publish/archive + push — app in-app dialog yahi serve karta hai." ]};
 document.getElementById("snav").addEventListener("click",function(ev){
   var b=ev.target.closest("[data-sec]");if(!b)return;
   document.querySelectorAll("#snav button").forEach(function(x){x.classList.remove("active");x.removeAttribute("aria-current");});
@@ -775,7 +868,308 @@ async function loadAudit(){
     }
   }
 }
-var loaders={overview:loadOverview,customers:function(){},drivers:loadDrivers,finance:function(){},enterprise:loadInq,audit:loadAudit};
+// ---------- ANNOUNCEMENTS ----------
+var anEditId=null;
+var anRows=[];
+function anIso(v){if(!v)return null;var d=new Date(v);return isNaN(d.getTime())?null:d.toISOString();}
+function toLocalInput(iso){
+  var d=new Date(iso);
+  function p(n){return String(n).padStart(2,"0");}
+  return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+"T"+p(d.getHours())+":"+p(d.getMinutes());
+}
+document.getElementById("anMaint").addEventListener("change",function(){document.getElementById("anBlockWrap").hidden=!this.checked;});
+function anResetForm(){
+  anEditId=null;
+  document.getElementById("anFormTitle").textContent="Create announcement";
+  document.getElementById("anSave").textContent="Create";
+  document.getElementById("anCancelEdit").hidden=true;
+  document.getElementById("anStatusWrap").hidden=false;
+  ["anTitle","anBody","anBlockMsg","anStart","anEnd","anNotify"].forEach(function(id){document.getElementById(id).value="";});
+  document.getElementById("anMaint").checked=false;
+  document.getElementById("anBlockWrap").hidden=true;
+  document.getElementById("anPush").checked=false;
+  document.getElementById("anSeverity").value="info";
+  document.getElementById("anAudience").value="all";
+  document.getElementById("anStatus").value="draft";
+}
+document.getElementById("anCancelEdit").addEventListener("click",anResetForm);
+async function loadAnnouncements(){
+  var box=document.getElementById("anOut");document.getElementById("anDetail").innerHTML="";
+  box.innerHTML='<p class="loading">Loading…</p>';
+  try{
+    var q="/api/announcements?limit=50";
+    var f=document.getElementById("anFilter").value;
+    if(f)q+="&status="+encodeURIComponent(f);
+    var d=await api(q);
+    document.getElementById("anFcm").textContent=d.fcm_configured?"FCM ready":"FCM awaiting credentials";
+    document.getElementById("anFcm").className="badge "+(d.fcm_configured?"ok":"warn");
+    anRows=d.items||[];
+    if(!anRows.length){box.innerHTML='<p class="empty">Koi announcement nahi — upar se naya banao.</p>';return;}
+    var h='<table class="tbl"><thead><tr><th>Title</th><th>Severity</th><th>Audience</th><th>Status</th><th>Window (UTC)</th><th>Push</th><th></th></tr></thead><tbody>';
+    anRows.forEach(function(x,i){
+      var p=x.push||{};
+      h+='<tr>'
+        +'<td><strong>'+esc(x.title)+'</strong><br><span class="muted">'+esc(String(x.body||"").slice(0,90))+'</span>'
+          +(x.maintenance_mode?'<br><span class="badge warn">maintenance</span>':"")+'</td>'
+        +'<td><span class="badge">'+esc(x.severity)+'</span></td>'
+        +'<td>'+esc(x.audience)+'</td>'
+        +'<td>'+badge(x.status)+'</td>'
+        +'<td class="muted">'+esc(x.start_at||"open")+' → '+esc(x.end_at||"open")+'</td>'
+        +'<td class="muted">'+esc(p.status||"none")+'<br>'+(p.delivered||0)+'/'+(p.total||0)+' sent</td>'
+        +'<td>'
+          +(x.status!=="published"?'<button class="link" type="button" data-an-pub="'+i+'">Publish</button> ':"")
+          +(x.status==="published"?'<button class="link" type="button" data-an-off="'+i+'">Deactivate</button> ':"")
+          +(p.status==="failed"?'<button class="link" type="button" data-an-retry="'+i+'">Retry push</button> ':"")
+          +'<button class="link" type="button" data-an-push="'+i+'">Push report</button> '
+          +'<button class="link" type="button" data-an-edit="'+i+'">Edit</button>'
+        +'</td></tr>';
+    });
+    box.innerHTML=h+'</tbody></table>';
+    box.querySelectorAll("[data-an-pub]").forEach(function(b){b.addEventListener("click",function(){anPatch(anRows[+b.getAttribute("data-an-pub")],{status:"published"});});});
+    box.querySelectorAll("[data-an-off]").forEach(function(b){b.addEventListener("click",function(){anPatch(anRows[+b.getAttribute("data-an-off")],{status:"deactivated"});});});
+    box.querySelectorAll("[data-an-retry]").forEach(function(b){b.addEventListener("click",function(){anPatch(anRows[+b.getAttribute("data-an-retry")],{retry_push:true});});});
+    box.querySelectorAll("[data-an-push]").forEach(function(b){b.addEventListener("click",function(){anPushReport(anRows[+b.getAttribute("data-an-push")]);});});
+    box.querySelectorAll("[data-an-edit]").forEach(function(b){b.addEventListener("click",function(){anEdit(anRows[+b.getAttribute("data-an-edit")]);});});
+  }catch(e){box.innerHTML='<p class="err">Load fail: '+esc(e.message)+'</p>';}
+}
+async function anPatch(x,body){
+  try{
+    await api("/api/announcements/"+x.id,{method:"PATCH",body:JSON.stringify(body)});
+    toast(body.status?("Status → "+body.status):(body.retry_push?"Push re-armed (failed rows cleared)":"Saved"));
+    loadAnnouncements();
+  }catch(e){toast("Fail: "+e.message);}
+}
+function anEdit(x){
+  anEditId=x.id;
+  document.getElementById("anFormTitle").textContent="Edit: "+x.title;
+  document.getElementById("anSave").textContent="Save changes";
+  document.getElementById("anCancelEdit").hidden=false;
+  document.getElementById("anStatusWrap").hidden=true;
+  document.getElementById("anTitle").value=x.title||"";
+  document.getElementById("anBody").value=x.body||"";
+  document.getElementById("anSeverity").value=x.severity||"info";
+  document.getElementById("anAudience").value=x.audience||"all";
+  document.getElementById("anMaint").checked=!!x.maintenance_mode;
+  document.getElementById("anBlockWrap").hidden=!x.maintenance_mode;
+  document.getElementById("anBlockMsg").value=x.block_message||"";
+  var p=x.push||{};
+  document.getElementById("anPush").checked=!!p.enabled;
+  document.getElementById("anStart").value=x.start_at?toLocalInput(x.start_at):"";
+  document.getElementById("anEnd").value=x.end_at?toLocalInput(x.end_at):"";
+  document.getElementById("anNotify").value=x.notify_before_minutes==null?"":x.notify_before_minutes;
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+document.getElementById("anSave").addEventListener("click",async function(){
+  var title=document.getElementById("anTitle").value.trim();
+  var body=document.getElementById("anBody").value.trim();
+  var maint=document.getElementById("anMaint").checked;
+  var blockMsg=document.getElementById("anBlockMsg").value.trim();
+  if(!title||!body){toast("Title aur body zaroori");return;}
+  if(maint&&!blockMsg){toast("Maintenance ke liye block message zaroori");return;}
+  var payload={title:title,body:body,severity:document.getElementById("anSeverity").value,audience:document.getElementById("anAudience").value,maintenance_mode:maint,push_enabled:document.getElementById("anPush").checked};
+  if(maint)payload.block_message=blockMsg;
+  var s=anIso(document.getElementById("anStart").value),e=anIso(document.getElementById("anEnd").value);
+  if(s)payload.start_at=s;
+  if(e)payload.end_at=e;
+  var nbmRaw=document.getElementById("anNotify").value.trim();
+  if(nbmRaw!==""){
+    var nbmN=parseInt(nbmRaw,10);
+    if(isNaN(nbmN)||nbmN<0||nbmN>10080){toast("Notify minutes 0-10080 hone chahiye");return;}
+    payload.notify_before_minutes=nbmN;
+  }else if(anEditId){
+    payload.notify_before_minutes=null;
+  }
+  if(!anEditId)payload.status=document.getElementById("anStatus").value;
+  var btn=this;btn.disabled=true;
+  try{
+    if(anEditId)await api("/api/announcements/"+anEditId,{method:"PATCH",body:JSON.stringify(payload)});
+    else await api("/api/announcements",{method:"POST",body:JSON.stringify(payload)});
+    toast(anEditId?"Saved":"Created");
+    anResetForm();
+    loadAnnouncements();
+  }catch(err){toast("Fail: "+err.message);}
+  btn.disabled=false;
+});
+async function anPushReport(x){
+  var box=document.getElementById("anDetail");
+  try{
+    var d=await api("/api/announcements/"+x.id+"/push");
+    var c=d.counts||{},n=d.counters||{};
+    var h='<div class="detail"><h3>Push report — '+esc(x.title)+'</h3><dl>'
+      +'<dt>FCM</dt><dd>'+(d.fcm_configured?"ready":"awaiting credentials (env FCM_* set karo)")+'</dd>'
+      +'<dt>Push status</dt><dd>'+esc(d.push_status||"—")+'</dd>'
+      +'<dt>Delivered / total / failed</dt><dd>'+(n.delivered||0)+' / '+(n.total||0)+' / '+(n.failed||0)+'</dd>'
+      +'<dt>Log rows</dt><dd>sent '+(c.sent||0)+' • failed '+(c.failed||0)+' • pending '+(c.pending||0)+'</dd>'
+      +'</dl><div class="actions">'
+      +(d.fcm_configured?'<button class="btn" type="button" id="anRunNow">Run push now</button>':"")
+      +'</div><div id="anRunOut"></div></div>';
+    box.innerHTML=h;
+    var rb=document.getElementById("anRunNow");
+    if(rb)rb.addEventListener("click",async function(){
+      var out=document.getElementById("anRunOut");out.innerHTML='<p class="loading">Dispatching…</p>';
+      try{
+        var r=await api("/api/announcements/"+x.id+"/push/run",{method:"POST",body:"{}"});
+        out.innerHTML='<p class="muted">Dispatch: '+esc(JSON.stringify(r.dispatch))+'</p>';
+        loadAnnouncements();
+      }catch(err){out.innerHTML='<p class="err">'+esc(err.message)+'</p>';}
+    });
+  }catch(err){box.innerHTML='<p class="err">'+esc(err.message)+'</p>';}
+}
+document.getElementById("anGo").addEventListener("click",loadAnnouncements);
+document.getElementById("anFilter").addEventListener("change",loadAnnouncements);
+// ---------- APP UPDATES ----------
+var auEditId=null;
+var auRows=[];
+document.getElementById("auPush").addEventListener("change",function(){document.getElementById("auPushWrap").hidden=!this.checked;});
+function auResetForm(){
+  auEditId=null;
+  document.getElementById("auFormTitle").textContent="Create release";
+  document.getElementById("auSave").textContent="Create";
+  document.getElementById("auCancelEdit").hidden=true;
+  document.getElementById("auStatusWrap").hidden=false;
+  ["auVersion","auBuild","auMinVer","auNotes","auUrl","auPushTitle","auPushBody"].forEach(function(id){document.getElementById(id).value="";});
+  document.getElementById("auMandatory").checked=false;
+  document.getElementById("auPush").checked=false;
+  document.getElementById("auPushWrap").hidden=true;
+  document.getElementById("auAudience").value="all";
+  document.getElementById("auPriority").value="normal";
+  document.getElementById("auStatus").value="draft";
+}
+document.getElementById("auCancelEdit").addEventListener("click",auResetForm);
+function auSemverOk(s){return /^\d+\.\d+\.\d+$/.test(s);}
+async function loadAppUpdates(){
+  var box=document.getElementById("auOut");document.getElementById("auDetail").innerHTML="";
+  box.innerHTML='<p class="loading">Loading…</p>';
+  try{
+    var q="/api/app-updates?limit=50";
+    var f=document.getElementById("auFilter").value;
+    if(f)q+="&status="+encodeURIComponent(f);
+    var d=await api(q);
+    document.getElementById("auFcm").textContent=d.fcm_configured?"FCM ready":"FCM awaiting credentials";
+    document.getElementById("auFcm").className="badge "+(d.fcm_configured?"ok":"warn");
+    auRows=d.items||[];
+    if(!auRows.length){box.innerHTML='<p class="empty">Koi release nahi — upar se naya banao.</p>';return;}
+    var h='<table class="tbl"><thead><tr><th>Version</th><th>Audience</th><th>Status</th><th>Notes</th><th>Push</th><th></th></tr></thead><tbody>';
+    auRows.forEach(function(x,i){
+      var p=x.push||{};
+      h+='<tr>'
+        +'<td><strong>v'+esc(x.version)+'</strong>'+(x.mandatory?' <span class="badge warn">mandatory</span>':"")
+          +(x.build!=null?'<br><span class="muted">build '+esc(String(x.build))+'</span>':"")
+          +(x.min_supported_version?'<br><span class="muted">min '+esc(x.min_supported_version)+'</span>':"")+'</td>'
+        +'<td>'+esc(x.audience)+'<br><span class="muted">'+esc(x.priority)+'</span></td>'
+        +'<td>'+badge(x.status)+'</td>'
+        +'<td class="muted">'+esc(String(x.release_notes||"").slice(0,90))
+          +(x.update_url?'<br><a href="'+esc(x.update_url)+'" target="_blank" rel="noopener noreferrer">update link</a>':"")+'</td>'
+        +'<td class="muted">'+esc(p.status||"none")+'<br>'+(p.delivered||0)+'/'+(p.total||0)+' sent</td>'
+        +'<td>'
+          +(x.status!=="published"?'<button class="link" type="button" data-au-pub="'+i+'">Publish</button> ':"")
+          +(x.status==="published"?'<button class="link" type="button" data-au-off="'+i+'">Archive</button> ':"")
+          +(p.status==="failed"?'<button class="link" type="button" data-au-retry="'+i+'">Retry push</button> ':"")
+          +'<button class="link" type="button" data-au-push="'+i+'">Push report</button> '
+          +'<button class="link" type="button" data-au-edit="'+i+'">Edit</button>'
+        +'</td></tr>';
+    });
+    box.innerHTML=h+'</tbody></table>';
+    box.querySelectorAll("[data-au-pub]").forEach(function(b){b.addEventListener("click",function(){auPatch(auRows[+b.getAttribute("data-au-pub")],{status:"published"});});});
+    box.querySelectorAll("[data-au-off]").forEach(function(b){b.addEventListener("click",function(){auPatch(auRows[+b.getAttribute("data-au-off")],{status:"archived"});});});
+    box.querySelectorAll("[data-au-retry]").forEach(function(b){b.addEventListener("click",function(){auPatch(auRows[+b.getAttribute("data-au-retry")],{retry_push:true});});});
+    box.querySelectorAll("[data-au-push]").forEach(function(b){b.addEventListener("click",function(){auPushReport(auRows[+b.getAttribute("data-au-push")]);});});
+    box.querySelectorAll("[data-au-edit]").forEach(function(b){b.addEventListener("click",function(){auEdit(auRows[+b.getAttribute("data-au-edit")]);});});
+  }catch(e){box.innerHTML='<p class="err">Load fail: '+esc(e.message)+'</p>';}
+}
+async function auPatch(x,body){
+  try{
+    await api("/api/app-updates/"+x.id,{method:"PATCH",body:JSON.stringify(body)});
+    toast(body.status?("Status → "+body.status):(body.retry_push?"Push re-armed (failed rows cleared)":"Saved"));
+    loadAppUpdates();
+  }catch(e){toast("Fail: "+e.message);}
+}
+function auEdit(x){
+  auEditId=x.id;
+  document.getElementById("auFormTitle").textContent="Edit: v"+x.version;
+  document.getElementById("auSave").textContent="Save changes";
+  document.getElementById("auCancelEdit").hidden=false;
+  document.getElementById("auStatusWrap").hidden=true;
+  document.getElementById("auVersion").value=x.version||"";
+  document.getElementById("auBuild").value=x.build==null?"":x.build;
+  document.getElementById("auMinVer").value=x.min_supported_version||"";
+  document.getElementById("auMandatory").checked=!!x.mandatory;
+  document.getElementById("auAudience").value=x.audience||"all";
+  document.getElementById("auPriority").value=x.priority||"normal";
+  document.getElementById("auNotes").value=x.release_notes||"";
+  document.getElementById("auUrl").value=x.update_url||"";
+  var p=x.push||{};
+  document.getElementById("auPush").checked=!!p.enabled;
+  document.getElementById("auPushWrap").hidden=!p.enabled;
+  // push_title/push_body write-only hain (public payload me nahi) —
+  // edit par khali aate hain; save par jo likhoge wahi replace hoga.
+  document.getElementById("auPushTitle").value="";
+  document.getElementById("auPushBody").value="";
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+document.getElementById("auSave").addEventListener("click",async function(){
+  var version=document.getElementById("auVersion").value.trim();
+  var notes=document.getElementById("auNotes").value.trim();
+  var minVer=document.getElementById("auMinVer").value.trim();
+  var url=document.getElementById("auUrl").value.trim();
+  if(!version||!notes){toast("Version aur release notes zaroori");return;}
+  if(!auSemverOk(version)){toast("Version x.y.z format me ho (e.g. 1.1.0)");return;}
+  if(minVer&&!auSemverOk(minVer)){toast("Min supported version bhi x.y.z me ho");return;}
+  if(url&&!/^https:\/\//i.test(url)){toast("Update URL https:// se shuru hona chahiye");return;}
+  var buildRaw=document.getElementById("auBuild").value.trim();
+  var payload={version:version,mandatory:document.getElementById("auMandatory").checked,audience:document.getElementById("auAudience").value,priority:document.getElementById("auPriority").value,release_notes:notes,push_enabled:document.getElementById("auPush").checked};
+  if(buildRaw!==""){
+    var buildN=parseInt(buildRaw,10);
+    if(isNaN(buildN)||buildN<1){toast("Build positive integer ho");return;}
+    payload.build=buildN;
+  }
+  if(minVer)payload.min_supported_version=minVer;
+  else if(auEditId)payload.min_supported_version=null;
+  if(url)payload.update_url=url;
+  else if(auEditId)payload.update_url=null;
+  var pt=document.getElementById("auPushTitle").value.trim();
+  var pb=document.getElementById("auPushBody").value.trim();
+  if(pt)payload.push_title=pt;
+  if(pb)payload.push_body=pb;
+  if(!auEditId)payload.status=document.getElementById("auStatus").value;
+  var btn=this;btn.disabled=true;
+  try{
+    if(auEditId)await api("/api/app-updates/"+auEditId,{method:"PATCH",body:JSON.stringify(payload)});
+    else await api("/api/app-updates",{method:"POST",body:JSON.stringify(payload)});
+    toast(auEditId?"Saved":"Created");
+    auResetForm();
+    loadAppUpdates();
+  }catch(err){toast("Fail: "+(err.message==="version_taken"?"Ye version pehle se hai — koi aur number lagao":err.message));}
+  btn.disabled=false;
+});
+async function auPushReport(x){
+  var box=document.getElementById("auDetail");
+  try{
+    var d=await api("/api/app-updates/"+x.id+"/push");
+    var c=d.counts||{},n=d.counters||{};
+    var h='<div class="detail"><h3>Push report — v'+esc(x.version)+'</h3><dl>'
+      +'<dt>FCM</dt><dd>'+(d.fcm_configured?"ready":"awaiting credentials (env FCM_* set karo)")+'</dd>'
+      +'<dt>Push status</dt><dd>'+esc(d.push_status||"—")+'</dd>'
+      +'<dt>Delivered / total / failed</dt><dd>'+(n.delivered||0)+' / '+(n.total||0)+' / '+(n.failed||0)+'</dd>'
+      +'<dt>Log rows</dt><dd>sent '+(c.sent||0)+' • failed '+(c.failed||0)+' • pending '+(c.pending||0)+'</dd>'
+      +'</dl><div class="actions">'
+      +(d.fcm_configured?'<button class="btn" type="button" id="auRunNow">Run push now</button>':"")
+      +'</div><div id="auRunOut"></div></div>';
+    box.innerHTML=h;
+    var rb=document.getElementById("auRunNow");
+    if(rb)rb.addEventListener("click",async function(){
+      var out=document.getElementById("auRunOut");out.innerHTML='<p class="loading">Dispatching…</p>';
+      try{
+        var r=await api("/api/app-updates/"+x.id+"/push/run",{method:"POST",body:"{}"});
+        out.innerHTML='<p class="muted">Dispatch: '+esc(JSON.stringify(r.dispatch))+'</p>';
+        loadAppUpdates();
+      }catch(err){out.innerHTML='<p class="err">'+esc(err.message)+'</p>';}
+    });
+  }catch(err){box.innerHTML='<p class="err">'+esc(err.message)+'</p>';}
+}
+document.getElementById("auGo").addEventListener("click",loadAppUpdates);
+document.getElementById("auFilter").addEventListener("change",loadAppUpdates);
+var loaders={overview:loadOverview,customers:function(){},drivers:loadDrivers,finance:function(){},enterprise:loadInq,audit:loadAudit,announcements:loadAnnouncements,appupdates:loadAppUpdates};
 defaultRange();
 boot();
 })();

@@ -19,6 +19,8 @@ import { whatsappRoutes } from './routes/whatsapp.js';
 import { driverSettlementRoutes, adminSettlementRoutes } from './routes/settlements.js';
 import { mssqlRoutes } from './routes/mssql.js';
 import { notificationsRoutes } from './routes/notifications.js';
+import { announcementsRoutes } from './routes/announcements.js';
+import { appUpdatesRoutes } from './routes/appUpdates.js';
 // Super-admin panel lives OUTSIDE the docker context (repo-root
 // super-admin-module/), so a static import crashes the production image
 // with ERR_MODULE_NOT_FOUND. Dynamic import + graceful skip: full repo
@@ -96,6 +98,7 @@ export function createApp() {
       limit: config.rateLimitMax,
       standardHeaders: 'draft-8',
       legacyHeaders: false,
+      message: { ok: false, error: 'too_many_attempts' },
     }),
   );
 
@@ -118,6 +121,10 @@ export function createApp() {
   app.use('/api/mssql', mssqlRoutes);
   // In-app notifications (customer/driver, owner-scoped; admin role 403).
   app.use('/api/notifications', notificationsRoutes);
+  // Announcements: public active feed + super_admin CRUD/push control.
+  app.use('/api/announcements', announcementsRoutes);
+  // App updates: public version check + super_admin release CRUD/push control.
+  app.use('/api/app-updates', appUpdatesRoutes);
   // Super Admin read-only panel (SELECT-only router from super-admin-module/).
   // Docker image me module nahi hota — tab ye mount skip hota hai.
   if (superAdminRoutes) app.use('/api/superadmin', superAdminRoutes);
@@ -141,6 +148,10 @@ export function createApp() {
       error: status === 500 ? 'server_error' : err.message,
       // Zod details hold only field+message (no values) — safe.
       ...(err.details ? { details: err.details } : {}),
+      // maintenance_active (423 from assertBookingsAllowed) — admin's words.
+      ...(err.maintenance
+        ? { message: err.maintenance.message, until: err.maintenance.until }
+        : {}),
       ...(config.env === 'development' && status === 500 ? { stack: err.stack } : {}),
     });
   });

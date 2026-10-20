@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script src="api-config.js"></script>
+<script src="announcements.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Live Tracking | ApnaShift</title>
 <meta name="description" content="Track your booking vehicle live — driver, status and last location.">
@@ -152,7 +154,7 @@
 <script>
 (function(){
   "use strict";
-  var API_BASE_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.protocol === "file:") ? "http://localhost:3000" : "https://apnashiftapp-production.up.railway.app";
+  var API_BASE_URL = window.API_BASE_URL;
   var TOKEN_KEY = "apnashift_user_token";
   // Thresholds: server is the source of truth (GET /api/geo/config +
   // tracking.stale_after_ms/offline_after_ms). Hard-coded values are only
@@ -166,7 +168,7 @@
   var CARTO_TEMPLATE = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
   var tileErrCount = 0, cartoActive = false, trackTiles = null;
 
-  function getToken(){ try { return localStorage.getItem(TOKEN_KEY); } catch(e){ return null; } }
+  function getToken(){ try { return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY); } catch(e){ return null; } }
   if(!getToken()){ window.location.href = "user-auth.html"; return; }
 
   var qs = {};

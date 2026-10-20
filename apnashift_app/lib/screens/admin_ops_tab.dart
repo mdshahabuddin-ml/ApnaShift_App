@@ -185,7 +185,7 @@ class _AdminOpsTabState extends State<AdminOpsTab> {
                                     fontWeight:
                                         FontWeight.w800)),
                             subtitle: const Text(
-                                'Overview • Customers • Audit • Finance'),
+                                'Overview • Customers • Audit • Finance • Announcements'),
                             trailing: const Icon(
                                 Icons.arrow_forward),
                             onTap: () => Navigator.of(

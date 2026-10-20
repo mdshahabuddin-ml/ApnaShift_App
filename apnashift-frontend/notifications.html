@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script src="api-config.js"></script>
+<script src="announcements.js"></script>
 <script>try{var __t=localStorage.getItem("apnashift-theme")||"system";var __d=__t;if(__t==="system"){__d=(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";}document.documentElement.setAttribute("data-theme",__d);document.documentElement.style.colorScheme=__d;}catch(__e){}try{var __p=parseInt(localStorage.getItem("apnashift-text-px"),10);if(isNaN(__p))__p=0;__p=Math.max(-4,Math.min(8,__p));document.documentElement.setAttribute("data-textpx",__p);}catch(__e2){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Notifications | ApnaShift</title>
@@ -127,14 +129,14 @@ html[data-theme="dark"] .page-head p{color:#9db0c9}
 <script>
 (function(){
   "use strict";
-  var API=(window.location.hostname==="localhost"||window.location.hostname==="127.0.0.1"||window.location.protocol==="file:")?"http://localhost:3000":"https://apnashiftapp-production.up.railway.app";
+  var API=window.API_BASE_URL;
   var list=document.getElementById("nList"),moreBtn=document.getElementById("moreBtn"),
       markAll=document.getElementById("markAll"),refreshBtn=document.getElementById("refreshBtn"),
       loginBox=document.getElementById("loginBox"),alertBox=document.getElementById("alertBox"),
       fAll=document.getElementById("fAll"),fUnread=document.getElementById("fUnread");
   function T(k){try{var l=document.documentElement.lang==="hi"?"hi":"en";var d=(window.PAGE_I18N||{})[l]||{};return d[k]||k;}catch(e){return k;}}
   function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
-  function auth(){try{var u=localStorage.getItem("apnashift_user_token");if(u)return{hdr:"Bearer "+u,role:"user"};var d=localStorage.getItem("apnashift_driver_token");if(d)return{hdr:"Bearer "+d,role:"driver"};}catch(e){}return null;}
+  function auth(){try{var u=localStorage.getItem("apnashift_user_token")||sessionStorage.getItem("apnashift_user_token");if(u)return{hdr:"Bearer "+u,role:"user"};var d=localStorage.getItem("apnashift_driver_token");if(d)return{hdr:"Bearer "+d,role:"driver"};}catch(e){}return null;}
   function ago(iso){var t=new Date(iso).getTime();if(!isFinite(t))return "";var s=Math.max(0,Math.floor((Date.now()-t)/1000));if(s<60)return document.documentElement.lang==="hi"?"अभी":"just now";if(s<3600)return Math.floor(s/60)+(document.documentElement.lang==="hi"?" मि. पहले":"m ago");if(s<86400)return Math.floor(s/3600)+(document.documentElement.lang==="hi"?" घं. पहले":"h ago");try{return new Date(iso).toLocaleDateString("en-IN",{day:"numeric",month:"short"});}catch(e){return "";}}
   var allItems=[],cursor=null,unreadOnly=false,loading=false;
   // Trip milestones -> live map; everything else -> booking detail (user) or dashboard (driver).

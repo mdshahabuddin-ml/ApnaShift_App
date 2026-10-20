@@ -6,13 +6,17 @@ import '../settings/app_settings.dart';
 import '../widgets/app_scaffold.dart';
 import 'admin_widgets.dart';
 import 'login_screen.dart';
+import 'super_admin_announcements_tab.dart';
+import 'super_admin_app_updates_tab.dart';
 
 /// Super Admin console — super-admin.html parity (mobile tabs).
 /// SELECT-only superadmin router + existing admin endpoints (passthrough).
 /// Tabs: Overview (ops + recent bookings) | Customers (lookup + detail +
 /// reset-pw; suspend has NO backend endpoint — documented gap, no fake
 /// button) | Audit (action/entity filters + pages) | Finance (commission
-/// report + ledger + adjustments + balances + settle).
+/// report + ledger + adjustments + balances + settle) | Announcements
+/// (CRUD + schedule + maintenance block + push report/retry/run) |
+/// App updates (release CRUD + publish/archive + push report/retry/run).
 /// Sab data server se; koi sample nahi.
 class SuperAdminHome extends StatefulWidget {
   final ApiClient api;
@@ -43,12 +47,16 @@ class _SuperAdminHomeState extends State<SuperAdminHome> {
       'Customers',
       'Audit',
       'Finance',
+      'Announcements',
+      'App updates',
     ];
     final pages = [
       _OverviewTab(api: widget.api),
       _CustomersTab(api: widget.api),
       _AuditTab(api: widget.api),
       _FinanceTab(api: widget.api),
+      SuperAdminAnnouncementsTab(api: widget.api),
+      SuperAdminAppUpdatesTab(api: widget.api),
     ];
     if (s != null) {
       return Scaffold(
@@ -75,6 +83,10 @@ class _SuperAdminHomeState extends State<SuperAdminHome> {
                 icon: Icon(Icons.security), label: 'Audit'),
             NavigationDestination(
                 icon: Icon(Icons.account_balance), label: 'Finance'),
+            NavigationDestination(
+                icon: Icon(Icons.campaign), label: 'Announce'),
+            NavigationDestination(
+                icon: Icon(Icons.system_update), label: 'Updates'),
           ],
         ),
       );
@@ -105,6 +117,10 @@ class _SuperAdminHomeState extends State<SuperAdminHome> {
               icon: Icon(Icons.security), label: 'Audit'),
           NavigationDestination(
               icon: Icon(Icons.account_balance), label: 'Finance'),
+          NavigationDestination(
+              icon: Icon(Icons.campaign), label: 'Announce'),
+          NavigationDestination(
+              icon: Icon(Icons.system_update), label: 'Updates'),
         ],
       ),
     );

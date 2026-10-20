@@ -46,6 +46,8 @@ String _friendly(String code) {
       return 'Ye number already registered hai — Login dabao.';
     case 'network_error':
       return 'Server se baat nahi ho payi. Server $apiBaseUrl chal raha hai? (local ke liye --dart-define=API_BASE_URL=$apiLocalEmulatorUrl use karo)';
+    case 'api_base_url_missing':
+      return 'API URL set nahi hai. --dart-define=API_BASE_URL=$apiLocalEmulatorUrl (emulator) ya http://<laptop-LAN-IP>:3000 (phone) se flutter run karo.';
     default:
       return 'Login fail ($code). Server $apiBaseUrl chal raha hai?';
   }

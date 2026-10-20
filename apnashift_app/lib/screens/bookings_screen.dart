@@ -14,8 +14,12 @@ import 'tracking_screen.dart';
 class BookingsScreen extends StatefulWidget {
   final Session session;
   final AppSettings settings;
+  final bool active;
   const BookingsScreen(
-      {super.key, required this.session, required this.settings});
+      {super.key,
+      required this.session,
+      required this.settings,
+      this.active = true});
 
   @override
   State<BookingsScreen> createState() => _BookingsScreenState();
@@ -36,6 +40,12 @@ class _BookingsScreenState extends State<BookingsScreen> {
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void didUpdateWidget(covariant BookingsScreen old) {
+    super.didUpdateWidget(old);
+    if (widget.active && !old.active && !_loading) _load();
   }
 
   Future<void> _load() async {
@@ -158,6 +168,13 @@ class _BookingsScreenState extends State<BookingsScreen> {
           return 'Session khatm ho gaya — dobara login karo.';
         case 'too_many_attempts':
           return 'Bahut requests — thoda ruk ke pull-to-refresh karo.';
+        case 'maintenance_active':
+          final m = e.message;
+          return (m != null && m.isNotEmpty)
+              ? 'Maintenance chal raha hai — $m'
+              : 'Maintenance chal raha hai — bookings thodi der me chalu hongi.';
+        case 'api_base_url_missing':
+          return 'API URL set nahi hai — flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000 (emulator) ya http://<laptop-LAN-IP>:3000 (phone) se chalao.';
         default:
           return 'Bookings load nahi hui (${e.code}). Pull-to-refresh karo.';
       }

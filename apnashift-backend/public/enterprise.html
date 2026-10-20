@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script src="api-config.js"></script>
 <script>try{var __t=localStorage.getItem("apnashift-theme")||"system";var __d=__t;if(__t==="system"){__d=(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";}document.documentElement.setAttribute("data-theme",__d);document.documentElement.style.colorScheme=__d;}catch(__e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Enterprise Solutions | ApnaShift</title>
@@ -482,8 +483,10 @@ button[type="submit"][disabled]{opacity:.65;cursor:wait}
 <script>
 (function(){
   "use strict";
-  // Base URL: local backend for dev, Railway for production.
-  var API_BASE_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.protocol === "file:") ? "http://localhost:3000" : "https://apnashiftapp-production.up.railway.app";
+  // Backend base URL - api-config.js se (single source of truth):
+// localhost/file -> http://localhost:3000; any other host (LAN IP, tunnel,
+// prod) -> "" = same-origin (page jis host par serve ho, API bhi wahi se).
+  var API_BASE_URL = window.API_BASE_URL;
   // Single source for the ApnaShift WhatsApp number (country code, no +).
   // Used ONLY here via the builder below — never duplicated in this file.
   var SUPPORT_WHATSAPP = "918757160137";

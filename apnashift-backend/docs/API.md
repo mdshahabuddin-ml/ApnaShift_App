@@ -426,3 +426,137 @@ Revenue sirf delivered ka. `bookings`/`cancelled` ginti `created_at` se (kab ban
   rakho (galat trust = rate limit bypass).
 - Google distance chahiye to `DISTANCE_PROVIDER=google` + `GOOGLE_MAPS_KEY`
   (bina key ke request fail hogi). Default `haversine` free hai.
+
+
+## Announcements & maintenance mode (Super Admin)
+
+Sab kuch `announcements` table me (DDL: `db/mssql/005_announcements.sql` +
+`006_announce_notify_before.sql` — `notify_before_minutes`).
+"Active right now" DERIVED hai — `published` AND (`start_at` NULL ya <= abhi)
+AND (`end_at` NULL ya > abhi). Isliye expiry ka koi background job nahi;
+maintenance block bhi window close hote hi AUTOMATICALLY lift ho jaata hai.
+
+### GET /api/announcements/active (public, rate-limited)
+`?audience=user|driver` — universal (`all`) rows hamesha, plus apni audience.
+Response: `{ ok, served_at, maintenance: { blocked, message, until }, items[] }`
+`items[]` me `severity` (info|warning|critical|maintenance), `start_at`/`end_at`
+(UTC ISO, null = open-ended), `show_banner`, `block_message` etc.
+`until = null` ka matlab at-least-ek indefinite maintenance row active hai.
+Clients ko `served_at` se expire karna chahiye (server clock source of truth).
+
+### Admin CRUD (sirf `super_admin`, audit `announcement.*`)
+
+- `GET /api/announcements?page&limit&status&audience` — list + `total` +
+  `fcm_configured` flag (FCM creds ka status batata hai).
+- `POST /api/announcements` — create. Required: `title`, `body`, `severity`,
+  `audience`. Optional: `status` (default `draft`), `start_at`/`end_at`
+  (ISO-8601 WITH offset — client apna IST wall-clock offset ke saath bheje),
+  `timezone` (default `Asia/Kolkata`), `show_banner`, `maintenance_mode` +
+  `block_message` (maintenance ke liye block_message ZAROORI hai),
+  `push_enabled`, `push_title`, `push_body`, `push_scheduled_at`,
+  `notify_before_minutes` (0..10080, nullable — ADVANCE NOTIFICATION).
+  Schedule resolution (WRITE time par, dispatcher unchanged):
+  explicit `push_scheduled_at` WINS warna `start_at − notify_before_minutes`
+  (jab dono ho) warna null. `status:'published'` + `push_enabled:true` →
+  push turant arm (`push_status:'scheduled'`, derived schedule na mile to
+  turant).
+- `GET /api/announcements/:id` — single.
+- `PATCH /api/announcements/:id` — partial update (sirf bheje hue fields).
+  Status side-effects:
+  - `->deactivated`: `deactivated_at` stamp + pending scheduled push CANCEL.
+  - `->published`: `deactivated_at` clear + push re-arm (agar push_enabled).
+  - `->draft`: pending scheduled push CANCEL.
+  - `push_enabled:false` jab push scheduled ho → cancel.
+  - `start_at`/`notify_before_minutes` change jab push ABHI BHI `scheduled`
+    ho aur payload me explicit `push_scheduled_at` NA ho → derived schedule
+    recalc (`start_at − N`). Sent/failed push kabhi restart nahi hote.
+  - `retry_push:true` (sirf published + push_enabled): `push_log` ke SIRF
+    `failed` rows delete (sent rows safe = kabhi duplicate nahi),
+    counters reset, push re-arm immediate.
+- `GET /api/announcements/:id/push` — delivery report: counters + log counts +
+  last 50 rows + `fcm_configured`.
+- `POST /api/announcements/:id/push/run` — dispatcher abhi chalao (30s ticker
+  ka intezaar mat karo). Bina FCM creds: `{ dispatch: { skipped:
+  'awaiting_credentials' } }`.
+
+### Maintenance enforcement (HTTP 423)
+
+Active `maintenance_mode` row hone par, IN sab par
+`423 { ok:false, error:'maintenance_active', message:<block_message>, until }`:
+`POST /api/bookings`, `POST /api/bookings/estimate-price`, driver
+`accept`/`decline`/`status`, aur WhatsApp booking creation (createBookingRow
+choke point — WhatsApp reply maintenance message deta hai, conversation state
+reset nahi hota).
+
+### FCM push (gated)
+
+`FCM_PROJECT_ID`, `FCM_CLIENT_EMAIL`, `FCM_PRIVATE_KEY` (env) set hone tak
+dispatcher `{skipped:'awaiting_credentials'}` return karta hai — koi row
+touch nahi hoti. Dispatch crash-safe hai: `announcement_push_log` ka
+UNIQUE (announcement, role, owner, token) dedupe + `scheduled->sending` CAS
+claim; restart par already-sent rows skip ho jaati hain. Dead tokens FCM 404/410
+par `device_tokens` se auto-delete.
+
+
+## App updates & release notifications (Super Admin)
+
+Sab kuch `app_releases` + `app_release_push_log` tables me (DDL:
+`db/mssql/007_app_releases.sql` — MSSQL-only, koi PG migration nahi).
+"Latest release" DERIVED hai — `status='published'` ki sabse nayi row
+(`published_at DESC`); retire karne ke liye `archived` kar do, koi job nahi.
+
+### GET /api/app-updates/latest?version=1.0.0 (public, rate-limited)
+
+App startup/resume par version check. Response:
+`{ ok, served_at, installed_version, action, latest_version, build,
+min_supported_version, mandatory, update_url, priority, release_notes }`
+`action`: `none` (up-to-date / no published release / unknown installed
+version), `optional` (nayi version hai), `required` (mandatory release ya
+`installed < min_supported_version`). `update_url` hamesha `https://`
+(official Play Store listing / verified APK page) — backend kabhi APK
+serve nahi karta. FCM creds ya Firebase config yahan SECRETS kabhi nahi.
+
+### Admin CRUD (sirf `super_admin`, audit `app_release.*`)
+
+- `GET /api/app-updates?page&limit&status` — list + `fcm_configured` flag.
+- `POST /api/app-updates` — create. Required: `version` (strict `x.y.z`),
+  `release_notes`, `audience` (all|users|drivers), `priority`
+  (low|normal|high). Optional: `build`, `min_supported_version`
+  (<= version), `mandatory` (bool), `update_url` (https-only), `status`
+  (default `draft`), `push_enabled`, `push_title`, `push_body`,
+  `push_scheduled_at` (ISO-8601 WITH offset). `status:'published'` →
+  `published_at` stamp + push arm (agar `push_enabled`, schedule na mile to
+  turant).
+- `GET /api/app-updates/:id` — single.
+- `PATCH /api/app-updates/:id` — partial update. Status side-effects:
+  - `->archived`: pending scheduled push CANCEL.
+  - `->published`: `published_at` stamp + push re-arm (agar push_enabled).
+  - `->draft`: pending scheduled push CANCEL.
+  - `push_enabled:false` jab push scheduled ho → cancel.
+  - `retry_push:true` (sirf published + push_enabled): `push_log` ke SIRF
+    `failed` rows delete (sent rows safe = kabhi duplicate nahi), counters
+    reset, push re-arm immediate.
+- `GET /api/app-updates/:id/push` — delivery report: counters + log counts +
+  last 50 rows + `fcm_configured`.
+- `POST /api/app-updates/:id/push/run` — dispatcher abhi chalao.
+
+### Mandatory enforcement (HTTP 426)
+
+App `X-App-Version` header bhejta hai. `update_required` action wali version
+hone par, IN sab par `426 { ok:false, error:'update_required',
+latest_version, min_supported_version, update_url, message }`:
+`POST /api/bookings`, `POST /api/bookings/estimate-price`, driver
+accept/decline/status. Header absent/garbage ho to request chalti hai
+(website/WhatsApp flows unaffected) — enforcement SERVER par hai, client
+dialog sirf UX. Published-release cache 60s (test me 0), writes invalidate
+karte hain.
+
+### FCM push (gated)
+
+Announcements jaisa hi crash-safe pattern: `app_release_push_log` ka
+UNIQUE (release, role, owner, token) dedupe (insert-before-send — restart
+par kabhi double nahi), `scheduled->sending` CAS claim, dead-token auto
+prune, failed-only retry. 30s ticker `server.js` se start hota hai
+(`startReleaseTicker`). Bina `FCM_*` creds: dispatcher
+`{skipped:'awaiting_credentials'}` — rows untouched (staged activation:
+creds aate hi on).

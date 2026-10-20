@@ -5,6 +5,7 @@
 import { query } from '../db.js';
 import { buildEstimate } from './pricing.js';
 import { getCommissionPct } from './payments.js';
+import { assertBookingsAllowed } from './announcements.js';
 import { VEHICLE_TO_DB } from '../validation/auth.js';
 
 export async function ratesFor(vehicleType) {
@@ -59,6 +60,9 @@ export async function createBookingRow(
     hasBulkyItem = false,
   },
 ) {
+  // Maintenance mode: block EVERY writer (HTTP route has the middleware
+  // too — this covers WhatsApp + future callers at the single choke point).
+  await assertBookingsAllowed();
   const estimate = await buildEstimate({
     pickup: { lat: pickup.lat, lng: pickup.lng },
     drop: { lat: drop.lat, lng: drop.lng },

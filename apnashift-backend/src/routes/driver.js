@@ -31,6 +31,8 @@ import {
 } from '../services/tracking.js';
 import { validateIdParam } from '../utils/validate.js';
 import { toPublicBooking } from './bookings.js';
+import { maintenanceGate } from '../services/announcements.js';
+import { appUpdateGate } from '../middleware/appUpdateGate.js';
 
 // Dedicated GPS limiter: a fix every few seconds must not trip the
 // generic write limiter. Per-IP second layer (throttle below is per-driver).
@@ -205,7 +207,7 @@ driverRoutes.get('/bookings/available', async (req, res, next) => {
 // Concurrent accepts: only one wins via a single atomic UPDATE ...
 // WHERE status='pending' locks the row, no transaction needed.
 // Commission-due gate: outstanding > COMMISSION_DUE_LIMIT pehle hisab clear karo.
-driverRoutes.patch('/bookings/:id/accept', validateIdParam, async (req, res, next) => {
+driverRoutes.patch('/bookings/:id/accept', validateIdParam, maintenanceGate, appUpdateGate, async (req, res, next) => {
   try {
     const balance = await driverBalance(query, req.user.id);
     if (balance.outstanding_paise > dueLimitPaise()) {
@@ -256,7 +258,7 @@ driverRoutes.patch('/bookings/:id/accept', validateIdParam, async (req, res, nex
 // the booking stays pending and available to every other driver; it only
 // disappears from THIS driver's available list. Repeat decline -> 409
 // already_declined. Accepting later still works (decline is not a ban).
-driverRoutes.post('/bookings/:id/decline', validateIdParam, async (req, res, next) => {
+driverRoutes.post('/bookings/:id/decline', validateIdParam, maintenanceGate, appUpdateGate, async (req, res, next) => {
   try {
     const found = await query(
       'SELECT id, status, vehicle_type FROM bookings WHERE id = $1',
@@ -293,7 +295,7 @@ driverRoutes.post('/bookings/:id/decline', validateIdParam, async (req, res, nex
 // gross = booking price (never client input), rate = booking creation-time
 // snapshot (never live rate, never driver input).
 // Conditional UPDATE still prevents double-advance on races.
-driverRoutes.patch('/bookings/:id/status', validateIdParam, async (req, res, next) => {
+driverRoutes.patch('/bookings/:id/status', validateIdParam, maintenanceGate, appUpdateGate, async (req, res, next) => {
   const client = await pool.connect();
   try {
     const { status: nextStatus } = parseBody(driverStatusSchema, req.body);

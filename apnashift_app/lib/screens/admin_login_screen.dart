@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../api/api_client.dart';
 import '../auth/admin_session.dart';
+import '../config/api_config.dart';
 import '../settings/app_settings.dart';
 import '../widgets/app_scaffold.dart';
 import 'admin_home.dart';
@@ -30,7 +30,9 @@ String _friendly(String code) {
     case 'not_staff':
       return 'Ye account staff ka nahi hai.';
     case 'network_error':
-      return 'Server se baat nahi ho payi.';
+      return 'Server se baat nahi ho payi. Server $apiBaseUrl chal raha hai? Emulator: --dart-define=API_BASE_URL=$apiLocalEmulatorUrl; phone: run-phone.ps1 (ya --dart-define=API_BASE_URL=http://<laptop-LAN-IP>:3000).';
+    case 'api_base_url_missing':
+      return 'API URL set nahi hai — flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000 (emulator) ya http://<laptop-LAN-IP>:3000 (phone) se chalao.';
     default:
       return 'Login fail ($code). Retry karo.';
   }
@@ -43,6 +45,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
   final _pass = TextEditingController();
   String? _error;
   bool _busy = false;
+  bool _obscurePass = true;
 
   @override
   void dispose() {
@@ -110,10 +113,20 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
           const SizedBox(height: 12),
           TextField(
               controller: _pass,
-              obscureText: true,
-              decoration: const InputDecoration(
+              obscureText: _obscurePass,
+              decoration: InputDecoration(
                   labelText: 'Password',
-                  border: OutlineInputBorder()),
+                  border: const OutlineInputBorder(),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePass
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () =>
+                        setState(() => _obscurePass = !_obscurePass),
+                  )),
               onSubmitted: (_) => _go()),
           const SizedBox(height: 16),
           ElevatedButton(

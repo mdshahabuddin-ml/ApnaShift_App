@@ -75,3 +75,61 @@ Google Distance Matrix par jaane ke liye:
 6. Key ke bina `DISTANCE_PROVIDER=google` par request fail hogi (500) —
    isliye key lagaye bina env mat badlo. Wapas aana ho to
    `DISTANCE_PROVIDER=haversine` karke restart karo, key hatane ki zaroorat nahi.
+
+## Local development (post-Railway: laptop + local MSSQL)
+
+Railway wind-down (D5, ≈Oct 2026) ke baad sab kuch local chalta hai —
+backend laptop par, DB local SQL Server (`LAPTOP-0KTPRBS3\SQLEXPRESS01` /
+`ApnaShiftDB`). `DB_DRIVER` MSSQL creds dekh kar khud `mssql` select karta hai
+(koi Railway URL/PG kabhi use nahi hota).
+
+### Backend
+
+```powershell
+cd apnashift-backend
+node src/server.js        # port 3000; ya npm run dev
+```
+
+### Website (browser)
+
+- `http://localhost:3000/` — Express `public/` se seedha serve hoti hai.
+- Base URL sirf **`api-config.js`** se aata hai (single source dono mirrors me):
+  localhost/file → `http://localhost:3000`, baaki host (LAN IP, tunnel, prod)
+  → same-origin `""` (page jis origin par serve ho, `/api/` bhi wahi se).
+- Koi HTML page koi production URL hardcode nahi karta.
+
+### Flutter app
+
+- Android emulator: **bina flag ke** — debug build default
+  `http://10.0.2.2:3000` hai.
+- Real phone (same WiFi):
+  `flutter run --dart-define=API_BASE_URL=http://<laptop-LAN-IP>:3000`
+- Release build: `API_BASE_URL` define **zaroori** hai — warna app
+  fail-fast karta hai (`api_base_url_missing`), galat URL par chup-chaap
+  nahi jata. Hardcoded production URL app me hai hi nahi.
+- Laptop ka LAN IP router me DHCP-reserve kar lo, warna IP change hone par
+  phone builds toot jayenge.
+
+### Kisi ko door se test karwana (free — Cloudflare quick tunnel)
+
+```powershell
+cloudflared tunnel --url http://localhost:3000
+```
+
+- Mila `https://<random>.trycloudflare.com` — website wahi se khulti hai
+  (same-origin, koi config nahi), Flutter:
+  `flutter run --dart-define=API_BASE_URL=https://<random>.trycloudflare.com`
+- Tunnel sirf Node API (:3000) expose karta hai — SQL Server port kabhi mat
+  kholo. Band = Ctrl+C.
+
+### Windows Firewall (sirf ek baar, LAN/phone ke liye)
+
+```powershell
+New-NetFirewallRule -DisplayName "ApnaShift dev (TCP 3000)" -Direction Inbound -Protocol TCP -LocalPort 3000 -Profile Private -Action Allow
+```
+
+### CI note
+
+Railway band hone ke baad deploy jobs ke liye GitHub variable
+`DEPLOY_DISABLED=true` set karo (details: `docs/MSSQL_CUTOVER.md`
+wind-down checklist) — warna push par expected-red CI confuse karegi.

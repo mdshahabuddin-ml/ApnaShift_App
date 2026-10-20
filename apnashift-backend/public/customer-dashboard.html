@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script src="api-config.js"></script>
+<script src="announcements.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Dashboard | ApnaShift</title>
 <meta name="description" content="ApnaShift customer dashboard — view your bookings, driver status and ratings in one place.">
@@ -418,8 +420,10 @@
 (function(){
   "use strict";
 
-  // Backend base URL with local development fallback.
-  var API_BASE_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.protocol === "file:") ? "http://localhost:3000" : "https://apnashiftapp-production.up.railway.app";
+  // Backend base URL - api-config.js se (single source of truth):
+// localhost/file -> http://localhost:3000; any other host (LAN IP, tunnel,
+// prod) -> "" = same-origin (page jis host par serve ho, API bhi wahi se).
+  var API_BASE_URL = window.API_BASE_URL;
   var TOKEN_KEY = "apnashift_user_token";
 
   var alertBox = document.getElementById("pageAlert");
@@ -448,12 +452,12 @@
   };
 
   function getToken(){
-    try { return localStorage.getItem(TOKEN_KEY); }
+    try { return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY); }
     catch(e){ return null; }
   }
 
   function clearToken(){
-    try { localStorage.removeItem(TOKEN_KEY); } catch(e){}
+    try { localStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(TOKEN_KEY); } catch(e){}
   }
 
   function redirectToLogin(){

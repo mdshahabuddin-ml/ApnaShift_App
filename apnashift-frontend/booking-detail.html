@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script src="api-config.js"></script>
+<script src="announcements.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Booking Detail | ApnaShift</title>
 <meta name="description" content="View your booking fare, commission breakdown and driver payment details.">
@@ -151,10 +153,10 @@
 <script>
 (function(){
   "use strict";
-  // Backend base URL with local development fallback (same on all pages —
-  // localhost pages talk to localhost API, production pages to production,
-  // so login tokens always match the API that issued them).
-  var API_BASE_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.protocol === "file:") ? "http://localhost:3000" : "https://apnashiftapp-production.up.railway.app";
+  // Backend base URL - api-config.js se (single source of truth):
+// localhost/file -> http://localhost:3000; any other host (LAN IP, tunnel,
+// prod) -> "" = same-origin (page jis host par serve ho, API bhi wahi se).
+  var API_BASE_URL = window.API_BASE_URL;
   var USER_TOKEN_KEY = "apnashift_user_token";
   var DRIVER_TOKEN_KEY = "apnashift_driver_token";
   var STATUS_LABEL = {
@@ -163,15 +165,18 @@
   };
 
   function getUserToken(){
-    try{ return localStorage.getItem(USER_TOKEN_KEY); }catch(e){ return null; }
+    try{ return localStorage.getItem(USER_TOKEN_KEY) || sessionStorage.getItem(USER_TOKEN_KEY); }catch(e){ return null; }
   }
   function getDriverToken(){
     try{ return localStorage.getItem(DRIVER_TOKEN_KEY); }catch(e){ return null; }
   }
-  if(!getUserToken()){
+  // Driver-only browser allowed: assigned driver bina customer login ke
+  // (driver token se) is page par status chain chala sakta hai.
+  if(!getUserToken() && !getDriverToken()){
     window.location.href = "user-auth.html";
     return;
   }
+  var driverOnly = !getUserToken() && !!getDriverToken();
 
   var qs = {};
   try {
@@ -253,6 +258,7 @@
   // Live tracking link (cancelled trips have nothing to track).
   // tracking.html itself explains pending/offline states professionally.
   function trackLinkHtml(b){
+    if(driverOnly) return "";
     if(!b || !b.id || b.status === "cancelled") return "";
     return '<p style="margin-top:10px"><a class="btn ghost small" href="tracking.html?booking=' +
       esc(b.id) + '">Track Driver — Live Tracking</a></p>';
@@ -307,6 +313,30 @@
   }
 
   function load(){
+    // Driver-only mode: customer endpoint ke bajaye apni trips list me dhoondho
+    // (same public booking shape — render() waise hi chalta hai).
+    if(driverOnly){
+      return fetch(API_BASE_URL + "/api/driver/bookings?limit=100", { headers: driverHeaders() })
+        .then(readBody)
+        .then(function(result){
+          if(result.status === 401){ window.location.href = "driver-login.html"; throw new Error("unauth"); }
+          if(result.status !== 200 || !result.body || !result.body.bookings) throw new Error("load");
+          var list = result.body.bookings, found = null;
+          for(var i = 0; i < list.length; i++){ if(list[i] && list[i].id === bookingId){ found = list[i]; break; } }
+          if(!found){
+            showAlert("err", "This booking is not in this driver's trip list — please open it from the assigned driver's login.");
+            document.getElementById("bookLine").textContent = "Booking not found for this driver.";
+            return;
+          }
+          booking = found;
+          render();
+          showAlert(null, "");
+        })
+        .catch(function(err){
+          if(err && err.message === "unauth") return;
+          showAlert("err", "Could not load. Please check your internet connection and refresh.");
+        });
+    }
     return fetch(API_BASE_URL + "/api/bookings/" + encodeURIComponent(bookingId), { headers: userHeaders() })
       .then(readBody)
       .then(function(result){
@@ -333,6 +363,7 @@
   function checkRating(){
     rateSection.hidden = true;
     rateBox.innerHTML = "";
+    if(driverOnly) return;
     if(!booking || booking.status !== "delivered") return;
     fetch(API_BASE_URL + "/api/bookings/" + encodeURIComponent(bookingId) + "/rating", { headers: userHeaders() })
       .then(readBody)

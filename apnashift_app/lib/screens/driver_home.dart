@@ -71,10 +71,17 @@ String _friendly(Object e) {
         return 'Tracking sirf accepted/arrived/in_transit par.';
       case 'too_many_attempts':
         return 'Bahut requests — thoda ruk ke retry karo.';
+      case 'maintenance_active':
+        final m = e.message;
+        return (m != null && m.isNotEmpty)
+            ? 'Maintenance chal raha hai — $m'
+            : 'Maintenance chal raha hai — driver actions thodi der me wapas chalu honge.';
       case 'not_delivered':
         return 'Sirf delivered trip par.';
       case 'validation_failed':
         return 'Details check karo.';
+      case 'api_base_url_missing':
+        return 'API URL set nahi hai — flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000 (emulator) ya http://<laptop-LAN-IP>:3000 (phone) se chalao.';
       default:
         return 'Fail (${e.code}). Retry karo.';
     }
@@ -109,6 +116,7 @@ class _JobsTabState extends State<_JobsTab> {
   @override
   void initState() {
     super.initState();
+    widget.session.addListener(_onSessionChanged);
     _load();
     // Live new-booking feed (own vehicle type) + 30s poll fallback —
     // driver-dashboard.html SSE + fallback parity.
@@ -129,9 +137,16 @@ class _JobsTabState extends State<_JobsTab> {
 
   @override
   void dispose() {
+    widget.session.removeListener(_onSessionChanged);
     _sse?.cancel();
     _fallback?.cancel();
     super.dispose();
+  }
+
+  void _onSessionChanged() {
+    if (!widget.session.loggedIn && mounted) {
+      Navigator.of(context).popUntil((r) => r.isFirst);
+    }
   }
 
   /// Bina spinner flash ke list refresh (SSE/poll driven).
