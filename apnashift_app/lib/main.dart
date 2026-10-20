@@ -21,6 +21,7 @@ import 'services/announcement_store.dart';
 import 'services/update_check_service.dart';
 import 'theme/app_theme.dart';
 import 'util/error_reporter.dart';
+import 'widgets/callback_popup.dart';
 
 void main() {
   runZonedGuarded(() {
@@ -76,6 +77,7 @@ class _ApnaShiftAppState extends State<ApnaShiftApp>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unawaited(UpdateCheckService.instance.checkNow());
       _maybePromptUpdate();
+      _maybeShowCallbackPopup();
     });
   }
 
@@ -95,7 +97,23 @@ class _ApnaShiftAppState extends State<ApnaShiftApp>
       context: context,
       barrierDismissible: false,
       builder: (_) => AppUpdateDialog(service: svc),
-    ).whenComplete(() => _updateDialogOpen = false);
+    ).whenComplete(() {
+      _updateDialogOpen = false;
+      // Update dialog band hone par callback popup ko mauka do.
+      _maybeShowCallbackPopup();
+    });
+  }
+
+  /// First-visit "Moving Soon?" callback popup (callback_popup.dart):
+  /// sirf guest (koi session nahi) aur ready-state par; gate apni taraf
+  /// once-ever policy (secure storage) + re-entrancy guard dekhta hai.
+  void _maybeShowCallbackPopup() {
+    if (!mounted || _updateDialogOpen) return;
+    if (!_session.ready || !_settings.ready) return;
+    unawaited(CallbackPopupGate.instance.maybeShow(
+      context,
+      guest: !_session.loggedIn && !_driver.loggedIn && !_admin.loggedIn,
+    ));
   }
 
   void _tick() {
@@ -106,6 +124,9 @@ class _ApnaShiftAppState extends State<ApnaShiftApp>
           : (_driver.loggedIn ? 'driver' : null),
     );
     setState(() {});
+    // Settings/session ready hone par first-visit popup ka check yahin se
+    // chalta hai (startup postFrame me aksar ready nahi hota).
+    _maybeShowCallbackPopup();
   }
 
   @override
