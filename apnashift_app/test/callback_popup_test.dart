@@ -1,6 +1,6 @@
 // Callback popup tests — reference design (fields + orange first-field
-// border + button), required/Indian-mobile validation, first-visit policy
-// (once-ever) aur widget-test env skip. Koi network/plugin nahi: store
+// border + button), required/Indian-mobile validation, show-till-submit
+// policy aur widget-test env skip. Koi network/plugin nahi: store
 // map-backed fake (CallbackPopupStorage) se inject hota hai.
 // Run: flutter test test/callback_popup_test.dart
 import 'package:flutter/material.dart';
@@ -26,23 +26,22 @@ class _MemStorage implements CallbackPopupStorage {
 }
 
 void main() {
-  group('CallbackPopupStore (first-visit policy)', () {
+  group('CallbackPopupStore (show-till-submit policy)', () {
     test('new visitor (no state) shows the popup', () async {
       final store = CallbackPopupStore(storage: _MemStorage());
       expect(await store.shouldShow(), isTrue);
       expect(await store.status(), isNull);
     });
 
-    test('shown/dismissed once = kabhi dobara nahi (reshowAfterDays=0)',
-        () async {
+    test('shown/dismissed = agle launch par dobara (submit tak)', () async {
       final mem = _MemStorage();
       final store = CallbackPopupStore(storage: mem);
       await store.write('shown');
       expect(await store.status(), 'shown');
-      expect(await store.shouldShow(), isFalse);
+      expect(await store.shouldShow(), isTrue);
       await store.write('dismissed');
       expect(await store.status(), 'dismissed');
-      expect(await store.shouldShow(), isFalse);
+      expect(await store.shouldShow(), isTrue);
     });
 
     test('submitted lead = kabhi dobara nahi', () async {
@@ -169,9 +168,10 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Moving Soon?'), findsNothing);
 
-      // Dismiss state persist = dobara nahi (once-ever policy).
+      // Dismiss persist hota hai, par naye launch par dobara chalega
+      // (submit-tak policy) — session ke andar gate flag rok deta hai.
       await store.write('dismissed');
-      expect(await store.shouldShow(), isFalse);
+      expect(await store.shouldShow(), isTrue);
     });
   });
 

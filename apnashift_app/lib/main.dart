@@ -55,6 +55,9 @@ class _ApnaShiftAppState extends State<ApnaShiftApp>
   late final DriverSession _driver = DriverSession();
   late final AdminSession _admin = AdminSession();
   bool _updateDialogOpen = false;
+  // showDialog ko MaterialApp ke neeche chahiye (MaterialLocalizations +
+  // Navigator dono) — _ApnaShiftAppState.context root par hai, upar nahi.
+  final GlobalKey<NavigatorState> _navKey = GlobalKey<NavigatorState>();
 
   @override
   void initState() {
@@ -92,9 +95,11 @@ class _ApnaShiftAppState extends State<ApnaShiftApp>
   void _maybePromptUpdate() {
     final svc = UpdateCheckService.instance;
     if (svc.pending == null || _updateDialogOpen || !mounted) return;
+    final ctx = _navKey.currentContext;
+    if (ctx == null) return; // first frame se pehle — listener dobara call karega
     _updateDialogOpen = true;
     showDialog<void>(
-      context: context,
+      context: ctx,
       barrierDismissible: false,
       builder: (_) => AppUpdateDialog(service: svc),
     ).whenComplete(() {
@@ -104,16 +109,19 @@ class _ApnaShiftAppState extends State<ApnaShiftApp>
     });
   }
 
-  /// First-visit "Moving Soon?" callback popup (callback_popup.dart):
-  /// sirf guest (koi session nahi) aur ready-state par; gate apni taraf
-  /// once-ever policy (secure storage) + re-entrancy guard dekhta hai.
+  /// "Moving Soon?" callback popup (callback_popup.dart): sirf guest (koi
+  /// session nahi) aur ready-state par; gate apni taraf
+  /// submit-tak-har-launch policy (secure storage) + re-entrancy guard
+  /// dekhta hai.
   void _maybeShowCallbackPopup() {
     if (!mounted || _updateDialogOpen) return;
     if (!_session.ready || !_settings.ready) return;
-    unawaited(CallbackPopupGate.instance.maybeShow(
-      context,
-      guest: !_session.loggedIn && !_driver.loggedIn && !_admin.loggedIn,
-    ));
+    final g = !_session.loggedIn && !_driver.loggedIn && !_admin.loggedIn;
+    // Gate ko MaterialApp ke neeche wala context chahiye (showDialog +
+    // MaterialLocalizations) — root context se dialog push nahi hota.
+    final ctx = _navKey.currentContext;
+    if (ctx == null) return; // first frame se pehle — tick dobara try karega
+    unawaited(CallbackPopupGate.instance.maybeShow(ctx, guest: g));
   }
 
   void _tick() {
@@ -124,7 +132,7 @@ class _ApnaShiftAppState extends State<ApnaShiftApp>
           : (_driver.loggedIn ? 'driver' : null),
     );
     setState(() {});
-    // Settings/session ready hone par first-visit popup ka check yahin se
+    // Settings/session ready hone par callback popup ka check yahin se
     // chalta hai (startup postFrame me aksar ready nahi hota).
     _maybeShowCallbackPopup();
   }
@@ -215,6 +223,7 @@ class _ApnaShiftAppState extends State<ApnaShiftApp>
       controller: ErrorReporter.shots,
       child: MaterialApp(
         title: 'ApnaShift',
+        navigatorKey: _navKey,
         theme: buildLightTheme(delta),
         darkTheme: buildDarkTheme(delta),
         themeMode: _themeMode(),

@@ -6,16 +6,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-// "Moving Soon?" first-visit callback popup — website parity
-// (apnashift-frontend/callback-popup.js). App ki pehli launch par guest
-// (koi bhi session nahi) ko EK hi baar dikhta hai — koi button click nahi.
+// "Moving Soon?" callback popup — website parity design
+// (apnashift-frontend/callback-popup.js). Guest (koi bhi session nahi) ko
+// app ke har launch par dikhta hai — jab tak lead submit na ho jaye.
 // Reference design: centered white card + dark overlay, ✕ close, 4 stacked
 // fields (From City, To City, Your Name, Phone Number*) — pehle field ka
 // orange border — aur full-width orange "Get a Callback" button.
 //
-// Policy (website ke `ApnaShiftCallbackPopupConfig` ke barabar):
+// Policy (app — website se alag; user request):
 //   - guestsOnly: sirf logged-out visitor (customer + driver + admin nahi)
-//   - reshowAfterDays: 0 = sirf ek baar; >0 = dismiss ke itne din baad
+//   - Har naye launch par dobara; dismiss = sirf us session ke liye band
+//     (process-lifetime gate flag). Sirf 'submitted' = permanent stop.
 //   - State flutter_secure_storage me JSON {"s":..,"t":epochMs} — key
 //     `apnashift-callback-popup` (website localStorage key ke barabar).
 //     Storage fail par defaults (fail-soft, AppSettings pattern).
@@ -76,8 +77,6 @@ class CallbackPopupStore {
   CallbackPopupStore({CallbackPopupStorage? storage})
       : _storage = storage ?? const SecureCallbackPopupStorage();
 
-  static const reshowAfterDays = 0; // 0 = first-visit: sirf ek baar
-
   final CallbackPopupStorage _storage;
 
   Future<String?> _readRaw() async {
@@ -114,27 +113,19 @@ class CallbackPopupStore {
     return null;
   }
 
-  /// Configured first-visit policy (see header).
+  /// Show kab? Naya visitor (null), ya pehle sirf dismiss hua — dono me
+  /// agle launch par dobara. Sirf 'submitted' = permanent stop.
   Future<bool> shouldShow() async {
     final raw = await _readRaw();
+    if (raw == null || raw.isEmpty) return true; // genuinely new visitor
     String s = '';
-    int t = 0;
-    if (raw != null && raw.isNotEmpty) {
-      try {
-        final o = jsonDecode(raw);
-        if (o is Map) {
-          s = '${o['s'] ?? ''}';
-          t = (o['t'] as num?)?.toInt() ?? 0;
-        }
-      } catch (_) {
-        return false; // corrupt state = dobara tang mat karo
-      }
-    } else {
-      return true; // genuinely new visitor
+    try {
+      final o = jsonDecode(raw);
+      if (o is Map) s = '${o['s'] ?? ''}';
+    } catch (_) {
+      return false; // corrupt state = dobara tang mat karo
     }
-    if (s == 'submitted') return false;
-    if (reshowAfterDays <= 0) return false;
-    return DateTime.now().millisecondsSinceEpoch - t >= reshowAfterDays * 86400000;
+    return s != 'submitted';
   }
 
   /// Tests / dev reset.
