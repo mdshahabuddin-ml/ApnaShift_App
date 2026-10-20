@@ -41,7 +41,7 @@ class NotificationsApi {
   Future<List<AppNotification>> list({int limit = 20, String? before}) async {
     final d = await _api.get('/api/notifications', query: {
       'limit': '$limit',
-      if (before != null) 'before': before,
+      'before': ?before,
     });
     final raw = (d['items'] ?? d['notifications'] ?? []) as List;
     return raw

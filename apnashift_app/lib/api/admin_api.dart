@@ -159,10 +159,10 @@ class AdminApi {
       double? commissionPct}) async {
     await api.put('/api/admin/pricing-rules', body: {
       'vehicle_type': vehicleType,
-      if (baseRs != null) 'base_rs': baseRs,
-      if (perKmRs != null) 'per_km_rs': perKmRs,
-      if (helperRs != null) 'helper_rs': helperRs,
-      if (commissionPct != null) 'commission_pct': commissionPct,
+      'base_rs': ?baseRs,
+      'per_km_rs': ?perKmRs,
+      'helper_rs': ?helperRs,
+      'commission_pct': ?commissionPct,
     });
   }
 

@@ -109,9 +109,9 @@ class DriverApi {
     return _api.post('/api/driver/bookings/$bookingId/location', body: {
       'lat': lat,
       'lng': lng,
-      if (accuracyM != null) 'accuracy_m': accuracyM,
-      if (speedMps != null) 'speed_mps': speedMps,
-      if (headingDeg != null) 'heading_deg': headingDeg,
+      'accuracy_m': ?accuracyM,
+      'speed_mps': ?speedMps,
+      'heading_deg': ?headingDeg,
     });
   }
 

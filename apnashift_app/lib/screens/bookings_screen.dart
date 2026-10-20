@@ -118,7 +118,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
       builder: (c) => AlertDialog(
         title: const Text('Cancel booking?'),
         content: DropdownButtonFormField<String>(
-          value: reason,
+          initialValue: reason,
           items: cancelReasons
               .map((r) => DropdownMenuItem(value: r, child: Text(r)))
               .toList(),
@@ -273,7 +273,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                               title: Row(children: [
                                 Expanded(
                                     child: Text(
-                                        '${b.vehicleType}',
+                                        b.vehicleType,
                                         style: const TextStyle(
                                             fontWeight: FontWeight.w700))),
                                 _pill(b.status),

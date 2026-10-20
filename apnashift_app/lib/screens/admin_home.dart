@@ -44,7 +44,6 @@ class _AdminHomeState extends State<AdminHome> {
 
   @override
   Widget build(BuildContext context) {
-    final role = widget.session.user?.role ?? 'admin';
     return Scaffold(
       body: IndexedStack(index: _tab, children: [
         AdminOverviewTab(

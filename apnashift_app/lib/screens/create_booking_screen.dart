@@ -100,7 +100,6 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
     }).catchError((_) {
       // Map service unreachable — offer PIN fallback (values preserved).
       if (mounted) setState(() => _mapFailed = true);
-      return <String, dynamic>{};
     });
   }
 
@@ -869,7 +868,7 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
           ]),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
-            value: _vehicle,
+            initialValue: _vehicle,
             decoration: const InputDecoration(
                 labelText: 'Vehicle *', border: OutlineInputBorder()),
             items: const [
@@ -888,20 +887,18 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
             }),
           ),
           const SizedBox(height: 8),
-          Row(children: [
-            Expanded(
-                child: RadioListTile<String>(
-                    title: const Text('UPI'),
-                    value: 'upi',
-                    groupValue: _pay,
-                    onChanged: (v) => setState(() => _pay = v ?? 'upi'))),
-            Expanded(
-                child: RadioListTile<String>(
-                    title: const Text('Cash'),
-                    value: 'cash',
-                    groupValue: _pay,
-                    onChanged: (v) => setState(() => _pay = v ?? 'upi'))),
-          ]),
+          RadioGroup<String>(
+            groupValue: _pay,
+            onChanged: (v) => setState(() => _pay = v ?? 'upi'),
+            child: Row(children: [
+              Expanded(
+                  child: RadioListTile<String>(
+                      title: const Text('UPI'), value: 'upi')),
+              Expanded(
+                  child: RadioListTile<String>(
+                      title: const Text('Cash'), value: 'cash')),
+            ]),
+          ),
           CheckboxListTile(
               title: const Text('Helper needed (+charge)'),
               value: _helper,

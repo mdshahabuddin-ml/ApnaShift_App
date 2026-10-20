@@ -232,7 +232,7 @@ class _JobsTabState extends State<_JobsTab> {
   Widget build(BuildContext context) {
     return AppScaffold(
       settings: widget.settings,
-      title: 'Jobs (${_total})${_live ? ' • live' : ''}',
+      title: 'Jobs ($_total)${_live ? ' • live' : ''}',
       actions: [
         IconButton(
             tooltip: 'Refresh',

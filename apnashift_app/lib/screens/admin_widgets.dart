@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import '../api/api_client.dart';
-import '../auth/admin_session.dart';
-import '../settings/app_settings.dart';
 
 /// Shared admin UI helpers — error mapping + small widgets.
 /// Backend codes mirror website toasts (admin-dashboard.html etc.).

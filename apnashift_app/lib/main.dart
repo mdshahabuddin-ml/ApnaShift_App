@@ -210,10 +210,6 @@ class _ApnaShiftAppState extends State<ApnaShiftApp>
     );
   }
 
-  void _todo(BuildContext context, String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-  }
-
   @override
   Widget build(BuildContext context) {
     final loggedIn = _session.loggedIn;

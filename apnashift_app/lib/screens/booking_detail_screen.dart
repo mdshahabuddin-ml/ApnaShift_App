@@ -158,7 +158,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
       builder: (c) => AlertDialog(
         title: const Text('Cancel booking?'),
         content: DropdownButtonFormField<String>(
-          value: reason,
+          initialValue: reason,
           items: cancelReasons
               .map((r) => DropdownMenuItem(value: r, child: Text(r)))
               .toList(),

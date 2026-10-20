@@ -18,11 +18,10 @@ class AppSettings extends ChangeNotifier {
       : _store = store ?? const FlutterSecureStorage();
 
   /// Tests ke liye: bina platform channel ke, turant ready.
-  AppSettings.test({String theme = 'system', String lang = 'en', int textPx = 0})
+  AppSettings.test(
+      {String theme = 'system', this._lang = 'en', this._textPx = 0})
       : _store = const FlutterSecureStorage(),
         _themeMode = theme,
-        _lang = lang,
-        _textPx = textPx,
         _ready = true;
 
   String _themeMode = 'system';
