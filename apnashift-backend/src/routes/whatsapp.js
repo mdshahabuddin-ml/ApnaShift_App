@@ -62,7 +62,7 @@ whatsappRoutes.post('/webhook', writeLimiter, async (req, res, next) => {
     res.json({
       ok: true,
       booking: pub,
-      reply: `Booking pakki! ID: ${pub.id}`,
+      reply: `Booking confirmed! ID: ${pub.id}`,
     });
   } catch (err) {
     next(err);

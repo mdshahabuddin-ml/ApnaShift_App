@@ -185,7 +185,7 @@ appUpdatesRoutes.patch('/:id', validateIdParam, async (req, res, next) => {
         const err = new Error('validation_failed');
         err.status = 400;
         err.details = [
-          { field: 'min_supported_version', message: 'min_supported_version version se chhota ya barabar hona chahiye' },
+          { field: 'min_supported_version', message: 'min_supported_version must be smaller than or equal to version' },
         ];
         throw err;
       }
@@ -234,13 +234,13 @@ appUpdatesRoutes.patch('/:id', validateIdParam, async (req, res, next) => {
       if (!pushEnabled) {
         const err = new Error('validation_failed');
         err.status = 400;
-        err.details = [{ field: 'retry_push', message: 'retry ke liye push_enabled on chahiye' }];
+        err.details = [{ field: 'retry_push', message: 'push_enabled must be on to retry' }];
         throw err;
       }
       if (newStatus !== 'published') {
         const err = new Error('validation_failed');
         err.status = 400;
-        err.details = [{ field: 'retry_push', message: 'retry sirf published release par' }];
+        err.details = [{ field: 'retry_push', message: 'retry only works on published releases' }];
         throw err;
       }
       // Failed rows only — already-sent rows keep their UNIQUE dedupe row.

@@ -22,10 +22,10 @@ export const notificationStreamQuerySchema = z.object({
 // never logged (suffix only in mince-level logs, never in responses).
 export const deviceTokenSchema = z.object({
   platform: z.enum(['android', 'ios', 'web'], {
-    errorMap: () => ({ message: 'platform android/ios/web me se ho.' }),
+    errorMap: () => ({ message: 'platform must be android, ios, or web.' }),
   }),
   token: z
     .string()
-    .min(1, 'token khaali nahi.')
-    .max(512, 'token 512 chars se zyada nahi.'),
+    .min(1, 'token must not be empty.')
+    .max(512, 'token must be no more than 512 characters.'),
 });

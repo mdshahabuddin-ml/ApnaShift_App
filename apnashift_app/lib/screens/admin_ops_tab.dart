@@ -101,7 +101,7 @@ class _AdminOpsTabState extends State<AdminOpsTab> {
     final phone = _lookupPhone.text.trim();
     if (phone.isEmpty || _newPw.text.length < 8) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Phone + new password (8+) likho.')));
+          content: Text('Enter the phone and a new password (8+).')));
       return;
     }
     try {
@@ -116,7 +116,7 @@ class _AdminOpsTabState extends State<AdminOpsTab> {
       if (!mounted) return;
       if (users.isEmpty && drivers.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Account nahi mila.')));
+            const SnackBar(content: Text('Account not found.')));
         return;
       }
       final isUser = users.isNotEmpty;

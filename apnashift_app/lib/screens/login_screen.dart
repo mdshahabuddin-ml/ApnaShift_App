@@ -35,21 +35,21 @@ class LoginScreen extends StatefulWidget {
 String _friendly(String code) {
   switch (code) {
     case 'invalid_credentials':
-      return 'Galat number ya password. Pehli baar hai? Create Account dabao.';
+      return 'Incorrect phone number or password. First time here? Tap Create Account.';
     case 'validation_failed':
-      return '10-digit mobile (6-9 se shuru) + sahi password likho.';
+      return 'Enter a 10-digit mobile number (starting with 6-9) and the correct password.';
     case 'too_many_attempts':
       return 'Too many attempts — please try once after 15 minutes.';
     case 'wrong_role':
-      return 'Ye number driver/staff ka hai. Customer app me customer number se login karo (staff web panel use kare).';
+      return 'This number belongs to a driver/staff member. In the customer app, log in with a customer number (staff should use the web panel).';
     case 'phone_taken':
-      return 'Ye number already registered hai — Login dabao.';
+      return 'This number is already registered — tap Login.';
     case 'network_error':
-      return 'Server se baat nahi ho payi. Server $apiBaseUrl chal raha hai? (local ke liye --dart-define=API_BASE_URL=$apiLocalEmulatorUrl use karo)';
+      return 'Unable to connect to the server. Is the server running at $apiBaseUrl? (for local use --dart-define=API_BASE_URL=$apiLocalEmulatorUrl)';
     case 'api_base_url_missing':
-      return 'API URL set nahi hai. --dart-define=API_BASE_URL=$apiLocalEmulatorUrl (emulator) ya http://<laptop-LAN-IP>:3000 (phone) se flutter run karo.';
+      return 'API URL is not set. Run flutter run with --dart-define=API_BASE_URL=$apiLocalEmulatorUrl (emulator) or http://<laptop-LAN-IP>:3000 (phone).';
     default:
-      return 'Login fail ($code). Server $apiBaseUrl chal raha hai?';
+      return 'Login failed ($code). Is the server running at $apiBaseUrl?';
   }
 }
 
@@ -90,19 +90,19 @@ class _LoginScreenState extends State<LoginScreen> {
     });
     var bad = false;
     if (_registerMode && _name.text.trim().length < 2) {
-      _nameError = 'Full name kam se kam 2 akshar.';
+      _nameError = 'Full name must be at least 2 characters.';
       bad = true;
     }
     if (!_validPhone(phone)) {
       _phoneError =
-          'Enter a 10-digit Indian mobile number (6-9 se shuru). +91/spaces allowed.';
+          'Enter a 10-digit Indian mobile number (starting with 6-9). +91/spaces allowed.';
       bad = true;
     }
     if (_pass.text.isEmpty) {
-      _passError = 'Password likho.';
+      _passError = 'Enter the password.';
       bad = true;
     } else if (_registerMode && _pass.text.length < 8) {
-      _passError = 'Password kam se kam 8 akshar.';
+      _passError = 'Password must be at least 8 characters.';
       bad = true;
     }
     if (bad) {
@@ -167,7 +167,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(d['debug_otp'] != null
               ? 'OTP: ${d['debug_otp']} (dev mode)'
-              : 'OTP bheja — SMS/WhatsApp dekho.')));
+              : 'OTP sent — check SMS/WhatsApp.')));
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() {
@@ -200,7 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
         _otpMode = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Password reset — ab login karo.')));
+          const SnackBar(content: Text('Password reset — now log in.')));
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() {
@@ -251,7 +251,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           );
                         }
                       },
-                      child: const Text('Staff ho? Admin login →',
+                      child: const Text('Are you a staff member? Admin login →',
                           style: TextStyle(color: _muted)),
                     ),
                   ],

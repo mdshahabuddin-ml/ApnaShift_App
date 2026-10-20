@@ -117,14 +117,14 @@
   <p class="sub" data-i18n="pg_create-booking_02">Enter addresses, view the live fare, then confirm your booking.</p>
 
   <div id="pageAlert" role="alert" aria-live="assertive"></div>
-  <div id="pinBanner" role="status" aria-live="polite" style="display:none;background:#fff8e2;border:2px dashed var(--navy);border-radius:10px;padding:12px;margin:0 0 14px;font-size:.9rem;font-weight:600"><b>Map trouble?</b> Map / suggestions unavailable ho sakte hain — neeche <b>Book Using PIN Code</b> se aage badho.<div class="controls"><button type="button" class="btn" id="pinModeBtn">Book Using PIN Code</button></div><p class="hint" id="pinBannerStatus" style="margin:8px 0 0"></p></div>
+  <div id="pinBanner" role="status" aria-live="polite" style="display:none;background:#fff8e2;border:2px dashed var(--navy);border-radius:10px;padding:12px;margin:0 0 14px;font-size:.9rem;font-weight:600"><b>Map trouble?</b> Map / suggestions may be unavailable — continue with <b>Book Using PIN Code</b> below.<div class="controls"><button type="button" class="btn" id="pinModeBtn">Book Using PIN Code</button></div><p class="hint" id="pinBannerStatus" style="margin:8px 0 0"></p></div>
 
   <section class="card" aria-labelledby="formTitle">
     <h2 id="formTitle" data-i18n="pg_create-booking_03">Trip details</h2>
     <div class="controls" style="margin-bottom:12px"><button type="button" class="btn ghost" id="pinToggleLink">Book Using PIN Code (map unavailable?)</button></div>
     <div id="pinFallback" style="display:none;border:2px solid var(--navy);border-radius:10px;padding:12px;margin:0 0 12px;background:#f8fafc">
       <b>PIN Code fallback</b>
-      <p class="hint">Pickup + Drop ke 6-digit Indian PIN likho (city/district/state address me manually likho — koi auto-fill nahi). Fare/distance sirf valid coordinates par backend se aayega; kuch invent nahi hoga.</p>
+        <p class="hint">Enter the 6-digit Indian PINs for Pickup + Drop (enter the city/district/state address manually — no auto-fill). Fare/distance will come from the backend only for valid coordinates; nothing is guessed.</p>
       <div class="row2">
         <div class="field" id="f-pickupPin">
           <label for="pickupPin">Pickup PIN Code *</label>
@@ -182,8 +182,8 @@
       <div class="field" id="f-size">
         <label for="sizeTier">Vehicle size</label>
         <select id="sizeTier">
-          <option value="chhota">Chhota (small)</option>
-          <option value="bada">Bada (big)</option>
+          <option value="chhota">Small</option>
+          <option value="bada">Big</option>
         </select>
         <p class="error-text" id="sizeTier-err"></p>
       </div>
@@ -201,12 +201,12 @@
       </div>
       <div class="field" id="f-bulky">
         <label for="bulkyChk">Bulky item?</label>
-        <label style="font-weight:400"><input type="checkbox" id="bulkyChk" style="width:auto"> Heavy/bulky samaan hai (+Rs 100)</label>
+        <label style="font-weight:400"><input type="checkbox" id="bulkyChk" style="width:auto"> Has heavy/bulky items (+Rs 100)</label>
       </div>
     </div>
     <div class="field" id="f-items">
       <label>Items to Shift *</label>
-      <p class="hint">Add at least one item with quantity — kam se kam ek item mandatory hai.</p>
+      <p class="hint">Add at least one item with quantity — at least one item is mandatory.</p>
       <div class="items-grid" id="itemsGrid" role="group" aria-label="Common household items"></div>
       <div class="custom-row">
         <input type="text" id="customItemName" maxlength="40" placeholder="Custom item — e.g. Plants, TV, Mattress" aria-label="Custom item name">
@@ -439,7 +439,7 @@
     if(!add || !inp) return;
     add.addEventListener("click", function(){
       var v = inp.value.trim().slice(0, 40);
-      if(v.length < 2){ showAlert("err", "Custom item ka naam kam se kam 2 akshar likho."); inp.focus(); return; }
+      if(v.length < 2){ showAlert("err", "Enter at least 2 characters for the custom item name."); inp.focus(); return; }
       customItems.push({ name: v, qty: 1 });
       inp.value = "";
       hideAlert();
@@ -472,29 +472,29 @@
     var pinP = "", pinD = "";
     if(pinMode){
       if(!validPin(pickupPinEl ? pickupPinEl.value : "")){
-        setErr("f-pickupPin", "pickupPin-err", true, "Enter a valid 6-digit Indian PIN code (1-9 se shuru)."); ok = false;
+        setErr("f-pickupPin", "pickupPin-err", true, "Enter a valid 6-digit Indian PIN code (starts with 1-9)."); ok = false;
       } else setErr("f-pickupPin", "pickupPin-err", false);
       if(!validPin(dropPinEl ? dropPinEl.value : "")){
-        setErr("f-dropPin", "dropPin-err", true, "Enter a valid 6-digit Indian PIN code (1-9 se shuru)."); ok = false;
+        setErr("f-dropPin", "dropPin-err", true, "Enter a valid 6-digit Indian PIN code (starts with 1-9)."); ok = false;
       } else setErr("f-dropPin", "dropPin-err", false);
       pinP = pickupPinEl ? pickupPinEl.value.trim() : "";
       pinD = dropPinEl ? dropPinEl.value.trim() : "";
     }
     var size = (sizeTier && sizeTier.value === "bada") ? "bada" : "chhota";
     var wt = num(weightKg, 0, 5000);
-    if(wt === null){ setErr("f-weight", "weightKg-err", true, "Weight 0-5000 kg me likho."); ok = false; }
+    if(wt === null){ setErr("f-weight", "weightKg-err", true, "Enter weight between 0-5000 kg."); ok = false; }
     else setErr("f-weight", "weightKg-err", false);
     var cnt = num(itemCount, 1, 100);
-    if(cnt === null){ setErr("f-count", "itemCount-err", true, "Item count 1-100 me likho."); ok = false; }
+    if(cnt === null){ setErr("f-count", "itemCount-err", true, "Enter item count between 1-100."); ok = false; }
     else setErr("f-count", "itemCount-err", false);
     var bulky = !!(bulkyChk && bulkyChk.checked);
     var desc = buildItemDescription();
     if(totalItemCount() < 1){
-      setErr("f-items", "items-err", true, "Please add at least one item to shift (e.g. 1 Bed, 2 Boxes) with quantity — Items to Shift mandatory hai.");
+      setErr("f-items", "items-err", true, "Please add at least one item to shift (e.g. 1 Bed, 2 Boxes) with quantity — Items to Shift is mandatory.");
       showAlert("err", "Please add at least one item to shift with quantity before proceeding.");
       ok = false;
     } else if(desc.length < 3 || desc.length > 500){
-      setErr("f-items", "items-err", true, "Items list 3-500 characters me ho.");
+      setErr("f-items", "items-err", true, "Items list must be 3-500 characters.");
       ok = false;
     } else setErr("f-items", "items-err", false);
     if(!ok) return null;

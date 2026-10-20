@@ -53,7 +53,7 @@ export const announcementCreateSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['block_message'],
-        message: 'maintenance_mode ke liye block_message zaroori hai',
+        message: 'block_message is required for maintenance_mode',
       });
     }
   });

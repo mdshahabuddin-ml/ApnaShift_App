@@ -125,8 +125,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       if (!mounted) return;
       setState(() {
         _error = e is ApiException
-            ? 'Load fail (${e.code}). Retry karo.'
-            : 'Server se baat nahi ho payi.';
+            ? 'Failed to load (${e.code}). Try again.'
+            : 'Unable to connect to the server.';
         _loading = false;
       });
     }
@@ -140,8 +140,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(e is ApiException
-              ? 'Mark fail (${e.code})'
-              : 'Mark fail — retry karo.')));
+              ? 'Mark failed (${e.code})'
+              : 'Marking failed — try again.')));
     }
   }
 
@@ -214,7 +214,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       if (shown.isEmpty)
                         const Padding(
                             padding: EdgeInsets.all(24),
-                            child: Text('Koi notification nahi.')),
+                            child: Text('No notifications yet.')),
                       ...shown.map((n) => Card(
                             child: ListTile(
                               title: Text(n.title,

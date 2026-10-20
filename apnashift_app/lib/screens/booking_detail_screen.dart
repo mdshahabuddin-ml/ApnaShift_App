@@ -69,8 +69,8 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
       if (!mounted) return;
       setState(() {
         _error = e is ApiException
-            ? 'Load fail (${e.code}). Pull-to-refresh karo.'
-            : 'Server se baat nahi ho payi.';
+            ? 'Failed to load (${e.code}). Pull to refresh.'
+            : 'Unable to connect to the server.';
         _loading = false;
       });
     }
@@ -92,8 +92,8 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
       setState(() => _busy = false);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(e is ApiException
-              ? 'Cancel fail (${e.code})'
-              : 'Cancel fail — retry karo.')));
+              ? 'Cancel failed (${e.code})'
+              : 'Cancel failed — try again.')));
     }
   }
 
@@ -101,7 +101,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
     final reason = _dispute.text.trim();
     if (reason.length < 3) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Wajah kam se kam 3 akshar.')));
+          const SnackBar(content: Text('Reason must be at least 3 characters.')));
       return;
     }
     setState(() => _busy = true);
@@ -113,21 +113,21 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
         _busy = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Issue reported — admin dekhega.')));
+          const SnackBar(content: Text('Issue reported — the admin will review it.')));
     } catch (e) {
       if (!mounted) return;
       setState(() => _busy = false);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(e is ApiException
-              ? 'Report fail (${e.code})'
-              : 'Report fail — retry karo.')));
+              ? 'Report failed (${e.code})'
+              : 'Report failed — try again.')));
     }
   }
 
   Future<void> _rate() async {
     if (_stars < 1 || _stars > 5) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('1-5 stars chuno.')));
+          const SnackBar(content: Text('Select 1 to 5 stars.')));
       return;
     }
     setState(() => _busy = true);
@@ -140,14 +140,14 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
         _busy = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Rating bhej di — dhanyavaad!')));
+          const SnackBar(content: Text('Rating submitted — thank you!')));
     } catch (e) {
       if (!mounted) return;
       setState(() => _busy = false);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(e is ApiException
-              ? 'Rating fail (${e.code})'
-              : 'Rating fail — retry karo.')));
+              ? 'Rating failed (${e.code})'
+              : 'Rating failed — try again.')));
     }
   }
 
@@ -333,7 +333,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                     controller: _dispute,
                     maxLength: 500,
                     decoration: const InputDecoration(
-                        hintText: 'Wajah likho (min 3 akshar)',
+                        hintText: 'Enter the reason (min 3 characters)',
                         border: OutlineInputBorder())),
                 const SizedBox(height: 8),
                 OutlinedButton(

@@ -23,23 +23,23 @@ class DriverLoginScreen extends StatefulWidget {
 String _friendly(String code) {
   switch (code) {
     case 'invalid_credentials':
-      return 'Galat number ya password.';
+      return 'Incorrect phone number or password.';
     case 'validation_failed':
-      return '10-digit mobile (6-9 se shuru) + password likho.';
+      return 'Enter a 10-digit mobile number (starting with 6-9) and a password.';
     case 'too_many_attempts':
-      return 'Bahut tries — 15 minute ruk ke retry karo.';
+      return 'Too many attempts — try again in 15 minutes.';
     case 'wrong_role':
-      return 'Ye number driver ka nahi hai — customer/admin number yahan nahi chalega.';
+      return 'This number does not belong to a driver — a customer/admin number will not work here.';
     case 'driver_unverified':
-      return 'Application abhi PENDING hai — admin verify karega.';
+      return 'Your application is still PENDING — the admin will verify it.';
     case 'driver_inactive':
-      return 'Account deactivated — support se baat karo.';
+      return 'Account deactivated — contact support.';
     case 'network_error':
-      return 'Server se baat nahi ho payi.';
+      return 'Unable to connect to the server.';
     case 'api_base_url_missing':
-      return 'API URL set nahi hai — flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000 (emulator) ya http://<laptop-LAN-IP>:3000 (phone) se chalao.';
+      return 'API URL is not set — run with flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000 (emulator) or http://<laptop-LAN-IP>:3000 (phone).';
     default:
-      return 'Login fail ($code). Retry karo.';
+      return 'Login failed ($code). Try again.';
   }
 }
 
@@ -92,7 +92,7 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
       if (!mounted) return;
       setState(() => _busy = false);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('OTP bheja (dev me response me debug_otp).')));
+          content: Text('OTP sent (in dev, debug_otp is in the response).')));
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() {
@@ -125,7 +125,7 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
         _otpMode = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Password reset — ab login karo.')));
+          const SnackBar(content: Text('Password reset — now log in.')));
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() {
@@ -183,7 +183,7 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
           const SizedBox(height: 16),
           ElevatedButton(
               onPressed: _busy ? null : _go,
-              child: Text(_busy ? 'Ruko…' : 'Login →')),
+              child: Text(_busy ? 'Please wait…' : 'Login →')),
           TextButton(
               onPressed: () =>
                   setState(() => _otpMode = !_otpMode),

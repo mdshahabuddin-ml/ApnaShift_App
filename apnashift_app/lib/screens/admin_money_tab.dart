@@ -137,13 +137,13 @@ class _AdminMoneyTabState extends State<AdminMoneyTab> {
     if (amt == null || amt <= 0) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('amount 0 se zyada ho.')));
+          const SnackBar(content: Text('Amount must be more than 0.')));
       return;
     }
     if (method != 'cash' && refC.text.trim().length < 2) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('bank/upi par reference_no zaroori hai.')));
+          content: Text('reference_no is required for bank/upi.')));
       return;
     }
     setState(() => _busy = true);

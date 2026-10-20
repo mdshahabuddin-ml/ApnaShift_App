@@ -80,8 +80,8 @@ class _SuperAdminAppUpdatesTabState extends State<SuperAdminAppUpdatesTab> {
       final sk = r['dispatch'] is Map ? (r['dispatch'] as Map)['skipped'] : null;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(sk != null
-              ? 'Push run nahi (credentials awaiting).'
-              : 'Push dispatch chala.')));
+              ? 'Push did not run (credentials awaiting).'
+              : 'Push dispatch ran.')));
       await _load();
     } catch (e) {
       if (!mounted) return;
@@ -176,7 +176,7 @@ class _SuperAdminAppUpdatesTabState extends State<SuperAdminAppUpdatesTab> {
                     controller: version,
                     decoration: const InputDecoration(
                         labelText: 'Version * (x.y.z)',
-                        helperText: 'pubspec versionName jaisa — e.g. 1.1.0',
+                        helperText: 'Like the pubspec versionName — e.g. 1.1.0',
                         border: OutlineInputBorder())),
                 const SizedBox(height: 8),
                 TextField(
@@ -191,13 +191,13 @@ class _SuperAdminAppUpdatesTabState extends State<SuperAdminAppUpdatesTab> {
                     controller: minVer,
                     decoration: const InputDecoration(
                         labelText: 'Min supported version (optional)',
-                        helperText: 'Is se purane install = forced update',
+                        helperText: 'Older installs than this = forced update',
                         border: OutlineInputBorder())),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
                   title: const Text('Mandatory update'),
                   subtitle: const Text(
-                      'Purane versions bookings nahi kar payenge (426)'),
+                      'Older versions will not be able to book (426)'),
                   value: mandatory,
                   onChanged: (v) => setD(() => mandatory = v),
                 ),
@@ -238,7 +238,7 @@ class _SuperAdminAppUpdatesTabState extends State<SuperAdminAppUpdatesTab> {
                     maxLength: 8000,
                     decoration: const InputDecoration(
                         labelText: 'Release notes *',
-                        helperText: 'Dialog me users ko yahi dikhega',
+                        helperText: 'This is what users will see in the dialog',
                         border: OutlineInputBorder())),
                 TextField(
                     controller: url,
@@ -246,7 +246,7 @@ class _SuperAdminAppUpdatesTabState extends State<SuperAdminAppUpdatesTab> {
                     decoration: const InputDecoration(
                         labelText: 'Update URL (https://…)',
                         helperText:
-                            'Play Store listing / verified APK page — sirf https',
+                            'Play Store listing / verified APK page — https only',
                         border: OutlineInputBorder())),
                 if (e == null)
                   DropdownButtonFormField<String>(
@@ -298,25 +298,25 @@ class _SuperAdminAppUpdatesTabState extends State<SuperAdminAppUpdatesTab> {
     if (!mounted) return;
     if (version.text.trim().isEmpty || notes.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Version aur release notes zaroori hain.')));
+          content: Text('Version and release notes are required.')));
       return;
     }
     if (!RegExp(r'^\d+\.\d+\.\d+$').hasMatch(version.text.trim())) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Version x.y.z format me ho (e.g. 1.1.0).')));
+          content: Text('Version must be in x.y.z format (e.g. 1.1.0).')));
       return;
     }
     final minTrim = minVer.text.trim();
     if (minTrim.isNotEmpty &&
         !RegExp(r'^\d+\.\d+\.\d+$').hasMatch(minTrim)) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Min supported version bhi x.y.z me ho.')));
+          content: Text('Min supported version must also be in x.y.z.')));
       return;
     }
     final urlTrim = url.text.trim();
     if (urlTrim.isNotEmpty && !urlTrim.startsWith('https://')) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Update URL https:// se shuru hona chahiye.')));
+          content: Text('Update URL must start with https://.')));
       return;
     }
     final buildRaw = build.text.trim();
@@ -325,7 +325,7 @@ class _SuperAdminAppUpdatesTabState extends State<SuperAdminAppUpdatesTab> {
       buildVal = int.tryParse(buildRaw);
       if (buildVal == null || buildVal < 1) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Build positive integer ho.')));
+            content: Text('Build must be a positive integer.')));
         return;
       }
     }
@@ -365,7 +365,7 @@ class _SuperAdminAppUpdatesTabState extends State<SuperAdminAppUpdatesTab> {
       if (!mounted) return;
       setState(() => _busy = false);
       final msg = err is ApiException && err.code == 'version_taken'
-          ? 'Ye version pehle se hai — koi aur number lagao.'
+          ? 'This version already exists — use a different number.'
           : adminFriendly(err);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     }
@@ -435,7 +435,7 @@ class _SuperAdminAppUpdatesTabState extends State<SuperAdminAppUpdatesTab> {
                   : _items.isEmpty
                       ? ListView(children: const [
                           SizedBox(height: 80),
-                          Center(child: Text('Koi release nahi.')),
+                          Center(child: Text('No releases yet.')),
                         ])
                       : ListView.builder(
                           itemCount: _items.length + 1,

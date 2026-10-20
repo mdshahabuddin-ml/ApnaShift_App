@@ -119,7 +119,7 @@ class _AdminBookingsTabState extends State<AdminBookingsTab> {
     final drv = _picked['${b['id']}'];
     if (drv == null || drv.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Pehle driver chuno.')));
+          const SnackBar(content: Text('First select a driver.')));
       return;
     }
     setState(() => _busy = true);

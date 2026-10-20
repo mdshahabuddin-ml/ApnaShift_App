@@ -69,7 +69,7 @@ export async function sendOtp(phone, otp, fetchFn = fetch) {
           'Content-Type': 'application/json',
           ...(key ? { Authorization: `Bearer ${key}` } : {}),
         },
-        body: JSON.stringify({ to: phone, text: `ApnaShift OTP: ${otp}. 10 min me use karo. Kisi se share mat karo.` }),
+        body: JSON.stringify({ to: phone, text: `ApnaShift OTP: ${otp}. Valid for 10 minutes. Do not share it with anyone.` }),
         ...(signal ? { signal } : {}),
       });
       return { delivered: true, channel: 'sms' };

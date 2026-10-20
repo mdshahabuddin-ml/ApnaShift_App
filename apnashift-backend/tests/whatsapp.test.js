@@ -66,9 +66,9 @@ async function dialogToConfirm(from) {
   r = await waSay(from, '12 MG Road, Indore');
   expect(r.body.reply).toMatch(/drop address/i);
   r = await waSay(from, '45 AB Road, Indore');
-  expect(r.body.reply).toMatch(/Gaadi chuno/i);
+  expect(r.body.reply).toMatch(/Choose a vehicle/i);
   r = await waSay(from, 'mini truck');
-  expect(r.body.reply).toMatch(/Kab chahiye/i);
+  expect(r.body.reply).toMatch(/When do you need it/i);
   r = await waSay(from, 'now');
   expect(r.body.reply).toMatch(/cash.*upi|upi.*cash/i);
   r = await waSay(from, 'upi');
@@ -224,7 +224,7 @@ describeDb('whatsapp booking foundation (DB)', () => {
     await waSay(phone, '12 MG Road, Indore');
     await waSay(phone, '45 AB Road, Indore');
     const r = await waSay(phone, 'helicopter');
-    expect(r.body.reply).toMatch(/pickup, mini_truck ya mini_tractor/i);
+    expect(r.body.reply).toMatch(/pickup, mini_truck,? or mini_tractor/i);
     const convo = await client.query('SELECT state FROM wa_conversations WHERE phone = $1', [phone]);
     expect(convo.rows[0].state).toBe('VEHICLE');
   });

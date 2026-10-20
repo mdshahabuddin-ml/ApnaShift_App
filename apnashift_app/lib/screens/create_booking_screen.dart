@@ -117,13 +117,13 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Map service wapas mil gayi.')));
+            const SnackBar(content: Text('Map service is available again.')));
       }
     } catch (_) {
       if (!mounted) return;
       setState(() => _mapFailed = true);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Map abhi bhi unavailable — PIN fallback se aage badho.')));
+          content: Text('Map is still unavailable — proceed with the PIN fallback.')));
     }
   }
 
@@ -266,49 +266,49 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
 
   String? _validate() {
     if (_pickupAddr.text.trim().length < 3) {
-      return 'Pickup address kam se kam 3 akshar.';
+      return 'Pickup address must be at least 3 characters.';
     }
     if (_pickupAddr.text.trim().length > 300) {
-      return 'Pickup address 300 akshar se zyada nahi.';
+      return 'Pickup address must be no more than 300 characters.';
     }
     if (_parseLat(_pickupLat.text) == null) {
-      return 'Pickup lat -90..90 number ho (suggestion chuno ya manual likho).';
+      return 'Pickup lat must be a number between -90 and 90 (choose a suggestion or enter it manually).';
     }
     if (_parseLng(_pickupLng.text) == null) {
-      return 'Pickup lng -180..180 number ho.';
+      return 'Pickup lng must be a number between -180 and 180.';
     }
     if (_dropAddr.text.trim().length < 3) {
-      return 'Drop address kam se kam 3 akshar.';
+      return 'Drop address must be at least 3 characters.';
     }
     if (_dropAddr.text.trim().length > 300) {
-      return 'Drop address 300 akshar se zyada nahi.';
+      return 'Drop address must be no more than 300 characters.';
     }
     if (_pinMode) {
       if (!kPinRe.hasMatch(_pickupPin.text.trim())) {
-        return 'Pickup PIN galat hai — 6-digit Indian PIN likho (1-9 se shuru).';
+        return 'Pickup PIN is invalid — enter a 6-digit Indian PIN (starting with 1-9).';
       }
       if (!kPinRe.hasMatch(_dropPin.text.trim())) {
-        return 'Drop PIN galat hai — 6-digit Indian PIN likho (1-9 se shuru).';
+        return 'Drop PIN is invalid — enter a 6-digit Indian PIN (starting with 1-9).';
       }
     }
-    if (_parseLat(_dropLat.text) == null) return 'Drop lat -90..90 number ho.';
-    if (_parseLng(_dropLng.text) == null) return 'Drop lng -180..180 number ho.';
+    if (_parseLat(_dropLat.text) == null) return 'Drop lat must be a number between -90 and 90.';
+    if (_parseLng(_dropLng.text) == null) return 'Drop lng must be a number between -180 and 180.';
     final dist = _distanceKm();
     if (dist != null && dist * 1.3 > 500) {
-      return 'Pickup–drop seedhi doori ~${dist.toStringAsFixed(0)} km hai (road se aur zyada) — 500km single-city limit cross. Dono pins same city me check karo (map par dekho).';
+      return 'Straight-line pickup–drop distance is ~${dist.toStringAsFixed(0)} km (even more by road) — 500km single-city limit exceeded. Check that both pins are in the same city (see them on the map).';
     }
     if (!['pickup', 'mini_truck', 'mini_tractor'].contains(_vehicle)) {
-      return 'Vehicle pickup, mini_truck ya mini_tractor ho.';
+      return 'Vehicle must be pickup, mini_truck or mini_tractor.';
     }
     final desc = _buildItemDescription();
     if (_totalItems < 1) {
-      return 'Kam se kam ek item jodo (e.g. 1 Bed, 2 Boxes) — Items to Shift mandatory hai.';
+      return 'Add at least one item (e.g. 1 Bed, 2 Boxes) — Items to Shift is mandatory.';
     }
     if (desc.length < 3) {
-      return 'Kam se kam ek item jodo — quantity ke saath.';
+      return 'Add at least one item — with a quantity.';
     }
     if (desc.length > 500) {
-      return 'Item detail 500 akshar se zyada nahi (items + notes milakar).';
+      return 'Item details must be no more than 500 characters (items + notes combined).';
     }
     if (_date != null) {
       final now = DateTime.now().subtract(const Duration(minutes: 1));
@@ -317,7 +317,7 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
         sched = DateTime(_date!.year, _date!.month, _date!.day, _time!.hour,
             _time!.minute);
       }
-      if (sched.isBefore(now)) return 'Date future me ho (past date nahi).';
+      if (sched.isBefore(now)) return 'The date must be in the future (not a past date).';
     }
     return null;
   }
@@ -437,7 +437,8 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
       return;
     }
     if (_quote == null) {
-      setState(() => _fieldError = 'Pehle Get Estimate dabao — sahi fare dekh ke confirm karo.');
+      setState(() => _fieldError =
+          'Tap Get Estimate first — check the fare, then confirm.');
       return;
     }
     setState(() {
@@ -488,33 +489,33 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
     if (e is ApiException) {
       switch (e.code) {
         case 'validation_failed':
-          return 'Details check karo (address 3+, lat/lng range, vehicle, date future). Date hata ke bhi try karo.';
+          return 'Check the details (address 3+, lat/lng range, vehicle, future date). Try removing the date too.';
         case 'distance_too_far':
-          return 'Distance 500km se zyada — dono pins same city me hain ye map/suggestion se verify karo. (Seedhi doori screen par dikhti hai.)';
+          return 'Distance is over 500km — verify on the map/suggestion that both pins are in the same city. (The straight-line distance is shown on screen.)';
         case 'unsupported_payment_method':
-          return 'Sirf UPI/Cash allowed (online gateway nahi hai).';
+          return 'Only UPI/Cash allowed (no online gateway available).';
         case 'too_many_attempts':
         case 'http_429':
-          return 'Rate limit — thodi der (≈15 min) ruk ke dobara try karo, ya server restart hua hai to turant chalega.';
+          return 'Rate limit — wait a short while (≈15 min) and try again; if the server has restarted it will work immediately.';
         case 'invalid_token':
         case 'missing_token':
-          return 'Session khatm — dobara login karo.';
+          return 'Your session has expired — please log in again.';
         case 'api_base_url_missing':
-          return 'API URL set nahi hai — flutter run --dart-define=API_BASE_URL=http://<laptop-LAN-IP>:3000 (phone) ya http://10.0.2.2:3000 (emulator) use karo.';
+          return 'API URL is not set — use flutter run --dart-define=API_BASE_URL=http://<laptop-LAN-IP>:3000 (phone) or http://10.0.2.2:3000 (emulator).';
         case 'idempotency_conflict':
-          return 'Is form se pehle ek booking process ho chuki hai — details badal ke dobara confirm karo.';
+          return 'A booking from this form has already been processed — change the details and confirm again.';
         case 'maintenance_active':
           final m = e.message;
           return (m != null && m.isNotEmpty)
-              ? 'Bookings ruki hain — $m'
-              : 'Maintenance chal raha hai — bookings thodi der me wapas chalu hongi. Banner check karo.';
+              ? 'Bookings are paused — $m'
+              : 'Maintenance in progress — bookings will resume shortly. Check the banner.';
         case 'server_error':
-          return 'Server error — booking save nahi hui. My Bookings me check karo (kabhi ban jati hai), date hata ke retry karo, ya backend update chahiye (prod purana hai).';
+          return 'Server error — the booking was not saved. Check My Bookings (it sometimes gets created), try again without the date, or the backend needs an update (production is outdated).';
         default:
-          return 'Booking fail (${e.code}). Retry karo.';
+          return 'Booking failed (${e.code}). Try again.';
       }
     }
-    return 'Server se baat nahi ho payi. Net + server check karo.';
+    return 'Unable to connect to the server. Check your network and the server.';
   }
 
   @override
@@ -554,7 +555,7 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
                     const Text('Map trouble?',
                         style: TextStyle(fontWeight: FontWeight.w800)),
                     const Text(
-                        'Map / suggestions unavailable ho sakte hain. PIN fallback se aage badho — details safe rahenge.',
+                        'The map / suggestions may be unavailable. Proceed with the PIN fallback — your details will remain safe.',
                         style: TextStyle(fontSize: 12)),
                     const SizedBox(height: 8),
                     Row(children: [
@@ -591,7 +592,7 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
                     const Text('PIN Code fallback',
                         style: TextStyle(fontWeight: FontWeight.w800)),
                     const Text(
-                        '6-digit Indian PINs likho. City/district/state address me manually likho — koi auto-fill nahi. Fare sirf backend estimate se.',
+                        'Enter 6-digit Indian PINs. Type the city/district/state in the address manually — no auto-fill. The fare comes only from the backend estimate.',
                         style:
                             TextStyle(fontSize: 12, color: Colors.grey)),
                     const SizedBox(height: 8),
@@ -664,7 +665,7 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
             const Padding(
               padding: EdgeInsets.only(top: 4),
               child: Text(
-                  '⚠️ Address badla hai — suggestion se dobara chuno ya map par pin check karo.',
+                  '⚠️ Address changed — choose from the suggestion again or check the pin on the map.',
                   style: TextStyle(color: Colors.orange, fontSize: 12)),
             ),
           if (_pickSug.isNotEmpty)
@@ -750,7 +751,7 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
             const Padding(
               padding: EdgeInsets.only(top: 4),
               child: Text(
-                  '⚠️ Address badla hai — suggestion se dobara chuno ya map par pin check karo.',
+                  '⚠️ Address changed — choose from the suggestion again or check the pin on the map.',
                   style: TextStyle(color: Colors.orange, fontSize: 12)),
             ),
           if (_dropSug.isNotEmpty)
@@ -826,7 +827,7 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
             return Padding(
               padding: const EdgeInsets.only(top: 4),
               child: Text(
-                  'Pickup–drop seedhi doori ~${dist.toStringAsFixed(0)} km (road ~${road.toStringAsFixed(0)} km)${over ? ' — 500km limit cross!' : ''}',
+                  'Pickup–drop straight-line distance ~${dist.toStringAsFixed(0)} km (road ~${road.toStringAsFixed(0)} km)${over ? ' — 500km limit exceeded!' : ''}',
                   style: TextStyle(
                       fontSize: 12,
                       color: over ? Colors.red : Colors.green,
@@ -902,7 +903,7 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
                     onChanged: (v) => setState(() => _pay = v ?? 'upi'))),
           ]),
           CheckboxListTile(
-              title: const Text('Helper chahiye (+charge)'),
+              title: const Text('Helper needed (+charge)'),
               value: _helper,
               onChanged: (v) => setState(() {
                     _helper = v ?? false;
@@ -918,7 +919,7 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
                       style: TextStyle(fontWeight: FontWeight.w800)),
                   const SizedBox(height: 4),
                   const Text(
-                      'Kam se kam ek item + quantity chuno — booking ke saath save hogi.',
+                      'Choose at least one item + quantity — it will be saved with the booking.',
                       style: TextStyle(fontSize: 12, color: Colors.grey)),
                   const SizedBox(height: 8),
                   for (final n in kCatalog)
@@ -972,7 +973,7 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
                                       : _customName.text.trim().length);
                           if (v.length < 2) {
                             setState(() => _fieldError =
-                                'Custom item ka naam kam se kam 2 akshar.');
+                                'The custom item name must be at least 2 characters.');
                             return;
                           }
                           setState(() {
@@ -999,7 +1000,7 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
                   const SizedBox(height: 4),
                   Text(
                     _totalItems == 0
-                        ? '0 items — kam se kam ek jodo.'
+                        ? '0 items — add at least one.'
                         : '$_totalItems item${_totalItems == 1 ? '' : 's'} selected.',
                     style: TextStyle(
                         fontSize: 12,
@@ -1047,7 +1048,7 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
             onPressed: _estimating || AnnouncementStore.instance.maintenanceBlocked
                 ? null
                 : _estimate,
-            child: Text(_estimating ? 'Ruko…' : 'Get Estimate — See Fare'),
+            child: Text(_estimating ? 'Please wait…' : 'Get Estimate — See Fare'),
           ),
           if (_quote != null)
             Card(
@@ -1076,7 +1077,7 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
             onPressed: _booking || AnnouncementStore.instance.maintenanceBlocked
                 ? null
                 : _confirm,
-            child: Text(_booking ? 'Ruko…' : 'Confirm Booking →'),
+            child: Text(_booking ? 'Please wait…' : 'Confirm Booking →'),
           ),
           const SizedBox(height: 24),
         ],

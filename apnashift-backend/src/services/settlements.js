@@ -218,7 +218,7 @@ export async function payPeriodTx(client, { periodId, amountPaise, method, refer
   if (amountPaise > remaining) {
     const err = new Error('settlement_exceeds_outstanding');
     err.status = 409;
-    err.details = [{ field: 'amount_rs', message: `Is week me sirf Rs ${paiseToRs(remaining)} baaki hai.` }];
+    err.details = [{ field: 'amount_rs', message: `Only Rs ${paiseToRs(remaining)} remaining this week.` }];
     throw err;
   }
   const owed = await client.query(

@@ -69,30 +69,30 @@
   <div class="tabs" role="tablist" id="tabs">
     <button data-tab="register" class="active">Registration</button>
     <button data-tab="login">Login</button>
-    <button data-tab="kaam">Kaam</button>
+    <button data-tab="kaam">Work</button>
   </div>
 
   <!-- REGISTER -->
   <section class="card panel active" id="panel-register">
     <h2>Driver registration — 1 minute</h2>
-    <p class="muted" style="margin:0">Register karte hi account ban jayega, par booking tabhi milegi jab owner <b>verify</b> karega (admin page se).</p>
-    <label for="r-name">Naam *</label>
+    <p class="muted" style="margin:0">Your account is created as soon as you register, but you'll get bookings only after the owner <b>verifies</b> you (from the admin page).</p>
+    <label for="r-name">Name *</label>
     <input id="r-name" maxlength="80" placeholder="Example: Raju Yadav">
-    <label for="r-phone">Phone (10 digit) *</label>
+    <label for="r-phone">Phone (10 digits) *</label>
     <input id="r-phone" inputmode="numeric" maxlength="15" placeholder="98765 43210">
-    <p class="hint">+91 ya space chalega.</p>
+    <p class="hint">+91 or spaces are fine.</p>
     <label for="r-pass">Password (min 8) *</label>
-    <input id="r-pass" type="password" placeholder="Mazboot password">
-    <label for="r-vehicle">Gaadi *</label>
+    <input id="r-pass" type="password" placeholder="Strong password">
+    <label for="r-vehicle">Vehicle *</label>
     <select id="r-vehicle">
       <option value="pickup">Pickup</option>
       <option value="mini_truck">Mini Truck</option>
       <option value="mini_tractor">Mini Tractor</option>
     </select>
-    <label for="r-number">Gaadi number *</label>
+    <label for="r-number">Vehicle number *</label>
     <input id="r-number" maxlength="20" placeholder="MP09AB1234" style="text-transform:uppercase">
-    <div style="margin-top:12px"><button class="btn" id="regBtn">Register karo</button></div>
-    <p class="muted" style="margin-top:10px">Naya detailed registration (license, documents, service area ke saath)?
+    <div style="margin-top:12px"><button class="btn" id="regBtn">Register</button></div>
+    <p class="muted" style="margin-top:10px">Want the detailed registration (license, documents, service area)?
       <a href="/driver-register.html"><b>Driver Partner Registration →</b></a></p>
   </section>
 
@@ -110,21 +110,21 @@
 
   <!-- WORK -->
   <section class="card panel" id="panel-kaam">
-    <h2>Mera profile</h2>
-    <div id="profileBox"><p class="muted">Login karo — profile yahan dikhega.</p></div>
+    <h2>My profile</h2>
+    <div id="profileBox"><p class="muted">Log in — your profile will appear here.</p></div>
     <div class="earn" id="earnBox" style="display:none">
-      <div><b id="earnRs">–</b><span class="muted">7 din ki kamai</span></div>
-      <div><b id="earnCount">–</b><span class="muted">7 din me trips</span></div>
+      <div><b id="earnRs">–</b><span class="muted">Earnings (7 days)</span></div>
+      <div><b id="earnCount">–</b><span class="muted">Trips (7 days)</span></div>
     </div>
     <div class="actions">
       <button class="btn small" id="refreshBtn">Refresh</button>
-      <button class="btn small ghost" id="availBtn">Nayi bookings dekho</button>
-      <button class="btn small ghost" id="myBtn">Meri bookings</button>
+      <button class="btn small ghost" id="availBtn">View new bookings</button>
+      <button class="btn small ghost" id="myBtn">My bookings</button>
     </div>
-    <h2 style="margin-top:16px">Nayi bookings (meri gaadi wali)</h2>
-    <div id="availBox"><p class="muted">Upar button dabao.</p></div>
-    <h2 style="margin-top:16px">Meri bookings</h2>
-    <div id="myBox"><p class="muted">Upar button dabao.</p></div>
+    <h2 style="margin-top:16px">New bookings (for my vehicle)</h2>
+    <div id="availBox"><p class="muted">Tap the button above.</p></div>
+    <h2 style="margin-top:16px">My bookings</h2>
+    <div id="myBox"><p class="muted">Tap the button above.</p></div>
   </section>
 </main>
 
@@ -158,7 +158,7 @@ async function api(path, opts){
   });
   var data = null;
   try{ data = await res.json(); }catch(e){}
-  if(res.status === 401){ setLoggedOut(); throw new Error("Session khatm — dobara login karo."); }
+  if(res.status === 401){ setLoggedOut(); throw new Error("Session expired — log in again."); }
   if(!res.ok || (data && data.ok === false)){
     var msg = (data && (data.error || (data.details && data.details[0] && data.details[0].message))) || ("HTTP " + res.status);
     var err = new Error(String(msg)); err.status = res.status; err.data = data;
@@ -192,15 +192,15 @@ function setLoggedOut(){
   setToken("");
   $("logoutBtn").style.display = "none";
   $("whoBox").textContent = "";
-  $("profileBox").innerHTML = "<p class='muted'>Login karo — profile yahan dikhega.</p>";
+  $("profileBox").innerHTML = "<p class='muted'>Log in — your profile will appear here.</p>";
   $("earnBox").style.display = "none";
 }
-$("logoutBtn").onclick = function(){ setLoggedOut(); showAlert("info", "Logout ho gaya."); goTab("login"); };
+$("logoutBtn").onclick = function(){ setLoggedOut(); showAlert("info", "Logged out."); goTab("login"); };
 
 // --- register ---
 $("regBtn").onclick = async function(){
   hideAlert();
-  var btn = $("regBtn"); btn.disabled = true; btn.textContent = "Bhej rahe hain…";
+  var btn = $("regBtn"); btn.disabled = true; btn.textContent = "Sending…";
   try{
     var body = {
       name: $("r-name").value.trim(),
@@ -219,10 +219,10 @@ $("regBtn").onclick = async function(){
     }
     setToken(data.token);
     setLoggedIn(data.user);
-    showAlert("info", "Registration OK! Owner ke verify karne ke baad booking milegi. Tab tak wait karo.");
+    showAlert("info", "Registration OK! You'll get bookings after the owner verifies you. Please wait until then.");
     refreshAll();
-  }catch(e){ showAlert("err", "Register fail: " + e.message); }
-  finally{ btn.disabled = false; btn.textContent = "Register karo"; }
+  }catch(e){ showAlert("err", "Registration failed: " + e.message); }
+  finally{ btn.disabled = false; btn.textContent = "Register"; }
 };
 
 // --- login ---
@@ -236,20 +236,20 @@ $("loginBtn").onclick = async function(){
     });
     var data = null; try{ data = await res.json(); }catch(e){}
     if(!res.ok || !data || data.ok !== true) throw new Error((data && data.error) || ("HTTP " + res.status));
-    if(data.user.role !== "driver"){ throw new Error("Ye number driver ka nahi hai (role: " + data.user.role + "). Driver number se login karo."); }
+    if(data.user.role !== "driver"){ throw new Error("This number is not a driver account (role: " + data.user.role + "). Log in with a driver number."); }
     setToken(data.token);
     setLoggedIn(data.user);
     showAlert("info", "Login OK — " + data.user.name + ".");
     refreshAll();
-  }catch(e){ showAlert("err", "Login fail: " + e.message); }
+  }catch(e){ showAlert("err", "Login failed: " + e.message); }
   finally{ btn.disabled = false; btn.textContent = "Login"; }
 };
 
 // --- profile + earnings ---
 function renderProfile(u){
   var v = u.is_verified
-    ? '<span class="pill ok">verified — booking milegi</span>'
-    : '<span class="pill bad">unverified — owner verify karega, tab booking milegi</span>';
+    ? '<span class="pill ok">verified — bookings enabled</span>'
+    : '<span class="pill bad">unverified — bookings start after the owner verifies you</span>';
   $("profileBox").innerHTML =
     "<b>" + esc(u.name) + "</b> • " + esc(u.phone) + "<br>" +
     "<span class='muted'>" + esc(u.vehicle_type || "") + " • " + esc(u.vehicle_number || "") + "</span><br>" + v;
@@ -258,7 +258,7 @@ async function refreshAll(){
   hideAlert();
   try{
     var me = await api("/api/auth/me");
-    if(me.user.role !== "driver") throw new Error("Token driver ka nahi hai.");
+    if(me.user.role !== "driver") throw new Error("This token does not belong to a driver.");
     renderProfile(me.user);
     $("whoBox").textContent = me.user.name + " • " + me.user.phone;
     $("logoutBtn").style.display = "";
@@ -269,8 +269,8 @@ async function refreshAll(){
     $("earnRs").textContent = "Rs " + e2.earnings_rs;
     $("earnCount").textContent = e2.completed_count;
   }catch(e){
-    if(e.status === 403){ $("earnBox").style.display = "none"; showAlert("info", "Account abhi verify nahi hai — owner verify karega, tab kaam + kamai dikhegi."); }
-    else showAlert("err", "Kamai: " + e.message);
+    if(e.status === 403){ $("earnBox").style.display = "none"; showAlert("info", "Your account isn't verified yet — the owner will verify you, then work and earnings will appear."); }
+    else showAlert("err", "Earnings: " + e.message);
   }
 }
 $("refreshBtn").onclick = refreshAll;
@@ -280,10 +280,10 @@ function bookingCard(b, mine){
   var nextBtn = "";
   var nextMap = { accepted: "arrived", arrived: "in_transit", in_transit: "delivered" };
   if(mine && nextMap[b.status]){
-    var label = { arrived: "Pahunch gaya", in_transit: "Trip shuru", delivered: "Delivered" }[nextMap[b.status]];
+    var label = { arrived: "Arrived", in_transit: "Trip started", delivered: "Delivered" }[nextMap[b.status]];
     nextBtn = '<button class="btn small" data-status="' + esc(nextMap[b.status]) + '" data-id="' + esc(b.id) + '">' + esc(label) + '</button>';
   }
-  var acceptBtn = (!mine) ? '<button class="btn small" data-accept="' + esc(b.id) + '">Accept karo</button>' : "";
+  var acceptBtn = (!mine) ? '<button class="btn small" data-accept="' + esc(b.id) + '">Accept</button>' : "";
   return '<div class="booking"><b class="route">' + esc((b.pickup && b.pickup.address) || "") + " → " + esc((b.drop && b.drop.address) || "") + "</b>" +
     '<span class="pill">' + esc(b.status) + '</span> <span class="pill">Rs ' + esc(b.price_rs) + '</span> ' +
     '<span class="pill">' + esc(b.vehicle_type) + '</span>' +
@@ -296,19 +296,19 @@ $("availBtn").onclick = async function(){
   hideAlert();
   try{
     var d = await api("/api/driver/bookings/available?limit=20");
-    if(!d.bookings.length){ $("availBox").innerHTML = "<p class='muted'>Abhi koi pending booking nahi (tumhari gaadi type wali).</p>"; return; }
+    if(!d.bookings.length){ $("availBox").innerHTML = "<p class='muted'>No pending bookings right now (for your vehicle type).</p>"; return; }
     $("availBox").innerHTML = d.bookings.map(function(b){ return bookingCard(b, false); }).join("");
     $("availBox").querySelectorAll("button[data-accept]").forEach(function(btn){
       btn.onclick = async function(){
         try{
           await api("/api/driver/bookings/" + btn.dataset.accept + "/accept", { method: "PATCH", body: {} });
-          showAlert("info", "Booking accept OK! Meri bookings me dekho.");
+          showAlert("info", "Booking accepted! Check My bookings.");
           $("availBtn").onclick(); loadMine();
         }catch(e){ showAlert("err", "Accept: " + e.message); }
       };
     });
   }catch(e){
-    if(e.status === 403) showAlert("info", "Account abhi verify nahi hai — owner verify karega, tab nayi bookings dikhengi.");
+    if(e.status === 403) showAlert("info", "Your account isn't verified yet — the owner will verify you, then new bookings will appear.");
     else showAlert("err", "Bookings: " + e.message);
   }
 };
@@ -316,7 +316,7 @@ $("availBtn").onclick = async function(){
 async function loadMine(){
   try{
     var d = await api("/api/driver/bookings?limit=20");
-    if(!d.bookings.length){ $("myBox").innerHTML = "<p class='muted'>Abhi koi booking accept nahi ki.</p>"; return; }
+    if(!d.bookings.length){ $("myBox").innerHTML = "<p class='muted'>You haven't accepted any bookings yet.</p>"; return; }
     $("myBox").innerHTML = d.bookings.map(function(b){ return bookingCard(b, true); }).join("");
     $("myBox").querySelectorAll("button[data-status]").forEach(function(btn){
       btn.onclick = async function(){
@@ -328,8 +328,8 @@ async function loadMine(){
       };
     });
   }catch(e){
-    if(e.status === 403) $("myBox").innerHTML = "<p class='muted'>Verify ke baad yahan bookings dikhengi.</p>";
-    else showAlert("err", "Meri bookings: " + e.message);
+    if(e.status === 403) $("myBox").innerHTML = "<p class='muted'>Bookings will appear here after verification.</p>";
+    else showAlert("err", "My bookings: " + e.message);
   }
 }
 $("myBtn").onclick = function(){ hideAlert(); loadMine(); };

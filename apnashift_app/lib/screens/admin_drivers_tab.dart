@@ -107,7 +107,7 @@ class _AdminDriversTabState extends State<AdminDriversTab> {
             controller: c,
             maxLength: 500,
             decoration: const InputDecoration(
-                hintText: 'Wajah (min 3 akshar)',
+                hintText: 'Reason (min 3 characters)',
                 border: OutlineInputBorder())),
         actions: [
           TextButton(

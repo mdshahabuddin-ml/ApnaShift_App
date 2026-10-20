@@ -77,61 +77,61 @@ class _DriverRegisterScreenState extends State<DriverRegisterScreen> {
 
   String? _validateStep(int s) {
     if (s == 0) {
-      if (_name.text.trim().length < 2) return 'Naam kam se kam 2 akshar.';
+      if (_name.text.trim().length < 2) return 'Name must be at least 2 characters.';
       if (!_phoneRe.hasMatch(_cleanPhone(_phone.text))) {
-        return 'Phone 10 digit Indian mobile (6-9 se shuru).';
+        return 'Phone must be a 10-digit Indian mobile number (starting with 6-9).';
       }
       if (_email.text.trim().isNotEmpty &&
           !_emailRe.hasMatch(_email.text.trim())) {
-        return 'Sahi email likho.';
+        return 'Enter a valid email.';
       }
-      if (_city.text.trim().length < 2) return 'Sheher kam se kam 2 akshar.';
-      if (_pass.text.length < 8) return 'Password kam se kam 8 akshar.';
+      if (_city.text.trim().length < 2) return 'City must be at least 2 characters.';
+      if (_pass.text.length < 8) return 'Password must be at least 8 characters.';
       if (_upi.text.trim().isNotEmpty &&
           !_upiRe.hasMatch(_upi.text.trim())) {
-        return 'UPI ID format naam@bank jaisa ho.';
+        return 'UPI ID must be in the format name@bank.';
       }
     }
     if (s == 1) {
       final vn = _vnum.text.trim().toUpperCase();
       if (vn.length < 4 || vn.length > 20) {
-        return 'Gaadi number 4-20 akshar.';
+        return 'Vehicle number must be 4-20 characters.';
       }
       if (!RegExp(r'^[A-Z0-9 ]+$').hasMatch(vn)) {
-        return 'Gaadi number me sirf A-Z, 0-9 aur space.';
+        return 'Vehicle number may only contain A-Z, 0-9 and spaces.';
       }
       if (_vyear.text.trim().isNotEmpty) {
         final y = int.tryParse(_vyear.text.trim());
         if (y == null || y < 1990 || y > 2100) {
-          return 'Year 1990-2100 ke beech ho.';
+          return 'Year must be between 1990 and 2100.';
         }
       }
       if (_vcap.text.trim().isNotEmpty) {
         final c = int.tryParse(_vcap.text.trim());
         if (c == null || c < 0 || c > 50000) {
-          return 'Capacity 0-50000 kg ke beech ho.';
+          return 'Capacity must be between 0 and 50000 kg.';
         }
       }
     }
     if (s == 2) {
       final dl = _dlnum.text.trim().toUpperCase();
       if (!RegExp(r'^[A-Z0-9 ]{5,25}$').hasMatch(dl)) {
-        return 'License number 5-25 akshar (A-Z, 0-9, space).';
+        return 'License number must be 5-25 characters (A-Z, 0-9, space).';
       }
-      if (_dlexp == null) return 'License expiry date chuno.';
+      if (_dlexp == null) return 'Select the license expiry date.';
       final now = DateTime.now();
       final today =
           DateTime(now.year, now.month, now.day).add(const Duration(days: 1));
       if (!_dlexp!.isAfter(today.subtract(const Duration(days: 1)))) {
-        return 'Expiry aaj ke baad ki date ho.';
+        return 'Expiry must be a date after today.';
       }
-      if (_dlexp!.isBefore(today)) return 'Expiry aaj ke baad ki date ho.';
+      if (_dlexp!.isBefore(today)) return 'Expiry must be a date after today.';
       if (_scity.text.trim().length < 2) {
-        return 'Service city kam se kam 2 akshar.';
+        return 'Service city must be at least 2 characters.';
       }
     }
     if (s == 3) {
-      if (!_c1 || !_c2) return 'Dono consent tick karo (terms + documents sahi).';
+      if (!_c1 || !_c2) return 'Tick both consents (terms + documents are correct).';
     }
     return null;
   }
@@ -197,23 +197,23 @@ class _DriverRegisterScreenState extends State<DriverRegisterScreen> {
   static String _friendly(String code) {
     switch (code) {
       case 'phone_taken':
-        return 'Ye number already registered hai — Login dabao.';
+        return 'This number is already registered — tap Login.';
       case 'driver_already_registered':
-        return 'Ye email already registered hai.';
+        return 'This email is already registered.';
       case 'license_already_registered':
-        return 'Ye license already registered hai.';
+        return 'This license is already registered.';
       case 'vehicle_already_registered':
-        return 'Ye gaadi number already registered hai.';
+        return 'This vehicle number is already registered.';
       case 'validation_failed':
-        return 'Details check karo (steps 1-4).';
+        return 'Check the details (steps 1-4).';
       case 'too_many_attempts':
-        return 'Bahut tries — 15 min ruk ke retry karo.';
+        return 'Too many attempts — try again in 15 minutes.';
       case 'network_error':
-        return 'Server se baat nahi ho payi.';
+        return 'Unable to connect to the server.';
       case 'api_base_url_missing':
-        return 'API URL set nahi hai — flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000 (emulator) ya http://<laptop-LAN-IP>:3000 (phone) se chalao.';
+        return 'API URL is not set — run with flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000 (emulator) or http://<laptop-LAN-IP>:3000 (phone).';
       default:
-        return 'Register fail ($code). Retry karo.';
+        return 'Registration failed ($code). Try again.';
     }
   }
 
@@ -238,7 +238,7 @@ class _DriverRegisterScreenState extends State<DriverRegisterScreen> {
                 Text('Date: ${_success!['at']}'),
                 const SizedBox(height: 8),
                 const Text(
-                    'Admin verify karega — tab tak jobs nahi dikhengi. UPI ID profile me save kar sakte ho.'),
+                    'The admin will verify it — jobs will not be visible until then. You can save your UPI ID in your profile.'),
                 const SizedBox(height: 16),
                 ElevatedButton(
                     onPressed: () => Navigator.of(context).pop(),
@@ -292,7 +292,7 @@ class _DriverRegisterScreenState extends State<DriverRegisterScreen> {
                         kb: TextInputType.emailAddress),
                     _tf(_city, 'City *'),
                     _tf(_pass, 'Password (8+) *', pw: true),
-                    _tf(_upi, 'UPI ID (optional, naam@bank)'),
+                    _tf(_upi, 'UPI ID (optional, name@bank)'),
                   ])),
               Step(
                   title: const Text('Vehicle'),
@@ -313,7 +313,7 @@ class _DriverRegisterScreenState extends State<DriverRegisterScreen> {
                         ],
                         onChanged: (v) =>
                             setState(() => _vtype = v ?? 'pickup')),
-                    _tf(_vnum, 'Gaadi number * (e.g. MP09AB1234)'),
+                    _tf(_vnum, 'Vehicle number * (e.g. MP09AB1234)'),
                     _tf(_vmodel, 'Model (optional)'),
                     Row(children: [
                       Expanded(child: _tf(_vyear, 'Year (1990-2100)',
@@ -331,7 +331,7 @@ class _DriverRegisterScreenState extends State<DriverRegisterScreen> {
                     Row(children: [
                       Expanded(
                           child: Text(_dlexp == null
-                              ? 'Expiry: chuno *'
+                               ? 'Expiry: select *'
                               : 'Expiry: ${_dlexp!.day}/${_dlexp!.month}/${_dlexp!.year}')),
                       TextButton(
                           onPressed: () async {
@@ -374,14 +374,12 @@ class _DriverRegisterScreenState extends State<DriverRegisterScreen> {
                           child: const Text('Choose')),
                     ]),
                     CheckboxListTile(
-                        title: const Text(
-                            'Terms accept karta hoon *'),
+                        title: const Text('I accept the terms *'),
                         value: _c1,
                         onChanged: (v) =>
                             setState(() => _c1 = v ?? false)),
                     CheckboxListTile(
-                        title: const Text(
-                            'Documents sahi hain *'),
+                        title: const Text('The documents are correct *'),
                         value: _c2,
                         onChanged: (v) =>
                             setState(() => _c2 = v ?? false)),
@@ -402,7 +400,7 @@ class _DriverRegisterScreenState extends State<DriverRegisterScreen> {
                         ElevatedButton(
                             onPressed: _busy ? null : _submit,
                             child: Text(_busy
-                                ? 'Ruko…'
+                                ? 'Please wait…'
                                 : 'Submit application →')),
                       ])),
             ],

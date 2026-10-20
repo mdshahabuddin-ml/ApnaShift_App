@@ -277,11 +277,11 @@ class _WrongRoleScreen extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text('Namaste, ${session.user?.name ?? ''}',
+                Text('Hello, ${session.user?.name ?? ''}',
                     style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
                 const SizedBox(height: 12),
                 const Text(
-                  'Ye login driver/staff ka hai. Ye app sirf customer ke liye hai — customer number se login karo.',
+                  'This login is for drivers and staff. This app is for customers only — please log in with a customer number.',
                   style: TextStyle(color: Colors.white70),
                 ),
                 const SizedBox(height: 20),
@@ -289,7 +289,7 @@ class _WrongRoleScreen extends StatelessWidget {
                   onPressed: () => session.logout(),
                   style: ElevatedButton.styleFrom(
                       backgroundColor: yellow, foregroundColor: navy, padding: const EdgeInsets.all(16)),
-                  child: const Text('Logout karke customer se login karo →',
+                  child: const Text('Log out and log in as a customer →',
                       style: TextStyle(fontWeight: FontWeight.w800)),
                 ),
               ],

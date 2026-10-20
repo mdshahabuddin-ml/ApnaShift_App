@@ -106,8 +106,8 @@ class _BookingsScreenState extends State<BookingsScreen> {
       setState(() => _actionBusy = false);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(e is ApiException
-              ? 'Cancel fail (${e.code})'
-              : 'Cancel fail — retry karo.')));
+              ? 'Cancel failed (${e.code})'
+              : 'Cancel failed — try again.')));
     }
   }
 
@@ -162,24 +162,24 @@ class _BookingsScreenState extends State<BookingsScreen> {
     if (e is ApiException) {
       switch (e.code) {
         case 'forbidden':
-          return 'Ye login customer ka nahi hai (driver/staff number). Logout karke customer number se login karo.';
+          return 'This login is not for customers (it is a driver/staff number). Log out and log in with a customer number.';
         case 'invalid_token':
         case 'missing_token':
-          return 'Session khatm ho gaya — dobara login karo.';
+          return 'Your session has expired — please log in again.';
         case 'too_many_attempts':
-          return 'Bahut requests — thoda ruk ke pull-to-refresh karo.';
+          return 'Too many requests — wait a moment and pull to refresh.';
         case 'maintenance_active':
           final m = e.message;
           return (m != null && m.isNotEmpty)
-              ? 'Maintenance chal raha hai — $m'
-              : 'Maintenance chal raha hai — bookings thodi der me chalu hongi.';
+              ? 'Maintenance in progress — $m'
+              : 'Maintenance in progress — bookings will resume shortly.';
         case 'api_base_url_missing':
-          return 'API URL set nahi hai — flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000 (emulator) ya http://<laptop-LAN-IP>:3000 (phone) se chalao.';
+          return 'API URL is not set — run with flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000 (emulator) or http://<laptop-LAN-IP>:3000 (phone).';
         default:
-          return 'Bookings load nahi hui (${e.code}). Pull-to-refresh karo.';
+          return 'Bookings could not be loaded (${e.code}). Pull to refresh.';
       }
     }
-    return 'Server se baat nahi ho payi. Net + server check karke pull-to-refresh karo.';
+    return 'Unable to connect to the server. Check your network and the server, then pull to refresh.';
   }
 
   Widget _pill(String s) {
@@ -202,7 +202,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
     final hasMore = _items.length < _total;
     return AppScaffold(
       settings: widget.settings,
-      title: 'Namaste, ${widget.session.user?.name ?? ''}',
+      title: 'Hello, ${widget.session.user?.name ?? ''}',
       actions: [
         IconButton(
           tooltip: 'Logout',
@@ -242,7 +242,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                         Padding(
                             padding: EdgeInsets.all(24),
                             child: Text(
-                                'Koi booking nahi — Book tab se pehli booking banao.'))
+                                'No bookings yet — create your first booking from the Book tab.'))
                       ])
                     : ListView.builder(
                         itemCount: _items.length + 1,
@@ -258,9 +258,9 @@ class _BookingsScreenState extends State<BookingsScreen> {
                                   OutlinedButton(
                                       onPressed:
                                           _moreBusy ? null : _more,
-                                      child: Text(_moreBusy
-                                          ? 'Ruko…'
-                                          : 'Show more')),
+                                  child: Text(_moreBusy
+                                      ? 'Please wait…'
+                                      : 'Show more')),
                               ]),
                             );
                           }

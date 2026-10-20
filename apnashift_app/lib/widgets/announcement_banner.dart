@@ -107,7 +107,7 @@ class _Strip extends StatelessWidget {
           ),
           if (onDismiss != null)
             IconButton(
-              tooltip: 'Band karo',
+              tooltip: 'Close',
               visualDensity: VisualDensity.compact,
               iconSize: 18,
               icon: const Icon(Icons.close),

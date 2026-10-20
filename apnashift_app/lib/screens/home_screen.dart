@@ -206,9 +206,9 @@ class _StepsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const steps = [
-      '1. Pickup + drop likho',
-      '2. Vehicle chuno + estimate dekho',
-      '3. Confirm karo — driver assign',
+      '1. Enter pickup + drop',
+      '2. Select a vehicle + check the estimate',
+      '3. Confirm — driver assigned',
       '4. Live track + delivery',
     ];
     return Column(
@@ -228,16 +228,16 @@ class _FaqList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Column(children: [
-      ExpansionTile(title: Text('Price kaise banta hai?'), children: [
+      ExpansionTile(title: Text('How is the price calculated?'), children: [
         Padding(
             padding: EdgeInsets.all(12),
             child: Text(
-                'Base + per-km × distance + helper — website jaisa estimate Phase 2 me.'))
+                'Base + per-km × distance + helper — a website-like estimate in Phase 2.'))
       ]),
-      ExpansionTile(title: Text('Payment kaise?'), children: [
+      ExpansionTile(title: Text('How do I pay?'), children: [
         Padding(
             padding: EdgeInsets.all(12),
-            child: Text('UPI / Cash — website parity Phase 2 me.'))
+            child: Text('UPI / Cash — website parity in Phase 2.'))
       ]),
     ]);
   }

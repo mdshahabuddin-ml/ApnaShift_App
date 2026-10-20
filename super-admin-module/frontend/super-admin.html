@@ -100,10 +100,10 @@ dialog menu{display:flex;gap:10px;justify-content:flex-end;padding:0;margin:14px
 <div id="gate" hidden>
   <div class="card">
     <h2>Super Admin — restricted</h2>
-    <p class="muted">Is panel ke liye admin login chahiye (wahi token jo admin dashboard use karta hai). Authorization backend pe enforce hoti hai.</p>
+    <p class="muted">This panel requires an admin login (the same token the admin dashboard uses). Authorization is enforced on the backend.</p>
     <div class="actions">
       <a class="btn" href="admin-login.html">Admin Login</a>
-      <button class="btn secondary" id="gateRetry" type="button">Token check karo</button>
+      <button class="btn secondary" id="gateRetry" type="button">Check token</button>
     </div>
     <p class="muted" id="gateMsg"></p>
   </div>
@@ -124,13 +124,13 @@ dialog menu{display:flex;gap:10px;justify-content:flex-end;padding:0;margin:14px
     </nav>
     <div class="sfoot">
       <span id="whoLine">admin</span><br>
-      <button type="button" id="logoutBtn">Logout (token bhoolo)</button>
+      <button type="button" id="logoutBtn">Logout (clear token)</button>
     </div>
   </aside>
 
   <main class="main">
     <h1 id="secTitle">Operations Overview</h1>
-    <p class="sub" id="secSub">Live database se — sample data nahi.</p>
+    <p class="sub" id="secSub">From the live database — not sample data.</p>
 
     <!-- OVERVIEW -->
     <section class="panel active" id="p-overview" aria-label="Operations overview">
@@ -160,9 +160,9 @@ dialog menu{display:flex;gap:10px;justify-content:flex-end;padding:0;margin:14px
           <div class="field"><label for="cuPhone">10-digit mobile</label><input type="tel" id="cuPhone" inputmode="numeric" placeholder="9876543210"></div>
           <button class="btn" type="button" id="cuGo">Search</button>
         </div>
-        <div id="cuOut"><p class="muted">Phone se account dhoondho. Sirf id/name/phone dikhta hai — hash ya token kabhi nahi.</p></div>
+        <div id="cuOut"><p class="muted">Search for an account by phone. Only id/name/phone are shown — never the hash or token.</p></div>
       </div>
-      <div class="notice"><strong>Note:</strong> customer booking-history <code>GET /api/superadmin/customers/:id</code> se aati hai (super_admin-only). Customer suspend aur complaint workflow ka backend endpoint nahi hai — ye gap documented hai, bina permission ke kuch nahi banaya gaya.</div>
+      <div class="notice"><strong>Note:</strong> customer booking history comes from <code>GET /api/superadmin/customers/:id</code> (super_admin-only). There is no backend endpoint for customer suspension or the complaint workflow — this gap is documented, and nothing was created without permission.</div>
       <div id="cuDetail"></div>
     </section>
 
@@ -194,7 +194,7 @@ dialog menu{display:flex;gap:10px;justify-content:flex-end;padding:0;margin:14px
           </div>
           <button class="btn" type="button" id="fiGo">Load report</button>
         </div>
-        <div id="fiOut"><p class="muted">Range chuno. Fare / commission / driver earning / settled / pending — sab backend math se, yahan dobara calculate nahi hota.</p></div>
+        <div id="fiOut"><p class="muted">Choose a range. Fare / commission / driver earning / settled / pending — all from backend math, not recalculated here.</p></div>
       </div>
       <div class="card">
         <h2>Payment ledger</h2>
@@ -210,7 +210,7 @@ dialog menu{display:flex;gap:10px;justify-content:flex-end;padding:0;margin:14px
       </div>
       <div class="card">
         <h2>Driver balances (settlement queue)</h2>
-        <div id="balOut"><p class="muted">Load karne pe highest-outstanding order me aata hai.</p></div>
+        <div id="balOut"><p class="muted">When loaded, rows come in highest-outstanding order.</p></div>
         <div class="actions"><button class="btn secondary" type="button" id="balGo">Load balances</button></div>
       </div>
       <div class="card">
@@ -238,8 +238,8 @@ dialog menu{display:flex;gap:10px;justify-content:flex-end;padding:0;margin:14px
           <div class="field"><label for="enSearch">Search (company/email/name)</label><input type="search" id="enSearch"></div>
           <button class="btn" type="button" id="enGo">Load</button>
         </div>
-        <p class="muted">Valid statuses: NEW, CONTACTED, IN_DISCUSSION, CONVERTED, CLOSED (backend enum — IN_PROGRESS exist nahi karta).</p>
-        <div id="enOut"><p class="muted">Filter lagao.</p></div>
+        <p class="muted">Valid statuses: NEW, CONTACTED, IN_DISCUSSION, CONVERTED, CLOSED (backend enum — IN_PROGRESS does not exist).</p>
+        <div id="enOut"><p class="muted">Apply a filter.</p></div>
         <div class="pager"><button class="btn secondary" type="button" id="enPrev">← Prev</button><span id="enPage"></span><button class="btn secondary" type="button" id="enNext">Next →</button></div>
         <div id="enDetail"></div>
       </div>
@@ -252,15 +252,15 @@ dialog menu{display:flex;gap:10px;justify-content:flex-end;padding:0;margin:14px
         <div id="auOut"><p class="loading">Loading…</p></div>
       </div>
       <div class="card">
-        <h2>Kya log hota hai (backend guarantee)</h2>
+        <h2>What gets logged (backend guarantee)</h2>
         <ul class="muted">
-          <li><code>driver.verify</code> / <code>driver.reject</code> (reason ke saath) / deactivate / reactivate</li>
+          <li><code>driver.verify</code> / <code>driver.reject</code> (with reason) / deactivate / reactivate</li>
           <li><code>inquiry.status</code> (enterprise status changes)</li>
-          <li><code>payment.adjust</code> (paise deltas + reason + admin)</li>
-          <li>pricing changes (rate + history + audit ek transaction me)</li>
-          <li>Kabhi phone, password-hash ya token log nahi hota — sirf ids aur changed fields.</li>
+          <li><code>payment.adjust</code> (amount deltas in paise + reason + admin)</li>
+          <li>pricing changes (rate + history + audit in one transaction)</li>
+          <li>Phone, password-hash and token are never logged — only ids and changed fields.</li>
         </ul>
-        <p class="muted">Failed API requests / suspicious-activity ka dedicated table backend me nahi hai — ye gap document hai, naya table bina permission ke nahi banaya gaya.</p>
+        <p class="muted">There is no dedicated backend table for failed API requests / suspicious activity — this gap is documented, and no new table was created without permission.</p>
       </div>
     </section>
 
@@ -280,7 +280,7 @@ dialog menu{display:flex;gap:10px;justify-content:flex-end;padding:0;margin:14px
             <select id="anStatus"><option value="draft">draft</option><option value="published">published</option></select>
           </div>
         </div>
-        <div class="field" style="margin-bottom:10px"><label for="anBody">Body *</label><textarea id="anBody" rows="3" maxlength="4000" placeholder="Users ko dikhne wala message"></textarea></div>
+        <div class="field" style="margin-bottom:10px"><label for="anBody">Body *</label><textarea id="anBody" rows="3" maxlength="4000" placeholder="Message shown to users"></textarea></div>
         <div class="row">
           <div class="field"><label for="anMaint">Maintenance mode (bookings block)</label><input type="checkbox" id="anMaint" style="width:22px;height:22px;align-self:start"></div>
           <div class="field"><label for="anPush">Push (FCM) enabled</label><input type="checkbox" id="anPush" style="width:22px;height:22px;align-self:start"></div>
@@ -288,7 +288,7 @@ dialog menu{display:flex;gap:10px;justify-content:flex-end;padding:0;margin:14px
           <div class="field"><label for="anEnd">End (local time, optional)</label><input type="datetime-local" id="anEnd"></div>
           <div class="field"><label for="anNotify">Notify before start (min, blank = off)</label><input type="number" id="anNotify" min="0" max="10080" placeholder="e.g. 30"></div>
         </div>
-        <div class="field" id="anBlockWrap" hidden style="margin-bottom:10px"><label for="anBlockMsg">Block message * (users ko dikhega)</label><textarea id="anBlockMsg" rows="2" maxlength="500"></textarea></div>
+        <div class="field" id="anBlockWrap" hidden style="margin-bottom:10px"><label for="anBlockMsg">Block message * (shown to users)</label><textarea id="anBlockMsg" rows="2" maxlength="500"></textarea></div>
         <div class="actions">
           <button class="btn" type="button" id="anSave">Create</button>
           <button class="btn secondary" type="button" id="anCancelEdit" hidden>Cancel edit</button>
@@ -305,7 +305,7 @@ dialog menu{display:flex;gap:10px;justify-content:flex-end;padding:0;margin:14px
         <div id="anOut"><p class="loading">Loading…</p></div>
         <div id="anDetail"></div>
       </div>
-      <div class="notice"><strong>Kaise chalta hai:</strong> "Active" koi stored flag nahi — server har read par <code>published AND window</code> derive karta hai, isliye expiry/maintenance block khud lift hota hai (koi job nahi). Push bina <code>FCM_*</code> creds ke "awaiting credentials" rehta hai — koi row touch nahi hoti. Status flips se pending push cancel/re-arm hota hai; retry sirf failed rows delete karta hai (sent rows safe = kabhi duplicate push nahi).</div>
+      <div class="notice"><strong>How it works:</strong> "Active" is not a stored flag — the server derives <code>published AND window</code> on every read, so expiry/maintenance blocks lift themselves (no job needed). Push stays at "awaiting credentials" without <code>FCM_*</code> creds — no row is touched. Status flips cancel/re-arm the pending push; retry only deletes failed rows (sent rows are safe = never a duplicate push).</div>
     </section>
 
     <!-- APP UPDATES -->
@@ -315,7 +315,7 @@ dialog menu{display:flex;gap:10px;justify-content:flex-end;padding:0;margin:14px
         <div class="row">
           <div class="field"><label for="auVersion">Version * (x.y.z)</label><input type="text" id="auVersion" maxlength="20" placeholder="1.1.0"></div>
           <div class="field"><label for="auBuild">Build (versionCode, optional)</label><input type="number" id="auBuild" min="1" placeholder="2"></div>
-          <div class="field"><label for="auMinVer">Min supported version (optional)</label><input type="text" id="auMinVer" maxlength="20" placeholder="1.0.0 — is se purane = forced"></div>
+          <div class="field"><label for="auMinVer">Min supported version (optional)</label><input type="text" id="auMinVer" maxlength="20" placeholder="1.0.0 — anything older is forced"></div>
           <div class="field"><label for="auAudience">Audience</label>
             <select id="auAudience"><option value="all">all</option><option value="users">users</option><option value="drivers">drivers</option></select>
           </div>
@@ -327,10 +327,10 @@ dialog menu{display:flex;gap:10px;justify-content:flex-end;padding:0;margin:14px
           </div>
         </div>
         <div class="row">
-          <div class="field"><label for="auMandatory">Mandatory (426 gate — purane app bookings nahi kar payenge)</label><input type="checkbox" id="auMandatory" style="width:22px;height:22px;align-self:start"></div>
+          <div class="field"><label for="auMandatory">Mandatory (426 gate — older app versions won't be able to book)</label><input type="checkbox" id="auMandatory" style="width:22px;height:22px;align-self:start"></div>
           <div class="field"><label for="auPush">Push (FCM) release notice</label><input type="checkbox" id="auPush" style="width:22px;height:22px;align-self:start"></div>
         </div>
-        <div class="field" style="margin-bottom:10px"><label for="auNotes">Release notes * (app dialog me yahi dikhega)</label><textarea id="auNotes" rows="3" maxlength="8000"></textarea></div>
+        <div class="field" style="margin-bottom:10px"><label for="auNotes">Release notes * (this is what the app dialog shows)</label><textarea id="auNotes" rows="3" maxlength="8000"></textarea></div>
         <div class="field" style="margin-bottom:10px"><label for="auUrl">Update URL (https://… — Play Store listing / verified APK page)</label><input type="url" id="auUrl" maxlength="500" placeholder="https://play.google.com/store/apps/details?id=com.apnashift.apnashift_app"></div>
         <div class="row" id="auPushWrap" hidden>
           <div class="field" style="flex:1 1 240px"><label for="auPushTitle">Push title (optional)</label><input type="text" id="auPushTitle" maxlength="200"></div>
@@ -352,7 +352,7 @@ dialog menu{display:flex;gap:10px;justify-content:flex-end;padding:0;margin:14px
         <div id="auOut"><p class="loading">Loading…</p></div>
         <div id="auDetail"></div>
       </div>
-      <div class="notice"><strong>Kaise chalta hai:</strong> App startup/resume par <code>GET /api/app-updates/latest?version=…</code> action deta hai (none/optional/required); required hone par protected API calls 426 bhi deti hain (server-side gate — client dialog sirf UX hai). "Latest" derived hai (published + newest published_at) — archive karne se release retire. Push bina <code>FCM_*</code> creds ke "awaiting credentials"; retry sirf failed rows delete karta hai (sent = no duplicate). update_url sirf <code>https://</code> (raw APK kabhi nahi).</div>
+      <div class="notice"><strong>How it works:</strong> On app startup/resume, <code>GET /api/app-updates/latest?version=…</code> returns an action (none/optional/required); when required, protected API calls also return 426 (server-side gate — the client dialog is UX only). "Latest" is derived (published + newest published_at) — archiving retires a release. Push stays at "awaiting credentials" without <code>FCM_*</code> creds; retry only deletes failed rows (sent = no duplicate). update_url must be <code>https://</code> only (never a raw APK).</div>
     </section>
   </main>
 </div>
@@ -396,7 +396,7 @@ async function api(path,opts){
   if(!t){location.reload();throw new Error("no_token");}
   var res=await fetch(API+path,{method:opts.method||"GET",headers:Object.assign({"Authorization":"Bearer "+t,"Content-Type":"application/json"},opts.headers||{}),body:opts.body});
   var data=null;try{data=await res.json();}catch(e){}
-  if(res.status===401||res.status===403){toast("Forbidden — admin token chahiye ("+res.status+")");throw new Error("forbidden");}
+  if(res.status===401||res.status===403){toast("Forbidden — admin token required ("+res.status+")");throw new Error("forbidden");}
   if(!res.ok||!data||data.ok!==true){throw new Error((data&&data.error)||("http_"+res.status));}
   return data;
 }
@@ -417,7 +417,7 @@ function confirmDlg(title,text,needReason,extraLabel){
       d.removeEventListener("cancel",onCancel);
     }
     function onOk(){
-      if(needReason&&r.value.trim().length<3){r.focus();toast("Reason kam se kam 3 characters");return;}
+      if(needReason&&r.value.trim().length<3){r.focus();toast("Reason must be at least 3 characters");return;}
       done({reason:r.value.trim(),extra:e.value.trim()});
     }
     function onCancel(){done(null);}
@@ -428,7 +428,7 @@ function confirmDlg(title,text,needReason,extraLabel){
   });
 }
 // Section router
-var TITLES={overview:["Operations Overview","Live database se — sample data nahi."],customers:["Customers","Search + authorized actions only."],drivers:["Drivers","Applications, verification, activity."],finance:["Finance","Read-only by default; actions need confirm + reason."],enterprise:["Enterprise Inquiries","Status wahi jo backend enum me hai."],audit:["Security & Audit","Audit trail + gap documentation."],announcements:["Announcements","Create, schedule, publish, maintenance block — sab live API se." ],appupdates:["App Updates","Release CRUD + publish/archive + push — app in-app dialog yahi serve karta hai." ]};
+var TITLES={overview:["Operations Overview","From the live database — not sample data."],customers:["Customers","Search + authorized actions only."],drivers:["Drivers","Applications, verification, activity."],finance:["Finance","Read-only by default; actions need confirm + reason."],enterprise:["Enterprise Inquiries","Status matches the backend enum."],audit:["Security & Audit","Audit trail + gap documentation."],announcements:["Announcements","Create, schedule, publish, maintenance block — all via the live API." ],appupdates:["App Updates","Release CRUD + publish/archive + push — the app's in-app dialog serves this." ]};
 document.getElementById("snav").addEventListener("click",function(ev){
   var b=ev.target.closest("[data-sec]");if(!b)return;
   document.querySelectorAll("#snav button").forEach(function(x){x.classList.remove("active");x.removeAttribute("aria-current");});
@@ -446,7 +446,7 @@ function boot(){
   if(!authed()){
     document.getElementById("gate").hidden=false;
     document.getElementById("app").hidden=true;
-    document.getElementById("gateMsg").textContent="Koi admin token nahi mila. Pehle Admin Login karo (wahi token yahan chalega).";
+    document.getElementById("gateMsg").textContent="No admin token found. Log in to Admin first (the same token works here).";
     return;
   }
   document.getElementById("gate").hidden=true;
@@ -490,24 +490,24 @@ async function loadOverview(){
     h+=statCard("Pending applications",drv.pending,"verified total: "+drv.verified);
     h+='</div>';
     var f=document.getElementById("ovFrom").value,t=document.getElementById("ovTo").value,g=document.getElementById("ovGroup").value;
-    if(f&&t&&f>t){document.getElementById("ovFrom").value=t;document.getElementById("ovTo").value=f;var tmp=f;f=t;t=tmp;toast("Dates ulti thin — swap kar diya");}
+    if(f&&t&&f>t){document.getElementById("ovFrom").value=t;document.getElementById("ovTo").value=f;var tmp=f;f=t;t=tmp;toast("Dates were reversed — they have been swapped");}
     var r=null;
     try{
       r=await api("/api/admin/reports/summary?from="+encodeURIComponent(f)+"&to="+encodeURIComponent(t)+"&group_by="+encodeURIComponent(g));
       h+='<div class="card"><h2>Commission ('+esc(f)+' → '+esc(t)+')</h2><div class="cards">'
-        +statCard("Delivered trips",r.totals.delivered_trips,"range me")
+        +statCard("Delivered trips",r.totals.delivered_trips,"in range")
         +statCard("Commission",inr(r.totals.commission_rs),"base + adjustments")
         +statCard("Settled",inr(r.totals.settled_rs),"paid out")
         +statCard("Pending",inr(r.totals.pending_rs),"commission − settled")
         +'</div></div>';
-    }catch(e){h+='<div class="notice"><strong>Report load nahi hua:</strong> '+esc(e.message)+'</div>';}
+    }catch(e){h+='<div class="notice"><strong>Report failed to load:</strong> '+esc(e.message)+'</div>';}
     box.innerHTML=h;
   }catch(e){box.innerHTML='<p class="err">Load fail: '+esc(e.message)+' <button class="btn secondary" type="button" onclick="document.getElementById(\'ovGo\').click()">Retry</button></p>';}
   var rb=document.getElementById("ovRecent");rb.innerHTML='<p class="loading">Loading…</p>';
   try{
     var bl=await api("/api/admin/bookings?limit=10");
     var rows=bl.bookings||bl.items||[];
-    if(!rows.length){rb.innerHTML='<p class="empty">Koi booking nahi.</p>';return;}
+    if(!rows.length){rb.innerHTML='<p class="empty">No bookings.</p>';return;}
     var t='<table class="tbl"><thead><tr><th>ID</th><th>Status</th><th>Vehicle</th><th>Fare</th><th>Created</th></tr></thead><tbody>';
     rows.forEach(function(x){
       t+='<tr><td><code>'+esc(String(x.id).slice(0,8))+'</code></td><td>'+badge(x.status)+'</td><td>'+esc(x.vehicle_type||"—")+'</td><td>'+(x.price_rs!=null?inr(x.price_rs):"—")+'</td><td>'+dt(x.created_at)+'</td></tr>';
@@ -520,11 +520,11 @@ document.getElementById("ovGo").addEventListener("click",loadOverview);
 document.getElementById("cuGo").addEventListener("click",async function(){
   var ph=document.getElementById("cuPhone").value.replace(/\D/g,"").replace(/^91/,"").replace(/^0/,"");
   var box=document.getElementById("cuOut");document.getElementById("cuDetail").innerHTML="";
-  if(!/^[6-9][0-9]{9}$/.test(ph)){box.innerHTML='<p class="err">10-digit mobile do (6-9 se shuru).</p>';return;}
+  if(!/^[6-9][0-9]{9}$/.test(ph)){box.innerHTML='<p class="err">Enter a 10-digit mobile number (starting with 6-9).</p>';return;}
   box.innerHTML='<p class="loading">Loading…</p>';
   try{
     var d=await api("/api/admin/accounts/lookup?phone="+encodeURIComponent(ph));
-    if(!d.accounts||!d.accounts.length){box.innerHTML='<p class="empty">Koi account nahi mila.</p>';return;}
+    if(!d.accounts||!d.accounts.length){box.innerHTML='<p class="empty">No account found.</p>';return;}
     var h='<table class="tbl"><thead><tr><th>Kind</th><th>Name</th><th>Phone</th><th></th></tr></thead><tbody>';
     d.accounts.forEach(function(a,i){
       h+='<tr><td>'+esc(a.kind)+'</td><td>'+esc(a.name)+'</td><td>'+esc(a.phone)+'</td><td><button class="link" type="button" data-cu="'+i+'">Open</button></td></tr>';
@@ -546,12 +546,12 @@ async function openCustomer(a){
   h+='<button class="btn secondary" type="button" id="cuReset">Reset password</button></div><div id="cuHistOut" style="margin-top:12px"></div></div>';
   box.innerHTML=h;
   document.getElementById("cuReset").addEventListener("click",async function(){
-    var r=await confirmDlg("Reset password","Naya password set hoga ("+a.kind+"). Purana turant invalid.",false,"New password (min 8)");
+    var r=await confirmDlg("Reset password","A new password will be set ("+a.kind+"). The old one stops working immediately.",false,"New password (min 8)");
     if(!r||r.extra.trim().length<8){if(r)toast("Password min 8 characters");return;}
     try{
       var path=a.kind==="user"?"/api/admin/users/"+a.id+"/reset-password":"/api/admin/drivers/"+a.id+"/reset-password";
       await api(path,{method:"PATCH",body:JSON.stringify({new_password:r.extra})});
-      toast("Password reset ho gaya");
+      toast("Password reset successful");
     }catch(e){toast("Reset fail: "+e.message);}
   });
   document.getElementById("cuHist").addEventListener("click",async function(){
@@ -560,22 +560,22 @@ async function openCustomer(a){
       try{
         var d=await api("/api/superadmin/customers/"+encodeURIComponent(a.id));
         var rows=d.bookings||[];
-        if(!rows.length){out.innerHTML='<p class="empty">Koi booking nahi. Lifetime: '+inr(d.lifetime.spent_rs)+' ('+d.lifetime.delivered_trips+' trips)</p>';return;}
+        if(!rows.length){out.innerHTML='<p class="empty">No bookings. Lifetime: '+inr(d.lifetime.spent_rs)+' ('+d.lifetime.delivered_trips+' trips)</p>';return;}
         var t='<table class="tbl"><thead><tr><th>ID</th><th>Status</th><th>Vehicle</th><th>Fare</th><th>Created</th></tr></thead><tbody>';
         rows.forEach(function(x){t+='<tr><td><code>'+esc(String(x.id).slice(0,8))+'</code></td><td>'+badge(x.status)+'</td><td>'+esc(x.vehicle_type||"—")+'</td><td>'+(x.price_rs!=null?inr(x.price_rs):"—")+'</td><td>'+dt(x.created_at)+'</td></tr>';});
         out.innerHTML=t+'</tbody></table><p class="muted">Lifetime: '+inr(d.lifetime.spent_rs)+' • '+d.lifetime.delivered_trips+' delivered</p>';
       }catch(e){
         if(e.message==="forbidden"){
-          out.innerHTML='<div class="notice"><strong>Super admin login chahiye.</strong> Customer history <code>requireRole(\'super_admin\')</code> se guarded hai — plain admin token pe 403 aata hai.</div>';
+          out.innerHTML='<div class="notice"><strong>Super admin login required.</strong> Customer history is guarded by <code>requireRole(\'super_admin\')</code> — a plain admin token gets 403.</div>';
         }else{
-          out.innerHTML='<div class="notice"><strong>History load nahi hui.</strong> Error: '+esc(e.message)+'</div>';
+          out.innerHTML='<div class="notice"><strong>History failed to load.</strong> Error: '+esc(e.message)+'</div>';
         }
       }
     }else{
       try{
         var l=await api("/api/admin/ledger?driver_id="+encodeURIComponent(a.id)+"&limit=10");
         var ps=l.payments||[];
-        out.innerHTML=ps.length?('<table class="tbl"><thead><tr><th>Booking</th><th>Gross</th><th>Earning</th><th>Status</th></tr></thead><tbody>'+ps.map(function(x){return '<tr><td><code>'+esc(String(x.booking_id).slice(0,8))+'</code></td><td>'+inr(x.gross_rs)+'</td><td>'+inr(x.driver_earning_rs)+'</td><td>'+badge(x.settlement_status)+'</td></tr>';}).join("")+'</tbody></table>'):'<p class="empty">Koi payment nahi.</p>';
+        out.innerHTML=ps.length?('<table class="tbl"><thead><tr><th>Booking</th><th>Gross</th><th>Earning</th><th>Status</th></tr></thead><tbody>'+ps.map(function(x){return '<tr><td><code>'+esc(String(x.booking_id).slice(0,8))+'</code></td><td>'+inr(x.gross_rs)+'</td><td>'+inr(x.driver_earning_rs)+'</td><td>'+badge(x.settlement_status)+'</td></tr>';}).join("")+'</tbody></table>'):'<p class="empty">No payments.</p>';
       }catch(e){out.innerHTML='<p class="err">'+esc(e.message)+'</p>';}
     }
   });
@@ -592,7 +592,7 @@ async function loadDrivers(){
   try{
     var d=await api("/api/admin/drivers?status="+encodeURIComponent(drStatus())+"&page="+drPage+"&limit="+drLimit);
     document.getElementById("drPage").textContent="Page "+d.page+" / "+Math.max(1,Math.ceil(d.total/drLimit))+" ("+d.total+")";
-    if(!d.drivers.length){box.innerHTML='<p class="empty">Koi driver nahi.</p>';return;}
+    if(!d.drivers.length){box.innerHTML='<p class="empty">No drivers.</p>';return;}
     var h='<table class="tbl"><thead><tr><th>Name</th><th>Phone</th><th>Vehicle</th><th>Status</th><th></th></tr></thead><tbody>';
     d.drivers.forEach(function(x,i){
       var st=x.is_active?(x.is_verified?"verified":"pending"):"inactive";
@@ -634,7 +634,7 @@ async function driverAction(x,act){
       var st=await api("/api/admin/settlements?driver_id="+encodeURIComponent(x.id)+"&limit=10");
       out.innerHTML='<p class="muted">Recent payments: '+(l.payments||[]).length+' • Settlements: '+(st.settlements||[]).length+'</p>'
         +'<table class="tbl"><thead><tr><th>When</th><th>Gross</th><th>Commission</th><th>Status</th></tr></thead><tbody>'
-        +((l.payments||[]).map(function(p){return '<tr><td>'+dt(p.collected_at)+'</td><td>'+inr(p.gross_rs)+'</td><td>'+inr(p.platform_commission_rs)+'</td><td>'+badge(p.settlement_status)+'</td></tr>';}).join("")||'<tr><td colspan="4" class="empty">Koi payment nahi</td></tr>')+'</tbody></table>';
+        +((l.payments||[]).map(function(p){return '<tr><td>'+dt(p.collected_at)+'</td><td>'+inr(p.gross_rs)+'</td><td>'+inr(p.platform_commission_rs)+'</td><td>'+badge(p.settlement_status)+'</td></tr>';}).join("")||'<tr><td colspan="4" class="empty">No payments</td></tr>')+'</tbody></table>';
     }catch(e){out.innerHTML='<p class="err">'+esc(e.message)+'</p>';}
     return;
   }
@@ -659,7 +659,7 @@ document.getElementById("fiGo").addEventListener("click",async function(){
   var box=document.getElementById("fiOut");box.innerHTML='<p class="loading">Loading…</p>';
   try{
     var f=document.getElementById("fiFrom").value,t=document.getElementById("fiTo").value,g=document.getElementById("fiGroup").value;
-    if(f&&t&&f>t){document.getElementById("fiFrom").value=t;document.getElementById("fiTo").value=f;var tmp=f;f=t;t=tmp;toast("Dates ulti thin — swap kar diya");}
+    if(f&&t&&f>t){document.getElementById("fiFrom").value=t;document.getElementById("fiTo").value=f;var tmp=f;f=t;t=tmp;toast("Dates were reversed — they have been swapped");}
     var r=await api("/api/admin/reports/summary?from="+encodeURIComponent(f)+"&to="+encodeURIComponent(t)+"&group_by="+encodeURIComponent(g));
     var h='<div class="cards">'+statCard("Delivered trips",r.totals.delivered_trips,"")+statCard("Commission",inr(r.totals.commission_rs),"")+statCard("Settled",inr(r.totals.settled_rs),"")+statCard("Pending",inr(r.totals.pending_rs),"")+'</div>';
     h+='<table class="tbl"><thead><tr><th>Vehicle</th><th>Trips</th><th>Commission</th></tr></thead><tbody>'
@@ -679,7 +679,7 @@ document.getElementById("lgGo").addEventListener("click",async function(){
     if(ss)q+="&status="+encodeURIComponent(ss);
     var l=await api(q);
     var ps=l.payments||[];
-    if(!ps.length){box.innerHTML='<p class="empty">Koi payment nahi.</p>';return;}
+    if(!ps.length){box.innerHTML='<p class="empty">No payments.</p>';return;}
     var h='<table class="tbl"><thead><tr><th>Booking</th><th>Driver</th><th>Method</th><th>Gross</th><th>Comm.</th><th>Status</th><th></th></tr></thead><tbody>';
     ps.forEach(function(p,i){
       h+='<tr><td><code>'+esc(String(p.booking_id).slice(0,8))+'</code></td><td>'+esc(p.driver_name||"—")+'</td><td>'+esc(p.payment_method)+'</td><td>'+inr(p.gross_rs)+'</td><td>'+inr(p.platform_commission_rs)+'</td><td>'+badge(p.settlement_status)+'</td><td><button class="link" type="button" data-py="'+i+'">Trail</button></td></tr>';
@@ -701,13 +701,13 @@ async function openPayment(p){
       +kv("Gross / earning / commission",inr(d.payment.gross_rs)+" / "+inr(d.payment.driver_earning_rs)+" / "+inr(d.payment.platform_commission_rs))
       +kv("Settled",inr(d.payment.settled_rs)+" ("+d.payment.settlement_status+")")+'</dl>';
     h+='<h3 style="margin-top:12px">Adjustments ('+ad.length+')</h3>';
-    h+=ad.length?('<table class="tbl"><thead><tr><th>Comm Δ (paise)</th><th>Earn Δ (paise)</th><th>Reason</th><th>At</th></tr></thead><tbody>'+ad.map(function(a){return '<tr><td>'+a.commission_delta_paise+'</td><td>'+a.earning_delta_paise+'</td><td>'+esc(a.reason)+'</td><td>'+dt(a.created_at)+'</td></tr>';}).join("")+'</tbody></table>'):'<p class="muted">Koi adjustment nahi.</p>';
+    h+=ad.length?('<table class="tbl"><thead><tr><th>Comm Δ (paise)</th><th>Earn Δ (paise)</th><th>Reason</th><th>At</th></tr></thead><tbody>'+ad.map(function(a){return '<tr><td>'+a.commission_delta_paise+'</td><td>'+a.earning_delta_paise+'</td><td>'+esc(a.reason)+'</td><td>'+dt(a.created_at)+'</td></tr>';}).join("")+'</tbody></table>'):'<p class="muted">No adjustments.</p>';
     h+='<div class="actions"><button class="btn secondary" type="button" id="adjNew">New adjustment</button></div><div id="adjOut"></div></div>';
     box.innerHTML=h;
     document.getElementById("adjNew").addEventListener("click",async function(){
-      var r=await confirmDlg("New adjustment","Append-only correction. Frozen weeks (PAID/DISPUTED) 409 denge. Dono me se ek delta non-zero hona chahiye.",true,"Commission delta paise (e.g. -250 ya 0)");
+      var r=await confirmDlg("New adjustment","Append-only correction. Frozen weeks (PAID/DISPUTED) return 409. One of the two deltas must be non-zero.",true,"Commission delta paise (e.g. -250 or 0)");
       if(!r)return;
-      var r2=await confirmDlg("Earning delta","Earning delta paise likho (0 chalega).",false,"Earning delta paise");
+      var r2=await confirmDlg("Earning delta","Enter the earning delta in paise (0 is fine).",false,"Earning delta paise");
       if(!r2&&r2!==null)return;
       try{
         await api("/api/admin/adjustments",{method:"POST",body:JSON.stringify({payment_id:d.payment.id,commission_delta_paise:Number(r.extra)||0,earning_delta_paise:Number((r2&&r2.extra)||0),reason:r.reason})});
@@ -721,15 +721,15 @@ document.getElementById("balGo").addEventListener("click",async function(){
   try{
     var d=await api("/api/admin/driver-balances?limit=50");
     var rows=d.balances||[];
-    if(!rows.length){box.innerHTML='<p class="empty">Koi balance nahi.</p>';return;}
+    if(!rows.length){box.innerHTML='<p class="empty">No balances.</p>';return;}
     box.innerHTML='<table class="tbl"><thead><tr><th>Driver</th><th>Trips</th><th>Collected</th><th>Commission</th><th>Settled</th><th>Outstanding</th><th></th></tr></thead><tbody>'
       +rows.map(function(x,i){return '<tr><td>'+esc(x.driver_name)+'<br><span class="muted">'+esc(x.phone||"")+'</span></td><td>'+x.completed_cash_bookings+'</td><td>'+inr(x.cash_collected_rs)+'</td><td>'+inr(x.commission_rs)+'</td><td>'+inr(x.settled_rs)+'</td><td><strong>'+inr(x.outstanding_rs)+'</strong></td><td><button class="link" type="button" data-st="'+i+'">Settle</button></td></tr>';}).join("")+'</tbody></table>';
     box.querySelectorAll("[data-st]").forEach(function(b){
       b.addEventListener("click",async function(){
         var x=rows[Number(b.getAttribute("data-st"))];
-        var r=await confirmDlg("Record settlement",x.driver_name+" — outstanding "+inr(x.outstanding_rs)+". FIFO allocate hoga.",false,"Amount Rs (max outstanding)");
-        if(!r||!(Number(r.extra)>0)){if(r)toast("Amount > 0 do");return;}
-        var r2=await confirmDlg("Method","cash / bank_transfer / upi me se likho.",false,"Method");
+        var r=await confirmDlg("Record settlement",x.driver_name+" — outstanding "+inr(x.outstanding_rs)+". Will be allocated FIFO.",false,"Amount Rs (max outstanding)");
+        if(!r||!(Number(r.extra)>0)){if(r)toast("Enter an amount greater than 0");return;}
+        var r2=await confirmDlg("Method","Enter one of: cash / bank_transfer / upi.",false,"Method");
         if(!r2)return;
         try{
           await api("/api/admin/settlements",{method:"POST",body:JSON.stringify({driver_id:x.driver_id,amount_rs:Number(r.extra),method:(r2.extra||"cash"),notes:"super-admin panel"})});
@@ -748,7 +748,7 @@ document.getElementById("spGo").addEventListener("click",async function(){
     if(s)q+="&status="+encodeURIComponent(s);
     var d=await api(q);
     var rows=d.periods||[];
-    if(!rows.length){box.innerHTML='<p class="empty">Koi week nahi — Generate dabao.</p>';return;}
+    if(!rows.length){box.innerHTML='<p class="empty">No weeks yet — press Generate.</p>';return;}
     box.innerHTML='<table class="tbl"><thead><tr><th>Week</th><th>Driver</th><th>Status</th><th>Commission</th><th>Settled</th><th></th></tr></thead><tbody>'
       +rows.map(function(x,i){return '<tr><td>'+esc(x.week_start||x.id.slice(0,8))+'</td><td>'+esc(x.driver_name||x.driver_id)+'</td><td>'+badge(x.status)+'</td><td>'+inr(x.commission_rs)+'</td><td>'+inr(x.settled_rs)+'</td><td><button class="link" type="button" data-sp="'+i+'">Open</button></td></tr>';}).join("")+'</tbody></table>';
     box.querySelectorAll("[data-sp]").forEach(function(b){
@@ -757,7 +757,7 @@ document.getElementById("spGo").addEventListener("click",async function(){
   }catch(e){box.innerHTML='<p class="err">'+esc(e.message)+'</p>';}
 });
 document.getElementById("spGen").addEventListener("click",async function(){
-  var r=await confirmDlg("Generate weeks","Idempotent hai — existing weeks skip honge, double nahi honge.",false,null);
+  var r=await confirmDlg("Generate weeks","This is idempotent — existing weeks are skipped and never duplicated.",false,null);
   if(!r)return;
   try{var d=await api("/api/admin/settlement-periods/generate",{method:"POST",body:"{}"});toast("Generated: "+JSON.stringify(d.created??d));document.getElementById("spGo").click();}
   catch(e){toast("Fail: "+e.message);}
@@ -784,13 +784,13 @@ async function openPeriod(x){
 async function periodAction(p,act){
   try{
     if(act==="pay"){
-      var r=await confirmDlg("Record payment","FIFO inside week. Receipt week se link hogi.",false,"Amount Rs");
-      if(!r||!(Number(r.extra)>0)){if(r)toast("Amount > 0 do");return;}
+      var r=await confirmDlg("Record payment","FIFO within the week. The receipt will be linked to the week.",false,"Amount Rs");
+      if(!r||!(Number(r.extra)>0)){if(r)toast("Enter an amount greater than 0");return;}
       var m=await confirmDlg("Method","cash / bank_transfer / upi.",false,"Method");
       if(!m)return;
       await api("/api/admin/settlement-periods/"+p.id+"/payments",{method:"POST",body:JSON.stringify({amount_rs:Number(r.extra),method:(m.extra||"cash")})});
     }else if(act==="dispute"){
-      var d2=await confirmDlg("Dispute week","Pay freeze ho jayega jab tak resolve na ho.",true,null);
+      var d2=await confirmDlg("Dispute week","Payment will be frozen until this is resolved.",true,null);
       if(!d2)return;
       await api("/api/admin/settlement-periods/"+p.id+"/dispute",{method:"PATCH",body:JSON.stringify({reason:d2.reason})});
     }else{
@@ -817,7 +817,7 @@ async function loadInq(){
     if(se)q+="&search="+encodeURIComponent(se);
     var d=await api(q);
     document.getElementById("enPage").textContent="Page "+d.page+" / "+Math.max(1,Math.ceil(d.total/enLimit))+" ("+d.total+")";
-    if(!d.inquiries.length){box.innerHTML='<p class="empty">Koi inquiry nahi.</p>';return;}
+    if(!d.inquiries.length){box.innerHTML='<p class="empty">No inquiries.</p>';return;}
     box.innerHTML='<table class="tbl"><thead><tr><th>Company</th><th>Contact</th><th>Status</th><th>Submitted</th><th></th></tr></thead><tbody>'
       +d.inquiries.map(function(x,i){return '<tr><td>'+esc(x.company_name)+'</td><td>'+esc(x.full_name)+'<br><span class="muted">'+esc(x.email)+'</span></td><td>'+badge(x.status)+'</td><td>'+dOnly(x.created_at)+'</td><td><button class="link" type="button" data-iq="'+i+'">Open</button></td></tr>';}).join("")+'</tbody></table>';
     box.querySelectorAll("[data-iq]").forEach(function(b){
@@ -838,7 +838,7 @@ function openInq(x){
     +'<button class="btn" type="button" id="iqSt">Update status</button></div></div>';
   box.innerHTML=h;
   document.getElementById("iqSt").addEventListener("click",async function(){
-    var r=await confirmDlg("Update status","Sirf backend enum values allowed.",false,"NEW / CONTACTED / IN_DISCUSSION / CONVERTED / CLOSED");
+    var r=await confirmDlg("Update status","Only backend enum values are allowed.",false,"NEW / CONTACTED / IN_DISCUSSION / CONVERTED / CLOSED");
     if(!r||!r.extra.trim())return;
     var st=r.extra.trim().toUpperCase().replace(/-/g,"_");
     if(["NEW","CONTACTED","IN_DISCUSSION","CONVERTED","CLOSED"].indexOf(st)<0){toast("Invalid status");return;}
@@ -854,7 +854,7 @@ async function loadAudit(){
   try{
     var d=await api("/api/superadmin/audit-logs?limit=20");
     var rows=d.logs||[];
-    if(!rows.length){box.innerHTML='<p class="empty">Koi audit row nahi.</p>';return;}
+    if(!rows.length){box.innerHTML='<p class="empty">No audit entries.</p>';return;}
     box.innerHTML='<table class="tbl"><thead><tr><th>When</th><th>Admin</th><th>Action</th><th>Target</th><th>Reason/detail</th></tr></thead><tbody>'
       +rows.map(function(l){
         var det=l.details||{};
@@ -862,9 +862,9 @@ async function loadAudit(){
       }).join("")+'</tbody></table><p class="muted">Total: '+d.total+' • read-only, history immutable.</p>';
   }catch(e){
     if(e.message==="forbidden"){
-      box.innerHTML='<div class="notice"><strong>Super admin login chahiye.</strong> Audit viewer <code>requireRole(\'super_admin\')</code> se guarded hai — plain admin token pe 403 aata hai. Promote ke baad super_admin se login karo.</div>';
+      box.innerHTML='<div class="notice"><strong>Super admin login required.</strong> Audit viewer is guarded by <code>requireRole(\'super_admin\')</code> — a plain admin token gets 403. Log in as super_admin after promoting.</div>';
     }else{
-      box.innerHTML='<div class="notice"><strong>Audit load nahi hua.</strong> Error: '+esc(e.message)+'</div>';
+      box.innerHTML='<div class="notice"><strong>Audit failed to load.</strong> Error: '+esc(e.message)+'</div>';
     }
   }
 }
@@ -904,7 +904,7 @@ async function loadAnnouncements(){
     document.getElementById("anFcm").textContent=d.fcm_configured?"FCM ready":"FCM awaiting credentials";
     document.getElementById("anFcm").className="badge "+(d.fcm_configured?"ok":"warn");
     anRows=d.items||[];
-    if(!anRows.length){box.innerHTML='<p class="empty">Koi announcement nahi — upar se naya banao.</p>';return;}
+    if(!anRows.length){box.innerHTML='<p class="empty">No announcements — create one above.</p>';return;}
     var h='<table class="tbl"><thead><tr><th>Title</th><th>Severity</th><th>Audience</th><th>Status</th><th>Window (UTC)</th><th>Push</th><th></th></tr></thead><tbody>';
     anRows.forEach(function(x,i){
       var p=x.push||{};
@@ -964,8 +964,8 @@ document.getElementById("anSave").addEventListener("click",async function(){
   var body=document.getElementById("anBody").value.trim();
   var maint=document.getElementById("anMaint").checked;
   var blockMsg=document.getElementById("anBlockMsg").value.trim();
-  if(!title||!body){toast("Title aur body zaroori");return;}
-  if(maint&&!blockMsg){toast("Maintenance ke liye block message zaroori");return;}
+  if(!title||!body){toast("Title and body are required");return;}
+  if(maint&&!blockMsg){toast("Block message is required for maintenance");return;}
   var payload={title:title,body:body,severity:document.getElementById("anSeverity").value,audience:document.getElementById("anAudience").value,maintenance_mode:maint,push_enabled:document.getElementById("anPush").checked};
   if(maint)payload.block_message=blockMsg;
   var s=anIso(document.getElementById("anStart").value),e=anIso(document.getElementById("anEnd").value);
@@ -974,7 +974,7 @@ document.getElementById("anSave").addEventListener("click",async function(){
   var nbmRaw=document.getElementById("anNotify").value.trim();
   if(nbmRaw!==""){
     var nbmN=parseInt(nbmRaw,10);
-    if(isNaN(nbmN)||nbmN<0||nbmN>10080){toast("Notify minutes 0-10080 hone chahiye");return;}
+    if(isNaN(nbmN)||nbmN<0||nbmN>10080){toast("Notify minutes must be between 0-10080");return;}
     payload.notify_before_minutes=nbmN;
   }else if(anEditId){
     payload.notify_before_minutes=null;
@@ -996,7 +996,7 @@ async function anPushReport(x){
     var d=await api("/api/announcements/"+x.id+"/push");
     var c=d.counts||{},n=d.counters||{};
     var h='<div class="detail"><h3>Push report — '+esc(x.title)+'</h3><dl>'
-      +'<dt>FCM</dt><dd>'+(d.fcm_configured?"ready":"awaiting credentials (env FCM_* set karo)")+'</dd>'
+      +'<dt>FCM</dt><dd>'+(d.fcm_configured?"ready":"awaiting credentials (set env FCM_*)")+'</dd>'
       +'<dt>Push status</dt><dd>'+esc(d.push_status||"—")+'</dd>'
       +'<dt>Delivered / total / failed</dt><dd>'+(n.delivered||0)+' / '+(n.total||0)+' / '+(n.failed||0)+'</dd>'
       +'<dt>Log rows</dt><dd>sent '+(c.sent||0)+' • failed '+(c.failed||0)+' • pending '+(c.pending||0)+'</dd>'
@@ -1048,7 +1048,7 @@ async function loadAppUpdates(){
     document.getElementById("auFcm").textContent=d.fcm_configured?"FCM ready":"FCM awaiting credentials";
     document.getElementById("auFcm").className="badge "+(d.fcm_configured?"ok":"warn");
     auRows=d.items||[];
-    if(!auRows.length){box.innerHTML='<p class="empty">Koi release nahi — upar se naya banao.</p>';return;}
+    if(!auRows.length){box.innerHTML='<p class="empty">No releases — create one above.</p>';return;}
     var h='<table class="tbl"><thead><tr><th>Version</th><th>Audience</th><th>Status</th><th>Notes</th><th>Push</th><th></th></tr></thead><tbody>';
     auRows.forEach(function(x,i){
       var p=x.push||{};
@@ -1112,15 +1112,15 @@ document.getElementById("auSave").addEventListener("click",async function(){
   var notes=document.getElementById("auNotes").value.trim();
   var minVer=document.getElementById("auMinVer").value.trim();
   var url=document.getElementById("auUrl").value.trim();
-  if(!version||!notes){toast("Version aur release notes zaroori");return;}
-  if(!auSemverOk(version)){toast("Version x.y.z format me ho (e.g. 1.1.0)");return;}
-  if(minVer&&!auSemverOk(minVer)){toast("Min supported version bhi x.y.z me ho");return;}
-  if(url&&!/^https:\/\//i.test(url)){toast("Update URL https:// se shuru hona chahiye");return;}
+  if(!version||!notes){toast("Version and release notes are required");return;}
+  if(!auSemverOk(version)){toast("Version must be in x.y.z format (e.g. 1.1.0)");return;}
+  if(minVer&&!auSemverOk(minVer)){toast("Min supported version must also be in x.y.z format");return;}
+  if(url&&!/^https:\/\//i.test(url)){toast("Update URL must start with https://");return;}
   var buildRaw=document.getElementById("auBuild").value.trim();
   var payload={version:version,mandatory:document.getElementById("auMandatory").checked,audience:document.getElementById("auAudience").value,priority:document.getElementById("auPriority").value,release_notes:notes,push_enabled:document.getElementById("auPush").checked};
   if(buildRaw!==""){
     var buildN=parseInt(buildRaw,10);
-    if(isNaN(buildN)||buildN<1){toast("Build positive integer ho");return;}
+    if(isNaN(buildN)||buildN<1){toast("Build must be a positive integer");return;}
     payload.build=buildN;
   }
   if(minVer)payload.min_supported_version=minVer;
@@ -1139,7 +1139,7 @@ document.getElementById("auSave").addEventListener("click",async function(){
     toast(auEditId?"Saved":"Created");
     auResetForm();
     loadAppUpdates();
-  }catch(err){toast("Fail: "+(err.message==="version_taken"?"Ye version pehle se hai — koi aur number lagao":err.message));}
+  }catch(err){toast("Fail: "+(err.message==="version_taken"?"This version already exists — use a different number":err.message));}
   btn.disabled=false;
 });
 async function auPushReport(x){
@@ -1148,7 +1148,7 @@ async function auPushReport(x){
     var d=await api("/api/app-updates/"+x.id+"/push");
     var c=d.counts||{},n=d.counters||{};
     var h='<div class="detail"><h3>Push report — v'+esc(x.version)+'</h3><dl>'
-      +'<dt>FCM</dt><dd>'+(d.fcm_configured?"ready":"awaiting credentials (env FCM_* set karo)")+'</dd>'
+      +'<dt>FCM</dt><dd>'+(d.fcm_configured?"ready":"awaiting credentials (set env FCM_*)")+'</dd>'
       +'<dt>Push status</dt><dd>'+esc(d.push_status||"—")+'</dd>'
       +'<dt>Delivered / total / failed</dt><dd>'+(n.delivered||0)+' / '+(n.total||0)+' / '+(n.failed||0)+'</dd>'
       +'<dt>Log rows</dt><dd>sent '+(c.sent||0)+' • failed '+(c.failed||0)+' • pending '+(c.pending||0)+'</dd>'

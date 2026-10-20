@@ -18,18 +18,18 @@ function optText(min, max, message) {
 }
 
 const phoneField = z
-  .string({ required_error: 'Phone likho.' })
+  .string({ required_error: 'Enter your phone number.' })
   .transform((v) => normalizePhone(v))
   .refine((v) => PHONE_RE.test(v), {
-    message: 'Phone 10 digit ka Indian mobile hona chahiye (6-9 se shuru).',
+    message: 'Phone must be a 10-digit Indian mobile number (starting with 6-9).',
   });
 
 const emailField = z
-  .string({ required_error: 'Work email likho.' })
+  .string({ required_error: 'Enter your work email.' })
   .trim()
   .toLowerCase()
-  .max(160, 'Email 160 akshar se zyada nahi.')
-  .email('Sahi work email likho.');
+  .max(160, 'Email must be no more than 160 characters.')
+  .email('Enter a valid work email address.');
 
 export const BUSINESS_TYPES = [
   'ecommerce',
@@ -77,80 +77,80 @@ export const INQUIRY_STATUSES = ['NEW', 'CONTACTED', 'IN_DISCUSSION', 'CONVERTED
 function strArray(values, message) {
   return z.preprocess(
     (v) => (v === undefined || v === null ? [] : v),
-    z.array(z.enum(values, { errorMap: () => ({ message }) })).max(10, '10 se zyada options nahi.').default([]),
+    z.array(z.enum(values, { errorMap: () => ({ message }) })).max(10, 'No more than 10 options allowed.').default([]),
   );
 }
 
 export const inquiryCreateSchema = z.object({
   full_name: z
-    .string({ required_error: 'Full name likho.' })
+    .string({ required_error: 'Enter your full name.' })
     .trim()
-    .min(2, 'Full name kam se kam 2 akshar.')
-    .max(100, 'Full name 100 akshar se zyada nahi.'),
+    .min(2, 'Full name must be at least 2 characters.')
+    .max(100, 'Full name must be no more than 100 characters.'),
   email: emailField,
   phone: phoneField,
   company_name: z
-    .string({ required_error: 'Company name likho.' })
+    .string({ required_error: 'Enter the company name.' })
     .trim()
-    .min(2, 'Company name kam se kam 2 akshar.')
-    .max(160, 'Company name 160 akshar se zyada nahi.'),
+    .min(2, 'Company name must be at least 2 characters.')
+    .max(160, 'Company name must be no more than 160 characters.'),
   website: z.preprocess(emptyToUndef, z
     .string()
     .trim()
-    .max(255, 'Website 255 akshar se zyada nahi.')
+    .max(255, 'Website must be no more than 255 characters.')
     .transform((v) => (/^https?:\/\//i.test(v) ? v : `https://${v}`))
-    .refine((v) => /^https?:\/\/[^/\s]+\.[^/\s]+/.test(v), { message: 'Sahi website URL likho.' })
+    .refine((v) => /^https?:\/\/[^/\s]+\.[^/\s]+/.test(v), { message: 'Enter a valid website URL.' })
     .optional()),
-  designation: optText(2, 100, 'Designation 2-100 akshar.'),
+  designation: optText(2, 100, 'Designation must be 2-100 characters.'),
   business_type: z.preprocess(
     emptyToUndef,
-    z.enum(BUSINESS_TYPES, { errorMap: () => ({ message: 'Business type sahi chuno.' }) }).optional(),
+    z.enum(BUSINESS_TYPES, { errorMap: () => ({ message: 'Select a valid business type.' }) }).optional(),
   ),
   company_size: z.preprocess(
     emptyToUndef,
-    z.enum(COMPANY_SIZES, { errorMap: () => ({ message: 'Company size sahi chuno.' }) }).optional(),
+    z.enum(COMPANY_SIZES, { errorMap: () => ({ message: 'Select a valid company size.' }) }).optional(),
   ),
-  cities: optText(2, 300, 'Cities 2-300 akshar.'),
-  operating_state: optText(2, 80, 'State 2-80 akshar.'),
+  cities: optText(2, 300, 'Cities must be 2-300 characters.'),
+  operating_state: optText(2, 80, 'State must be 2-80 characters.'),
   locations_count: z.preprocess(
     emptyToUndef,
-    z.coerce.number().int('Locations poora number ho.').min(1, 'Locations kam se kam 1.').max(100000, 'Locations 100000 se zyada nahi.').optional(),
+    z.coerce.number().int('Locations must be a whole number.').min(1, 'Locations must be at least 1.').max(100000, 'Locations must be no more than 100000.').optional(),
   ),
-  services_required: strArray(ENTERPRISE_SERVICES, 'Service sahi chuno.'),
-  vehicle_types: strArray(ENTERPRISE_VEHICLES, 'Vehicle type sahi chuno.'),
+  services_required: strArray(ENTERPRISE_SERVICES, 'Select a valid service.'),
+  vehicle_types: strArray(ENTERPRISE_VEHICLES, 'Select a valid vehicle type.'),
   fleet_size: z.preprocess(
     emptyToUndef,
-    z.enum(FLEET_SIZES, { errorMap: () => ({ message: 'Fleet size sahi chuno.' }) }).optional(),
+    z.enum(FLEET_SIZES, { errorMap: () => ({ message: 'Select a valid fleet size.' }) }).optional(),
   ),
   monthly_trips: z.preprocess(
     emptyToUndef,
-    z.enum(MONTHLY_TRIPS, { errorMap: () => ({ message: 'Monthly trips sahi chuno.' }) }).optional(),
+    z.enum(MONTHLY_TRIPS, { errorMap: () => ({ message: 'Select a valid monthly trips range.' }) }).optional(),
   ),
   start_date: z.preprocess(
     emptyToUndef,
     z.string()
-      .regex(/^\d{4}-\d{2}-\d{2}$/, { message: 'Start date YYYY-MM-DD me ho.' })
+      .regex(/^\d{4}-\d{2}-\d{2}$/, { message: 'Start date must be in YYYY-MM-DD format.' })
       .refine((s) => {
         const [y, m, d] = s.split('-').map(Number);
         const dt = new Date(Date.UTC(y, m - 1, d));
         return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
-      }, { message: 'Sahi calendar date likho.' })
+      }, { message: 'Enter a valid calendar date.' })
       .optional(),
   ),
   service_frequency: z.preprocess(
     emptyToUndef,
-    z.enum(SERVICE_FREQUENCIES, { errorMap: () => ({ message: 'Frequency sahi chuno.' }) }).optional(),
+    z.enum(SERVICE_FREQUENCIES, { errorMap: () => ({ message: 'Select a valid frequency.' }) }).optional(),
   ),
   budget_range: z.preprocess(
     emptyToUndef,
-    z.enum(BUDGET_RANGES, { errorMap: () => ({ message: 'Budget range sahi chuno.' }) }).optional(),
+    z.enum(BUDGET_RANGES, { errorMap: () => ({ message: 'Select a valid budget range.' }) }).optional(),
   ),
-  requirements: optText(0, 1000, 'Requirements 1000 akshar tak.'),
+  requirements: optText(0, 1000, 'Requirements must be up to 1000 characters.'),
   // If sent it must be true (false = 400). Omitted = legacy clients safe.
   consent: z.preprocess(
     (v) => (v === '' || v === undefined || v === null ? undefined : v),
-    z.boolean({ invalid_type_error: 'Consent true/false ho.' })
-      .refine((v) => v === true, { message: 'Terms consent zaroori hai.' })
+    z.boolean({ invalid_type_error: 'Consent must be true or false.' })
+      .refine((v) => v === true, { message: 'Terms consent is required.' })
       .optional(),
   ),
 });
@@ -158,7 +158,7 @@ export const inquiryCreateSchema = z.object({
 // Empty string allowed for requirements (textarea) — separate helper for min 0.
 export const inquiryListQuerySchema = z.object({
   status: z.enum(INQUIRY_STATUSES, {
-    errorMap: () => ({ message: 'status sahi inquiry status ho.' }),
+    errorMap: () => ({ message: 'status must be a valid inquiry status.' }),
   }).optional(),
   search: z.string().trim().max(100).optional(),
   page: z.coerce.number().int().min(1).default(1),
@@ -167,6 +167,6 @@ export const inquiryListQuerySchema = z.object({
 
 export const inquiryStatusSchema = z.object({
   status: z.enum(INQUIRY_STATUSES, {
-    errorMap: () => ({ message: 'status NEW, CONTACTED, IN_DISCUSSION, CONVERTED ya CLOSED ho.' }),
+    errorMap: () => ({ message: 'status must be NEW, CONTACTED, IN_DISCUSSION, CONVERTED, or CLOSED.' }),
   }),
 });

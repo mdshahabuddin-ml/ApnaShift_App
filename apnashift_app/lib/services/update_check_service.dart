@@ -160,14 +160,14 @@ class AppUpdateDialog extends StatelessWidget {
             '${p['message'] ?? ''}'.isNotEmpty
                 ? '${p['message']}'
                 : required
-                    ? 'Ye version ab zaroori hai — bina update ke bookings nahi chalengi.'
-                    : 'Naya version available hai.';
+                    ? 'This version is now required — bookings will not work without updating.'
+                    : 'A new version is available.';
         return PopScope(
           canPop: !required,
           child: AlertDialog(
             title: Text(required
-                ? 'Update zaroori hai ($latest)'
-                : 'Naya version: $latest'),
+                ? 'Update required ($latest)'
+                : 'New version: $latest'),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -193,7 +193,7 @@ class AppUpdateDialog extends StatelessWidget {
                     service.dismissOptional();
                     Navigator.of(context).maybePop();
                   },
-                  child: const Text('Baad me'),
+                  child: const Text('Later'),
                 ),
               ElevatedButton(
                 onPressed: () async {
@@ -203,7 +203,7 @@ class AppUpdateDialog extends StatelessWidget {
                     Navigator.of(context).maybePop();
                   }
                 },
-                child: const Text('Update karein'),
+                child: const Text('Update'),
               ),
             ],
           ),

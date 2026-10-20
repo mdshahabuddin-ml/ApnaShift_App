@@ -68,27 +68,27 @@ export async function sendMessage(to, text) {
 export async function sendBookingConfirmation(to, { bookingId, fareRs, paymentMethod }) {
   return sendMessage(
     to,
-    `ApnaShift booking pakki! ID: ${bookingId} • Kiraya Rs ${fareRs} • ` +
-      `${paymentMethod === 'cash' ? 'Cash driver ko dena' : 'Online (UPI) se dena'}. ` +
-      `Driver milte hi khabar milegi.`,
+    `ApnaShift booking confirmed! ID: ${bookingId} • Fare Rs ${fareRs} • ` +
+      `${paymentMethod === 'cash' ? 'Pay cash to the driver' : 'Pay online (UPI)'}. ` +
+      `You will be notified as soon as a driver is found.`,
   );
 }
 
 export async function sendDriverAssigned(to, { bookingId, driverName }) {
   return sendMessage(
     to,
-    `Driver mil gaya! Booking ${bookingId} par ${driverName} aa rahe hain. Live tracking app me dekho.`,
+    `Driver found! ${driverName} is on the way for booking ${bookingId}. Track live in the app.`,
   );
 }
 
 export async function sendDriverArriving(to, { bookingId }) {
-  return sendMessage(to, `Driver paas pahunch raha hai (booking ${bookingId}). Taiyaar raho.`);
+  return sendMessage(to, `Your driver is arriving soon (booking ${bookingId}). Please get ready.`);
 }
 
 export async function sendBookingCompleted(to, { bookingId, fareRs }) {
   return sendMessage(
     to,
-    `Trip poori ho gayi! Booking ${bookingId} • Kul Rs ${fareRs}. Rating dena na bhoolo. Dhanyavaad!`,
+    `Trip completed! Booking ${bookingId} • Total Rs ${fareRs}. Don't forget to rate us. Thank you!`,
   );
 }
 
@@ -171,9 +171,9 @@ function parseDateTime(text) {
 function summaryText(d) {
   return (
     `Booking summary:\nPickup: ${d.pickup.address}\nDrop: ${d.drop.address}\n` +
-    `Gaadi: ${d.vehicle}\nSamay: ${d.scheduledAt ? d.scheduledAt : 'Abhi'}\n` +
+    `Vehicle: ${d.vehicle}\nTime: ${d.scheduledAt ? d.scheduledAt : 'Now'}\n` +
     `Payment: ${d.payment === 'cash' ? 'Cash (COD)' : 'Online (UPI)'}\n` +
-    `Confirm karne ke liye YES likho, badalne ke liye NO likho.`
+    `Type YES to confirm, or NO to change.`
   );
 }
 
@@ -184,13 +184,13 @@ export async function handleWaMessage({ phone, text }, deps = {}) {
   const geocode = deps.geocode ?? defaultGeocode;
   const clean = normalizePhone(phone);
   if (!PHONE_RE.test(clean)) {
-    return { reply: 'ApnaShift: sahi 10-digit mobile number se message karo.', created: false };
+    return { reply: 'ApnaShift: please message from a valid 10-digit mobile number.', created: false };
   }
   const user = await findUserByPhone(clean);
   if (!user) {
     return {
       reply:
-        'ApnaShift me is number se account nahi mila. Pehle app/website par register karo, phir yahan booking likho.',
+        'No account found for this number on ApnaShift. Register on the app/website first, then book from here.',
       created: false,
     };
   }
@@ -214,7 +214,7 @@ export async function handleWaMessage({ phone, text }, deps = {}) {
       data = {};
       await setState('PICKUP', data);
       return {
-        reply: `Namaste ${user.name}! ApnaShift WhatsApp booking me swagat hai. Pickup address bhejo.`,
+        reply: `Hello ${user.name}! Welcome to ApnaShift WhatsApp booking. Send your pickup address.`,
         created: false,
       };
     }
@@ -223,7 +223,7 @@ export async function handleWaMessage({ phone, text }, deps = {}) {
 
   if (state === 'PICKUP') {
     if (raw.length < 3) {
-      return { reply: 'Pickup address thoda detail me likho (jaise: 12 MG Road, Indore).', created: false };
+      return { reply: 'Please enter a more detailed pickup address (e.g. 12 MG Road, Indore).', created: false };
     }
     let geo = null;
     try {
@@ -232,16 +232,16 @@ export async function handleWaMessage({ phone, text }, deps = {}) {
       // Geocode fail -> geo null rehta hai (neeche reprompt).
     }
     if (!geo) {
-      return { reply: 'Ye pickup address nahi mila. Sahi spelling/area ke saath dobara bhejo.', created: false };
+      return { reply: 'Pickup address not found. Please resend with the correct spelling/area.', created: false };
     }
     data = { ...data, pickup: { address: raw, lat: geo.lat, lng: geo.lng, formatted: geo.formatted } };
     await setState('DROP', data);
-    return { reply: `Pickup set: ${geo.formatted}. Ab drop address bhejo.`, created: false };
+    return { reply: `Pickup set: ${geo.formatted}. Now send the drop address.`, created: false };
   }
 
   if (state === 'DROP') {
     if (raw.length < 3) {
-      return { reply: 'Drop address thoda detail me likho.', created: false };
+      return { reply: 'Please enter a more detailed drop address.', created: false };
     }
     let geo = null;
     try {
@@ -250,37 +250,37 @@ export async function handleWaMessage({ phone, text }, deps = {}) {
       // Geocode fail -> geo null rehta hai (neeche reprompt).
     }
     if (!geo) {
-      return { reply: 'Ye drop address nahi mila. Sahi spelling/area ke saath dobara bhejo.', created: false };
+      return { reply: 'Drop address not found. Please resend with the correct spelling/area.', created: false };
     }
     data = { ...data, drop: { address: raw, lat: geo.lat, lng: geo.lng, formatted: geo.formatted } };
     await setState('VEHICLE', data);
-    return { reply: 'Gaadi chuno: pickup, mini_truck ya mini_tractor likho.', created: false };
+    return { reply: 'Choose a vehicle: type pickup, mini_truck, or mini_tractor.', created: false };
   }
 
   if (state === 'VEHICLE') {
     const vehicle = parseVehicle(raw);
     if (!vehicle) {
-      return { reply: 'Samajh nahi aaya. pickup, mini_truck ya mini_tractor me se ek likho.', created: false };
+      return { reply: 'I didn\'t understand. Please type one of: pickup, mini_truck, or mini_tractor.', created: false };
     }
     data = { ...data, vehicle };
     await setState('DATE_TIME', data);
-    return { reply: 'Kab chahiye? "now" likho ya "YYYY-MM-DD HH:mm" me future time bhejo.', created: false };
+    return { reply: 'When do you need it? Type "now" or send a future time as "YYYY-MM-DD HH:mm".', created: false };
   }
 
   if (state === 'DATE_TIME') {
     const parsed = parseDateTime(raw);
     if (!parsed) {
-      return { reply: 'Samay samajh nahi aaya. "now" likho ya future time "YYYY-MM-DD HH:mm" me bhejo.', created: false };
+      return { reply: 'Time not understood. Type "now" or send a future time as "YYYY-MM-DD HH:mm".', created: false };
     }
     data = { ...data, scheduledAt: parsed.scheduledAt };
     await setState('PAYMENT', data);
-    return { reply: 'Payment kaise karoge? cash (COD) ya upi (Online) likho.', created: false };
+    return { reply: 'How will you pay? Type cash (COD) or upi (Online).', created: false };
   }
 
   if (state === 'PAYMENT') {
     const payment = parsePayment(raw);
     if (!payment) {
-      return { reply: 'cash ya upi me se ek likho.', created: false };
+      return { reply: 'Please type either cash or upi.', created: false };
     }
     data = { ...data, payment };
     await setState('CONFIRMATION', data);
@@ -309,12 +309,12 @@ export async function handleWaMessage({ phone, text }, deps = {}) {
           // retries cleanly once the announcement window closes.
           const msg =
             err.maintenance?.message ||
-            'Maintenance chal raha hai — bookings abhi ruki hain.';
+            'Maintenance in progress — bookings are temporarily paused.';
           const until = err.maintenance?.until;
           return {
             reply:
               `${msg}` +
-              (until ? ` (takreeban ${new Date(until).toISOString().replace('T', ' ').slice(0, 16)} UTC tak)` : ''),
+              (until ? ` (until approximately ${new Date(until).toISOString().replace('T', ' ').slice(0, 16)} UTC)` : ''),
             created: false,
           };
         }
@@ -322,7 +322,7 @@ export async function handleWaMessage({ phone, text }, deps = {}) {
         data = {};
         await setState('START', data);
         return {
-          reply: 'Ye route hamari service se bahar hai. Nayi booking ke liye HI likho.',
+          reply: 'This route is outside our service area. Type HI to start a new booking.',
           created: false,
         };
       }
@@ -332,7 +332,7 @@ export async function handleWaMessage({ phone, text }, deps = {}) {
     if (/^(no|nahi|nahin|n|cancel|radd)$/.test(t)) {
       data = {};
       await setState('START', data);
-      return { reply: 'Booking cancel kar di. Nayi booking ke liye HI likho.', created: false };
+      return { reply: 'Booking cancelled. Type HI to start a new booking.', created: false };
     }
     return { reply: `${summaryText(data)}`, created: false };
   }
@@ -340,5 +340,5 @@ export async function handleWaMessage({ phone, text }, deps = {}) {
   // Unknown state (should not happen): reset cleanly, never crash.
   data = {};
   await setState('START', data);
-  return { reply: 'Namaste! Nayi booking ke liye HI likho.', created: false };
+  return { reply: 'Hello! Type HI to start a new booking.', created: false };
 }

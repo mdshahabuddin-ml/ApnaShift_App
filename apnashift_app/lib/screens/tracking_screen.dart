@@ -96,8 +96,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
       if (silent) return;
       setState(() {
         _error = e is ApiException
-            ? 'Tracking fail (${e.code}). Retry karo.'
-            : 'Server se baat nahi ho payi.';
+            ? 'Tracking failed (${e.code}). Try again.'
+            : 'Unable to connect to the server.';
         _loading = false;
       });
     }
@@ -181,7 +181,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                         fontWeight: FontWeight.w800)),
                                 const SizedBox(height: 6),
                                 Text(latest == null
-                                    ? 'Abhi location nahi — driver share karega tab dikhega.'
+                                    ? 'No location yet — it will show once the driver shares it.'
                                     : 'Lat ${latest['lat']}, Lng ${latest['lng']} (±${latest['accuracy_m'] ?? '—'}m)'),
                                 if (latest != null)
                                   Text(

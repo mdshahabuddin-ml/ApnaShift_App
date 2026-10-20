@@ -110,7 +110,7 @@
 
   <section class="card" aria-labelledby="pageTitle">
     <h1 id="pageTitle" data-i18n="pg_admin-reports_02">Reports &amp; Earnings</h1>
-    <p class="sub" data-i18n="pg_admin-reports_03">Delivered trips aur commission — range chuno, Load dabao.</p>
+    <p class="sub" data-i18n="pg_admin-reports_03">Delivered trips and commission — choose a range, then press Load.</p>
     <div class="quick-row" role="group" aria-label="Date range">
       <button class="quick-btn" id="qWeek" type="button" data-i18n="pg_admin-reports_04">This Week</button>
       <button class="quick-btn active" id="qMonth" type="button" data-i18n="pg_admin-reports_05">This Month</button>
@@ -260,8 +260,8 @@
   function load(){
     showAlert(null, "");
     var f = fromDate.value, t = toDate.value, g = groupSel.value;
-    if(!f || !t){ showAlert("err", "From aur To date chuno."); return; }
-    if(f > t){ showAlert("err", "From, To se pehle hona chahiye."); return; }
+    if(!f || !t){ showAlert("err", "Choose From and To dates."); return; }
+    if(f > t){ showAlert("err", "From must be before To."); return; }
     loadBtn.disabled = true;
     vehWrap.innerHTML = '<p class="loading">Loading…</p>';
     trendEmpty.innerHTML = "";
@@ -281,7 +281,7 @@
       render(result.body);
     }).catch(function(err){
       if(err && err.message === "unauth") return;
-      showAlert("err", "Report load nahi hui — internet check karke dobara try karo.");
+      showAlert("err", "Report failed to load — check your internet and try again.");
       vehWrap.innerHTML = '<p class="empty">Could not load.</p>';
     }).then(function(){ loadBtn.disabled = false; });
   }
@@ -296,7 +296,7 @@
       " (" + data.range.group_by + ") — " + t.delivered_trips + " delivered trips.";
 
     if(!data.by_vehicle.length){
-      vehWrap.innerHTML = '<p class="empty">Is range me koi delivered trip nahi.</p>';
+      vehWrap.innerHTML = '<p class="empty">No delivered trips in this range.</p>';
     } else {
       var max = Math.max.apply(null, data.by_vehicle.map(function(r){ return r.trips; }).concat([1]));
       var h = '<table><tr><th>Vehicle</th><th>Trips</th><th></th><th>Commission</th></tr>';
@@ -311,10 +311,10 @@
 
     lastSeries = data.series || [];
     if(!lastSeries.length){
-      trendEmpty.innerHTML = '<p class="empty">Chart ke liye data nahi.</p>';
+      trendEmpty.innerHTML = '<p class="empty">No data for the chart.</p>';
     } else {
       var anyTrip = lastSeries.some(function(p){ return p.trips > 0; });
-      trendEmpty.innerHTML = anyTrip ? "" : '<p class="empty">Is range me koi delivered trip nahi.</p>';
+      trendEmpty.innerHTML = anyTrip ? "" : '<p class="empty">No delivered trips in this range.</p>';
     }
     drawChart();
   }
@@ -519,7 +519,7 @@
   load();
 })();
 </script>
-<script>window.PAGE_I18N={en:{page_title:'Reports & Earnings | ApnaShift Admin',meta_desc:'ApnaShift admin — delivered trips and commission earnings report.','pg_admin-reports_01':'Logout','pg_admin-reports_02':'Reports & Earnings','pg_admin-reports_03':'Delivered trips aur commission — range chuno, Load dabao.','pg_admin-reports_04':'This Week','pg_admin-reports_05':'This Month','pg_admin-reports_06':'Custom','pg_admin-reports_07':'From','pg_admin-reports_08':'To','pg_admin-reports_09':'Group by','pg_admin-reports_10':'Day','pg_admin-reports_11':'Week','pg_admin-reports_12':'Month','pg_admin-reports_13':'Load','pg_admin-reports_14':'Totals','pg_admin-reports_15':'Total trips','pg_admin-reports_16':'Total commission earned','pg_admin-reports_17':'Commission settled','pg_admin-reports_18':'Commission pending','pg_admin-reports_19':'Vehicle type breakdown','pg_admin-reports_20':'Press Load.','pg_admin-reports_21':'Trend — deliveries + commission over time','pg_admin-reports_22':'Deliveries (line)','pg_admin-reports_23':'Commission Rs (line)','pg_admin-reports_24':'← Admin Home','pg_admin-reports_25':'Full dashboard','pg_admin-reports_26':'Admin Home','pg_admin-reports_27':'Full Dashboard'},hi:{page_title:'रिपोर्ट व कमाई | ApnaShift एडमिन',meta_desc:'ApnaShift एडमिन — डिलीवर ट्रिप और कमीशन कमाई रिपोर्ट।','pg_admin-reports_01':'लॉगआउट','pg_admin-reports_02':'रिपोर्ट व कमाई','pg_admin-reports_03':'डिलीवर ट्रिप और कमीशन — रेंज चुनें, लोड दबाएं।','pg_admin-reports_04':'इस सप्ताह','pg_admin-reports_05':'इस महीना','pg_admin-reports_06':'कस्टम','pg_admin-reports_07':'शुरुआत','pg_admin-reports_08':'समाप्ति','pg_admin-reports_09':'समूह बनाएं','pg_admin-reports_10':'दिन','pg_admin-reports_11':'सप्ताह','pg_admin-reports_12':'महीना','pg_admin-reports_13':'लोड करें','pg_admin-reports_14':'कुल योग','pg_admin-reports_15':'कुल ट्रिप','pg_admin-reports_16':'कुल कमीशन कमाई','pg_admin-reports_17':'सेटल कमीशन','pg_admin-reports_18':'बकाया कमीशन','pg_admin-reports_19':'वाहन प्रकार विवरण','pg_admin-reports_20':'लोड दबाएं।','pg_admin-reports_21':'ट्रेंड — डिलीवरी + कमीशन','pg_admin-reports_22':'डिलीवरी (लाइन)','pg_admin-reports_23':'कमीशन रुपये (लाइन)','pg_admin-reports_24':'← एडमिन होम','pg_admin-reports_25':'पूरा डैशबोर्ड','pg_admin-reports_26':'एडमिन होम','pg_admin-reports_27':'पूरा डैशबोर्ड'}};</script>
+<script>window.PAGE_I18N={en:{page_title:'Reports & Earnings | ApnaShift Admin',meta_desc:'ApnaShift admin — delivered trips and commission earnings report.','pg_admin-reports_01':'Logout','pg_admin-reports_02':'Reports & Earnings','pg_admin-reports_03':'Delivered trips and commission — choose a range, then press Load.','pg_admin-reports_04':'This Week','pg_admin-reports_05':'This Month','pg_admin-reports_06':'Custom','pg_admin-reports_07':'From','pg_admin-reports_08':'To','pg_admin-reports_09':'Group by','pg_admin-reports_10':'Day','pg_admin-reports_11':'Week','pg_admin-reports_12':'Month','pg_admin-reports_13':'Load','pg_admin-reports_14':'Totals','pg_admin-reports_15':'Total trips','pg_admin-reports_16':'Total commission earned','pg_admin-reports_17':'Commission settled','pg_admin-reports_18':'Commission pending','pg_admin-reports_19':'Vehicle type breakdown','pg_admin-reports_20':'Press Load.','pg_admin-reports_21':'Trend — deliveries + commission over time','pg_admin-reports_22':'Deliveries (line)','pg_admin-reports_23':'Commission Rs (line)','pg_admin-reports_24':'← Admin Home','pg_admin-reports_25':'Full dashboard','pg_admin-reports_26':'Admin Home','pg_admin-reports_27':'Full Dashboard'},hi:{page_title:'रिपोर्ट व कमाई | ApnaShift एडमिन',meta_desc:'ApnaShift एडमिन — डिलीवर ट्रिप और कमीशन कमाई रिपोर्ट।','pg_admin-reports_01':'लॉगआउट','pg_admin-reports_02':'रिपोर्ट व कमाई','pg_admin-reports_03':'डिलीवर ट्रिप और कमीशन — रेंज चुनें, लोड दबाएं।','pg_admin-reports_04':'इस सप्ताह','pg_admin-reports_05':'इस महीना','pg_admin-reports_06':'कस्टम','pg_admin-reports_07':'शुरुआत','pg_admin-reports_08':'समाप्ति','pg_admin-reports_09':'समूह बनाएं','pg_admin-reports_10':'दिन','pg_admin-reports_11':'सप्ताह','pg_admin-reports_12':'महीना','pg_admin-reports_13':'लोड करें','pg_admin-reports_14':'कुल योग','pg_admin-reports_15':'कुल ट्रिप','pg_admin-reports_16':'कुल कमीशन कमाई','pg_admin-reports_17':'सेटल कमीशन','pg_admin-reports_18':'बकाया कमीशन','pg_admin-reports_19':'वाहन प्रकार विवरण','pg_admin-reports_20':'लोड दबाएं।','pg_admin-reports_21':'ट्रेंड — डिलीवरी + कमीशन','pg_admin-reports_22':'डिलीवरी (लाइन)','pg_admin-reports_23':'कमीशन रुपये (लाइन)','pg_admin-reports_24':'← एडमिन होम','pg_admin-reports_25':'पूरा डैशबोर्ड','pg_admin-reports_26':'एडमिन होम','pg_admin-reports_27':'पूरा डैशबोर्ड'}};</script>
 <script src="lang.js"></script>
 </body>
 </html>

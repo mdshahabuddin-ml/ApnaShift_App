@@ -20,19 +20,19 @@ class WrongRoleScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('Namaste, $name', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            Text('Hello, $name', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             Text(
-              'Ye number ($role account) customer app me nahi chalega.\n\n'
-              '• Customer login chahiye to customer account se login karo.\n'
-              '• Admin kaam ke liye browser me /super-admin.html kholo.',
+              'This number ($role account) will not work in the customer app.\n\n'
+              '• To use the customer login, log in with a customer account.\n'
+              '• For admin work, open /super-admin.html in a browser.',
               style: const TextStyle(fontSize: 15, height: 1.5),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () => session.logout(),
               style: ElevatedButton.styleFrom(backgroundColor: yellow, foregroundColor: navy, padding: const EdgeInsets.all(16)),
-              child: const Text('Logout (dusre number se login)', style: TextStyle(fontWeight: FontWeight.w800)),
+              child: const Text('Logout (log in with a different number)', style: TextStyle(fontWeight: FontWeight.w800)),
             ),
           ],
         ),

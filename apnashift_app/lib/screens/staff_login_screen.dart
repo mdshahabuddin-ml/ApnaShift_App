@@ -20,19 +20,19 @@ class StaffLoginScreen extends StatefulWidget {
 String _friendlyStaff(String code) {
   switch (code) {
     case 'invalid_credentials':
-      return 'Galat number ya password.';
+      return 'Incorrect phone number or password.';
     case 'validation_failed':
-      return '10-digit mobile (6-9 se shuru) likho.';
+      return 'Enter a 10-digit mobile number (starting with 6-9).';
     case 'too_many_attempts':
-      return 'Bahut tries — 15 minute ruk ke retry karo.';
+      return 'Too many attempts — try again in 15 minutes.';
     case 'not_super_admin':
-      return 'Ye admin account super admin nahi hai — super admin se login karo.';
+      return 'This admin account is not a super admin — log in with a super admin account.';
     case 'api_base_url_missing':
-      return 'API URL set nahi hai — flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000 (emulator) ya http://<laptop-LAN-IP>:3000 (phone) se chalao.';
+      return 'API URL is not set — run with flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000 (emulator) or http://<laptop-LAN-IP>:3000 (phone).';
     case 'network_error':
-      return 'Server se baat nahi ho payi. Server $apiBaseUrl chal raha hai? Emulator: --dart-define=API_BASE_URL=$apiLocalEmulatorUrl; phone: --dart-define=API_BASE_URL=http://<laptop-LAN-IP>:3000.';
+      return 'Unable to connect to the server. Is the server running at $apiBaseUrl? Emulator: --dart-define=API_BASE_URL=$apiLocalEmulatorUrl; phone: --dart-define=API_BASE_URL=http://<laptop-LAN-IP>:3000.';
     default:
-      return 'Login fail ($code). Server reachable hai?';
+      return 'Login failed ($code). Is the server reachable?';
   }
 }
 
@@ -52,7 +52,7 @@ class _StaffLoginScreenState extends State<StaffLoginScreen> {
       return;
     }
     if (_pass.text.isEmpty) {
-      setState(() => _error = 'Password likho.');
+      setState(() => _error = 'Enter the password.');
       return;
     }
     setState(() {
@@ -160,7 +160,7 @@ class _StaffLoginScreenState extends State<StaffLoginScreen> {
                 ElevatedButton(
                   onPressed: _busy ? null : _go,
                   style: ElevatedButton.styleFrom(backgroundColor: yellow, foregroundColor: navy, padding: const EdgeInsets.all(16)),
-                  child: Text(_busy ? 'Ruko…' : 'Login as Super Admin →', style: const TextStyle(fontWeight: FontWeight.w800)),
+                  child: Text(_busy ? 'Please wait…' : 'Login as Super Admin →', style: const TextStyle(fontWeight: FontWeight.w800)),
                 ),
               ],
             ),

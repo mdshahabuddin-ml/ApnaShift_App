@@ -114,8 +114,8 @@ class _SuperAdminAnnouncementsTabState
       final sk = r['dispatch'] is Map ? (r['dispatch'] as Map)['skipped'] : null;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(sk != null
-              ? 'Push run nahi (credentials awaiting).'
-              : 'Push dispatch chala.')));
+              ? 'Push did not run (credentials awaiting).'
+              : 'Push dispatch ran.')));
       await _load();
     } catch (e) {
       if (!mounted) return;
@@ -268,7 +268,7 @@ class _SuperAdminAnnouncementsTabState
                       controller: blockMsg,
                       maxLength: 500,
                       decoration: const InputDecoration(
-                          labelText: 'Block message * (users ko dikhega)',
+                          labelText: 'Block message * (users will see this)',
                           border: OutlineInputBorder())),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
@@ -322,7 +322,7 @@ class _SuperAdminAnnouncementsTabState
                       controller: pushBody,
                       maxLength: 500,
                       decoration: const InputDecoration(
-                          labelText: 'Push body (optional â€” body use hogi)',
+                          labelText: 'Push body (optional — this body will be used)',
                           border: OutlineInputBorder())),
               ],
             ),
@@ -342,12 +342,12 @@ class _SuperAdminAnnouncementsTabState
     if (!mounted) return;
     if (title.text.trim().isEmpty || body.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Title aur body zaroori hain.')));
+          const SnackBar(content: Text('Title and body are required.')));
       return;
     }
     if (maintenance && blockMsg.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Maintenance ke liye block message zaroori hai.')));
+          content: Text('A block message is required for maintenance.')));
       return;
     }
     final nbmRaw = nbm.text.trim();
@@ -356,7 +356,7 @@ class _SuperAdminAnnouncementsTabState
       nbmVal = int.tryParse(nbmRaw);
       if (nbmVal == null || nbmVal < 0 || nbmVal > 10080) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Notify minutes 0-10080 hone chahiye.')));
+            content: Text('Notify minutes must be between 0 and 10080.')));
         return;
       }
     }
@@ -475,7 +475,7 @@ class _SuperAdminAnnouncementsTabState
                   : _items.isEmpty
                       ? ListView(children: const [
                           SizedBox(height: 80),
-                          Center(child: Text('Koi announcement nahi.')),
+                          Center(child: Text('No announcements yet.')),
                         ])
                       : ListView.builder(
                           itemCount: _items.length + 1,

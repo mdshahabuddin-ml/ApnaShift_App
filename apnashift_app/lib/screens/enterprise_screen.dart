@@ -114,11 +114,11 @@ class _EnterpriseScreenState extends State<EnterpriseScreen> {
         _busy = false;
         _error = e is ApiException
             ? (e.code == 'duplicate_inquiry'
-                ? 'Ye email+company pichle 30 din me bhej chuke ho.'
+                ? 'You already sent this email+company in the last 30 days.'
                 : e.code == 'validation_failed'
-                    ? 'Details check karo.'
-                    : 'Submit fail (${e.code}).')
-            : 'Server se baat nahi ho payi.';
+                    ? 'Check the details.'
+                    : 'Submit failed (${e.code}).')
+            : 'Unable to connect to the server.';
       });
     }
   }
@@ -133,7 +133,7 @@ class _EnterpriseScreenState extends State<EnterpriseScreen> {
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('WhatsApp nahi khula — 918757160137 par likho.')));
+          content: Text('WhatsApp did not open — message 918757160137.')));
     }
   }
 
@@ -160,10 +160,10 @@ class _EnterpriseScreenState extends State<EnterpriseScreen> {
                 ElevatedButton(
                     onPressed: _whatsapp,
                     child: const Text(
-                        'WhatsApp par baat karo →')),
+                        'Chat on WhatsApp →')),
                 const SizedBox(height: 8),
                 const Text(
-                    'Handoff only — auto-send nahi hota (website parity).',
+                    'Handoff only — nothing is sent automatically (website parity).',
                     style:
                         TextStyle(fontSize: 12, color: Colors.grey)),
               ]),
@@ -295,7 +295,7 @@ class _EnterpriseScreenState extends State<EnterpriseScreen> {
           ElevatedButton(
               onPressed: _busy ? null : _submit,
               child: Text(
-                  _busy ? 'Ruko…' : 'Submit inquiry →')),
+                  _busy ? 'Please wait…' : 'Submit inquiry →')),
           const SizedBox(height: 24),
         ],
       ),

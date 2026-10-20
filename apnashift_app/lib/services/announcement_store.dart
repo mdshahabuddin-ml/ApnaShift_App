@@ -33,7 +33,9 @@ class AnnouncementStore extends ChangeNotifier {
   bool get refreshing => _refreshing;
   bool get maintenanceBlocked => _maintenance['blocked'] == true;
   String get maintenanceMessage =>
-      (_maintenance['message'] ?? 'Maintenance chal raha hai — bookings thodi der me wapas chalu hongi.').toString();
+      (_maintenance['message'] ??
+              'Maintenance in progress — bookings will resume shortly.')
+          .toString();
   Set<String> get dismissed => Set.unmodifiable(_dismissed);
 
   /// Role change (login/logout) par audience badlo — change hote hi feed

@@ -249,7 +249,7 @@ export async function createSettlementTx(client, { driverId, amountPaise, method
   if (amountPaise > outstanding) {
     const err = new Error('settlement_exceeds_outstanding');
     err.status = 409;
-    err.details = [{ field: 'amount_rs', message: `Outstanding se zyada nahi (Rs ${paiseToRs(outstanding)}).` }];
+    err.details = [{ field: 'amount_rs', message: `Cannot exceed the outstanding amount (Rs ${paiseToRs(outstanding)}).` }];
     throw err;
   }
   let inserted;

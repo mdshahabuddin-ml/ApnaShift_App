@@ -96,12 +96,12 @@ class _AdminPricingTabState extends State<AdminPricingTab> {
     final comm = _num(_comm.text);
     if (base == null && km == null && helper == null && comm == null) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Kam se kam ek rate badlo.')));
+          content: Text('Change at least one rate.')));
       return;
     }
     if ((comm != null && (comm < 0 || comm > 100))) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('commission 0-100 ke beech ho.')));
+          content: Text('Commission must be between 0 and 100.')));
       return;
     }
     setState(() => _busy = true);
@@ -129,7 +129,7 @@ class _AdminPricingTabState extends State<AdminPricingTab> {
     final pct = _num(_globalComm.text);
     if (pct == null || pct < 0 || pct > 100) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('pct 0-100 number ho.')));
+          content: Text('pct must be a number between 0 and 100.')));
       return;
     }
     setState(() => _busy = true);
@@ -199,7 +199,7 @@ class _AdminPricingTabState extends State<AdminPricingTab> {
                       ElevatedButton(
                           onPressed: _busy ? null : _save,
                           child: Text(
-                              _busy ? 'Ruko…' : 'Save rate →')),
+                              _busy ? 'Please wait…' : 'Save rate →')),
                       const SizedBox(height: 16),
                       const Text('Global commission %',
                           style: TextStyle(

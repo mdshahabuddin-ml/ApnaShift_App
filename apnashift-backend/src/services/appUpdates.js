@@ -162,7 +162,7 @@ async function dispatchRelease(a) {
     roles,
   );
   const title = a.push_title || `ApnaShift v${a.version} available`;
-  const body = a.push_body || String(a.release_notes ?? '').slice(0, 500) || 'Naya app version available hai — update karo.';
+  const body = a.push_body || String(a.release_notes ?? '').slice(0, 500) || 'A new app version is available — please update.';
   let sent = 0;
   let failed = 0;
   let oauthDead = false;

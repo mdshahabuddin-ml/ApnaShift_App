@@ -39,12 +39,13 @@ const Map<String, Map<String, String>> appStrings = {
     'field_password': 'Password',
     'btn_login': 'Login →',
     'btn_register': 'Create Account →',
-    'busy_wait': 'Ruko…',
-    'staff_link': 'Staff ho? Super Admin login →',
+    'busy_wait': 'Please wait…',
+    'staff_link': 'Are you a staff member? Super Admin login →',
     'logout': 'Logout',
     'retry': 'Retry ↻',
-    'bookings_empty': 'Koi booking nahi — Book se pehli booking banao.',
-    'phase2_note': 'Customer booking live hai — Book tab se estimate + confirm karo.',
+    'bookings_empty': 'No bookings yet — create your first booking from the Book tab.',
+    'phase2_note':
+        'Customer booking is live — get an estimate and confirm it from the Book tab.',
   },
   'hi': {
     'nav_home': 'होम',

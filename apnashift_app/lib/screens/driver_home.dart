@@ -56,37 +56,37 @@ String _friendly(Object e) {
   if (e is ApiException) {
     switch (e.code) {
       case 'commission_limit_exceeded':
-        return 'Commission due limit cross — pehle hisab clear karo.';
+        return 'Commission due limit exceeded — clear your dues first.';
       case 'already_accepted':
-        return 'Ye trip kisi aur ne le li / cancel ho gayi.';
+        return 'This trip was taken by someone else / was cancelled.';
       case 'already_declined':
         return 'Already declined.';
       case 'driver_unverified':
-        return 'Application PENDING — admin verify karega, tab tak jobs nahi.';
+        return 'Application PENDING — the admin will verify it; no jobs until then.';
       case 'driver_inactive':
-        return 'Account deactivated — support se baat karo.';
+        return 'Account deactivated — contact support.';
       case 'invalid_transition':
-        return 'Ye step abhi allowed nahi.';
+        return 'This step is not allowed right now.';
       case 'tracking_not_active':
-        return 'Tracking sirf accepted/arrived/in_transit par.';
+        return 'Tracking works only for accepted/arrived/in_transit.';
       case 'too_many_attempts':
-        return 'Bahut requests — thoda ruk ke retry karo.';
+        return 'Too many requests — wait a moment and try again.';
       case 'maintenance_active':
         final m = e.message;
         return (m != null && m.isNotEmpty)
-            ? 'Maintenance chal raha hai — $m'
-            : 'Maintenance chal raha hai — driver actions thodi der me wapas chalu honge.';
+            ? 'Maintenance in progress — $m'
+            : 'Maintenance in progress — driver actions will resume shortly.';
       case 'not_delivered':
-        return 'Sirf delivered trip par.';
+        return 'Only for a delivered trip.';
       case 'validation_failed':
-        return 'Details check karo.';
+        return 'Check the details.';
       case 'api_base_url_missing':
-        return 'API URL set nahi hai — flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000 (emulator) ya http://<laptop-LAN-IP>:3000 (phone) se chalao.';
+        return 'API URL is not set — run with flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000 (emulator) or http://<laptop-LAN-IP>:3000 (phone).';
       default:
-        return 'Fail (${e.code}). Retry karo.';
+        return 'Failed (${e.code}). Try again.';
     }
   }
-  return 'Server se baat nahi ho payi.';
+  return 'Unable to connect to the server.';
 }
 
 // ---------------- Jobs ----------------
@@ -128,7 +128,7 @@ class _JobsTabState extends State<_JobsTab> {
       } else if (ev.event == 'new_booking') {
         _quietRefresh();
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('🔔 Nayi trip aayi — list refresh ho gayi.')));
+            content: Text('🔔 A new trip arrived — the list has been refreshed.')));
       }
     });
     _fallback =
@@ -203,7 +203,7 @@ class _JobsTabState extends State<_JobsTab> {
       if (!mounted) return;
       setState(() => _busy = false);
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Trip accepted — Trips tab dekho.')));
+          const SnackBar(content: Text('Trip accepted — check the Trips tab.')));
       await _load();
     } catch (e) {
       if (!mounted) return;
@@ -280,7 +280,7 @@ class _JobsTabState extends State<_JobsTab> {
                         const Padding(
                             padding: EdgeInsets.all(24),
                             child: Text(
-                                'Koi available trip nahi — nayi trip aate hi list khud refresh hogi (live). Pull-to-refresh bhi hai.')),
+                                'No available trips — the list will refresh automatically when a new trip arrives (live). You can also pull to refresh.')),
                       ..._items.map((b) {
                         final est = b.estimate;
                         return Card(
@@ -436,7 +436,7 @@ class _TripsTabState extends State<_TripsTab> {
   Future<bool> _ensurePerm() async {
     final enabled = await Geolocator.isLocationServiceEnabled();
     if (!enabled) {
-      setState(() => _gpsMsg = 'Location service OFF hai — ON karo.');
+      setState(() => _gpsMsg = 'Location service is OFF — turn it on.');
       return false;
     }
     var perm = await Geolocator.checkPermission();
@@ -445,7 +445,8 @@ class _TripsTabState extends State<_TripsTab> {
     }
     if (perm == LocationPermission.denied ||
         perm == LocationPermission.deniedForever) {
-      setState(() => _gpsMsg = 'Location permission denied — settings me allow karo.');
+      setState(() =>
+          _gpsMsg = 'Location permission denied — allow it in settings.');
       return false;
     }
     return true;
@@ -493,7 +494,7 @@ class _TripsTabState extends State<_TripsTab> {
     final reason = _dispute.text.trim();
     if (reason.length < 3) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Wajah kam se kam 3 akshar.')));
+          const SnackBar(content: Text('Reason must be at least 3 characters.')));
       return;
     }
     setState(() => _busy = true);
@@ -844,7 +845,7 @@ class _DriverAccountTabState extends State<_DriverAccountTab> {
         !RegExp(r'^[\w.\-]{2,256}@[a-zA-Z]{2,64}$')
             .hasMatch(v)) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('UPI ID format naam@bank jaisa ho.')));
+          content: Text('UPI ID must be in the format name@bank.')));
       return;
     }
     setState(() => _busy = true);
@@ -855,7 +856,7 @@ class _DriverAccountTabState extends State<_DriverAccountTab> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(err == null
             ? 'UPI saved.'
-            : 'Save fail ($err).')));
+            : 'Save failed ($err).')));
   }
 
   @override
@@ -908,7 +909,7 @@ class _DriverAccountTabState extends State<_DriverAccountTab> {
               child: Padding(
                 padding: EdgeInsets.all(14),
                 child: Text(
-                    'Application PENDING_REVIEW — admin verify karega, tab tak jobs nahi dikhengi.'),
+                    'Application PENDING_REVIEW — the admin will verify it; jobs will not be visible until then.'),
               ),
             ),
           Card(
@@ -929,7 +930,7 @@ class _DriverAccountTabState extends State<_DriverAccountTab> {
                     ElevatedButton(
                         onPressed: _busy ? null : _save,
                         child: Text(
-                            _busy ? 'Ruko…' : 'Save UPI ID')),
+                            _busy ? 'Please wait…' : 'Save UPI ID')),
                   ]),
             ),
           ),

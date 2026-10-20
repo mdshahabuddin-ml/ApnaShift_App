@@ -101,7 +101,7 @@ class AdminAccountHeader extends StatelessWidget {
             icon: const Icon(Icons.logout),
             onPressed: () => session.logout()),
       ],
-      body: const Center(child: Text('Ops tabs me kaam karo.')),
+      body: const Center(child: Text('Work from the Ops tabs.')),
     );
   }
 }

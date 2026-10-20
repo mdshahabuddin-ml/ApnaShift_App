@@ -9,39 +9,39 @@ String adminFriendly(Object e) {
   if (e is ApiException) {
     switch (e.code) {
       case 'invalid_credentials':
-        return 'Galat number ya password.';
+        return 'Incorrect phone number or password.';
       case 'validation_failed':
-        return 'Details check karo (filter/amount/ref).';
+        return 'Check the details (filter/amount/ref).';
       case 'too_many_attempts':
-        return 'Bahut requests — thoda ruk ke retry karo.';
+        return 'Too many requests — wait a moment and try again.';
       case 'maintenance_active':
         final m = e.message;
         return (m != null && m.isNotEmpty)
-            ? 'Maintenance chal raha hai — $m'
-            : 'Maintenance chal raha hai — actions thodi der me wapas chalu honge.';
+            ? 'Maintenance in progress — $m'
+            : 'Maintenance in progress — actions will resume shortly.';
       case 'not_found':
-        return 'Nahi mila (galat id / doosri state).';
+        return 'Not found (invalid id / different state).';
       case 'invalid_transition':
-        return 'Ye action is state me allowed nahi.';
+        return 'This action is not allowed in this state.';
       case 'already_accepted':
-        return 'Trip already accepted hai.';
+        return 'The trip has already been accepted.';
       case 'driver_unavailable':
-        return 'Driver available nahi (verify/active/vehicle dekho).';
+        return 'Driver is not available (check verify/active/vehicle).';
       case 'vehicle_mismatch':
-        return 'Driver ka vehicle trip se match nahi.';
+        return "The driver's vehicle does not match the trip.";
       case 'settlement_exceeds_outstanding':
-        return 'Amount outstanding se zyada hai.';
+        return 'Amount exceeds the outstanding balance.';
       case 'duplicate_settlement':
-        return 'Duplicate settlement (reference dobara).';
+        return 'Duplicate settlement (reference already used).';
       case 'settlement_finalized':
-        return 'Week PAID/DISPUTED — frozen hai.';
+        return 'This week is PAID/DISPUTED — it is frozen.';
       case 'idempotency_conflict':
-        return 'Same key, alag data — nayi key banao.';
+        return 'Same key, different data — create a new key.';
       default:
-        return 'Fail (${e.code}). Retry karo.';
+        return 'Failed (${e.code}). Try again.';
     }
   }
-  return 'Server se baat nahi ho payi.';
+  return 'Unable to connect to the server.';
 }
 
 Widget adminErrorCard(String msg) => Padding(

@@ -25,7 +25,7 @@
     critical: { c: "#b91c1c", i: "\u2716" },
     maintenance: { c: "#c2410c", i: "\ud83d\udee0" }
   };
-  var FALLBACK = "Maintenance chal raha hai \u2014 bookings thodi der me wapas chalu hongi.";
+  var FALLBACK = "Maintenance in progress \u2014 bookings will resume shortly.";
 
   function store() {
     try {
@@ -143,7 +143,7 @@
       var x = document.createElement("button");
       x.type = "button";
       x.textContent = "\u2715";
-      x.setAttribute("aria-label", "Band karo");
+      x.setAttribute("aria-label", "Close");
       x.style.cssText =
         "border:0;background:transparent;font-size:14px;cursor:pointer;padding:4px 8px;color:#444;flex:none;";
       x.onclick = opts.onClose;

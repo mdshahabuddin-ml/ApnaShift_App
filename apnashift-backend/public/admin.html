@@ -73,17 +73,17 @@
   <!-- LOGIN -->
   <section class="card" id="loginCard">
     <h2>Owner login</h2>
-    <p class="muted" style="margin:0">Admin phone + password se login karo. Pehli baar admin server par banana padega — neeche command dekho.</p>
+    <p class="muted" style="margin:0">Log in with the admin phone + password. The first admin must be created on the server — see the command below.</p>
     <div class="row c2">
       <div><label for="apiBase">API base URL</label><input id="apiBase" value=""></div>
       <div><label for="phone">Admin phone</label><input id="phone" inputmode="numeric" placeholder="98765 43210"></div>
     </div>
     <label for="password">Password</label>
-    <input id="password" type="password" placeholder="Kam se kam 8 akshar">
+    <input id="password" type="password" placeholder="At least 8 characters">
     <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn" id="loginBtn">Login</button>
     </div>
-    <p class="muted">Pehla admin (server/terminal me, ek baar):<br>
+    <p class="muted">First admin (in the server/terminal, once):<br>
       <code>npm run admin:create -- "Owner" 9876543210 "StrongPass123"</code>
     </p>
   </section>
@@ -100,9 +100,9 @@
     </div>
 
     <section class="card panel active" id="panel-stats">
-      <h2>Aaj / hafta / total</h2>
+      <h2>Today / week / total</h2>
       <button class="btn small" id="statsBtn">Refresh stats</button>
-      <div class="stat-grid" id="statsGrid"><p class="muted">Load karo…</p></div>
+      <div class="stat-grid" id="statsGrid"><p class="muted">Loading…</p></div>
     </section>
 
     <section class="card panel" id="panel-drivers">
@@ -118,7 +118,7 @@
     </section>
 
     <section class="card panel" id="panel-flagged">
-      <h2>Flagged drivers <span class="muted">(avg &lt; 3, auto-ban nahi — manual dekho)</span></h2>
+      <h2>Flagged drivers <span class="muted">(avg &lt; 3, no auto-ban — review manually)</span></h2>
       <button class="btn small" id="flagBtn">Load flagged</button>
       <div style="overflow-x:auto"><table id="flagTable"></table></div>
     </section>
@@ -127,23 +127,23 @@
       <h2>Bookings</h2>
       <div class="row c4">
         <div><label for="bkStatus">Status</label>
-          <select id="bkStatus"><option value="">sab</option><option>pending</option><option>accepted</option><option>arrived</option><option>in_transit</option><option>delivered</option><option>cancelled</option></select></div>
-        <div><label for="bkCity">City (address me)</label><input id="bkCity" placeholder="Indore"></div>
+          <select id="bkStatus"><option value="">all</option><option>pending</option><option>accepted</option><option>arrived</option><option>in_transit</option><option>delivered</option><option>cancelled</option></select></div>
+        <div><label for="bkCity">City (in address)</label><input id="bkCity" placeholder="Indore"></div>
         <div><label for="bkPage">Page</label><input id="bkPage" type="number" value="1" min="1"></div>
         <div><label>&nbsp;</label><button class="btn small" id="bkBtn" style="width:100%">Load</button></div>
       </div>
       <p class="muted" id="bkTotal"></p>
       <div style="overflow-x:auto"><table id="bkTable"></table></div>
-      <p class="muted">Assign: sirf <b>pending</b> booking par, sahi gaadi wala verified + active driver. Driver ID usi table se copy karo.</p>
+      <p class="muted">Assign: only on a <b>pending</b> booking, to a verified + active driver with the matching vehicle. Copy the Driver ID from that table.</p>
     </section>
 
     <section class="card panel" id="panel-pricing">
       <h2>Pricing rules</h2>
       <button class="btn small" id="priceBtn">Load rates</button>
       <div style="overflow-x:auto"><table id="priceTable"></table></div>
-      <h2 style="margin-top:16px">Rate badlo</h2>
+      <h2 style="margin-top:16px">Update rate</h2>
       <div class="row c4">
-        <div><label for="prVehicle">Gaadi</label>
+        <div><label for="prVehicle">Vehicle</label>
           <select id="prVehicle"><option value="pickup">pickup</option><option value="mini_truck">mini_truck</option><option value="mini_tractor">mini_tractor</option></select></div>
         <div><label for="prBase">Base Rs</label><input id="prBase" type="number" min="0" placeholder="350"></div>
         <div><label for="prKm">Per km Rs</label><input id="prKm" type="number" min="0" step="0.5" placeholder="17.5"></div>
@@ -159,7 +159,7 @@
       <h2>Enterprise inquiries (B2B leads)</h2>
       <div class="row c4">
         <div><label for="entStatus">Status</label>
-          <select id="entStatus"><option value="">sab</option><option>NEW</option><option>CONTACTED</option><option>IN_DISCUSSION</option><option>CONVERTED</option><option>CLOSED</option></select></div>
+          <select id="entStatus"><option value="">all</option><option>NEW</option><option>CONTACTED</option><option>IN_DISCUSSION</option><option>CONVERTED</option><option>CLOSED</option></select></div>
         <div><label for="entSearch">Search (company/email/name)</label><input id="entSearch" placeholder="Sharma Retail"></div>
         <div><label for="entPage">Page</label><input id="entPage" type="number" value="1" min="1"></div>
         <div><label>&nbsp;</label><button class="btn small" id="entBtn" style="width:100%">Load</button></div>
@@ -208,7 +208,7 @@ async function api(path, opts){
   try{ data = await res.json(); }catch(e){}
   if(res.status === 401){
     logout(true);
-    throw new Error("Session khatm — dobara login karo.");
+    throw new Error("Session expired — log in again.");
   }
   if(!res.ok || (data && data.ok === false)){
     var msg = (data && (data.error || (data.details && data.details[0] && data.details[0].message))) || ("HTTP " + res.status);
@@ -230,14 +230,14 @@ function logout(silent){
   $("dash").style.display = "none";
   $("logoutBtn").style.display = "none";
   $("whoBox").textContent = "";
-  if(!silent) showAlert("info", "Logout ho gaya.");
+  if(!silent) showAlert("info", "Logged out.");
 }
 $("logoutBtn").onclick = function(){ logout(); };
 
 async function doLogin(){
   hideAlert();
   var phone = $("phone").value.trim(), password = $("password").value;
-  if(!phone || !password){ showAlert("err", "Phone + password dono likho."); return; }
+  if(!phone || !password){ showAlert("err", "Enter both phone and password."); return; }
   var btn = $("loginBtn"); btn.disabled = true; btn.textContent = "Login…";
   try{
     var res = await fetch(apiBase() + "/api/admin/login", {
@@ -275,7 +275,7 @@ async function loadStats(){
   hideAlert();
   try{
     var d = await api("/api/admin/stats");
-    $("statsGrid").innerHTML = statCard("Aaj", d.today) + statCard("7 din", d.week) + statCard("Total", d.total) +
+    $("statsGrid").innerHTML = statCard("Today", d.today) + statCard("7 days", d.week) + statCard("Total", d.total) +
       '<div class="stat"><b>' + esc(d.drivers.verified_active) + '</b>Verified + active drivers</div>';
   }catch(e){ showAlert("err", "Stats: " + e.message); }
 }
@@ -306,7 +306,7 @@ function drvRow(d){
     ' ' + (d.is_active ? '<span class="pill ok">active</span>' : '<span class="pill bad">inactive</span>') +
     (d.needs_review ? ' <span class="pill bad">review</span>' : '') +
     '<br><span class="muted">Rating ' + esc(d.avg_rating) + ' • Trips ' + esc(d.total_trips) +
-    (d.rejection_reason ? '<br>Wajah: ' + esc(d.rejection_reason) : '') + '</span>' + drvActions(d) + '</td></tr>';
+    (d.rejection_reason ? '<br>Reason: ' + esc(d.rejection_reason) : '') + '</span>' + drvActions(d) + '</td></tr>';
 }
 async function loadDrivers(){
   hideAlert();
@@ -314,7 +314,7 @@ async function loadDrivers(){
     var st = $("drvStatus").value, pg = $("drvPage").value || 1;
     var d = await api("/api/admin/drivers?status=" + encodeURIComponent(st) + "&page=" + encodeURIComponent(pg) + "&limit=20");
     $("drvTotal").textContent = "Total: " + d.total + " (page " + d.page + ")";
-    $("drvTable").innerHTML = "<tr><th>Driver</th><th>Gaadi</th><th>Status + action</th></tr>" + d.drivers.map(drvRow).join("");
+    $("drvTable").innerHTML = "<tr><th>Driver</th><th>Vehicle</th><th>Status + action</th></tr>" + d.drivers.map(drvRow).join("");
     bindDriverButtons($("drvTable"));
   }catch(e){ showAlert("err", "Drivers: " + e.message); }
 }
@@ -327,7 +327,7 @@ async function driverAction(act, id){
   hideAlert();
   try{
     if(act === "reject"){
-      var reason = prompt("Reject ki wajah likho (kam se kam 3 akshar):");
+      var reason = prompt("Enter the rejection reason (at least 3 characters):");
       if(!reason) return;
       await api("/api/admin/drivers/" + id + "/reject", { method: "PATCH", body: { reason: reason } });
     } else {
@@ -344,7 +344,7 @@ async function loadFlagged(){
   hideAlert();
   try{
     var d = await api("/api/admin/drivers/flagged");
-    if(!d.drivers.length){ $("flagTable").innerHTML = "<tr><td>koi flagged driver nahi — sab badhiya.</td></tr>"; return; }
+    if(!d.drivers.length){ $("flagTable").innerHTML = "<tr><td>No flagged drivers — all good.</td></tr>"; return; }
     $("flagTable").innerHTML = "<tr><th>Driver</th><th>Rating</th></tr>" + d.drivers.map(function(x){
       return "<tr><td>" + esc(x.name) + "<br>" + esc(x.phone) + "<br><span class='muted'>" + esc(x.vehicle_type) + "</span></td>" +
         "<td>Avg " + esc(x.avg_rating) + " • Trips " + esc(x.total_trips) + " • Ratings " + esc(x.ratings_count) + "</td></tr>";
@@ -370,14 +370,14 @@ async function loadBookings(){
     if($("bkStatus").value) q += "&status=" + encodeURIComponent($("bkStatus").value);
     if($("bkCity").value.trim()) q += "&city=" + encodeURIComponent($("bkCity").value.trim());
     var d = await api("/api/admin/bookings" + q);
-    $("bkTotal").textContent = "Total: " + d.total + " • Revenue (cancelled chhod): Rs " + d.revenue_rs;
+    $("bkTotal").textContent = "Total: " + d.total + " • Revenue (excluding cancelled): Rs " + d.revenue_rs;
     $("bkTable").innerHTML = "<tr><th>Booking</th><th>Route</th></tr>" + d.bookings.map(bkRow).join("");
     $("bkTable").querySelectorAll("button[data-assign]").forEach(function(btn){
       btn.onclick = async function(){
         var id = btn.dataset.assign;
         var inp = $("bkTable").querySelector('input[data-assign-for="' + id + '"]');
         var driverId = (inp && inp.value.trim()) || "";
-        if(!driverId){ showAlert("err", "Driver UUID likho (drivers table se copy karo)."); return; }
+        if(!driverId){ showAlert("err", "Enter the driver UUID (copy it from the drivers table)."); return; }
         try{
           await api("/api/admin/bookings/" + id + "/assign", { method: "PATCH", body: { driver_id: driverId } });
           showAlert("info", "Booking assign OK.");
@@ -394,7 +394,7 @@ async function loadPricing(){
   hideAlert();
   try{
     var d = await api("/api/admin/pricing-rules");
-    $("priceTable").innerHTML = "<tr><th>Gaadi</th><th>Base</th><th>Per km</th><th>Helper</th></tr>" +
+    $("priceTable").innerHTML = "<tr><th>Vehicle</th><th>Base</th><th>Per km</th><th>Helper</th></tr>" +
       d.rules.map(function(r){
         return "<tr><td>" + esc(r.vehicle_type) + "</td><td>" + esc(r.base_rs) + "</td><td>" + esc(r.per_km_rs) + "</td><td>" + esc(r.helper_rs) + "</td></tr>";
       }).join("");
@@ -417,8 +417,8 @@ $("priceHistBtn").onclick = async function(){
   hideAlert();
   try{
     var d = await api("/api/admin/pricing-rules/history?limit=20");
-    if(!d.history.length){ $("priceHistTable").innerHTML = "<tr><td>history khaali.</td></tr>"; return; }
-    $("priceHistTable").innerHTML = "<tr><th>ID</th><th>Gaadi</th><th>Badlav</th></tr>" + d.history.map(function(h){
+    if(!d.history.length){ $("priceHistTable").innerHTML = "<tr><td>No history.</td></tr>"; return; }
+    $("priceHistTable").innerHTML = "<tr><th>ID</th><th>Vehicle</th><th>Change</th></tr>" + d.history.map(function(h){
       return "<tr><td>" + esc(h.id) + "</td><td>" + esc(h.vehicle_type) + "</td><td><span class='muted'>" +
         esc(JSON.stringify(h.old)) + " → " + esc(JSON.stringify(h.new)) + "</span></td></tr>";
     }).join("");
@@ -453,7 +453,7 @@ async function loadEnterprise(){
     if($("entSearch").value.trim()) q += "&search=" + encodeURIComponent($("entSearch").value.trim());
     var d = await api("/api/enterprise/inquiries" + q);
     $("entTotal").textContent = "Total: " + d.total;
-    if(!d.inquiries.length){ $("entTable").innerHTML = "<tr><td>koi inquiry nahi.</td></tr>"; return; }
+    if(!d.inquiries.length){ $("entTable").innerHTML = "<tr><td>No inquiries.</td></tr>"; return; }
     $("entTable").innerHTML = "<tr><th>ID</th><th>Contact</th><th>Business</th><th>Status</th></tr>" + d.inquiries.map(entRow).join("");
     $("entTable").querySelectorAll("button[data-ent-status]").forEach(function(btn){
       btn.onclick = async function(){

@@ -302,7 +302,7 @@ class _CustomersTabState extends State<_CustomersTab> {
       if (users.isEmpty) {
         if (!mounted) return;
         setState(() {
-          _error = 'Customer nahi mila.';
+          _error = 'Customer not found.';
           _busy = false;
         });
         return;
@@ -397,7 +397,7 @@ class _CustomersTabState extends State<_CustomersTab> {
         ]),
         const SizedBox(height: 4),
         const Text(
-            'Note: customer suspend ka backend endpoint nahi hai (documented gap) — isliye suspend button nahi hai.',
+            'Note: there is no backend endpoint to suspend a customer (documented gap) — so there is no suspend button.',
             style: TextStyle(fontSize: 12, color: Colors.grey)),
         if (_error != null)
           Padding(
@@ -660,7 +660,7 @@ class _FinanceTabState extends State<_FinanceTab> {
     final id = _driverId.text.trim();
     if (id.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Driver UUID likho.')));
+          content: Text('Enter the driver UUID.')));
       return;
     }
     setState(() => _busy = true);
@@ -729,13 +729,13 @@ class _FinanceTabState extends State<_FinanceTab> {
     if (cd == 0 && ed == 0) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Kam se kam ek delta non-zero ho.')));
+          content: Text('At least one delta must be non-zero.')));
       return;
     }
     if (reasonC.text.trim().length < 3) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Wajah kam se kam 3 akshar.')));
+          content: Text('Reason must be at least 3 characters.')));
       return;
     }
     setState(() => _busy = true);

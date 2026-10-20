@@ -22,19 +22,19 @@ class AdminLoginScreen extends StatefulWidget {
 String _friendly(String code) {
   switch (code) {
     case 'invalid_credentials':
-      return 'Galat number ya password.';
+      return 'Incorrect phone number or password.';
     case 'validation_failed':
-      return 'Phone digits me likho (email nahi — phone use karo).';
+      return 'Enter the phone in digits (not email — use phone).';
     case 'too_many_attempts':
-      return 'Bahut tries — 15 minute ruk ke retry karo.';
+      return 'Too many attempts — try again in 15 minutes.';
     case 'not_staff':
-      return 'Ye account staff ka nahi hai.';
+      return 'This account is not a staff account.';
     case 'network_error':
-      return 'Server se baat nahi ho payi. Server $apiBaseUrl chal raha hai? Emulator: --dart-define=API_BASE_URL=$apiLocalEmulatorUrl; phone: run-phone.ps1 (ya --dart-define=API_BASE_URL=http://<laptop-LAN-IP>:3000).';
+      return 'Unable to connect to the server. Is the server running at $apiBaseUrl? Emulator: --dart-define=API_BASE_URL=$apiLocalEmulatorUrl; phone: run-phone.ps1 (or --dart-define=API_BASE_URL=http://<laptop-LAN-IP>:3000).';
     case 'api_base_url_missing':
-      return 'API URL set nahi hai — flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000 (emulator) ya http://<laptop-LAN-IP>:3000 (phone) se chalao.';
+      return 'API URL is not set — run with flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000 (emulator) or http://<laptop-LAN-IP>:3000 (phone).';
     default:
-      return 'Login fail ($code). Retry karo.';
+      return 'Login failed ($code). Try again.';
   }
 }
 
@@ -91,7 +91,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
         children: [
           const Text('Admin',
               style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800)),
-          const Text('Staff only — role server se verify hota hai',
+          const Text('Staff only — the role is verified on the server',
               style: TextStyle(color: Colors.grey)),
           const SizedBox(height: 16),
           if (_error != null)
@@ -108,7 +108,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
               keyboardType: TextInputType.text,
               decoration: const InputDecoration(
                   labelText: 'Admin mobile number',
-                  hintText: 'Phone (email nahi)',
+                  hintText: 'Phone (not email)',
                   border: OutlineInputBorder())),
           const SizedBox(height: 12),
           TextField(
@@ -131,13 +131,13 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
           const SizedBox(height: 16),
           ElevatedButton(
               onPressed: _busy ? null : _go,
-              child: Text(_busy ? 'Ruko…' : 'Login as Admin →')),
+              child: Text(_busy ? 'Please wait…' : 'Login as Admin →')),
           TextButton(
               onPressed: () => Navigator.of(context).push(MaterialPageRoute(
                   builder: (_) =>
                       StaffLoginScreen(settings: widget.settings))),
               child: const Text(
-                  'Super Admin overview (sirf super_admin) →')),
+                  'Super Admin overview (super_admin only) →')),
         ],
       ),
     );

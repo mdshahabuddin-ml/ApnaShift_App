@@ -196,7 +196,7 @@ announcementsRoutes.patch('/:id', validateIdParam, async (req, res, next) => {
     if (mergedMaint && !mergedBlock) {
       const err = new Error('validation_failed');
       err.status = 400;
-      err.details = [{ field: 'block_message', message: 'maintenance_mode ke liye block_message zaroori hai' }];
+      err.details = [{ field: 'block_message', message: 'block_message is required for maintenance_mode' }];
       throw err;
     }
     const mergedStart = 'start_at' in v ? v.start_at : cur.start_at;
@@ -282,13 +282,13 @@ announcementsRoutes.patch('/:id', validateIdParam, async (req, res, next) => {
       if (!pushEnabled) {
         const err = new Error('validation_failed');
         err.status = 400;
-        err.details = [{ field: 'retry_push', message: 'retry ke liye push_enabled on chahiye' }];
+        err.details = [{ field: 'retry_push', message: 'push_enabled must be on to retry' }];
         throw err;
       }
       if (newStatus !== 'published') {
         const err = new Error('validation_failed');
         err.status = 400;
-        err.details = [{ field: 'retry_push', message: 'retry sirf published announcement par' }];
+        err.details = [{ field: 'retry_push', message: 'retry only works on published announcements' }];
         throw err;
       }
       // Failed rows only — already-sent rows keep their UNIQUE dedupe row.

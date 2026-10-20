@@ -680,7 +680,7 @@ fieldset.field legend .req{color:var(--red)}
 
     <div class="alert" id="formAlert" role="alert" aria-live="assertive"></div>
     <div class="pin-banner" id="pinBanner" role="status" aria-live="polite">
-      <b>Map trouble?</b> Map / suggestions unavailable ho sakte hain. Aap <b>Book Using PIN Code</b> se aage badh sakte ho — addresses + 6-digit PINs + manual coordinates (agar pata hon).
+      <b>Map trouble?</b> Map / suggestions may be unavailable. You can continue with <b>Book Using PIN Code</b> — addresses + 6-digit PINs + manual coordinates (if you know them).
       <div class="btnrow">
         <button type="button" class="btn" id="pinModeBtn">Book Using PIN Code</button>
         <button type="button" class="btn-est" id="pinRetryBtn">Retry map</button>
@@ -736,7 +736,7 @@ fieldset.field legend .req{color:var(--red)}
 
       <div class="pin-fallback" id="pinFallback">
         <b>PIN Code fallback</b>
-        <p class="hint">Pickup + Drop ke 6-digit Indian PIN likho (city/district/state address me manually likho — koi auto-fill nahi). Fare/distance sirf valid coordinates par backend se aayega; kuch invent nahi hoga.</p>
+        <p class="hint">Enter the 6-digit Indian PINs for Pickup + Drop (enter the city/district/state address manually — no auto-fill). Fare/distance will come from the backend only for valid coordinates; nothing is guessed.</p>
         <div class="pin-grid">
           <div class="field" id="f-pickupPin">
             <label for="pickupPin">Pickup PIN Code <span class="req" aria-hidden="true">*</span></label>
@@ -773,7 +773,7 @@ fieldset.field legend .req{color:var(--red)}
             <p class="error-text" id="pinDropLng-err"></p>
           </div>
         </div>
-        <p class="hint">Coordinates manually (known location se) — map theek hote hi wapas switch karo, details safe rahenge. Fare sirf backend estimate se.</p>
+        <p class="hint">Enter coordinates manually (from a known location) — switch back to the map as soon as it works, your details will remain safe. Fare only from the backend estimate.</p>
         <div class="btnrow">
           <button type="button" class="btn-est" id="pinBackBtn">Back to map</button>
           <button type="button" class="btn-est" id="pinRetryBtn2">Retry map</button>
@@ -808,8 +808,8 @@ fieldset.field legend .req{color:var(--red)}
         <div class="field" id="f-size">
           <label for="sizeTier">Vehicle size</label>
           <select id="sizeTier">
-            <option value="chhota">Chhota (small)</option>
-            <option value="bada">Bada (big)</option>
+            <option value="chhota">Small</option>
+            <option value="bada">Big</option>
           </select>
           <p class="error-text" id="sizeTier-err"></p>
         </div>
@@ -827,7 +827,7 @@ fieldset.field legend .req{color:var(--red)}
         </div>
         <div class="field" id="f-bulky">
           <label for="bulkyChk">Bulky item?</label>
-          <label class="checkline" for="bulkyChk"><input type="checkbox" id="bulkyChk"><span>Heavy/bulky samaan hai (+Rs 100)</span></label>
+          <label class="checkline" for="bulkyChk"><input type="checkbox" id="bulkyChk"><span>Has heavy/bulky items (+Rs 100)</span></label>
         </div>
       </div>
 
@@ -851,7 +851,7 @@ fieldset.field legend .req{color:var(--red)}
 
       <div class="field" id="f-itemDesc">
         <label>Items to Shift <span class="req" aria-hidden="true">*</span></label>
-        <p class="hint">Add at least one item with quantity — driver isi se luggage estimate karta hai. (Kam se kam ek item mandatory hai.)</p>
+        <p class="hint">Add at least one item with quantity — the driver uses this for the luggage estimate. (At least one item is mandatory.)</p>
         <div class="items-grid" id="itemsGrid" role="group" aria-label="Common household items"></div>
         <div class="custom-row">
           <input type="text" id="customItemName" maxlength="40" placeholder="Custom item — e.g. Plants, TV, Mattress" aria-label="Custom item name">
@@ -861,7 +861,7 @@ fieldset.field legend .req{color:var(--red)}
         <p class="items-count" id="itemsCount">0 items selected — please add at least one.</p>
         <label for="itemDesc" style="margin-top:8px">Additional notes (optional)</label>
         <textarea id="itemDesc" name="item-description" maxlength="500" placeholder="Example: 2nd floor, lift available" aria-describedby="itemDesc-hint itemDesc-err"></textarea>
-        <p class="hint" id="itemDesc-hint">Item list + quantity booking ke saath save hoti hai.</p>
+        <p class="hint" id="itemDesc-hint">The item list + quantity is saved with the booking.</p>
         <p class="error-text" id="itemDesc-err"></p>
       </div>
 
@@ -1041,19 +1041,19 @@ fieldset.field legend .req{color:var(--red)}
   }
   function retryMap(){
     var st = document.getElementById("pinBannerStatus");
-    if(st) st.textContent = "Map retry ho raha hai…";
+    if(st) st.textContent = "Map is retrying…";
     tileErrCount = 0;
     fetch(API_BASE_URL + "/api/geo/config", { headers: { "Authorization": "Bearer " + getToken() } })
       .then(function(r){ return r.json().catch(function(){ return null; }); })
       .then(function(b){
         if(b && b.ok){
-          if(st) st.textContent = "Map service wapas mil gayi — map se location chun sakte ho.";
+          if(st) st.textContent = "Map service is back — you can select a location on the map.";
           var banner = document.getElementById("pinBanner");
           if(banner) banner.classList.remove("show");
           hideAlert();
-        } else if(st) st.textContent = "Map abhi bhi unavailable hai — PIN fallback se aage badho.";
+        } else if(st) st.textContent = "Map is still unavailable — continue with the PIN fallback.";
       }).catch(function(){
-        if(st) st.textContent = "Map abhi bhi unavailable hai — PIN fallback se aage badho.";
+        if(st) st.textContent = "Map is still unavailable — continue with the PIN fallback.";
       });
   }
 
@@ -1118,7 +1118,7 @@ fieldset.field legend .req{color:var(--red)}
       } catch(e){}
     }).catch(function(){
       /* OSM fallback rehne do + PIN banner dikhao (map service down ho sakti hai). */
-      showPinBanner("Map service se connect nahi ho paya — PIN fallback se booking jaari rakh sakte ho.");
+      showPinBanner("Could not connect to the map service — you can continue booking using the PIN fallback.");
     });
 
   // Blank string Number("") me 0 ban jata hai (isFinite pass!) — isliye
@@ -1178,7 +1178,7 @@ fieldset.field legend .req{color:var(--red)}
       if(tileErrCount >= 3 && tileErrCount < 6){ useBackupTiles(); return; }
       // Dono tile sources fail -> map effectively unavailable: PIN banner.
       if(tileErrCount >= 6){
-        showPinBanner("Map tiles load nahi ho rahe — PIN fallback se booking jaari rakh sakte ho.");
+        showPinBanner("Map tiles are not loading — you can continue booking using the PIN fallback.");
       }
       if(mapPickStatus && mapModal && mapModal.classList.contains("show")){
         mapPickStatus.textContent = "Map tiles failed to load — check internet and retry.";
@@ -1259,7 +1259,7 @@ fieldset.field legend .req{color:var(--red)}
   function openMap(which){
     if(typeof L === "undefined"){
       showAlert("err", "Map could not load — pick an address suggestion instead, or use PIN fallback.");
-      showPinBanner("Map library load nahi hui — PIN fallback se booking jaari rakh sakte ho.");
+      showPinBanner("Map library did not load — you can continue booking using the PIN fallback.");
       return;
     }
     pickTarget = which;
@@ -1557,7 +1557,7 @@ fieldset.field legend .req{color:var(--red)}
     if(!add || !inp) return;
     add.addEventListener("click", function(){
       var v = inp.value.trim().slice(0, 40);
-      if(v.length < 2){ showAlert("err", "Custom item ka naam kam se kam 2 akshar likho."); inp.focus(); return; }
+      if(v.length < 2){ showAlert("err", "Enter at least 2 characters for the custom item name."); inp.focus(); return; }
       customItems.push({ name: v, qty: 1 });
       inp.value = "";
       hideAlert();
@@ -1601,16 +1601,16 @@ fieldset.field legend .req{color:var(--red)}
       pickupPinEl = document.getElementById("pickupPin");
       dropPinEl = document.getElementById("dropPin");
       if(!validPin(pickupPinEl ? pickupPinEl.value : "")){
-        setErr("f-pickupPin", "pickupPin-err", pickupPinEl, "Enter a valid 6-digit Indian PIN code (1-9 se shuru).");
+        setErr("f-pickupPin", "pickupPin-err", pickupPinEl, "Enter a valid 6-digit Indian PIN code (starts with 1-9).");
         bad(pickupPinEl);
       } else { setErr("f-pickupPin", "pickupPin-err", pickupPinEl, ""); }
       if(!validPin(dropPinEl ? dropPinEl.value : "")){
-        setErr("f-dropPin", "dropPin-err", dropPinEl, "Enter a valid 6-digit Indian PIN code (1-9 se shuru).");
+        setErr("f-dropPin", "dropPin-err", dropPinEl, "Enter a valid 6-digit Indian PIN code (starts with 1-9).");
         bad(dropPinEl);
       } else { setErr("f-dropPin", "dropPin-err", dropPinEl, ""); }
       pLat = parseNum(document.getElementById("pinPickLat").value);
       if(!validLat(pLat)){
-        setErr("f-pinPickLat", "pinPickLat-err", document.getElementById("pinPickLat"), "Enter pickup latitude (-90..90). Map retry karke bhi bhar sakte ho.");
+        setErr("f-pinPickLat", "pinPickLat-err", document.getElementById("pinPickLat"), "Enter pickup latitude (-90..90). You can also fill this after retrying the map.");
         bad(document.getElementById("pinPickLat"));
       } else { setErr("f-pinPickLat", "pinPickLat-err", document.getElementById("pinPickLat"), ""); }
       pLng = parseNum(document.getElementById("pinPickLng").value);
@@ -1696,18 +1696,18 @@ fieldset.field legend .req{color:var(--red)}
     var size = (sizeTier && sizeTier.value === "bada") ? "bada" : "chhota";
     var wt = parseNum(weightKg ? weightKg.value : "0");
     if(wt === null || wt < 0 || wt > 5000){
-      setErr("f-weight", "weightKg-err", weightKg, "Weight 0-5000 kg me likho.");
+      setErr("f-weight", "weightKg-err", weightKg, "Enter weight between 0-5000 kg.");
       bad(weightKg);
     } else { setErr("f-weight", "weightKg-err", weightKg, ""); }
     var cnt = parseNum(itemCount ? itemCount.value : "1");
     if(cnt === null || cnt < 1 || cnt > 100 || Math.trunc(cnt) !== cnt){
-      setErr("f-count", "itemCount-err", itemCount, "Item count 1-100 me likho.");
+      setErr("f-count", "itemCount-err", itemCount, "Enter item count between 1-100.");
       bad(itemCount);
     } else { setErr("f-count", "itemCount-err", itemCount, ""); }
     var bulky = !!(bulkyChk && bulkyChk.checked);
     var desc = buildItemDescription();
     if(totalItemCount() < 1){
-      setErr("f-itemDesc", "itemDesc-err", itemDesc, "Please add at least one item to shift (e.g. 1 Bed, 2 Boxes) with quantity — Items to Shift mandatory hai.");
+      setErr("f-itemDesc", "itemDesc-err", itemDesc, "Please add at least one item to shift (e.g. 1 Bed, 2 Boxes) with quantity — Items to Shift is mandatory.");
       showAlert("err", "Please add at least one item to shift with quantity before proceeding.");
       bad(itemDesc);
     } else if(desc.length < 3){

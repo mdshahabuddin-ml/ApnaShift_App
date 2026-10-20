@@ -328,7 +328,7 @@ class _CallbackPopupState extends State<CallbackPopup> {
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('WhatsApp nahi khula — 918757160137 par likho.')));
+          content: Text('WhatsApp did not open — message 918757160137.')));
     }
   }
 

@@ -7,14 +7,14 @@ import { parseQuery } from './booking.js';
 export { parseAuthBody as parseBody, parseQuery };
 
 const latField = z
-  .number({ invalid_type_error: 'lat number ho (-90 se 90).' })
-  .min(-90, 'lat -90 se 90 ke beech.')
-  .max(90, 'lat -90 se 90 ke beech.');
+  .number({ invalid_type_error: 'lat must be a number (-90 to 90).' })
+  .min(-90, 'lat must be between -90 and 90.')
+  .max(90, 'lat must be between -90 and 90.');
 
 const lngField = z
-  .number({ invalid_type_error: 'lng number ho (-180 se 180).' })
-  .min(-180, 'lng -180 se 180 ke beech.')
-  .max(180, 'lng -180 se 180 ke beech.');
+  .number({ invalid_type_error: 'lng must be a number (-180 to 180).' })
+  .min(-180, 'lng must be between -180 and 180.')
+  .max(180, 'lng must be between -180 and 180.');
 
 // Driver GPS report. Server stamps recorded_at itself — client clocks lie.
 // heading_deg follows the Geolocation API convention: degrees clockwise
@@ -23,19 +23,19 @@ export const locationReportSchema = z.object({
   lat: latField,
   lng: lngField,
   accuracy_m: z
-    .number({ invalid_type_error: 'accuracy_m number ho.' })
-    .min(0, 'accuracy_m 0 se kam nahi.')
-    .max(10000, 'accuracy_m 10000 se zyada nahi.')
+    .number({ invalid_type_error: 'accuracy_m must be a number.' })
+    .min(0, 'accuracy_m must be at least 0.')
+    .max(10000, 'accuracy_m must be no more than 10000.')
     .optional(),
   speed_mps: z
-    .number({ invalid_type_error: 'speed_mps number ho.' })
-    .min(0, 'speed_mps 0 se kam nahi.')
-    .max(100, 'speed_mps 100 m/s se zyada nahi.')
+    .number({ invalid_type_error: 'speed_mps must be a number.' })
+    .min(0, 'speed_mps must be at least 0.')
+    .max(100, 'speed_mps must be no more than 100 m/s.')
     .optional(),
   heading_deg: z
-    .number({ invalid_type_error: 'heading_deg number ho.' })
-    .min(0, 'heading_deg 0 se 360 ke beech.')
-    .max(360, 'heading_deg 0 se 360 ke beech.')
+    .number({ invalid_type_error: 'heading_deg must be a number.' })
+    .min(0, 'heading_deg must be between 0 and 360.')
+    .max(360, 'heading_deg must be between 0 and 360.')
     .optional(),
 });
 

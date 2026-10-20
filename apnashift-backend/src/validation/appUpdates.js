@@ -13,7 +13,7 @@ const semverStr = z
   .string()
   .trim()
   .max(20)
-  .regex(/^\d+\.\d+\.\d+$/, 'version x.y.z format chahiye (e.g. 1.2.0)');
+  .regex(/^\d+\.\d+\.\d+$/, 'version must be in x.y.z format (e.g. 1.2.0)');
 
 const isoOffset = z
   .string()
@@ -25,7 +25,7 @@ const httpsUrl = z
   .string()
   .trim()
   .max(500)
-  .refine((s) => /^https:\/\/\S+$/i.test(s), 'update_url https:// (official Play Store / APK page) hona chahiye')
+  .refine((s) => /^https:\/\/\S+$/i.test(s), 'update_url must be an https:// URL (official Play Store / APK page)')
   .nullable();
 
 function refineMinMax(v, ctx) {
@@ -35,7 +35,7 @@ function refineMinMax(v, ctx) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['min_supported_version'],
-        message: 'min_supported_version version se chhota ya barabar hona chahiye',
+        message: 'min_supported_version must be smaller than or equal to version',
       });
     }
   }

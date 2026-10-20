@@ -86,7 +86,7 @@ export async function maintenanceState() {
   const withMsg = r.rows.find((x) => x.block_message);
   const message =
     withMsg?.block_message ??
-    'Maintenance chal raha hai — bookings aur driver actions thodi der me wapas chalu hongi.';
+    'Maintenance in progress — bookings and driver actions will resume shortly.';
   let anyIndefinite = false;
   let maxEnd = null;
   for (const x of r.rows) {
