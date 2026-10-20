@@ -228,7 +228,7 @@ export async function dispatchDueReleasePushes() {
   const due = await query(
     `SELECT id, version, release_notes, push_title, push_body, audience
        FROM app_releases
-      WHERE push_enabled = 1 AND push_status = 'scheduled' AND status = 'published'
+      WHERE push_enabled = TRUE AND push_status = 'scheduled' AND status = 'published'
         AND push_scheduled_at IS NOT NULL AND push_scheduled_at <= now()
       ORDER BY push_scheduled_at ASC`,
     [],

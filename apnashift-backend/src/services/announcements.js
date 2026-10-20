@@ -79,7 +79,7 @@ export async function activeAnnouncements(audience = null) {
 export async function maintenanceState() {
   const r = await query(
     `SELECT block_message, end_at FROM announcements
-      WHERE ${ACTIVE_WINDOW} AND maintenance_mode = 1`,
+      WHERE ${ACTIVE_WINDOW} AND maintenance_mode = TRUE`,
     [],
   );
   if (r.rowCount === 0) return { blocked: false, message: null, until: null };
@@ -231,7 +231,7 @@ export async function dispatchDuePushes() {
   const due = await query(
     `SELECT id, title, body, push_title, push_body, audience, severity
        FROM announcements
-      WHERE push_enabled = 1 AND push_status = 'scheduled' AND status = 'published'
+      WHERE push_enabled = TRUE AND push_status = 'scheduled' AND status = 'published'
         AND push_scheduled_at IS NOT NULL AND push_scheduled_at <= now()
       ORDER BY push_scheduled_at ASC`,
     [],
