@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS announcement_push_log (
   owner_role TEXT NOT NULL CHECK (owner_role IN ('user', 'driver', 'admin', 'super_admin')),
   owner_id UUID NOT NULL,
   token TEXT NOT NULL CHECK (char_length(token) BETWEEN 1 AND 512),
-  status TEXT NOT NULL CHECK (status IN ('sent', 'failed')),
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'sent', 'failed')),
   error TEXT,
   sent_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (announcement_id, owner_role, owner_id, token)

@@ -174,8 +174,8 @@ async function dispatchAnnouncement(a) {
     // crash-restart means this row was already handled, skip without sending.
     try {
       await query(
-        `INSERT INTO announcement_push_log (announcement_id, owner_role, owner_id, token)
-         VALUES ($1, $2, $3, $4)`,
+        `INSERT INTO announcement_push_log (announcement_id, owner_role, owner_id, token, status)
+         VALUES ($1, $2, $3, $4, 'pending')`,
         [a.id, t.owner_role, t.owner_id, t.token],
       );
     } catch (err) {
